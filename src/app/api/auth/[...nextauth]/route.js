@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -15,53 +15,54 @@ const handler = NextAuth({
         params: {
           prompt: "select_account",
           access_type: "offline",
-          response_type: "code"
-        }
-      }
+          response_type: "code",
+        },
+      },
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async signIn({ account, profile }) {
-      if (account?.provider === 'google' && profile?.email_verified) {
+      if (account?.provider === "google" && profile?.email_verified) {
         try {
           // First, sign in with Supabase
-          const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-              redirectTo: process.env.NEXTAUTH_URL
-            }
-          });
+          const { data: authData, error: authError } =
+            await supabase.auth.signInWithOAuth({
+              provider: "google",
+              options: {
+                redirectTo: process.env.NEXTAUTH_URL,
+              },
+            });
 
           if (authError) throw authError;
 
           // Check if user exists
           const { data: existingUser } = await supabase
-            .from('users')
-            .select('id')
-            .eq('email', profile.email)
+            .from("users")
+            .select("id")
+            .eq("email", profile.email)
             .single();
 
           if (!existingUser) {
             // Create new user
             const { data: newUser, error } = await supabase
-              .from('users')
+              .from("users")
               .insert({
                 email: profile.email,
                 name: profile.name,
                 avatar_url: profile.picture,
-                role: 'user'
+                role: "buyer",
               })
               .select()
               .single();
 
             if (error) throw error;
-            console.log('Created new user:', newUser);
+            console.log("Created new user:", newUser);
           }
 
           return true;
         } catch (error) {
-          console.error('Error in signIn callback:', error);
+          console.error("Error in signIn callback:", error);
           return false;
         }
       }
@@ -78,9 +79,9 @@ const handler = NextAuth({
       if (session?.user) {
         // Get user from Supabase
         const { data: user } = await supabase
-          .from('users')
-          .select('id, role')
-          .eq('email', session.user.email)
+          .from("users")
+          .select("id, role")
+          .eq("email", session.user.email)
           .single();
 
         if (user) {
@@ -90,9 +91,9 @@ const handler = NextAuth({
         }
       }
       return session;
-    }
+    },
   },
-  debug: true
+  debug: true,
 });
 
 export { handler as GET, handler as POST };
