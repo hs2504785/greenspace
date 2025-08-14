@@ -1,0 +1,27 @@
+{
+  "name": "greenspace",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@auth/core": "^0.34.2",
+    "@supabase/supabase-js": "^2.54.0",
+    "@tanstack/react-query": "^5.84.2",
+    "bootstrap": "^5.3.7",
+    "bootswatch": "^5.3.7",
+    "date-fns": "^4.1.0",
+    "google-auth-library": "^10.2.1",
+    "next": "15.4.6",
+    "next-auth": "^4.24.11",
+    "react": "19.1.0",
+    "react-bootstrap": "^2.10.10",
+    "react-dom": "19.1.0",
+    "react-hot-toast": "^2.5.2",
+    "sass": "^1.90.0"
+  }
+}

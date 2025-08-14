@@ -1,0 +1,29 @@
+.hover-shadow {
+  transition: all 0.2s ease-in-out;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+// Card link styles
+a.text-decoration-none {
+  .card {
+    color: inherit;
+    
+    &:hover {
+      .card-title {
+        color: var(--bs-success) !important;
+      }
+    }
+  }
+}

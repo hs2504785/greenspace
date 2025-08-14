@@ -1,0 +1,38 @@
+// Import our base variables first
+@import "./base/variables";
+
+// Import Bootswatch Flatly theme variables
+@import "../../node_modules/bootswatch/dist/cosmo/variables";
+
+// Include any default variable overrides here (though functions won't be available)
+$enable-shadows: true;
+$prefix: "bs-";
+
+// Import Bootstrap
+@import "../../node_modules/bootstrap/scss/bootstrap";
+
+// Import Bootswatch cosmo theme styles
+@import "../../node_modules/bootswatch/dist/cosmo/bootswatch";
+
+// Import component styles
+@import "./components/scrollbar";
+@import "./components/header";
+@import "./components/layout";
+@import "./components/card";
+@import "./components/timeline";
+@import "./components/form";
+
+// Global styles
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+// Icon styles
+[class^="ti-"], [class*=" ti-"] {
+  display: inline-block;
+  line-height: 1;
+  font-size: 1.1em;
+  vertical-align: middle;
+}

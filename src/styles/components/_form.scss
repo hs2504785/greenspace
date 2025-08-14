@@ -1,0 +1,11 @@
+// Form styles
+.form-control {
+  &::placeholder {
+    color: #adb5bd !important; // Bootstrap's text-muted color
+    opacity: 0.7;
+  }
+
+  &.font-monospace {
+    letter-spacing: 0.5px; // Better readability for numbers
+  }
+}
