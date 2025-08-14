@@ -10,23 +10,41 @@ export default function Home() {
   const { vegetables, loading, error, totalCount, filters, updateFilters } =
     useVegetables();
 
-  return (
-    <div className="container">
-      <div className="py-2">
-        <VegetableFilters
-          filters={filters}
-          onFilterChange={updateFilters}
-          totalCount={totalCount}
-        />
-      </div>
+  // Show filters only when:
+  // 1. There are vegetables to filter, OR
+  // 2. User has actively applied some search/filter (so they can clear it)
+  const hasActiveFilters =
+    (filters.searchQuery && filters.searchQuery.trim() !== "") ||
+    (filters.category &&
+      filters.category !== "All" &&
+      filters.category !== null) ||
+    (filters.location && filters.location.trim() !== "");
 
-      <div className="ui-scroll ui-scroll-lg">
+  const shouldShowFilters = vegetables.length > 0 || hasActiveFilters;
+
+  return (
+    <>
+      {shouldShowFilters && (
+        <div className="container">
+          <div className="py-3">
+            <VegetableFilters
+              filters={filters}
+              onFilterChange={updateFilters}
+              totalCount={totalCount}
+            />
+          </div>
+        </div>
+      )}
+
+      <div
+        className={shouldShowFilters ? "container ui-scroll ui-scroll-lg" : ""}
+      >
         <VegetableResults
           vegetables={vegetables}
           loading={loading}
           error={error}
         />
       </div>
-    </div>
+    </>
   );
 }

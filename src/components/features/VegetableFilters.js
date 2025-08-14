@@ -1,23 +1,37 @@
-'use client';
+"use client";
 
-import { Form, InputGroup, Row, Col } from 'react-bootstrap';
-import { useCallback, useEffect, useState, useMemo, memo } from 'react';
-import { useDebounce } from '@/hooks/useDebounce';
-import { vegetableService } from '@/services/VegetableService';
-import { supabase } from '@/lib/supabase';
+import { Form, InputGroup, Row, Col } from "react-bootstrap";
+import { useCallback, useEffect, useState, useMemo, memo } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
+import VegetableService from "@/services/VegetableService";
+import { supabase } from "@/lib/supabase";
 
-const defaultCategories = ['All', 'Leafy', 'Root', 'Fruit', 'Herbs', 'Vegetable'];
+const defaultCategories = [
+  "All",
+  "Leafy",
+  "Root",
+  "Fruit",
+  "Herbs",
+  "Vegetable",
+];
 
-const VegetableFilters = memo(function VegetableFilters({ filters, onFilterChange, totalCount }) {
+const VegetableFilters = memo(function VegetableFilters({
+  filters,
+  onFilterChange,
+  totalCount,
+}) {
   // Memoize filter values to prevent unnecessary re-renders
-  const { category, sortBy, sortDirection } = useMemo(() => ({
-    category: filters.category || 'All',
-    sortBy: filters.sortBy || 'created_at',
-    sortDirection: filters.sortDirection || 'desc'
-  }), [filters.category, filters.sortBy, filters.sortDirection]);
+  const { category, sortBy, sortDirection } = useMemo(
+    () => ({
+      category: filters.category || "All",
+      sortBy: filters.sortBy || "created_at",
+      sortDirection: filters.sortDirection || "desc",
+    }),
+    [filters.category, filters.sortBy, filters.sortDirection]
+  );
   const [categories, setCategories] = useState(defaultCategories);
   const [locations, setLocations] = useState([]);
-  const [searchValue, setSearchValue] = useState(filters.searchQuery || '');
+  const [searchValue, setSearchValue] = useState(filters.searchQuery || "");
   const debouncedSearch = useDebounce(searchValue, 500);
 
   // Effect for debounced search
@@ -30,16 +44,16 @@ const VegetableFilters = memo(function VegetableFilters({ filters, onFilterChang
   useEffect(() => {
     const loadFilterOptions = async () => {
       try {
-        if (vegetableService) {
+        if (VegetableService) {
           const [fetchedCategories, fetchedLocations] = await Promise.all([
-            vegetableService.getCategories(),
-            vegetableService.getLocations()
+            VegetableService.getCategories(),
+            VegetableService.getLocations(),
           ]);
-          setCategories(['All', ...fetchedCategories]);
+          setCategories(["All", ...fetchedCategories]);
           setLocations(fetchedLocations);
         }
       } catch (error) {
-        console.error('Error loading filter options:', error);
+        console.error("Error loading filter options:", error);
       }
     };
 
@@ -50,16 +64,20 @@ const VegetableFilters = memo(function VegetableFilters({ filters, onFilterChang
     setSearchValue(e.target.value);
   }, []);
 
+  const handleCategoryChange = useCallback(
+    (e) => {
+      onFilterChange({ category: e.target.value, page: 1 });
+    },
+    [onFilterChange]
+  );
 
-
-  const handleCategoryChange = useCallback((e) => {
-    onFilterChange({ category: e.target.value, page: 1 });
-  }, [onFilterChange]);
-
-  const handleSortChange = useCallback((e) => {
-    const [sortBy, sortDirection] = e.target.value.split('-');
-    onFilterChange({ sortBy, sortDirection, page: 1 });
-  }, [onFilterChange]);
+  const handleSortChange = useCallback(
+    (e) => {
+      const [sortBy, sortDirection] = e.target.value.split("-");
+      onFilterChange({ sortBy, sortDirection, page: 1 });
+    },
+    [onFilterChange]
+  );
 
   return (
     <div className="d-flex align-items-center gap-3">
@@ -91,9 +109,7 @@ const VegetableFilters = memo(function VegetableFilters({ filters, onFilterChang
       </div>
 
       <div className="d-flex align-items-center gap-2">
-        <small className="text-muted">
-          {totalCount} items
-        </small>
+        <small className="text-muted">{totalCount} items</small>
         <InputGroup className="w-auto">
           <InputGroup.Text className="bg-white border-end-0">
             <span className="ti-exchange-vertical text-muted"></span>

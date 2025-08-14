@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import VegetableService from '@/services/VegetableService';
-import toast from 'react-hot-toast';
-import { mockVegetables } from '@/data/mockVegetables';
+import { useState, useEffect, useCallback, useMemo } from "react";
+import VegetableService from "@/services/VegetableService";
+import toast from "react-hot-toast";
+// import { mockVegetables } from '@/data/mockVegetables'; // Removed - no longer using mock data
 
 export function useVegetables(initialFilters = {}) {
   const [vegetables, setVegetables] = useState([]);
@@ -14,10 +14,10 @@ export function useVegetables(initialFilters = {}) {
     limit: 12,
     category: null,
     location: null,
-    searchQuery: '',
-    sortBy: 'created_at',
-    sortDirection: 'desc',
-    ...initialFilters
+    searchQuery: "",
+    sortBy: "created_at",
+    sortDirection: "desc",
+    ...initialFilters,
   });
 
   const fetchVegetables = useCallback(async () => {
@@ -26,21 +26,26 @@ export function useVegetables(initialFilters = {}) {
       setError(null);
 
       let data = await VegetableService.getAllVegetables();
-      
-      // Apply filters to data (both mock and Supabase)
-      if (filters.category && filters.category !== 'All') {
-        data = data.filter(v => v.category.toLowerCase() === filters.category.toLowerCase());
+
+      // Apply filters to data
+      if (filters.category && filters.category !== "All") {
+        data = data.filter(
+          (v) => v.category.toLowerCase() === filters.category.toLowerCase()
+        );
       }
       if (filters.location) {
-        data = data.filter(v => v.location.toLowerCase().includes(filters.location.toLowerCase()));
+        data = data.filter((v) =>
+          v.location.toLowerCase().includes(filters.location.toLowerCase())
+        );
       }
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();
-        data = data.filter(v => 
-          v.name.toLowerCase().includes(query) ||
-          v.description.toLowerCase().includes(query) ||
-          v.category.toLowerCase().includes(query) ||
-          v.location.toLowerCase().includes(query)
+        data = data.filter(
+          (v) =>
+            v.name.toLowerCase().includes(query) ||
+            v.description.toLowerCase().includes(query) ||
+            v.category.toLowerCase().includes(query) ||
+            v.location.toLowerCase().includes(query)
         );
       }
 
@@ -48,9 +53,9 @@ export function useVegetables(initialFilters = {}) {
       data.sort((a, b) => {
         const aValue = a[filters.sortBy];
         const bValue = b[filters.sortBy];
-        const direction = filters.sortDirection === 'asc' ? 1 : -1;
-        
-        if (typeof aValue === 'string') {
+        const direction = filters.sortDirection === "asc" ? 1 : -1;
+
+        if (typeof aValue === "string") {
           return direction * aValue.localeCompare(bValue);
         }
         return direction * (aValue - bValue);
@@ -64,12 +69,11 @@ export function useVegetables(initialFilters = {}) {
       setVegetables(paginatedData);
       setTotalCount(data.length);
       setTotalPages(Math.ceil(data.length / filters.limit));
-
     } catch (err) {
-      const errorMessage = err.message || 'Failed to fetch vegetables';
-      console.error('Fetch vegetables error:', {
+      const errorMessage = err.message || "Failed to fetch vegetables";
+      console.error("Fetch vegetables error:", {
         message: errorMessage,
-        error: err
+        error: err,
       });
       setError(errorMessage);
       toast.error(errorMessage);
@@ -83,25 +87,25 @@ export function useVegetables(initialFilters = {}) {
   }, [fetchVegetables]);
 
   const updateFilters = useCallback((newFilters) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       ...newFilters,
       // Reset to page 1 when filters change
-      page: newFilters.page || 1
+      page: newFilters.page || 1,
     }));
   }, []);
 
   const createVegetable = async (data) => {
     try {
       if (!VegetableService) {
-        toast.error('Database not configured');
+        toast.error("Database not configured");
         return null;
       }
       const result = await VegetableService.createVegetable(data);
-      toast.success('Vegetable created successfully');
+      toast.success("Vegetable created successfully");
       return result;
     } catch (err) {
-      toast.error('Failed to create vegetable');
+      toast.error("Failed to create vegetable");
       throw err;
     }
   };
@@ -109,14 +113,14 @@ export function useVegetables(initialFilters = {}) {
   const updateVegetable = async (id, data) => {
     try {
       if (!VegetableService) {
-        toast.error('Database not configured');
+        toast.error("Database not configured");
         return null;
       }
       const result = await VegetableService.updateVegetable(id, data);
-      toast.success('Vegetable updated successfully');
+      toast.success("Vegetable updated successfully");
       return result;
     } catch (err) {
-      toast.error('Failed to update vegetable');
+      toast.error("Failed to update vegetable");
       throw err;
     }
   };
@@ -124,15 +128,15 @@ export function useVegetables(initialFilters = {}) {
   const deleteVegetable = async (id) => {
     try {
       if (!VegetableService) {
-        toast.error('Database not configured');
+        toast.error("Database not configured");
         return false;
       }
       await vegetableService.deleteVegetable(id);
-      toast.success('Vegetable deleted successfully');
+      toast.success("Vegetable deleted successfully");
       fetchVegetables(); // Refresh the list
       return true;
     } catch (err) {
-      toast.error('Failed to delete vegetable');
+      toast.error("Failed to delete vegetable");
       throw err;
     }
   };
@@ -140,55 +144,61 @@ export function useVegetables(initialFilters = {}) {
   const uploadImage = async (file) => {
     try {
       if (!VegetableService) {
-        toast.error('Database not configured');
+        toast.error("Database not configured");
         return null;
       }
       return await vegetableService.uploadImage(file);
     } catch (err) {
-      toast.error('Failed to upload image');
+      toast.error("Failed to upload image");
       throw err;
     }
   };
 
   // Memoize the filters object to prevent unnecessary re-renders
-  const memoizedFilters = useMemo(() => filters, [
-    filters.page,
-    filters.limit,
-    filters.category,
-    filters.location,
-    filters.searchQuery,
-    filters.sortBy,
-    filters.sortDirection
-  ]);
+  const memoizedFilters = useMemo(
+    () => filters,
+    [
+      filters.page,
+      filters.limit,
+      filters.category,
+      filters.location,
+      filters.searchQuery,
+      filters.sortBy,
+      filters.sortDirection,
+    ]
+  );
 
   // Memoize the return object to prevent unnecessary re-renders
-  const returnValue = useMemo(() => ({
-    vegetables,
-    loading,
-    error,
-    totalPages,
-    totalCount,
-    filters: memoizedFilters,
-    updateFilters,
-    createVegetable,
-    updateVegetable,
-    deleteVegetable,
-    uploadImage,
-    refresh: fetchVegetables
-  }), [
-    vegetables,
-    loading,
-    error,
-    totalPages,
-    totalCount,
-    memoizedFilters,
-    updateFilters,
-    createVegetable,
-    updateVegetable,
-    deleteVegetable,
-    uploadImage,
-    fetchVegetables
-  ]);
+  const returnValue = useMemo(
+    () => ({
+      vegetables,
+      loading,
+      error,
+      totalPages,
+      totalCount,
+      filters: memoizedFilters,
+      updateFilters,
+      createVegetable,
+      updateVegetable,
+      deleteVegetable,
+      uploadImage,
+      refresh: fetchVegetables,
+    }),
+    [
+      vegetables,
+      loading,
+      error,
+      totalPages,
+      totalCount,
+      memoizedFilters,
+      updateFilters,
+      createVegetable,
+      updateVegetable,
+      deleteVegetable,
+      uploadImage,
+      fetchVegetables,
+    ]
+  );
 
   return returnValue;
 }
