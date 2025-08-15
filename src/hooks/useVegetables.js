@@ -17,6 +17,7 @@ export function useVegetables(initialFilters = {}) {
     searchQuery: "",
     sortBy: "created_at",
     sortDirection: "desc",
+    showFreeOnly: false,
     ...initialFilters,
   });
 
@@ -47,6 +48,9 @@ export function useVegetables(initialFilters = {}) {
             v.category.toLowerCase().includes(query) ||
             v.location.toLowerCase().includes(query)
         );
+      }
+      if (filters.showFreeOnly) {
+        data = data.filter((v) => Number(v.price) === 0);
       }
 
       // Apply sorting
@@ -165,6 +169,7 @@ export function useVegetables(initialFilters = {}) {
       filters.searchQuery,
       filters.sortBy,
       filters.sortDirection,
+      filters.showFreeOnly,
     ]
   );
 

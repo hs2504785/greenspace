@@ -26,6 +26,13 @@ export default function Header() {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
+            <Nav.Link
+              as={Link}
+              href="/?showFreeOnly=true"
+              className="text-success fw-semibold"
+            >
+              🎁 Free Goodies
+            </Nav.Link>
             <Nav.Link as={Link} href="/" className="active">
               Fresh Vegetables
             </Nav.Link>

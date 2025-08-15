@@ -1,14 +1,26 @@
 "use client";
 
 import { useVegetables } from "@/hooks/useVegetables";
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import VegetableFilters from "@/components/features/VegetableFilters";
 import VegetableResults from "@/components/features/VegetableResults";
 import VegetableCount from "@/components/features/VegetableCount";
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const showFreeOnly = searchParams.get("showFreeOnly") === "true";
+
   const { vegetables, loading, error, totalCount, filters, updateFilters } =
-    useVegetables();
+    useVegetables({ showFreeOnly });
+
+  // Update filter when URL parameter changes
+  useEffect(() => {
+    if (showFreeOnly !== filters.showFreeOnly) {
+      updateFilters({ showFreeOnly });
+    }
+  }, [showFreeOnly, filters.showFreeOnly, updateFilters]);
 
   // Show filters only when:
   // 1. There are vegetables to filter, OR
@@ -18,7 +30,8 @@ export default function Home() {
     (filters.category &&
       filters.category !== "All" &&
       filters.category !== null) ||
-    (filters.location && filters.location.trim() !== "");
+    (filters.location && filters.location.trim() !== "") ||
+    filters.showFreeOnly;
 
   const shouldShowFilters = vegetables.length > 0 || hasActiveFilters;
 

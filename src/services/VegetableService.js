@@ -114,7 +114,10 @@ class VegetableService extends ApiBaseService {
         "owner_id",
       ];
       const missingFields = requiredFields.filter(
-        (field) => !vegetableData[field]
+        (field) =>
+          vegetableData[field] === undefined ||
+          vegetableData[field] === null ||
+          vegetableData[field] === ""
       );
 
       if (missingFields.length > 0) {
@@ -122,8 +125,8 @@ class VegetableService extends ApiBaseService {
       }
 
       // Additional validation
-      if (typeof vegetableData.price !== "number" || vegetableData.price <= 0) {
-        throw new Error("Price must be a positive number");
+      if (typeof vegetableData.price !== "number" || vegetableData.price < 0) {
+        throw new Error("Price must be a number and cannot be negative");
       }
 
       if (
@@ -335,6 +338,54 @@ class VegetableService extends ApiBaseService {
     } catch (error) {
       console.error("Error fetching locations:", error);
       return [];
+    }
+  }
+
+  // Helper methods for free items
+  async getFreeVegetables() {
+    try {
+      if (!supabase) throw new Error("Supabase not initialized");
+      const { data, error } = await supabase
+        .from(this.tableName)
+        .select(
+          `
+          *,
+          owner:users!owner_id(
+            id, name, email, phone, whatsapp_number, location, avatar_url
+          )
+        `
+        )
+        .eq("price", 0);
+
+      if (error) {
+        console.error("Error fetching free vegetables:", error);
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching free vegetables:", error);
+      return [];
+    }
+  }
+
+  isFreeVegetable(vegetable) {
+    return Number(vegetable.price) === 0;
+  }
+
+  async getFreeVegetableCount() {
+    try {
+      if (!supabase) throw new Error("Supabase not initialized");
+      const { count, error } = await supabase
+        .from(this.tableName)
+        .select("id", { count: "exact" })
+        .eq("price", 0);
+
+      if (error) throw error;
+      return count || 0;
+    } catch (error) {
+      console.error("Error fetching free vegetables count:", error);
+      return 0;
     }
   }
 }

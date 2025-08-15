@@ -22,6 +22,9 @@ export default function VegetableCard({
   const { addToCart, items, updateQuantity, removeFromCart } = useCart();
   const imageUrl = images?.[0] || "";
 
+  // Check if item is free (price = 0)
+  const isFree = Number(price) === 0;
+
   // Check if item is already in cart
   const cartItem = items.find((item) => item.id === id);
   const [itemQuantity, setItemQuantity] = useState(cartItem?.quantity || 1);
@@ -116,13 +119,13 @@ export default function VegetableCard({
           <div
             className="px-2 py-1 rounded ms-2"
             style={{
-              backgroundColor: "#f8f9fa",
+              backgroundColor: isFree ? "#d1e7dd" : "#f8f9fa",
               color: "#198754",
               fontWeight: 500,
               whiteSpace: "nowrap",
             }}
           >
-            ₹{Number(price).toFixed(2)}
+            {isFree ? "🎁 FREE" : `₹${Number(price).toFixed(2)}`}
           </div>
         </div>
 
@@ -169,7 +172,7 @@ export default function VegetableCard({
               style={{ backgroundColor: "#44b700" }}
               onClick={handleAddToCart}
             >
-              Add
+              {isFree ? "🎁 Claim Free" : "Add"}
             </Button>
           )}
         </div>
