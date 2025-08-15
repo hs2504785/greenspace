@@ -1,23 +1,18 @@
-'use client';
+"use client";
 
-import { Card, Table, Button, ButtonGroup, Dropdown } from 'react-bootstrap';
-import UserAvatar from '@/components/common/UserAvatar';
-import { generateBuyerMessage, openWhatsApp } from '@/utils/whatsapp';
+import { Card, Table } from "react-bootstrap";
+import UserAvatar from "@/components/common/UserAvatar";
+import WhatsAppActions from "./WhatsAppActions";
 
 export default function OrderDetails({ order }) {
   if (!order) {
     return (
       <div className="text-center py-4">
-        <i className="ti-package text-muted" style={{ fontSize: '3rem' }}></i>
+        <i className="ti-package text-muted" style={{ fontSize: "3rem" }}></i>
         <p className="mt-3 mb-0">Order details not available</p>
       </div>
     );
   }
-  const handleWhatsAppSeller = (type = 'status') => {
-    if (!order.seller?.whatsapp) return;
-    const message = generateBuyerMessage(order, type);
-    openWhatsApp(order.seller.whatsapp, message);
-  };
 
   return (
     <div className="d-flex flex-column gap-4">
@@ -39,10 +34,12 @@ export default function OrderDetails({ order }) {
             <tbody>
               {(order.items || []).map((item) => (
                 <tr key={item.id}>
-                  <td>{item.vegetable?.name || 'Unknown Product'}</td>
-                  <td>₹{item.price_per_unit?.toFixed(2) || '0.00'}</td>
+                  <td>{item.vegetable?.name || "Unknown Product"}</td>
+                  <td>₹{item.price_per_unit?.toFixed(2) || "0.00"}</td>
                   <td>{item.quantity || 0}</td>
-                  <td className="text-end">₹{item.total_price?.toFixed(2) || '0.00'}</td>
+                  <td className="text-end">
+                    ₹{item.total_price?.toFixed(2) || "0.00"}
+                  </td>
                 </tr>
               ))}
               <tr>
@@ -50,7 +47,7 @@ export default function OrderDetails({ order }) {
                   <strong>Total Amount:</strong>
                 </td>
                 <td className="text-end border-0">
-                  <strong>₹{order.total_amount?.toFixed(2) || '0.00'}</strong>
+                  <strong>₹{order.total_amount?.toFixed(2) || "0.00"}</strong>
                 </td>
               </tr>
             </tbody>
@@ -68,7 +65,7 @@ export default function OrderDetails({ order }) {
             <Card.Body>
               <h6>Delivery Address</h6>
               <p className="mb-3">{order.delivery_address}</p>
-              
+
               <h6>Contact Number</h6>
               <p className="mb-0">{order.contact_number}</p>
             </Card.Body>
@@ -83,46 +80,22 @@ export default function OrderDetails({ order }) {
             </Card.Header>
             <Card.Body>
               <div className="d-flex align-items-center mb-3">
-                <UserAvatar user={order.seller || {}} size={48} className="me-3" />
+                <UserAvatar
+                  user={order.seller || {}}
+                  size={48}
+                  className="me-3"
+                />
                 <div>
-                  <h6 className="mb-1">{order.seller?.name || 'Unknown Seller'}</h6>
-                  <p className="mb-0 text-muted">{order.seller?.location || 'Location not available'}</p>
+                  <h6 className="mb-1">
+                    {order.seller?.name || "Unknown Seller"}
+                  </h6>
+                  <p className="mb-0 text-muted">
+                    {order.seller?.location || "Location not available"}
+                  </p>
                 </div>
               </div>
 
-              <Dropdown as={ButtonGroup} className="w-100">
-                <Button
-                  variant="success"
-                  size="sm"
-                  onClick={() => handleWhatsAppSeller('status')}
-                  disabled={!order.seller?.whatsapp}
-                >
-                  <i className="ti-comment me-2"></i>
-                  Contact via WhatsApp
-                </Button>
-
-                <Dropdown.Toggle
-                  split
-                  variant="success"
-                  size="sm"
-                  disabled={!order.seller?.whatsapp}
-                />
-
-                <Dropdown.Menu>
-                  <Dropdown.Item onClick={() => handleWhatsAppSeller('status')}>
-                    <i className="ti-help me-2"></i>
-                    Check Order Status
-                  </Dropdown.Item>
-                  <Dropdown.Item onClick={() => handleWhatsAppSeller('issue')}>
-                    <i className="ti-alert me-2"></i>
-                    Report an Issue
-                  </Dropdown.Item>
-                  <Dropdown.Item onClick={() => handleWhatsAppSeller('delivery')}>
-                    <i className="ti-location-pin me-2"></i>
-                    Update Delivery Details
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+              <WhatsAppActions order={order} userRole="buyer" />
             </Card.Body>
           </Card>
         </div>
