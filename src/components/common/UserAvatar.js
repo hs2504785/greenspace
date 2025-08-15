@@ -1,32 +1,50 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Image } from 'react-bootstrap';
+import { useState } from "react";
+import { Image } from "react-bootstrap";
 
-export default function UserAvatar({ user, size = 32, className = '' }) {
+export default function UserAvatar({ user, size = 32, className = "" }) {
   const getInitials = (name) => {
-    if (!name) return '?';
-    const parts = name.split(' ');
+    if (!name || !name.trim()) return "?";
+
+    // Clean and split the name, filtering out empty parts
+    const parts = name
+      .trim()
+      .split(/\s+/)
+      .filter((part) => part.length > 0);
+
+    if (parts.length === 0) return "?";
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+
+    // For multiple parts, use first letter of first part and first letter of last part
+    return (
+      parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
+    ).toUpperCase();
   };
 
   const getRandomColor = (name) => {
     const colors = [
-      '#2196F3', // Blue
-      '#4CAF50', // Green
-      '#F44336', // Red
-      '#FFC107', // Amber
-      '#9C27B0', // Purple
-      '#00BCD4', // Cyan
-      '#FF9800', // Orange
-      '#795548', // Brown
+      "#2196F3", // Blue
+      "#4CAF50", // Green
+      "#F44336", // Red
+      "#FFC107", // Amber
+      "#9C27B0", // Purple
+      "#00BCD4", // Cyan
+      "#FF9800", // Orange
+      "#795548", // Brown
+      "#607D8B", // Blue Grey
+      "#E91E63", // Pink
+      "#009688", // Teal
+      "#3F51B5", // Indigo
     ];
-    
-    if (!name) return colors[0];
+
+    if (!name || !name.trim()) return colors[0];
+
+    // Generate hash from cleaned name
+    const cleanName = name.trim().toLowerCase();
     let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    for (let i = 0; i < cleanName.length; i++) {
+      hash = cleanName.charCodeAt(i) + ((hash << 5) - hash);
     }
     return colors[Math.abs(hash) % colors.length];
   };
@@ -37,11 +55,11 @@ export default function UserAvatar({ user, size = 32, className = '' }) {
     return (
       <Image
         src={user.image}
-        alt={user.name || 'User'}
+        alt={user.name || "User"}
         width={size}
         height={size}
         className={`rounded-circle ${className}`}
-        style={{ objectFit: 'cover' }}
+        style={{ objectFit: "cover" }}
         onError={() => setImageError(true)}
       />
     );
@@ -58,10 +76,10 @@ export default function UserAvatar({ user, size = 32, className = '' }) {
         width: size,
         height: size,
         backgroundColor,
-        color: 'white',
+        color: "white",
         fontSize: `${fontSize}px`,
-        fontWeight: '500',
-        textTransform: 'uppercase'
+        fontWeight: "500",
+        textTransform: "uppercase",
       }}
     >
       {initials}

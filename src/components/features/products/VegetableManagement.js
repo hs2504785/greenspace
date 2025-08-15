@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, Button, Table } from 'react-bootstrap';
-import { useSession } from 'next-auth/react';
-import { toast } from 'react-hot-toast';
-import VegetableService from '@/services/VegetableService';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
-import VegetableForm from './VegetableForm';
-import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal';
+import { useState, useEffect } from "react";
+import { Card, Button, Table } from "react-bootstrap";
+import { useSession } from "next-auth/react";
+import { toast } from "react-hot-toast";
+import vegetableService from "@/services/VegetableService";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
+import VegetableForm from "./VegetableForm";
+import DeleteConfirmationModal from "@/components/common/DeleteConfirmationModal";
 
 export default function VegetableManagement() {
   const { data: session } = useSession();
@@ -36,12 +36,12 @@ export default function VegetableManagement() {
   const handleConfirmDelete = async () => {
     setDeleteLoading(true);
     try {
-      await VegetableService.deleteVegetable(selectedVegetable.id);
-      toast.success('Product deleted successfully');
+      await vegetableService.deleteVegetable(selectedVegetable.id);
+      toast.success("Product deleted successfully");
       loadVegetables();
     } catch (error) {
-      console.error('Error deleting product:', error);
-      toast.error('Failed to delete product');
+      console.error("Error deleting product:", error);
+      toast.error("Failed to delete product");
     } finally {
       setDeleteLoading(false);
       setShowDeleteModal(false);
@@ -52,24 +52,24 @@ export default function VegetableManagement() {
   const loadVegetables = async () => {
     try {
       if (!session?.user?.id) {
-        console.warn('No user ID in session');
+        console.warn("No user ID in session");
         setVegetables([]);
         setLoading(false);
         return;
       }
-      
-      console.log('Loading vegetables for user:', {
+
+      console.log("Loading vegetables for user:", {
         id: session.user.id,
-        email: session.user.email
+        email: session.user.email,
       });
 
       // Always use the session user ID
-      const data = await VegetableService.getVegetablesByOwner(session.user.id);
-      console.log('Loaded vegetables:', data);
+      const data = await vegetableService.getVegetablesByOwner(session.user.id);
+      console.log("Loaded vegetables:", data);
       setVegetables(data || []);
     } catch (error) {
-      toast.error('Failed to load products');
-      console.error('Error loading products:', error);
+      toast.error("Failed to load products");
+      console.error("Error loading products:", error);
       setVegetables([]); // Reset vegetables on error
     } finally {
       setLoading(false);
@@ -81,11 +81,11 @@ export default function VegetableManagement() {
       setLoading(false);
       return;
     }
-    
+
     if (session?.user?.id) {
       loadVegetables();
     } else if (session) {
-      console.warn('Session exists but no user ID, session:', session);
+      console.warn("Session exists but no user ID, session:", session);
       setLoading(false);
     }
   }, [session]);
@@ -98,11 +98,7 @@ export default function VegetableManagement() {
     <Card>
       <Card.Header className="d-flex justify-content-between align-items-center">
         <h5 className="mb-0">My Products</h5>
-        <Button
-          variant="success"
-          size="sm"
-          onClick={() => setShowForm(true)}
-        >
+        <Button variant="success" size="sm" onClick={() => setShowForm(true)}>
           <i className="ti-plus me-1"></i>
           Add New Product
         </Button>
@@ -110,7 +106,10 @@ export default function VegetableManagement() {
       <Card.Body>
         {vegetables.length === 0 ? (
           <div className="text-center py-4">
-            <i className="ti-package text-muted" style={{ fontSize: '3rem' }}></i>
+            <i
+              className="ti-package text-muted"
+              style={{ fontSize: "3rem" }}
+            ></i>
             <p className="mt-3 mb-0">No products added yet.</p>
             <Button
               variant="outline-success"

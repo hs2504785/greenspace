@@ -1,55 +1,64 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Modal, Form, Button, Row, Col } from 'react-bootstrap';
-import { useSession } from 'next-auth/react';
-import { toast } from 'react-hot-toast';
-import VegetableService from '@/services/VegetableService';
+import { useState, useEffect } from "react";
+import { Modal, Form, Button, Row, Col } from "react-bootstrap";
+import { useSession } from "next-auth/react";
+import { toast } from "react-hot-toast";
+import vegetableService from "@/services/VegetableService";
 
-const CATEGORIES = ['leafy', 'root', 'fruit', 'exotic', 'seasonal', 'organic'];
-const SOURCE_TYPES = ['farm', 'home garden'];
+const CATEGORIES = ["leafy", "root", "fruit", "exotic", "seasonal", "organic"];
+const SOURCE_TYPES = ["farm", "home garden"];
 
-export default function VegetableForm({ show, onHide, onSuccess, vegetable = null }) {
+export default function VegetableForm({
+  show,
+  onHide,
+  onSuccess,
+  vegetable = null,
+}) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(vegetable?.images?.[0] || '');
-  const [formData, setFormData] = useState(vegetable || {
-    name: '',
-    description: '',
-    price: '',
-    quantity: '',
-    category: 'leafy',
-    source_type: 'farm',
-    location: '',
-    images: []
-  });
+  const [imagePreview, setImagePreview] = useState(
+    vegetable?.images?.[0] || ""
+  );
+  const [formData, setFormData] = useState(
+    vegetable || {
+      name: "",
+      description: "",
+      price: "",
+      quantity: "",
+      category: "leafy",
+      source_type: "farm",
+      location: "",
+      images: [],
+    }
+  );
 
   useEffect(() => {
     if (vegetable) {
       setFormData(vegetable);
-      setImagePreview(vegetable.images?.[0] || '');
+      setImagePreview(vegetable.images?.[0] || "");
     } else {
       setFormData({
-        name: '',
-        description: '',
-        price: '',
-        quantity: '',
-        category: 'leafy',
-        source_type: 'farm',
-        location: '',
-        images: []
+        name: "",
+        description: "",
+        price: "",
+        quantity: "",
+        category: "leafy",
+        source_type: "farm",
+        location: "",
+        images: [],
       });
-      setImagePreview('');
+      setImagePreview("");
       setImageFile(null);
     }
   }, [vegetable]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -71,20 +80,20 @@ export default function VegetableForm({ show, onHide, onSuccess, vegetable = nul
 
     try {
       // Debug session information
-      console.log('Session state:', {
+      console.log("Session state:", {
         isAuthenticated: !!session,
         user: session?.user,
         email: session?.user?.email,
       });
 
-      let imageUrl = '';
+      let imageUrl = "";
       if (imageFile) {
-        imageUrl = await VegetableService.uploadImage(imageFile);
+        imageUrl = await vegetableService.uploadImage(imageFile);
       }
 
       const ownerId = session?.user?.id;
       if (!ownerId) {
-        throw new Error('User ID not found in session. Please log in again.');
+        throw new Error("User ID not found in session. Please log in again.");
       }
 
       // Debug data being sent
@@ -93,40 +102,43 @@ export default function VegetableForm({ show, onHide, onSuccess, vegetable = nul
         price: parseFloat(formData.price),
         quantity: parseInt(formData.quantity),
         owner_id: ownerId,
-        images: imageUrl ? [imageUrl] : formData.images
+        images: imageUrl ? [imageUrl] : formData.images,
       };
 
-      console.log('Session user:', {
+      console.log("Session user:", {
         id: session?.user?.id,
-        email: session?.user?.email
+        email: session?.user?.email,
       });
-      console.log('Submitting vegetable with owner_id:', ownerId);
-      
-      console.log('Submitting vegetable data:', vegetableData);
+      console.log("Submitting vegetable with owner_id:", ownerId);
+
+      console.log("Submitting vegetable data:", vegetableData);
 
       if (vegetable?.id) {
-        const updated = await VegetableService.updateVegetable(vegetable.id, vegetableData);
-        console.log('Update response:', updated);
-        toast.success('Product updated successfully!');
+        const updated = await vegetableService.updateVegetable(
+          vegetable.id,
+          vegetableData
+        );
+        console.log("Update response:", updated);
+        toast.success("Product updated successfully!");
       } else {
-        const created = await VegetableService.createVegetable(vegetableData);
-        console.log('Create response:', created);
-        toast.success('Product added successfully!');
+        const created = await vegetableService.createVegetable(vegetableData);
+        console.log("Create response:", created);
+        toast.success("Product added successfully!");
       }
-      
+
       // Add a small delay before refreshing the list
       setTimeout(() => {
         onSuccess();
         onHide();
       }, 500);
     } catch (error) {
-      console.error('Error saving product:', {
+      console.error("Error saving product:", {
         message: error.message,
         error: error,
         formData: formData,
-        session: session?.user
+        session: session?.user,
       });
-      toast.error(error.message || 'Failed to save product. Please try again.');
+      toast.error(error.message || "Failed to save product. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -135,7 +147,9 @@ export default function VegetableForm({ show, onHide, onSuccess, vegetable = nul
   return (
     <Modal show={show} onHide={onHide} size="lg">
       <Modal.Header closeButton>
-        <Modal.Title>{vegetable ? 'Edit Product' : 'Add New Product'}</Modal.Title>
+        <Modal.Title>
+          {vegetable ? "Edit Product" : "Add New Product"}
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form onSubmit={handleSubmit}>
@@ -162,7 +176,7 @@ export default function VegetableForm({ show, onHide, onSuccess, vegetable = nul
                   onChange={handleInputChange}
                   required
                 >
-                  {CATEGORIES.map(cat => (
+                  {CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat.charAt(0).toUpperCase() + cat.slice(1)}
                     </option>
@@ -223,9 +237,14 @@ export default function VegetableForm({ show, onHide, onSuccess, vegetable = nul
                   onChange={handleInputChange}
                   required
                 >
-                  {SOURCE_TYPES.map(type => (
+                  {SOURCE_TYPES.map((type) => (
                     <option key={type} value={type}>
-                      {type.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                      {type
+                        .split(" ")
+                        .map(
+                          (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                        )
+                        .join(" ")}
                     </option>
                   ))}
                 </Form.Select>
@@ -258,9 +277,9 @@ export default function VegetableForm({ show, onHide, onSuccess, vegetable = nul
                   src={imagePreview}
                   alt="Preview"
                   style={{
-                    maxWidth: '200px',
-                    maxHeight: '200px',
-                    objectFit: 'cover'
+                    maxWidth: "200px",
+                    maxHeight: "200px",
+                    objectFit: "cover",
                   }}
                   className="border rounded"
                 />
@@ -273,12 +292,8 @@ export default function VegetableForm({ show, onHide, onSuccess, vegetable = nul
         <Button variant="secondary" onClick={onHide}>
           Cancel
         </Button>
-        <Button
-          variant="success"
-          onClick={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? 'Saving...' : (vegetable ? 'Update Product' : 'Add Product')}
+        <Button variant="success" onClick={handleSubmit} disabled={loading}>
+          {loading ? "Saving..." : vegetable ? "Update Product" : "Add Product"}
         </Button>
       </Modal.Footer>
     </Modal>

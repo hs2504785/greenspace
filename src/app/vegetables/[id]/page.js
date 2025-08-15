@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState, use } from 'react';
-import VegetableService from '@/services/VegetableService';
-import VegetableDetailsClient from '@/components/features/VegetableDetails';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, use } from "react";
+import vegetableService from "@/services/VegetableService";
+import VegetableDetailsClient from "@/components/features/VegetableDetails";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
+import { useRouter } from "next/navigation";
 
 export default function VegetableDetailsPage({ params }) {
   const [vegetable, setVegetable] = useState(null);
@@ -18,7 +18,7 @@ export default function VegetableDetailsPage({ params }) {
     const loadVegetable = async () => {
       try {
         setLoading(true);
-        const data = await VegetableService.getVegetableById(id);
+        const data = await vegetableService.getVegetableById(id);
         setVegetable(data);
       } catch (err) {
         setError(err.message);
@@ -41,12 +41,9 @@ export default function VegetableDetailsPage({ params }) {
       <div className="container py-5 text-center">
         <h2>Vegetable Not Found</h2>
         <p className="text-muted">
-          {error || 'The vegetable you are looking for does not exist.'}
+          {error || "The vegetable you are looking for does not exist."}
         </p>
-        <button 
-          className="btn btn-primary" 
-          onClick={() => router.push('/')}
-        >
+        <button className="btn btn-primary" onClick={() => router.push("/")}>
           Back to Listings
         </button>
       </div>

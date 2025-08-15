@@ -6,22 +6,31 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
-export default function AdminGuard({ children }) {
-  const { isAdmin, loading } = useUserRole();
+export default function AdminGuard({ children, requiredRole = 'admin' }) {
+  const { isAdmin, isSuperAdmin, loading } = useUserRole();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !isAdmin) {
-      toast.error('Access denied. Admin privileges required.');
-      router.push('/');
+    if (!loading) {
+      if (requiredRole === 'superadmin' && !isSuperAdmin) {
+        toast.error('Access denied. Super admin privileges required.');
+        router.push('/');
+      } else if (requiredRole === 'admin' && !isAdmin) {
+        toast.error('Access denied. Admin privileges required.');
+        router.push('/');
+      }
     }
-  }, [loading, isAdmin, router]);
+  }, [loading, isAdmin, isSuperAdmin, requiredRole, router]);
 
   if (loading) {
     return <LoadingSpinner />;
   }
 
-  if (!isAdmin) {
+  if (requiredRole === 'superadmin' && !isSuperAdmin) {
+    return null;
+  }
+
+  if (requiredRole === 'admin' && !isAdmin) {
     return null;
   }
 

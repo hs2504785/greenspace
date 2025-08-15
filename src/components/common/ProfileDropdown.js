@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Dropdown } from 'react-bootstrap';
-import Link from 'next/link';
+import React from "react";
+import { Dropdown } from "react-bootstrap";
+import Link from "next/link";
 import { signOut } from "next-auth/react";
-import UserAvatar from './UserAvatar';
-import { useUserRole } from '@/hooks/useUserRole';
+import UserAvatar from "./UserAvatar";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
   <div
@@ -14,27 +14,28 @@ const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
       e.preventDefault();
       onClick(e);
     }}
-    style={{ cursor: 'pointer' }}
+    style={{ cursor: "pointer" }}
     className="d-flex align-items-center gap-2"
   >
     {children}
   </div>
 ));
 
-CustomToggle.displayName = 'CustomToggle';
+CustomToggle.displayName = "CustomToggle";
 
 export default function ProfileDropdown({ user }) {
-  const { isSeller, isAdmin, loading } = useUserRole();
+  const { isSeller, isAdmin, isSuperAdmin, loading } = useUserRole();
   return (
     <Dropdown align="end">
       <Dropdown.Toggle as={CustomToggle}>
-        <UserAvatar 
-          user={user} 
-          size={36}
-        />
-        <div className="d-flex flex-column me-1" style={{ lineHeight: '1.2' }}>
-          <small className="text-muted" style={{ fontSize: '0.75rem' }}>Welcome,</small>
-          <strong style={{ fontSize: '0.95rem' }}>{user?.name?.split(' ')[0]}</strong>
+        <UserAvatar user={user} size={36} />
+        <div className="d-flex flex-column me-1" style={{ lineHeight: "1.2" }}>
+          <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+            Welcome,
+          </small>
+          <strong style={{ fontSize: "0.95rem" }}>
+            {user?.name?.split(" ")[0]}
+          </strong>
         </div>
       </Dropdown.Toggle>
 
@@ -62,6 +63,11 @@ export default function ProfileDropdown({ user }) {
               <i className="ti ti-user me-2"></i>
               Seller Requests
             </Dropdown.Item>
+          </>
+        )}
+        {isSuperAdmin && (
+          <>
+            <Dropdown.Divider />
             <Dropdown.Item as={Link} href="/admin/users">
               <i className="ti ti-users me-2"></i>
               Manage Users
@@ -69,10 +75,7 @@ export default function ProfileDropdown({ user }) {
           </>
         )}
         <Dropdown.Divider />
-        <Dropdown.Item 
-          onClick={() => signOut()}
-          className="text-danger"
-        >
+        <Dropdown.Item onClick={() => signOut()} className="text-danger">
           <i className="ti ti-power-off me-2"></i>
           Sign out
         </Dropdown.Item>

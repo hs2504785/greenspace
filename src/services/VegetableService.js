@@ -278,6 +278,48 @@ class VegetableService extends ApiBaseService {
       throw error;
     }
   }
+
+  async getCategories() {
+    try {
+      if (!supabase) throw new Error("Supabase not initialized");
+      const { data, error } = await supabase
+        .from(this.tableName)
+        .select("category")
+        .not("category", "is", null);
+
+      if (error) throw error;
+
+      // Get unique categories and filter out null/empty values
+      const uniqueCategories = [
+        ...new Set(data.map((item) => item.category)),
+      ].filter(Boolean);
+      return uniqueCategories;
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      return [];
+    }
+  }
+
+  async getLocations() {
+    try {
+      if (!supabase) throw new Error("Supabase not initialized");
+      const { data, error } = await supabase
+        .from(this.tableName)
+        .select("location")
+        .not("location", "is", null);
+
+      if (error) throw error;
+
+      // Get unique locations and filter out null/empty values
+      const uniqueLocations = [
+        ...new Set(data.map((item) => item.location)),
+      ].filter(Boolean);
+      return uniqueLocations;
+    } catch (error) {
+      console.error("Error fetching locations:", error);
+      return [];
+    }
+  }
 }
 
 export default new VegetableService();
