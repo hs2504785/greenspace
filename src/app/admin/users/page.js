@@ -10,11 +10,11 @@ import {
   Table,
   Modal,
   Form,
-  Alert,
   Badge,
 } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 import AdminGuard from "@/components/common/AdminGuard";
 import UserAvatar from "@/components/common/UserAvatar";
@@ -35,8 +35,6 @@ export default function UsersManagement() {
     whatsapp_number: "",
     location: "",
   });
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [submitting, setSubmitting] = useState(false);
@@ -64,7 +62,7 @@ export default function UsersManagement() {
       setUsers(data || []);
     } catch (error) {
       console.error("Error fetching users:", error);
-      setError("Failed to fetch users");
+      toast.error("Failed to fetch users");
     } finally {
       setLoading(false);
     }
@@ -72,19 +70,17 @@ export default function UsersManagement() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
     setSubmitting(true);
 
     // Basic validation
     if (!formData.name.trim()) {
-      setError("Name is required");
+      toast.error("Name is required");
       setSubmitting(false);
       return;
     }
 
     if (!formData.email.trim()) {
-      setError("Email is required");
+      toast.error("Email is required");
       setSubmitting(false);
       return;
     }
@@ -95,7 +91,7 @@ export default function UsersManagement() {
         (user) => user.email.toLowerCase() === formData.email.toLowerCase()
       );
       if (existingUser) {
-        setError("A user with this email already exists");
+        toast.error("A user with this email already exists");
         setSubmitting(false);
         return;
       }
@@ -117,7 +113,7 @@ export default function UsersManagement() {
           throw new Error(errorData.error || "Failed to update user");
         }
 
-        setSuccess("User updated successfully");
+        toast.success("User updated successfully");
       } else {
         // Create new user
         const response = await fetch("/api/admin/users", {
@@ -133,7 +129,7 @@ export default function UsersManagement() {
           throw new Error(errorData.error || "Failed to create user");
         }
 
-        setSuccess("User created successfully");
+        toast.success("User created successfully");
       }
 
       setShowModal(false);
@@ -141,7 +137,7 @@ export default function UsersManagement() {
       fetchUsers();
     } catch (error) {
       console.error("Error saving user:", error);
-      setError(error.message || "Failed to save user");
+      toast.error(error.message || "Failed to save user");
     } finally {
       setSubmitting(false);
     }
@@ -165,11 +161,11 @@ export default function UsersManagement() {
         throw new Error(errorData.error || "Failed to delete user");
       }
 
-      setSuccess(`User "${userToDelete.name}" deleted successfully`);
+      toast.success(`User "${userToDelete.name}" deleted successfully`);
       fetchUsers();
     } catch (error) {
       console.error("Error deleting user:", error);
-      setError(error.message || "Failed to delete user");
+      toast.error(error.message || "Failed to delete user");
     }
   };
 
@@ -268,18 +264,6 @@ export default function UsersManagement() {
           </Col>
         </Row>
 
-        {error && (
-          <Alert variant="danger" dismissible onClose={() => setError("")}>
-            {error}
-          </Alert>
-        )}
-
-        {success && (
-          <Alert variant="success" dismissible onClose={() => setSuccess("")}>
-            {success}
-          </Alert>
-        )}
-
         <Card>
           <Card.Body>
             {/* Search and Filter Controls */}
@@ -359,17 +343,18 @@ export default function UsersManagement() {
                         <td>{getRoleBadge(user.role)}</td>
                         <td>
                           <div>
-                            {user.phone && (
-                              <div>
-                                <i className="ti ti-phone me-1"></i>
-                                {user.phone}
-                              </div>
-                            )}
-                            {user.whatsapp_number && (
+                            {user.whatsapp_number ? (
                               <div>
                                 <i className="ti ti-brand-whatsapp me-1 text-success"></i>
                                 {user.whatsapp_number}
                               </div>
+                            ) : user.phone ? (
+                              <div>
+                                <i className="ti ti-phone me-1"></i>
+                                {user.phone}
+                              </div>
+                            ) : (
+                              <span className="text-muted">Not provided</span>
                             )}
                           </div>
                         </td>
