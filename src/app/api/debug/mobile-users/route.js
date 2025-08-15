@@ -4,10 +4,30 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Create Supabase client only if environment variables are available
+let supabase = null;
+if (supabaseUrl && supabaseServiceKey) {
+  supabase = createClient(supabaseUrl, supabaseServiceKey);
+}
 
 export async function GET(request) {
   try {
+    // Check if Supabase is properly configured
+    if (!supabase) {
+      return new Response(
+        JSON.stringify({
+          error: "Supabase configuration is missing",
+          details:
+            "Please ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Get all mobile users
     const { data: mobileUsers, error } = await supabase
       .from("users")

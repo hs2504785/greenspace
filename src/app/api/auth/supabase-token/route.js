@@ -1,7 +1,7 @@
-import { getServerSession } from 'next-auth/next';
-import { NextResponse } from 'next/server';
-import { SignJWT } from 'jose';
-import { authOptions } from '../[...nextauth]/route';
+import { getServerSession } from "next-auth/next";
+import { NextResponse } from "next/server";
+import { SignJWT } from "jose";
+import { authOptions } from "../options";
 
 const secret = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET);
 
@@ -10,7 +10,7 @@ export async function POST(request) {
     // Verify the user is authenticated
     const session = await getServerSession(authOptions);
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -18,24 +18,26 @@ export async function POST(request) {
 
     // Verify the user ID matches the session
     if (userId !== session.user.id) {
-      return NextResponse.json({ error: 'Invalid user ID' }, { status: 403 });
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 403 });
     }
 
     // Create JWT token for Supabase
     const token = await new SignJWT({
-      role: 'authenticated',
+      role: "authenticated",
       sub: userId,
-      aud: 'authenticated'
+      aud: "authenticated",
     })
-      .setProtectedHeader({ alg: 'HS256' })
+      .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setExpirationTime('1h')
+      .setExpirationTime("1h")
       .sign(secret);
 
     return NextResponse.json({ token });
   } catch (error) {
-    console.error('Error generating Supabase token:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Error generating Supabase token:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
-

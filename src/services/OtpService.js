@@ -1,11 +1,16 @@
 import { createClient } from "@supabase/supabase-js";
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Create Supabase client only if environment variables are available
+let supabase = null;
+if (supabaseUrl && supabaseServiceKey) {
+  supabase = createClient(supabaseUrl, supabaseServiceKey);
+}
 
 class OtpService {
   constructor() {
@@ -60,6 +65,10 @@ class OtpService {
   // Store OTP in database
   async storeOtp(phoneNumber, otp) {
     try {
+      if (!supabase) {
+        throw new Error("Database connection not available");
+      }
+
       const validatedPhone = this.validatePhoneNumber(phoneNumber);
       if (!validatedPhone) {
         throw new Error("Invalid phone number format");
@@ -149,6 +158,10 @@ class OtpService {
   // Verify OTP
   async verifyOtp(phoneNumber, otpCode) {
     try {
+      if (!supabase) {
+        throw new Error("Database connection not available");
+      }
+
       const validatedPhone = this.validatePhoneNumber(phoneNumber);
       if (!validatedPhone) {
         throw new Error("Invalid phone number format");
