@@ -342,13 +342,13 @@ export default function UsersManagement() {
                       <tr key={user.id} className="align-middle">
                         <td>
                           <div className="d-flex align-items-center">
-                            <UserAvatar 
-                              user={{ 
-                                name: user.name, 
-                                image: user.avatar_url 
-                              }} 
-                              size={40} 
-                              className="me-3" 
+                            <UserAvatar
+                              user={{
+                                name: user.name,
+                                image: user.avatar_url,
+                              }}
+                              size={40}
+                              className="me-3"
                             />
                             <div>
                               <div className="fw-bold">{user.name}</div>
