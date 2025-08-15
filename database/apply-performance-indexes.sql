@@ -1,4 +1,4 @@
--- Apply Performance Indexes to GreenSpace Database
+-- Apply Performance Indexes to Arya Natural Farms Database
 -- Run this script to improve database query performance
 
 \echo 'Applying performance indexes to improve query speed...'

@@ -12,7 +12,7 @@ const geistSans = Geist({
 });
 
 export const metadata = {
-  title: "GreenSpace - Fresh Local Vegetables",
+  title: "Arya Natural Farms - Fresh Local Vegetables",
   description:
     "Connect with local vegetable producers and buy fresh produce directly from farms and home gardens",
 };

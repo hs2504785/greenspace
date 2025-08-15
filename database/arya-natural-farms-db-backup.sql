@@ -1,5 +1,5 @@
 -- ===================================================
--- GREENSPACE DATABASE BACKUP - COMPLETE SCHEMA
+-- ARYA NATURAL FARMS DATABASE BACKUP - COMPLETE SCHEMA
 -- ===================================================
 -- Generated on: August 14, 2025
 -- Status: Working production state
@@ -174,7 +174,7 @@ ORDER BY table_name;
 -- ===================================================
 -- BACKUP COMPLETED
 -- ===================================================
--- This backup represents the current working state of the greenspace database.
+-- This backup represents the current working state of the Arya Natural Farms database.
 -- 
 -- Key features of this backup:
 -- ✅ Complete table schemas with all columns

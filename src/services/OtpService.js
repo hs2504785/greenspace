@@ -123,7 +123,7 @@ class OtpService {
       // Send via Twilio in production
       if (this.twilioClient) {
         const message = await this.twilioClient.messages.create({
-          body: `Your GreenSpace verification code is: ${otp}. This code will expire in 5 minutes.`,
+          body: `Your Arya Natural Farms verification code is: ${otp}. This code will expire in 5 minutes.`,
           from: process.env.TWILIO_PHONE_NUMBER,
           to: formattedPhone,
         });

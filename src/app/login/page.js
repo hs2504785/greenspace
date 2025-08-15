@@ -51,7 +51,7 @@ export default function LoginPage() {
         <Col md={6} lg={5}>
           <Card className="shadow-sm border-0">
             <Card.Header className="bg-light text-center">
-              <h2 className="mb-3">Welcome to GreenSpace</h2>
+              <h2 className="mb-3">Welcome to Arya Natural Farms</h2>
               <p className="text-muted mb-0">
                 Choose your preferred sign-in method
               </p>

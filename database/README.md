@@ -2,7 +2,7 @@
 
 ## 📁 Overview
 
-This directory contains all SQL files and database utilities for the **Greenspace** application - a natural farming marketplace platform. The backup system ensures you can easily restore, maintain, and manage your Supabase database.
+This directory contains all SQL files and database utilities for the **Arya Natural Farms** application - a natural farming marketplace platform. The backup system ensures you can easily restore, maintain, and manage your Supabase database.
 
 ---
 
@@ -10,11 +10,11 @@ This directory contains all SQL files and database utilities for the **Greenspac
 
 ### 💾 **BACKUP FILES** (Core backup system)
 
-| File                           | Purpose                                          | When to Use                   |
-| ------------------------------ | ------------------------------------------------ | ----------------------------- |
-| **`greenspace-db-backup.sql`** | 🎯 **MAIN BACKUP FILE** - Complete schema backup | **Restore entire database**   |
-| `create-db-backup.sql`         | Backup generator script                          | **Generate new backups**      |
-| `verify-db-state.sql`          | Database health checker                          | **Verify database integrity** |
+| File                                   | Purpose                                          | When to Use                   |
+| -------------------------------------- | ------------------------------------------------ | ----------------------------- |
+| **`arya-natural-farms-db-backup.sql`** | 🎯 **MAIN BACKUP FILE** - Complete schema backup | **Restore entire database**   |
+| `create-db-backup.sql`                 | Backup generator script                          | **Generate new backups**      |
+| `verify-db-state.sql`                  | Database health checker                          | **Verify database integrity** |
 
 ### 🔧 **UTILITY FILES** (Administration & maintenance)
 
@@ -42,7 +42,7 @@ This directory contains all SQL files and database utilities for the **Greenspac
 
    ```sql
    -- Copy and paste the entire contents of:
-   -- greenspace-db-backup.sql
+   -- arya-natural-farms-db-backup.sql
    ```
 
 3. **Verify Restoration**
@@ -191,7 +191,7 @@ Copy the output to create a new timestamped backup file.
 2. **Full Recovery:**
 
    ```sql
-   -- Run: greenspace-db-backup.sql
+   -- Run: arya-natural-farms-db-backup.sql
    -- This will recreate all tables and structure
    ```
 
@@ -246,7 +246,7 @@ Copy the output to create a new timestamped backup file.
 1. **Verify Database:** Run `verify-db-state.sql`
 2. **Check Logs:** Review Supabase logs in dashboard
 3. **Test Connection:** Use your app's test-connection API
-4. **Emergency Restore:** Use `greenspace-db-backup.sql`
+4. **Emergency Restore:** Use `arya-natural-farms-db-backup.sql`
 
 ---
 

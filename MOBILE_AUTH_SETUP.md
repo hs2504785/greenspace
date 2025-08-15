@@ -1,6 +1,6 @@
 # Mobile Number Authentication Setup Guide
 
-This document provides step-by-step instructions for setting up and testing the mobile number authentication feature in GreenSpace.
+This document provides step-by-step instructions for setting up and testing the mobile number authentication feature in Arya Natural Farms.
 
 ## Features Added
 

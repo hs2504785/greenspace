@@ -2,7 +2,7 @@
 -- SUPABASE DATABASE BACKUP GENERATOR
 -- ===================================================
 -- This script generates a complete backup of the current database schema,
--- policies, and structure (without data) for the greenspace application.
+-- policies, and structure (without data) for the Arya Natural Farms application.
 -- 
 -- Run this in Supabase SQL Editor to generate backup statements.
 -- Date: August 14, 2025

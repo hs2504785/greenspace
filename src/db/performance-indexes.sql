@@ -1,4 +1,4 @@
--- Performance Indexes for GreenSpace Database
+-- Performance Indexes for Arya Natural Farms Database
 -- These indexes will significantly improve query performance
 
 -- Users table indexes

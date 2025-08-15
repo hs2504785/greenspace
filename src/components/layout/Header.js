@@ -18,7 +18,7 @@ export default function Header() {
             src="/images/logo.svg"
             width="60"
             className="d-inline-block align-top me-2"
-            alt="GreenSpace Logo"
+            alt="Arya Natural Farms Logo"
           />
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
