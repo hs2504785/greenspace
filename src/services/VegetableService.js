@@ -121,6 +121,18 @@ class VegetableService extends ApiBaseService {
         throw new Error(`Missing required fields: ${missingFields.join(", ")}`);
       }
 
+      // Additional validation
+      if (typeof vegetableData.price !== "number" || vegetableData.price <= 0) {
+        throw new Error("Price must be a positive number");
+      }
+
+      if (
+        typeof vegetableData.quantity !== "number" ||
+        vegetableData.quantity <= 0
+      ) {
+        throw new Error("Quantity must be a positive number");
+      }
+
       // Log the request
       console.log("Creating vegetable with data:", {
         ...vegetableData,
@@ -164,9 +176,14 @@ class VegetableService extends ApiBaseService {
       return data[0];
     } catch (error) {
       console.error("Error creating vegetable:", {
-        error,
-        vegetableData,
+        message: error.message,
+        name: error.name,
         stack: error.stack,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        errorObject: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+        vegetableData,
       });
       throw error;
     }

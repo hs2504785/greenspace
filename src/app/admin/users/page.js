@@ -18,6 +18,8 @@ import { toast } from "react-hot-toast";
 
 import AdminGuard from "@/components/common/AdminGuard";
 import UserAvatar from "@/components/common/UserAvatar";
+import SearchInput from "@/components/common/SearchInput";
+import DeleteConfirmationModal from "@/components/common/DeleteConfirmationModal";
 
 export default function UsersManagement() {
   const { data: session } = useSession();
@@ -38,6 +40,9 @@ export default function UsersManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [submitting, setSubmitting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     if (session) {
@@ -143,16 +148,20 @@ export default function UsersManagement() {
     }
   };
 
-  const handleDelete = async (userId) => {
+  const handleDelete = (userId) => {
     const userToDelete = users.find((u) => u.id === userId);
     if (!userToDelete) return;
 
-    const confirmMessage = `Are you sure you want to delete "${userToDelete.name}" (${userToDelete.email})? This action cannot be undone.`;
+    setSelectedUser(userToDelete);
+    setShowDeleteModal(true);
+  };
 
-    if (!confirm(confirmMessage)) return;
+  const handleConfirmDelete = async () => {
+    if (!selectedUser) return;
 
+    setDeleteLoading(true);
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
+      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
         method: "DELETE",
       });
 
@@ -161,11 +170,15 @@ export default function UsersManagement() {
         throw new Error(errorData.error || "Failed to delete user");
       }
 
-      toast.success(`User "${userToDelete.name}" deleted successfully`);
+      toast.success(`User "${selectedUser.name}" deleted successfully`);
       fetchUsers();
     } catch (error) {
       console.error("Error deleting user:", error);
       toast.error(error.message || "Failed to delete user");
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteModal(false);
+      setSelectedUser(null);
     }
   };
 
@@ -271,11 +284,11 @@ export default function UsersManagement() {
               <Col md={6}>
                 <Form.Group>
                   <Form.Label>Search Users</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Search by name or email..."
+                  <SearchInput
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    onClear={() => setSearchTerm("")}
+                    placeholder="Search by name or email..."
                   />
                 </Form.Group>
               </Col>
@@ -576,6 +589,16 @@ export default function UsersManagement() {
             </Modal.Footer>
           </Form>
         </Modal>
+
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmationModal
+          show={showDeleteModal}
+          onHide={() => setShowDeleteModal(false)}
+          onConfirm={handleConfirmDelete}
+          title="Delete User"
+          message={`Are you sure you want to delete "${selectedUser?.name}" (${selectedUser?.email})? This action cannot be undone.`}
+          loading={deleteLoading}
+        />
       </Container>
     </AdminGuard>
   );

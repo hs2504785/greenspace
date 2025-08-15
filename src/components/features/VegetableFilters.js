@@ -1,9 +1,10 @@
 "use client";
 
-import { Form, InputGroup, Row, Col } from "react-bootstrap";
+import { Form, InputGroup } from "react-bootstrap";
 import { useCallback, useEffect, useState, useMemo, memo } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import VegetableService from "@/services/VegetableService";
+import SearchInput from "@/components/common/SearchInput";
 import { supabase } from "@/lib/supabase";
 
 const defaultCategories = [
@@ -64,6 +65,10 @@ const VegetableFilters = memo(function VegetableFilters({
     setSearchValue(e.target.value);
   }, []);
 
+  const handleSearchClear = useCallback(() => {
+    setSearchValue("");
+  }, []);
+
   const handleCategoryChange = useCallback(
     (e) => {
       onFilterChange({ category: e.target.value, page: 1 });
@@ -82,18 +87,13 @@ const VegetableFilters = memo(function VegetableFilters({
   return (
     <div className="d-flex align-items-center gap-3">
       <div className="d-flex gap-2 flex-grow-1">
-        <InputGroup>
-          <InputGroup.Text className="bg-white border-end-0">
-            <span className="ti-search text-muted"></span>
-          </InputGroup.Text>
-          <Form.Control
-            type="text"
-            placeholder="Search vegetables..."
-            value={searchValue}
-            onChange={handleSearchChange}
-            className="border-start-0 ps-0"
-          />
-        </InputGroup>
+        <SearchInput
+          value={searchValue}
+          onChange={handleSearchChange}
+          onClear={handleSearchClear}
+          placeholder="Search vegetables..."
+          className="flex-grow-1"
+        />
 
         <Form.Select
           value={category}
