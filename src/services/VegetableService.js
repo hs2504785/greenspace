@@ -56,16 +56,34 @@ class VegetableService extends ApiBaseService {
       const { data, error } = await supabase
         .from(this.tableName)
         .select(
-          "*, owner:users(id, name, email, phone, whatsapp, location, avatar_url)"
+          "*, owner:users(id, name, email, phone, whatsapp_number, location, avatar_url)"
         )
         .eq("id", id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+          fullError: error,
+        });
+        throw new Error(error.message || "Failed to fetch vegetable");
+      }
+
+      if (!data) {
+        throw new Error("Vegetable not found");
+      }
+
       return data;
     } catch (error) {
-      console.error("Error fetching vegetable:", error);
-      return null;
+      console.error("Error fetching vegetable:", {
+        message: error.message,
+        stack: error.stack,
+        fullError: error,
+      });
+      throw error; // Re-throw error instead of returning null
     }
   }
 

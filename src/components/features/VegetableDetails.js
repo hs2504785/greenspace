@@ -115,7 +115,7 @@ export default function VegetableDetails({ vegetable }) {
         </Col>
 
         <Col lg={6}>
-          <div className="sticky-lg-top" style={{ top: "2rem" }}>
+          <div className="sticky-lg-top">
             {/* Title and Price */}
             <div className="d-flex justify-content-between align-items-start mb-3">
               <h1 className="mb-0 fw-bold">{vegetable.name}</h1>

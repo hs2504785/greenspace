@@ -9,3 +9,16 @@
   flex: 1;
   position: relative;
 }
+
+// Ensure sticky elements don't overlap with header
+.sticky-top,
+.sticky-lg-top {
+  z-index: 100 !important; // Lower than header but above regular content
+}
+
+// Add proper spacing for sticky elements to account for header
+@media (min-width: 992px) {
+  .sticky-lg-top {
+    top: 6rem !important; // Account for header height + padding
+  }
+}
