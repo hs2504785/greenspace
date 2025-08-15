@@ -8,6 +8,32 @@ import vegetableService from "@/services/VegetableService";
 
 const CATEGORIES = ["leafy", "root", "fruit", "exotic", "seasonal", "organic"];
 const SOURCE_TYPES = ["farm", "home garden"];
+const UNIT_TYPES = [
+  {
+    value: "kg",
+    label: "Kilogram (kg)",
+    priceLabel: "₹/kg",
+    quantityLabel: "kg",
+  },
+  {
+    value: "pieces",
+    label: "Pieces",
+    priceLabel: "₹/piece",
+    quantityLabel: "pieces",
+  },
+  {
+    value: "bundles",
+    label: "Bundles",
+    priceLabel: "₹/bundle",
+    quantityLabel: "bundles",
+  },
+  {
+    value: "grams",
+    label: "Grams",
+    priceLabel: "₹/100g",
+    quantityLabel: "grams",
+  },
+];
 
 export default function VegetableForm({
   show,
@@ -29,6 +55,7 @@ export default function VegetableForm({
       quantity: "",
       category: "leafy",
       source_type: "farm",
+      unit: "kg",
       location: "",
       images: [],
     }
@@ -46,6 +73,7 @@ export default function VegetableForm({
         quantity: "",
         category: "leafy",
         source_type: "farm",
+        unit: "kg",
         location: "",
         images: [],
       });
@@ -74,11 +102,32 @@ export default function VegetableForm({
     }
   };
 
+  // Helper function to get current unit type information
+  const getCurrentUnitType = () => {
+    return (
+      UNIT_TYPES.find((unit) => unit.value === formData.unit) || UNIT_TYPES[0]
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Additional client-side validation
+      if (!formData.name || formData.name.trim() === "") {
+        throw new Error("Product name is required.");
+      }
+      if (!formData.location || formData.location.trim() === "") {
+        throw new Error("Location is required. Please enter a location.");
+      }
+      if (!formData.price || formData.price === "") {
+        throw new Error("Price is required. Enter 0 for free items.");
+      }
+      if (!formData.quantity || formData.quantity === "") {
+        throw new Error("Quantity is required.");
+      }
+
       // Debug session information
       console.log("Session state:", {
         isAuthenticated: !!session,
@@ -156,14 +205,16 @@ export default function VegetableForm({
           <Row>
             <Col md={8}>
               <Form.Group className="mb-3">
-                <Form.Label>Name</Form.Label>
+                <Form.Label>
+                  Product Name <span className="text-danger">*</span>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  placeholder="Enter product name"
+                  placeholder="Enter product name (e.g., Marigold Sapling, Tomatoes)"
                 />
               </Form.Group>
             </Col>
@@ -199,9 +250,12 @@ export default function VegetableForm({
           </Form.Group>
 
           <Row>
-            <Col md={4}>
+            <Col md={3}>
               <Form.Group className="mb-3">
-                <Form.Label>Price (₹/kg)</Form.Label>
+                <Form.Label>
+                  Price ({getCurrentUnitType().priceLabel}){" "}
+                  <span className="text-danger">*</span>
+                </Form.Label>
                 <Form.Control
                   type="number"
                   name="price"
@@ -210,13 +264,22 @@ export default function VegetableForm({
                   required
                   min="0"
                   step="0.01"
-                  placeholder="Enter price per kg"
+                  placeholder={`Enter price per ${getCurrentUnitType().quantityLabel.slice(
+                    0,
+                    -1
+                  )}`}
                 />
+                <Form.Text className="text-muted">
+                  Enter 0 for free items
+                </Form.Text>
               </Form.Group>
             </Col>
-            <Col md={4}>
+            <Col md={3}>
               <Form.Group className="mb-3">
-                <Form.Label>Quantity (kg)</Form.Label>
+                <Form.Label>
+                  Quantity ({getCurrentUnitType().quantityLabel}){" "}
+                  <span className="text-danger">*</span>
+                </Form.Label>
                 <Form.Control
                   type="number"
                   name="quantity"
@@ -224,11 +287,30 @@ export default function VegetableForm({
                   onChange={handleInputChange}
                   required
                   min="0"
-                  placeholder="Enter quantity in kg"
+                  placeholder={`Enter quantity in ${
+                    getCurrentUnitType().quantityLabel
+                  }`}
                 />
               </Form.Group>
             </Col>
-            <Col md={4}>
+            <Col md={3}>
+              <Form.Group className="mb-3">
+                <Form.Label>Unit</Form.Label>
+                <Form.Select
+                  name="unit"
+                  value={formData.unit}
+                  onChange={handleInputChange}
+                  required
+                >
+                  {UNIT_TYPES.map((unit) => (
+                    <option key={unit.value} value={unit.value}>
+                      {unit.label}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={3}>
               <Form.Group className="mb-3">
                 <Form.Label>Source Type</Form.Label>
                 <Form.Select
@@ -253,15 +335,20 @@ export default function VegetableForm({
           </Row>
 
           <Form.Group className="mb-3">
-            <Form.Label>Location</Form.Label>
+            <Form.Label>
+              Location <span className="text-danger">*</span>
+            </Form.Label>
             <Form.Control
               type="text"
               name="location"
               value={formData.location}
               onChange={handleInputChange}
               required
-              placeholder="Enter location"
+              placeholder="Enter your location (e.g., Bangalore, Sector 15, or Village Name)"
             />
+            <Form.Text className="text-muted">
+              Specify where the product is available for pickup/delivery
+            </Form.Text>
           </Form.Group>
 
           <Form.Group className="mb-3">

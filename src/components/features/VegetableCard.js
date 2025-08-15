@@ -6,6 +6,9 @@ import Link from "next/link";
 import { useState } from "react";
 import ImagePlaceholder from "../common/ImagePlaceholder";
 import { useCart } from "@/context/CartContext";
+import { useSession } from "next-auth/react";
+import { checkCartForSimilarFreeItems } from "@/utils/freeItemValidation";
+import toast from "react-hot-toast";
 
 export default function VegetableCard({
   id,
@@ -20,6 +23,7 @@ export default function VegetableCard({
 }) {
   const [imageError, setImageError] = useState(false);
   const { addToCart, items, updateQuantity, removeFromCart } = useCart();
+  const { data: session } = useSession();
   const imageUrl = images?.[0] || "";
 
   // Check if item is free (price = 0)
@@ -29,12 +33,23 @@ export default function VegetableCard({
   const cartItem = items.find((item) => item.id === id);
   const [itemQuantity, setItemQuantity] = useState(cartItem?.quantity || 1);
 
+  // For free items, check if there are similar items in cart
+  const similarFreeItemCheck = isFree
+    ? checkCartForSimilarFreeItems(items, name)
+    : { hasConflict: false };
+  const hasSimilarFreeItemInCart =
+    similarFreeItemCheck.hasConflict &&
+    similarFreeItemCheck.conflictingItem.id !== id;
+
   const isOutOfStock = !quantity || quantity <= 0;
   const maxQuantity = unit === "kg" ? quantity : Math.floor(quantity);
 
+  // Use the actual available quantity for both free and paid items
+  const effectiveMaxQuantity = maxQuantity;
+
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value, 10);
-    if (!isNaN(value) && value >= 1 && value <= maxQuantity) {
+    if (!isNaN(value) && value >= 1 && value <= effectiveMaxQuantity) {
       setItemQuantity(value);
     }
   };
@@ -43,7 +58,7 @@ export default function VegetableCard({
     if (newQuantity === 0) {
       removeFromCart(id);
       setItemQuantity(1); // Reset to 1 for next time
-    } else if (newQuantity <= maxQuantity) {
+    } else if (newQuantity <= effectiveMaxQuantity) {
       setItemQuantity(newQuantity);
       if (cartItem) {
         updateQuantity(id, newQuantity);
@@ -51,23 +66,49 @@ export default function VegetableCard({
     }
   };
 
-  const handleAddToCart = (e) => {
+  // Check if increment button should be disabled (only when reaching available quantity)
+  const isIncrementDisabled = cartItem && itemQuantity >= effectiveMaxQuantity;
+
+  // Check if add button should be disabled
+  const isAddButtonDisabled = isFree && hasSimilarFreeItemInCart;
+
+  const handleAddToCart = async (e) => {
     e.preventDefault(); // Prevent link navigation
     if (!cartItem) {
-      addToCart({
-        id,
-        name,
-        price,
-        quantity: 1,
-        unit,
-        image: imageUrl,
-        owner: {
-          id: owner?.id || owner_id,
-          name: owner?.name || "Seller",
-          location: owner?.location || location,
-          whatsapp_number: owner?.whatsapp_number,
-        },
-      });
+      try {
+        const result = await addToCart(
+          {
+            id,
+            name,
+            price,
+            quantity: 1,
+            unit,
+            availableQuantity: maxQuantity,
+            image: imageUrl,
+            owner: {
+              id: owner?.id || owner_id,
+              name: owner?.name || "Seller",
+              location: owner?.location || location,
+              whatsapp_number: owner?.whatsapp_number,
+            },
+          },
+          1,
+          session?.user?.id
+        );
+
+        if (result.success) {
+          toast.success(`Added ${name} to cart!`, {
+            icon: isFree ? "🎁" : "🛒",
+          });
+        } else if (result.error) {
+          toast.error(result.error, {
+            duration: 5000,
+          });
+        }
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+        toast.error("Failed to add item to cart. Please try again.");
+      }
     }
   };
 
@@ -130,7 +171,17 @@ export default function VegetableCard({
         </div>
 
         <div className="text-muted mb-2" style={{ fontSize: "0.85rem" }}>
-          {maxQuantity} {unit} • {unit === "kg" ? "500 g" : "1 Pc"}
+          {maxQuantity} {unit} available
+          {!isFree && (
+            <span>
+              {" • "}
+              {unit === "kg"
+                ? "Min 500g"
+                : unit === "grams"
+                ? "Min 100g"
+                : "Min 1 piece"}
+            </span>
+          )}
         </div>
 
         <div>
@@ -157,10 +208,18 @@ export default function VegetableCard({
                 <Button
                   variant="white"
                   className="border-0 px-3"
+                  disabled={isIncrementDisabled}
                   onClick={(e) => {
                     e.preventDefault();
-                    handleQuantityUpdate(itemQuantity + 1);
+                    if (!isIncrementDisabled) {
+                      handleQuantityUpdate(itemQuantity + 1);
+                    }
                   }}
+                  title={
+                    isIncrementDisabled
+                      ? "Maximum available quantity reached"
+                      : "Increase quantity"
+                  }
                 >
                   +
                 </Button>
@@ -169,10 +228,23 @@ export default function VegetableCard({
           ) : (
             <Button
               className="w-100 rounded-pill text-white border-0"
-              style={{ backgroundColor: "#44b700" }}
+              style={{
+                backgroundColor: isAddButtonDisabled ? "#6c757d" : "#44b700",
+                cursor: isAddButtonDisabled ? "not-allowed" : "pointer",
+              }}
+              disabled={isAddButtonDisabled}
               onClick={handleAddToCart}
+              title={
+                isAddButtonDisabled
+                  ? `You already have a similar free item (${similarFreeItemCheck.conflictingItem?.name}) in your cart`
+                  : undefined
+              }
             >
-              {isFree ? "🎁 Claim Free" : "Add"}
+              {isAddButtonDisabled
+                ? "🚫 Similar item in cart"
+                : isFree
+                ? "🎁 Claim Free"
+                : "Add"}
             </Button>
           )}
         </div>

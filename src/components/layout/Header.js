@@ -31,7 +31,7 @@ export default function Header() {
               href="/?showFreeOnly=true"
               className="text-success fw-semibold"
             >
-              🎁 Free Goodies
+              🎁 Fair Share
             </Nav.Link>
             <Nav.Link as={Link} href="/" className="active">
               Fresh Vegetables

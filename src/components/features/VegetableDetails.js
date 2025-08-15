@@ -1,41 +1,84 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Container, Row, Col, Badge, Button, Card, Form } from 'react-bootstrap';
-import Image from 'next/image';
-import { useCart } from '@/context/CartContext';
-import toast from 'react-hot-toast';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Container,
+  Row,
+  Col,
+  Badge,
+  Button,
+  Card,
+  Form,
+} from "react-bootstrap";
+import Image from "next/image";
+import { useCart } from "@/context/CartContext";
+import { useSession } from "next-auth/react";
+import { checkCartForSimilarFreeItems } from "@/utils/freeItemValidation";
+import toast from "react-hot-toast";
 
 export default function VegetableDetails({ vegetable }) {
   const router = useRouter();
-  const { addToCart } = useCart();
+  const { addToCart, items } = useCart();
+  const { data: session } = useSession();
   const [quantity, setQuantity] = useState(1);
 
+  // Check if item is free and similar items in cart
+  const isFree = Number(vegetable?.price) === 0;
+  const similarFreeItemCheck = isFree
+    ? checkCartForSimilarFreeItems(items, vegetable?.name || "")
+    : { hasConflict: false };
+  const hasSimilarFreeItemInCart = similarFreeItemCheck.hasConflict;
+
+  // Use the actual available quantity for both free and paid items
+  const maxQuantity = vegetable?.quantity || 1;
+
   if (!vegetable) {
-    router.push('/');
+    router.push("/");
     return null;
   }
 
   const handleWhatsAppClick = () => {
     const message = `Hi, I'm interested in buying ${vegetable.name}`;
-    const whatsappUrl = `https://wa.me/${vegetable.owner?.whatsapp}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    const whatsappUrl = `https://wa.me/${
+      vegetable.owner?.whatsapp
+    }?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
   };
 
-  const handleAddToCart = () => {
-    console.log('Adding to cart - Vegetable:', vegetable);
-    console.log('Owner details:', vegetable.owner);
-    console.log('WhatsApp number:', vegetable.owner?.whatsapp);
-    const result = addToCart(vegetable, quantity);
-    if (!result.success) {
-      toast.error(result.error, {
-        duration: 5000, // Show error for longer
-      });
-    } else {
-      toast.success(`Added ${quantity}kg of ${vegetable.name} to cart`, {
-        icon: '🛒',
-      });
+  const handleAddToCart = async () => {
+    try {
+      console.log("Adding to cart - Vegetable:", vegetable);
+      console.log("Owner details:", vegetable.owner);
+      console.log("WhatsApp number:", vegetable.owner?.whatsapp);
+
+      const result = await addToCart(
+        {
+          ...vegetable,
+          availableQuantity: maxQuantity,
+        },
+        quantity,
+        session?.user?.id
+      );
+
+      if (!result.success) {
+        toast.error(result.error, {
+          duration: 5000, // Show error for longer
+        });
+      } else {
+        const isFree = Number(vegetable.price) === 0;
+        toast.success(
+          `Added ${quantity} ${vegetable.unit || "kg"} of ${
+            vegetable.name
+          } to cart`,
+          {
+            icon: isFree ? "🎁" : "🛒",
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to add item to cart. Please try again.");
     }
   };
 
@@ -44,13 +87,18 @@ export default function VegetableDetails({ vegetable }) {
     <Container className="py-4">
       <Row className="g-4">
         <Col lg={6}>
-          <div className="position-relative rounded-4 overflow-hidden shadow-sm" style={{ height: '500px' }}>
-            {vegetable.images && vegetable.images.length > 0 && vegetable.images[0] ? (
+          <div
+            className="position-relative rounded-4 overflow-hidden shadow-sm"
+            style={{ height: "500px" }}
+          >
+            {vegetable.images &&
+            vegetable.images.length > 0 &&
+            vegetable.images[0] ? (
               <Image
                 src={vegetable.images[0]}
                 alt={vegetable.name}
                 fill
-                style={{ objectFit: 'cover' }}
+                style={{ objectFit: "cover" }}
                 className="rounded-4"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
@@ -67,11 +115,13 @@ export default function VegetableDetails({ vegetable }) {
         </Col>
 
         <Col lg={6}>
-          <div className="sticky-lg-top" style={{ top: '2rem' }}>
+          <div className="sticky-lg-top" style={{ top: "2rem" }}>
             {/* Title and Price */}
             <div className="d-flex justify-content-between align-items-start mb-3">
               <h1 className="mb-0 fw-bold">{vegetable.name}</h1>
-              <Badge bg="success" className="fs-5 px-3 py-2">₹{vegetable.price}/kg</Badge>
+              <Badge bg="success" className="fs-5 px-3 py-2">
+                ₹{vegetable.price}/kg
+              </Badge>
             </div>
 
             {/* Description */}
@@ -107,7 +157,9 @@ export default function VegetableDetails({ vegetable }) {
                     <i className="ti-tag fs-4 me-3 text-success"></i>
                     <div>
                       <div className="text-muted small">Category</div>
-                      <div className="fw-semibold text-capitalize">{vegetable.category}</div>
+                      <div className="fw-semibold text-capitalize">
+                        {vegetable.category}
+                      </div>
                     </div>
                   </Card.Body>
                 </Card>
@@ -118,7 +170,11 @@ export default function VegetableDetails({ vegetable }) {
                     <i className="ti-home fs-4 me-3 text-success"></i>
                     <div>
                       <div className="text-muted small">Source</div>
-                      <div className="fw-semibold">{vegetable.sourceType === 'farm' ? 'Farm' : 'Home Garden'}</div>
+                      <div className="fw-semibold">
+                        {vegetable.sourceType === "farm"
+                          ? "Farm"
+                          : "Home Garden"}
+                      </div>
                     </div>
                   </Card.Body>
                 </Card>
@@ -135,15 +191,17 @@ export default function VegetableDetails({ vegetable }) {
                       <i className="ti-user fs-4 text-success"></i>
                     </div>
                     <div>
-                      <div className="fw-semibold">{vegetable.owner?.name || 'Anonymous Seller'}</div>
+                      <div className="fw-semibold">
+                        {vegetable.owner?.name || "Anonymous Seller"}
+                      </div>
                       <div className="text-muted small">
                         <i className="ti-check-box text-success me-1"></i>
                         Verified Seller
                       </div>
                     </div>
                   </div>
-                  <Button 
-                    variant="success" 
+                  <Button
+                    variant="success"
                     size="lg"
                     onClick={handleWhatsAppClick}
                     className="px-4"
@@ -162,26 +220,52 @@ export default function VegetableDetails({ vegetable }) {
                   <Form.Control
                     type="number"
                     value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) => {
+                      const newQuantity = Math.max(
+                        1,
+                        parseInt(e.target.value) || 1
+                      );
+                      setQuantity(Math.min(newQuantity, maxQuantity));
+                    }}
                     min="1"
-                    max={vegetable.quantity}
-                    style={{ width: '100px' }}
+                    max={maxQuantity}
+                    style={{ width: "100px" }}
                     className="me-3"
+                    title={undefined}
                   />
-                  <div className="text-muted">kg</div>
+                  <div className="text-muted">{vegetable.unit || "kg"}</div>
                 </div>
+
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <div className="text-muted">Subtotal</div>
-                  <div className="fs-4 fw-bold">₹{vegetable.price * quantity}</div>
+                  <div className="fs-4 fw-bold">
+                    ₹{vegetable.price * quantity}
+                  </div>
                 </div>
                 <div className="d-grid">
-                  <Button 
-                    variant="success" 
+                  <Button
+                    variant={hasSimilarFreeItemInCart ? "secondary" : "success"}
                     size="lg"
                     onClick={handleAddToCart}
+                    disabled={hasSimilarFreeItemInCart}
+                    title={
+                      hasSimilarFreeItemInCart
+                        ? `You already have a similar free item (${similarFreeItemCheck.conflictingItem?.name}) in your cart`
+                        : undefined
+                    }
                   >
-                    <i className="ti-shopping-cart me-2"></i>
-                    Add to Cart
+                    <i
+                      className={
+                        hasSimilarFreeItemInCart
+                          ? "ti-ban me-2"
+                          : "ti-shopping-cart me-2"
+                      }
+                    ></i>
+                    {hasSimilarFreeItemInCart
+                      ? "Similar Item Already in Cart"
+                      : isFree
+                      ? "🎁 Claim Free Item"
+                      : "Add to Cart"}
                   </Button>
                 </div>
               </Card.Body>
