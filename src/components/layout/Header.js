@@ -15,13 +15,12 @@ export default function Header() {
       <Container>
         <Navbar.Brand as={Link} href="/">
           <img
-            src="/globe.svg"
-            width="30"
-            height="30"
+            src="/images/logo.png"
+            width="213"
+            height="60"
             className="d-inline-block align-top me-2"
             alt="GreenSpace Logo"
           />
-          GreenSpace
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
