@@ -36,9 +36,7 @@ export default function Home() {
         </div>
       )}
 
-      <div
-        className={shouldShowFilters ? "container ui-scroll ui-scroll-lg" : ""}
-      >
+      <div className="container ui-scroll ui-scroll-lg">
         <VegetableResults
           vegetables={vegetables}
           loading={loading}

@@ -1,0 +1,51 @@
+@import "../../../node_modules/bootswatch/dist/cosmo/variables";
+
+// Base placeholder styles
+.ui-line,
+.ui-block {
+  background: linear-gradient(90deg, #f0f0f0 0%, #f8f8f8 50%, #f0f0f0 100%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: shimmer 4s linear infinite;
+}
+
+.ui-line {
+  height: 15px;
+}
+
+.ui-block {
+  height: 90px;
+}
+
+// Width utilities
+.ui-w-25 {
+  width: 25%;
+}
+.ui-w-40 {
+  width: 40%;
+}
+.ui-w-50 {
+  width: 50%;
+}
+.ui-w-60 {
+  width: 60%;
+}
+.ui-w-75 {
+  width: 75%;
+}
+.ui-w-80 {
+  width: 80%;
+}
+.ui-w-100 {
+  width: 100%;
+}
+
+// Gentle continuous shimmer animation
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
