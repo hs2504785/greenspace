@@ -11,13 +11,12 @@ export default function Header() {
   const { items } = useCart();
 
   return (
-    <Navbar expand="lg" className="navbar-sticky">
+    <Navbar expand="lg" className="navbar-sticky py-0">
       <Container>
         <Navbar.Brand as={Link} href="/">
           <img
-            src="/images/logo.png"
-            width="213"
-            height="60"
+            src="/images/logo.svg"
+            width="60"
             className="d-inline-block align-top me-2"
             alt="GreenSpace Logo"
           />
