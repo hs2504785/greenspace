@@ -78,7 +78,7 @@ export default function UserAvatar({ user, size = 32, className = "" }) {
         backgroundColor,
         color: "white",
         fontSize: `${fontSize}px`,
-        fontWeight: "500",
+        fontWeight: "900",
         textTransform: "uppercase",
       }}
     >

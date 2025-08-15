@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import ImagePlaceholder from "../common/ImagePlaceholder";
+import UserAvatar from "../common/UserAvatar";
 import { useCart } from "@/context/CartContext";
 import { useSession } from "next-auth/react";
 import { checkCartForSimilarFreeItems } from "@/utils/freeItemValidation";
@@ -142,11 +143,15 @@ export default function VegetableCard({
               style={{ fontSize: "0.85rem" }}
             >
               <div
-                className="text-muted text-truncate"
+                className="d-flex align-items-center text-muted text-truncate"
                 style={{ maxWidth: "45%" }}
               >
-                <i className="ti-user me-1"></i>
-                {owner?.name || "Seller"}
+                <UserAvatar
+                  user={owner}
+                  size={20}
+                  className="me-1 flex-shrink-0"
+                />
+                <span className="text-truncate">{owner?.name || "Seller"}</span>
               </div>
               <div
                 className="text-muted text-truncate"

@@ -5,6 +5,7 @@ import { Offcanvas, Button, ListGroup, Form } from "react-bootstrap";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useSession } from "next-auth/react";
+import UserAvatar from "../common/UserAvatar";
 import toast from "react-hot-toast";
 import CheckoutForm from "./orders/CheckoutForm";
 
@@ -114,7 +115,7 @@ export default function Cart() {
           {currentSeller && (
             <div className="mb-3 p-3 bg-light rounded">
               <div className="d-flex align-items-center">
-                <i className="ti-user fs-4 text-success me-2"></i>
+                <UserAvatar user={currentSeller} size={32} className="me-2" />
                 <div>
                   <div className="fw-semibold">{currentSeller.name}</div>
                   <div className="text-muted small">

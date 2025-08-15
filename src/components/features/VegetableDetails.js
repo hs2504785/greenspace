@@ -15,6 +15,7 @@ import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 import { useSession } from "next-auth/react";
 import { checkCartForSimilarFreeItems } from "@/utils/freeItemValidation";
+import UserAvatar from "../common/UserAvatar";
 import toast from "react-hot-toast";
 
 export default function VegetableDetails({ vegetable }) {
@@ -187,8 +188,8 @@ export default function VegetableDetails({ vegetable }) {
                 <h5 className="mb-4">Seller Information</h5>
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center">
-                    <div className="bg-white rounded-circle p-3 me-3 shadow-sm">
-                      <i className="ti-user fs-4 text-success"></i>
+                    <div className="me-3">
+                      <UserAvatar user={vegetable.owner} size={48} />
                     </div>
                     <div>
                       <div className="fw-semibold">
