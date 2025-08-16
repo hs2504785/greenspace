@@ -200,9 +200,9 @@ class VegetableService extends ApiBaseService {
       // Prepare final data for database insert
       console.log("✅ Step 8: Preparing final data for database insert");
       const finalData = {
-            ...vegetableData,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+        ...vegetableData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       console.log("🗄️ Final data for database insert:", finalData);
@@ -324,9 +324,9 @@ class VegetableService extends ApiBaseService {
       try {
         console.log("🔍 Making Supabase update call...");
         const response = await adminClient
-        .from(this.tableName)
+          .from(this.tableName)
           .update(updateData)
-        .eq("id", id)
+          .eq("id", id)
           .select(
             "*, owner:users!owner_id(id, name, email, phone, whatsapp_number, location, avatar_url)"
           );
@@ -528,6 +528,7 @@ class VegetableService extends ApiBaseService {
         "image/png",
         "image/webp",
         "image/gif",
+        "image/svg+xml",
       ];
       if (!allowedTypes.includes(file.type)) {
         throw new Error(
