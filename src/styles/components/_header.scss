@@ -21,10 +21,19 @@
       transition: color 0.3s ease;
       font-weight: 500;
 
+      // Hover effect
+      &:hover {
+        color: $dark-green-hover !important;
+      }
+
       // Active state with color and font weight only
       &.active-nav-item {
-        color: var(--bs-primary) !important;
-        font-weight: 600;
+        color: $dark-green !important; // Dark green variant
+        font-weight: 700;
+
+        &:hover {
+          color: $dark-green !important; // Keep active color on hover
+        }
       }
 
       // Special styling for Fair Share link
