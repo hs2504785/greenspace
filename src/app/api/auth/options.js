@@ -43,7 +43,7 @@ export const authOptions = {
 
           // Check if user exists with this phone number
           const { data: existingUser, error: fetchError } = await supabase
-            .from("user_profiles")
+            .from("users")
             .select("*")
             .eq("phone_number", phoneNumber)
             .single();
@@ -60,7 +60,7 @@ export const authOptions = {
           } else {
             // Create new user with phone number
             const { data: newUser, error: insertError } = await supabase
-              .from("user_profiles")
+              .from("users")
               .insert([
                 {
                   phone_number: phoneNumber,
@@ -124,33 +124,9 @@ export const authOptions = {
         profile: profile,
       });
 
-      // For Google auth, we let Supabase handle the user creation via trigger
-      if (account?.provider === "google") {
-        try {
-          // Create auth user in Supabase (the trigger will handle profile creation)
-          const { data: authUser, error: authError } =
-            await supabase.auth.signUp({
-              email: user.email,
-              password: crypto.randomUUID(), // Random password as we'll use Google
-              options: {
-                data: {
-                  email: user.email,
-                  name: user.name,
-                  avatar_url: user.image,
-                  provider: "google",
-                },
-              },
-            });
-
-          if (authError && authError.message !== "User already registered") {
-            console.error("Error creating Supabase auth user:", authError);
-          }
-
-          return true; // Always allow sign in
-        } catch (error) {
-          console.error("Error in Google sign in:", error);
-          return true; // Still allow sign in
-        }
+      // Skip mobile auth - handled in the provider
+      if (account?.provider === "mobile") {
+        return true;
       }
 
       if (!supabase) {
@@ -161,16 +137,11 @@ export const authOptions = {
       }
 
       try {
-        // Skip database operations for mobile auth as it's handled in the provider
-        if (account?.provider === "mobile") {
-          return true;
-        }
-
         // Handle Google authentication
         if (account?.provider === "google") {
           // Check if user exists in database by email
           const { data: existingUser, error: fetchError } = await supabase
-            .from("user_profiles")
+            .from("users")
             .select("id")
             .eq("email", user.email)
             .single();
@@ -185,17 +156,15 @@ export const authOptions = {
 
           // If user doesn't exist, create them
           if (!existingUser) {
-            const { error: insertError } = await supabase
-              .from("user_profiles")
-              .insert([
-                {
-                  email: user.email,
-                  name: user.name,
-                  avatar_url: user.image,
-                  provider: account.provider,
-                  role: "buyer",
-                },
-              ]);
+            const { error: insertError } = await supabase.from("users").insert([
+              {
+                email: user.email,
+                name: user.name,
+                avatar_url: user.image,
+                provider: account.provider,
+                role: "buyer",
+              },
+            ]);
 
             if (insertError) {
               console.error("Error creating user:", insertError);
@@ -253,29 +222,12 @@ export const authOptions = {
               role: session.user.role,
             });
           } else {
-            console.log("❌ User not found in database, creating...");
-
-            // Create user if they don't exist
-            const { data: newUser, error: createError } = await supabase
-              .from("users")
-              .insert([
-                {
-                  email: session.user.email,
-                  name: session.user.name,
-                  avatar_url: session.user.image,
-                  role: "user",
-                },
-              ])
-              .select()
-              .single();
-
-            if (!createError && newUser) {
-              console.log("✅ Created new user:", newUser.id);
-              session.user.id = newUser.id;
-              session.user.role = newUser.role;
-            } else {
-              console.error("❌ Failed to create user:", createError);
-            }
+            console.log(
+              "❌ User not found in database - should have been created in signIn callback"
+            );
+            // Don't create user here - it should be created in signIn callback
+            // Just use basic session data
+            session.user.role = "user";
           }
         } else {
           console.log("❌ No email in session user");
