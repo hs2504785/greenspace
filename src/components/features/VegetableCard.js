@@ -116,7 +116,10 @@ export default function VegetableCard({
   return (
     <Card className="border-0 bg-white">
       <Link href={`/vegetables/${id}`} className="text-decoration-none">
-        <div style={{ position: "relative", height: "160px" }}>
+        <div
+          style={{ position: "relative", height: "160px" }}
+          className="rounded-3 overflow-hidden"
+        >
           {imageError || !imageUrl ? (
             <ImagePlaceholder />
           ) : (
@@ -125,7 +128,7 @@ export default function VegetableCard({
               alt={name}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              style={{ objectFit: "contain" }}
+              style={{ objectFit: "cover" }}
               onError={() => setImageError(true)}
               priority={false}
               loading="lazy"
@@ -136,30 +139,31 @@ export default function VegetableCard({
 
       <div className="px-3 pb-3 pt-2">
         <div className="d-flex justify-content-between align-items-start mb-2">
-          <div>
+          <div className="flex-grow-1">
             <h3 className="h5 mb-1">{name}</h3>
             <div
-              className="d-flex align-items-center justify-content-between"
-              style={{ fontSize: "0.85rem" }}
+              className="d-flex align-items-center text-muted"
+              style={{ fontSize: "0.8rem" }}
             >
-              <div
-                className="d-flex align-items-center text-muted text-truncate"
-                style={{ maxWidth: "45%" }}
+              <UserAvatar
+                user={owner}
+                size={16}
+                className="me-1 flex-shrink-0"
+              />
+              <span
+                className="text-truncate me-2"
+                style={{ maxWidth: "120px" }}
               >
-                <UserAvatar
-                  user={owner}
-                  size={20}
-                  className="me-1 flex-shrink-0"
-                />
-                <span className="text-truncate">{owner?.name || "Seller"}</span>
-              </div>
-              <div
-                className="text-muted text-truncate"
-                style={{ maxWidth: "45%" }}
-              >
-                <i className="ti-location-pin me-1"></i>
+                {owner?.name || "Seller"}
+              </span>
+              <span className="text-muted">•</span>
+              <i
+                className="ti-location-pin mx-1"
+                style={{ fontSize: "0.75rem" }}
+              ></i>
+              <span className="text-truncate" style={{ maxWidth: "80px" }}>
                 {location}
-              </div>
+              </span>
             </div>
           </div>
           <div
@@ -169,6 +173,7 @@ export default function VegetableCard({
               color: "#198754",
               fontWeight: 500,
               whiteSpace: "nowrap",
+              fontSize: "0.9rem",
             }}
           >
             {isFree ? "🎁 FREE" : `₹${Number(price).toFixed(2)}`}
@@ -176,17 +181,8 @@ export default function VegetableCard({
         </div>
 
         <div className="text-muted mb-2" style={{ fontSize: "0.85rem" }}>
+          <i className="ti-package me-1"></i>
           {maxQuantity} {unit} available
-          {!isFree && (
-            <span>
-              {" • "}
-              {unit === "kg"
-                ? "Min 500g"
-                : unit === "grams"
-                ? "Min 100g"
-                : "Min 1 piece"}
-            </span>
-          )}
         </div>
 
         <div>

@@ -413,7 +413,24 @@ export default function VegetableForm({
           Cancel
         </Button>
         <Button variant="success" onClick={handleSubmit} disabled={loading}>
-          {loading ? "Saving..." : vegetable ? "Update Product" : "Add Product"}
+          {loading ? (
+            <>
+              <div
+                className="spinner-border spinner-border-sm me-2"
+                role="status"
+              >
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              Saving...
+            </>
+          ) : (
+            <>
+              <i
+                className={`ti ${vegetable ? "ti-refresh" : "ti-plus"} me-2`}
+              ></i>
+              {vegetable ? "Update Product" : "Add Product"}
+            </>
+          )}
         </Button>
       </Modal.Footer>
     </Modal>
