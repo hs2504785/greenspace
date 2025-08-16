@@ -28,6 +28,8 @@ function SellerOrderCard({ order, onUpdateStatus }) {
     switch (status?.toLowerCase()) {
       case "pending":
         return "warning";
+      case "whatsapp_sent":
+        return "primary";
       case "confirmed":
         return "info";
       case "processing":
@@ -52,7 +54,15 @@ function SellerOrderCard({ order, onUpdateStatus }) {
       <Card.Body>
         <div className="d-flex justify-content-between align-items-start mb-2">
           <div>
-            <h6 className="mb-1">Order #{order.id.slice(-8)}</h6>
+            <div className="d-flex align-items-center gap-2 mb-1">
+              <h6 className="mb-0">Order #{order.id.slice(-8)}</h6>
+              {order.isGuestOrder && (
+                <Badge bg="info" className="small">
+                  <i className="ti-user me-1"></i>
+                  Guest
+                </Badge>
+              )}
+            </div>
             <small className="text-muted">
               {new Date(order.created_at).toLocaleDateString("en-US", {
                 month: "short",
@@ -99,16 +109,15 @@ function SellerOrderCard({ order, onUpdateStatus }) {
                   : order.delivery_address}
               </div>
             )}
-            {order.buyer?.whatsapp_number && (
+            {(order.buyer?.whatsapp_number || order.buyer?.phone_number) && (
               <Button
                 size="sm"
                 variant="outline-success"
-                href={`https://wa.me/${order.buyer.whatsapp_number.replace(
-                  /[^0-9]/g,
-                  ""
-                )}?text=Hello! Your order #${order.id.slice(
-                  -8
-                )} status update...`}
+                href={`https://wa.me/${(
+                  order.buyer.whatsapp_number || order.buyer.phone_number
+                ).replace(/[^0-9]/g, "")}?text=Hello! Your ${
+                  order.isGuestOrder ? "guest " : ""
+                }order #${order.id.slice(-8)} status update...`}
                 target="_blank"
                 className="py-1 px-2"
               >
@@ -143,7 +152,8 @@ function SellerOrderCard({ order, onUpdateStatus }) {
         </div>
 
         <div className="d-flex gap-2">
-          {order.status === "pending" && (
+          {/* Guest orders start with whatsapp_sent, regular orders start with pending */}
+          {(order.status === "pending" || order.status === "whatsapp_sent") && (
             <>
               <Button
                 size="sm"
@@ -287,9 +297,10 @@ function SellerDashboardContent() {
           <Card className="border-0 shadow-sm h-100">
             <Card.Body className="text-center">
               <div className="h2 text-warning mb-1">
-                {statusCounts.pending || 0}
+                {(statusCounts.pending || 0) +
+                  (statusCounts.whatsapp_sent || 0)}
               </div>
-              <div className="text-muted">Pending</div>
+              <div className="text-muted">Needs Action</div>
             </Card.Body>
           </Card>
         </Col>
@@ -334,6 +345,7 @@ function SellerDashboardContent() {
           >
             <option value="all">All Statuses</option>
             <option value="pending">Pending</option>
+            <option value="whatsapp_sent">WhatsApp Sent</option>
             <option value="confirmed">Confirmed</option>
             <option value="processing">Processing</option>
             <option value="shipped">Shipped</option>

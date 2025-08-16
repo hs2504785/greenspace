@@ -8,10 +8,17 @@ import { useSession } from "next-auth/react";
 import UserAvatar from "../common/UserAvatar";
 import toastService from "@/utils/toastService";
 import CheckoutForm from "./orders/CheckoutForm";
+import GuestOrderForm from "../common/GuestOrderForm";
+import {
+  generateGuestOrderMessage,
+  generateAuthenticatedOrderMessage,
+} from "@/utils/whatsapp";
 
 export default function Cart() {
   const [show, setShow] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [showGuestForm, setShowGuestForm] = useState(false);
+  const [guestOrderLoading, setGuestOrderLoading] = useState(false);
 
   const {
     items,
@@ -54,28 +61,49 @@ export default function Cart() {
       return;
     }
 
+    // Check if user is authenticated
+    if (!session) {
+      // Show guest form for anonymous users
+      setShowGuestForm(true);
+      return;
+    }
+
+    // For authenticated users, proceed directly
+    sendWhatsAppMessage();
+  };
+
+  const sendWhatsAppMessage = (guestDetails = null) => {
     // Remove any non-digit characters from the number
     const whatsappNumber = currentSeller.whatsapp_number.replace(/\D/g, "");
 
-    // Format each item with bold product name
-    const message = items
-      .map(
-        (item) =>
-          `*${item.name}*\n` +
-          `   • Quantity: ${item.quantity} ${item.unit || "kg"}\n` +
-          `   • Price: ${
-            item.price === 0 ? "FREE" : `₹${item.price}/${item.unit || "kg"}`
-          }\n` +
-          `   • Subtotal: ₹${item.total}`
-      )
-      .join("\n\n");
-
-    // Add a divider line and total with bold
-    const divider = "------------------------";
-    const totalMessage = `\n${divider}\n*Total Amount: ₹${total}*`;
-
-    // Compose the full message
-    const fullMessage = `${message}${totalMessage}`;
+    // Generate appropriate message based on user type
+    let fullMessage;
+    if (guestDetails) {
+      fullMessage = generateGuestOrderMessage(
+        items,
+        total,
+        guestDetails,
+        currentSeller
+      );
+    } else if (session?.user) {
+      fullMessage = generateAuthenticatedOrderMessage(
+        items,
+        total,
+        session.user
+      );
+    } else {
+      // Fallback for edge cases
+      fullMessage = `🛒 *New Order Request*\n\n${items
+        .map(
+          (item) =>
+            `*${item.name}* - ${item.quantity} ${item.unit || "kg"} - ₹${
+              item.total
+            }`
+        )
+        .join(
+          "\n"
+        )}\n\n*Total: ₹${total}*\n\n_Please contact customer for delivery details._`;
+    }
 
     // Use the cleaned WhatsApp number
     window.open(
@@ -86,6 +114,86 @@ export default function Cart() {
     );
     toastService.success("Opening WhatsApp to place your order");
     handleClose();
+  };
+
+  const handleGuestOrderSubmit = async (guestDetails) => {
+    setGuestOrderLoading(true);
+
+    try {
+      // Create guest order record for seller's reference
+      const guestOrderData = {
+        guestDetails,
+        items: items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          total: item.total,
+          unit: item.unit,
+        })),
+        total,
+        seller: currentSeller,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Save guest order (we'll create this API endpoint)
+      const response = await fetch("/api/orders/guest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(guestOrderData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to save guest order");
+      }
+
+      // Show warning if database storage failed but allow WhatsApp order
+      if (result.warning) {
+        console.warn("Guest order warning:", result.warning);
+        toastService.warning(result.warning);
+      } else {
+        toastService.success("Order details saved successfully");
+      }
+
+      // Send WhatsApp message with guest details
+      sendWhatsAppMessage(guestDetails);
+      setShowGuestForm(false);
+
+      // Clear cart and redirect to guest order page
+      clearCart();
+      handleClose();
+
+      // Redirect to guest order page if we have an order ID
+      if (result.guestOrder?.id) {
+        router.push(`/orders/guest/${result.guestOrder.id}`);
+      }
+    } catch (error) {
+      console.error("Error saving guest order:", error);
+      // Still proceed with WhatsApp message even if saving fails
+      toastService.warning(
+        "Proceeding with WhatsApp order. Order details might not be saved."
+      );
+      sendWhatsAppMessage(guestDetails);
+      setShowGuestForm(false);
+
+      // Clear cart and close even if order saving fails
+      clearCart();
+      handleClose();
+
+      // Show a message to the user about the situation
+      setTimeout(() => {
+        toastService.info(
+          "Your order was sent via WhatsApp, but order tracking may not be available.",
+          { duration: 5000 }
+        );
+      }, 1000);
+    } finally {
+      setGuestOrderLoading(false);
+    }
   };
 
   const handleRemoveItem = (id, name) => {
@@ -247,6 +355,13 @@ export default function Cart() {
           setShowCheckout(false); // Close the checkout modal
           router.push(`/orders/${order.id}`);
         }}
+      />
+
+      <GuestOrderForm
+        show={showGuestForm}
+        onHide={() => setShowGuestForm(false)}
+        onSubmit={handleGuestOrderSubmit}
+        loading={guestOrderLoading}
       />
     </>
   );

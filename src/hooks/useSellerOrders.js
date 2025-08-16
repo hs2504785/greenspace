@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import toastService from "@/utils/toastService";
 import OrderService from "@/services/OrderService";
+import GuestOrderService from "@/services/GuestOrderService";
 
 export function useSellerOrders(initialFilters = {}) {
   const { data: session } = useSession();
@@ -29,7 +30,26 @@ export function useSellerOrders(initialFilters = {}) {
       setError(null);
 
       console.log("Fetching seller orders for user:", session.user.id);
-      let data = await OrderService.getOrdersBySeller(session.user.id);
+
+      // Fetch both regular orders and guest orders in parallel
+      const [regularOrders, guestOrders] = await Promise.all([
+        OrderService.getOrdersBySeller(session.user.id),
+        GuestOrderService.getGuestOrdersBySeller(session.user.id),
+      ]);
+
+      console.log("Regular orders:", regularOrders?.length || 0);
+      console.log("Guest orders:", guestOrders?.length || 0);
+
+      // Normalize guest orders to match regular order structure
+      const normalizedGuestOrders =
+        guestOrders?.map((guestOrder) =>
+          GuestOrderService.normalizeGuestOrder(guestOrder)
+        ) || [];
+
+      // Combine and sort all orders by creation date (newest first)
+      let data = [...(regularOrders || []), ...normalizedGuestOrders].sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
 
       // Apply filters
       if (filters.status && filters.status !== "all") {
@@ -106,10 +126,26 @@ export function useSellerOrders(initialFilters = {}) {
       });
       setLoading(true);
 
+      // Find the order to determine if it's a guest order or regular order
+      const order = orders.find((o) => o.id === orderId);
+      const isGuestOrder = order?.isGuestOrder;
+
       console.log(
-        "📤 useSellerOrders: Calling OrderService.updateOrderStatus..."
+        "📤 useSellerOrders: Order type:",
+        isGuestOrder ? "Guest" : "Regular"
       );
-      await OrderService.updateOrderStatus(orderId, newStatus);
+
+      if (isGuestOrder) {
+        console.log(
+          "📤 useSellerOrders: Calling GuestOrderService.updateGuestOrderStatus..."
+        );
+        await GuestOrderService.updateGuestOrderStatus(orderId, newStatus);
+      } else {
+        console.log(
+          "📤 useSellerOrders: Calling OrderService.updateOrderStatus..."
+        );
+        await OrderService.updateOrderStatus(orderId, newStatus);
+      }
 
       console.log("✅ useSellerOrders: Order status updated successfully");
       toastService.success("Order status updated successfully");
@@ -131,6 +167,7 @@ export function useSellerOrders(initialFilters = {}) {
           fullError: err,
           orderId,
           newStatus,
+          isGuestOrder: orders.find((o) => o.id === orderId)?.isGuestOrder,
         }
       );
 

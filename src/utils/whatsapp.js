@@ -64,6 +64,65 @@ export function generateBuyerMessage(order, type = "status") {
   return messages[type] || messages.status;
 }
 
+export function generateGuestOrderMessage(items, total, guestDetails, seller) {
+  // Format each item with bold product name
+  const itemsMessage = items
+    .map(
+      (item) =>
+        `*${item.name}*\n` +
+        `   • Quantity: ${item.quantity} ${item.unit || "kg"}\n` +
+        `   • Price: ${
+          item.price === 0 ? "FREE" : `₹${item.price}/${item.unit || "kg"}`
+        }\n` +
+        `   • Subtotal: ₹${item.total}`
+    )
+    .join("\n\n");
+
+  // Customer details section
+  const customerSection =
+    `*Customer Details:*\n` +
+    `👤 Name: ${guestDetails.name}\n` +
+    `📱 Phone: ${guestDetails.phone}\n` +
+    `📧 Email: ${guestDetails.email || "Not provided"}\n` +
+    `📍 Address: ${guestDetails.address}\n\n`;
+
+  // Add divider and total
+  const divider = "------------------------";
+  const totalMessage = `\n${divider}\n*Total Amount: ₹${total}*`;
+
+  // Compose the full message
+  return `🛒 *New Order Request*\n\n${customerSection}${itemsMessage}${totalMessage}\n\n_Please confirm delivery details and payment method._`;
+}
+
+export function generateAuthenticatedOrderMessage(items, total, user) {
+  // Format each item with bold product name
+  const itemsMessage = items
+    .map(
+      (item) =>
+        `*${item.name}*\n` +
+        `   • Quantity: ${item.quantity} ${item.unit || "kg"}\n` +
+        `   • Price: ${
+          item.price === 0 ? "FREE" : `₹${item.price}/${item.unit || "kg"}`
+        }\n` +
+        `   • Subtotal: ₹${item.total}`
+    )
+    .join("\n\n");
+
+  // Customer details section for authenticated users
+  const customerSection =
+    `*Customer Details:*\n` +
+    `👤 Name: ${user.name}\n` +
+    `📧 Email: ${user.email}\n` +
+    `📱 Phone: ${user.phone_number || "Please ask customer"}\n\n`;
+
+  // Add divider and total
+  const divider = "------------------------";
+  const totalMessage = `\n${divider}\n*Total Amount: ₹${total}*`;
+
+  // Compose the full message
+  return `🛒 *New Order Request*\n\n${customerSection}${itemsMessage}${totalMessage}\n\n_Please confirm delivery details and payment method._`;
+}
+
 export function openWhatsApp(phoneNumber, message) {
   const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
     message
