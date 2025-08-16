@@ -132,13 +132,28 @@ export default function VegetableCard({
               loading="lazy"
             />
           )}
+
+          {/* Multiple Images Indicator */}
+          {images && images.length > 1 && (
+            <div
+              className="position-absolute bottom-0 end-0 m-2 px-2 py-1 rounded-pill text-white d-flex align-items-center"
+              style={{
+                backgroundColor: "rgba(0, 0, 0, 0.7)",
+                fontSize: "0.75rem",
+                backdropFilter: "blur(4px)",
+              }}
+            >
+              <i className="ti-image me-1" style={{ fontSize: "0.7rem" }}></i>
+              {images.length}
+            </div>
+          )}
         </div>
       </Link>
 
       <div className="px-3 pb-3 pt-2">
-        <div className="d-flex justify-content-between align-items-start mb-2">
-          <div className="flex-grow-1">
-            <h3 className="h5 mb-1">{name}</h3>
+        <div className="d-flex align-items-start mb-2">
+          <div className="flex-grow-1 me-2 min-w-0" style={{ minWidth: 0 }}>
+            <h3 className="h5 mb-1 text-truncate">{name}</h3>
             <div
               className="d-flex align-items-center text-muted"
               style={{ fontSize: "0.8rem" }}
@@ -165,16 +180,20 @@ export default function VegetableCard({
             </div>
           </div>
           <div
-            className="px-2 py-1 rounded ms-2"
+            className="px-2 py-1 rounded text-center"
             style={{
               backgroundColor: isFree ? "#d1e7dd" : "#f8f9fa",
               color: "#198754",
               fontWeight: 500,
+              fontSize: "0.85rem",
+              width: "70px",
+              flexShrink: 0,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
               whiteSpace: "nowrap",
-              fontSize: "0.9rem",
             }}
           >
-            {isFree ? "🎁 FREE" : `₹${Number(price).toFixed(2)}`}
+            {isFree ? "FREE" : `₹${Number(price).toFixed(2)}`}
           </div>
         </div>
 

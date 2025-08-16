@@ -23,6 +23,7 @@ export default function VegetableDetails({ vegetable }) {
   const { addToCart, items } = useCart();
   const { data: session } = useSession();
   const [quantity, setQuantity] = useState(1);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   // Check if item is free and similar items in cart
   const isFree = Number(vegetable?.price) === 0;
@@ -84,32 +85,172 @@ export default function VegetableDetails({ vegetable }) {
   // Rest of the component remains the same
   return (
     <Container className="py-4">
+      <style>{`
+        .product-gallery .btn:hover {
+          transform: scale(1.05);
+          transition: transform 0.2s ease;
+        }
+        .product-gallery .cursor-pointer:hover {
+          transform: scale(1.05);
+          transition: transform 0.2s ease;
+        }
+        .product-gallery img {
+          transition: opacity 0.3s ease;
+        }
+        .image-container .nav-arrow {
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+        .image-container:hover .nav-arrow {
+          opacity: 1;
+        }
+      `}</style>
       <Row className="g-4">
         <Col lg={6}>
-          <div
-            className="position-relative rounded-4 overflow-hidden shadow-sm"
-            style={{ height: "500px" }}
-          >
-            {vegetable.images &&
-            vegetable.images.length > 0 &&
-            vegetable.images[0] ? (
-              <Image
-                src={vegetable.images[0]}
-                alt={vegetable.name}
-                fill
-                style={{ objectFit: "cover" }}
-                className="rounded-4"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-              />
-            ) : (
-              <div className="d-flex align-items-center justify-content-center h-100 bg-light rounded-4">
-                <div className="text-center text-muted">
-                  <i className="ti-image display-1"></i>
-                  <p className="mt-2">No image available</p>
+          {/* Product Image Gallery */}
+          <div className="product-gallery">
+            {/* Main Image Display */}
+            <div
+              className="position-relative rounded-4 overflow-hidden shadow-sm mb-3 image-container"
+              style={{ height: "450px", backgroundColor: "#f8f9fa" }}
+            >
+              {vegetable.images &&
+              vegetable.images.length > 0 &&
+              vegetable.images[selectedImageIndex] ? (
+                <Image
+                  src={vegetable.images[selectedImageIndex]}
+                  alt={`${vegetable.name} - Image ${selectedImageIndex + 1}`}
+                  fill
+                  style={{ objectFit: "cover" }}
+                  className="rounded-4"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority={selectedImageIndex === 0}
+                />
+              ) : (
+                <div className="d-flex align-items-center justify-content-center h-100 bg-light rounded-4">
+                  <div className="text-center text-muted">
+                    <i className="ti-image display-1"></i>
+                    <p className="mt-2">No image available</p>
+                  </div>
                 </div>
+              )}
+
+              {/* Image Counter Badge */}
+              {vegetable.images && vegetable.images.length > 1 && (
+                <div
+                  className="position-absolute top-0 end-0 m-3 px-2 py-1 rounded-pill text-white"
+                  style={{
+                    backgroundColor: "rgba(0, 0, 0, 0.6)",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  {selectedImageIndex + 1} / {vegetable.images.length}
+                </div>
+              )}
+
+              {/* Navigation Arrows */}
+              {vegetable.images && vegetable.images.length > 1 && (
+                <>
+                  <button
+                    className="btn btn-link position-absolute top-50 start-0 translate-middle-y ms-2 text-white p-2 nav-arrow"
+                    onClick={() =>
+                      setSelectedImageIndex((prev) =>
+                        prev > 0 ? prev - 1 : vegetable.images.length - 1
+                      )
+                    }
+                    style={{
+                      backgroundColor: "rgba(0, 0, 0, 0.5)",
+                      borderRadius: "50%",
+                      width: "40px",
+                      height: "40px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <i className="ti-arrow-left"></i>
+                  </button>
+                  <button
+                    className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 text-white p-2 nav-arrow"
+                    onClick={() =>
+                      setSelectedImageIndex((prev) =>
+                        prev < vegetable.images.length - 1 ? prev + 1 : 0
+                      )
+                    }
+                    style={{
+                      backgroundColor: "rgba(0, 0, 0, 0.5)",
+                      borderRadius: "50%",
+                      width: "40px",
+                      height: "40px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <i className="ti-arrow-right"></i>
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Thumbnail Navigation */}
+            {vegetable.images && vegetable.images.length > 1 && (
+              <div className="d-flex gap-2 flex-wrap justify-content-center">
+                {vegetable.images.map((image, index) => (
+                  <div
+                    key={index}
+                    className={`position-relative rounded-2 overflow-hidden cursor-pointer ${
+                      selectedImageIndex === index ? "ring-2 ring-success" : ""
+                    }`}
+                    style={{
+                      width: "70px",
+                      height: "70px",
+                      border:
+                        selectedImageIndex === index
+                          ? "2px solid #28a745"
+                          : "2px solid transparent",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => setSelectedImageIndex(index)}
+                  >
+                    <Image
+                      src={image}
+                      alt={`${vegetable.name} thumbnail ${index + 1}`}
+                      fill
+                      style={{ objectFit: "cover" }}
+                      className="rounded-2"
+                      sizes="70px"
+                    />
+                    {/* Overlay for non-selected images */}
+                    {selectedImageIndex !== index && (
+                      <div
+                        className="position-absolute top-0 start-0 w-100 h-100 rounded-2"
+                        style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
+                      ></div>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
+
+            {/* Image Dots Indicator */}
+            {vegetable.images &&
+              vegetable.images.length > 1 &&
+              vegetable.images.length <= 5 && (
+                <div className="d-flex justify-content-center mt-3 gap-2">
+                  {vegetable.images.map((_, index) => (
+                    <button
+                      key={index}
+                      className="btn p-0 border-0"
+                      onClick={() => setSelectedImageIndex(index)}
+                      style={{
+                        width: "8px",
+                        height: "8px",
+                        borderRadius: "50%",
+                        backgroundColor:
+                          selectedImageIndex === index ? "#28a745" : "#dee2e6",
+                        transition: "all 0.2s ease",
+                      }}
+                    ></button>
+                  ))}
+                </div>
+              )}
           </div>
         </Col>
 
