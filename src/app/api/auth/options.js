@@ -1,13 +1,20 @@
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { supabase } from "@/lib/supabase";
+import crypto from "crypto";
 import OtpService from "@/services/OtpService";
 
 export const authOptions = {
+  debug: true, // Enable debug logs
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "select_account",
+        },
+      },
     }),
     Credentials({
       id: "mobile",
@@ -36,7 +43,7 @@ export const authOptions = {
 
           // Check if user exists with this phone number
           const { data: existingUser, error: fetchError } = await supabase
-            .from("users")
+            .from("user_profiles")
             .select("*")
             .eq("phone_number", phoneNumber)
             .single();
@@ -53,7 +60,7 @@ export const authOptions = {
           } else {
             // Create new user with phone number
             const { data: newUser, error: insertError } = await supabase
-              .from("users")
+              .from("user_profiles")
               .insert([
                 {
                   phone_number: phoneNumber,
@@ -110,7 +117,48 @@ export const authOptions = {
       return token;
     },
     async signIn({ user, account, profile }) {
-      if (!supabase) return true;
+      console.log("🔐 SignIn callback triggered:", {
+        provider: account?.provider,
+        userEmail: user?.email,
+        hasSupabase: !!supabase,
+        profile: profile,
+      });
+
+      // For Google auth, we let Supabase handle the user creation via trigger
+      if (account?.provider === "google") {
+        try {
+          // Create auth user in Supabase (the trigger will handle profile creation)
+          const { data: authUser, error: authError } =
+            await supabase.auth.signUp({
+              email: user.email,
+              password: crypto.randomUUID(), // Random password as we'll use Google
+              options: {
+                data: {
+                  email: user.email,
+                  name: user.name,
+                  avatar_url: user.image,
+                  provider: "google",
+                },
+              },
+            });
+
+          if (authError && authError.message !== "User already registered") {
+            console.error("Error creating Supabase auth user:", authError);
+          }
+
+          return true; // Always allow sign in
+        } catch (error) {
+          console.error("Error in Google sign in:", error);
+          return true; // Still allow sign in
+        }
+      }
+
+      if (!supabase) {
+        console.warn(
+          "⚠️ Supabase not available, but allowing sign-in to proceed"
+        );
+        return true;
+      }
 
       try {
         // Skip database operations for mobile auth as it's handled in the provider
@@ -122,7 +170,7 @@ export const authOptions = {
         if (account?.provider === "google") {
           // Check if user exists in database by email
           const { data: existingUser, error: fetchError } = await supabase
-            .from("users")
+            .from("user_profiles")
             .select("id")
             .eq("email", user.email)
             .single();
@@ -137,19 +185,24 @@ export const authOptions = {
 
           // If user doesn't exist, create them
           if (!existingUser) {
-            const { error: insertError } = await supabase.from("users").insert([
-              {
-                email: user.email,
-                name: user.name,
-                avatar_url: user.image,
-                provider: account.provider,
-                role: "buyer",
-              },
-            ]);
+            const { error: insertError } = await supabase
+              .from("user_profiles")
+              .insert([
+                {
+                  email: user.email,
+                  name: user.name,
+                  avatar_url: user.image,
+                  provider: account.provider,
+                  role: "buyer",
+                },
+              ]);
 
             if (insertError) {
               console.error("Error creating user:", insertError);
-              return false;
+              console.warn(
+                "⚠️ Failed to create user in database, but allowing sign-in to prevent AccessDenied"
+              );
+              return true; // Don't block auth due to database creation failure
             }
           }
         }

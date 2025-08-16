@@ -27,6 +27,11 @@ try {
       db: {
         schema: "public",
       },
+      global: {
+        headers: {
+          "x-client-info": "@aryanaturalfarms/web",
+        },
+      },
     });
     if (
       typeof window !== "undefined" ||
