@@ -34,15 +34,11 @@ export default function Home() {
         </div>
       )}
 
-      <div
-        className={`ui-scroll ${vegetables.length > 0 ? "ui-scroll-lg" : ""}`}
-      >
-        <VegetableResults
-          vegetables={vegetables}
-          loading={loading}
-          error={error}
-        />
-      </div>
+      <VegetableResults
+        vegetables={vegetables}
+        loading={loading}
+        error={error}
+      />
     </div>
   );
 }

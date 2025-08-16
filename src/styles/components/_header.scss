@@ -13,6 +13,149 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
+  // Mobile-specific improvements for always-visible cart
+  @media (max-width: 991.98px) {
+    .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+    }
+
+    .navbar-brand {
+      flex-shrink: 0;
+    }
+
+    .navbar-toggler {
+      order: 4;
+      border: none;
+      padding: 0.25rem 0.5rem;
+      margin-left: 0.5rem;
+
+      &:focus {
+        box-shadow: none;
+      }
+    }
+
+    // Ensure cart and user sections stay compact on mobile
+    .order-lg-3,
+    .order-lg-4 {
+      flex-shrink: 0;
+      display: flex !important;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    // On mobile, hide the desktop-only profile section
+    .order-lg-4 {
+      display: none !important;
+    }
+  }
+
+  // Desktop-specific layout improvements
+  @media (min-width: 992px) {
+    .order-lg-3 {
+      margin-right: 1rem; // Add space between cart and profile on desktop
+    }
+  }
+
+  // Custom mobile menu overlay styles
+  .mobile-menu-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1025; // Below navbar z-index but above content
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .mobile-menu-overlay {
+    position: fixed;
+    top: 0; // Start from top of viewport
+    left: 0;
+    right: 0;
+    background-color: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding-top: 70px; // Account for header height
+    transform: translateY(-100%);
+    animation: slideDown 0.3s ease-out forwards;
+    z-index: 1026; // Above backdrop
+  }
+
+  .mobile-menu-content {
+    padding: 1rem 0;
+    max-height: calc(100vh - 80px); // Account for header height
+    overflow-y: auto;
+  }
+
+  .mobile-nav-link {
+    padding: 1rem 1.5rem !important;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      transform: translateX(5px);
+    }
+
+    &.active-nav-item {
+      color: $dark-green !important;
+      font-weight: 700;
+      background-color: rgba(76, 175, 80, 0.1);
+      border-left: 4px solid $dark-green;
+    }
+
+    &.fair-share-link.active-nav-item {
+      color: var(--bs-success) !important;
+      border-left-color: var(--bs-success);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  // Animation keyframes
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  // Hamburger button improvements
+  .navbar-toggler {
+    border: none;
+    padding: 0.25rem 0.5rem;
+
+    &:focus {
+      box-shadow: none;
+    }
+
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2833, 37, 41, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+  }
+
   // Minimal navigation link styles
   .navbar-nav {
     .nav-link {
