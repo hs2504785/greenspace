@@ -22,40 +22,27 @@ export default function Home() {
     }
   }, [showFreeOnly, filters.showFreeOnly, updateFilters]);
 
-  // Show filters only when:
-  // 1. There are vegetables to filter, OR
-  // 2. User has actively applied some search/filter (so they can clear it)
-  const hasActiveFilters =
-    (filters.searchQuery && filters.searchQuery.trim() !== "") ||
-    (filters.category &&
-      filters.category !== "All" &&
-      filters.category !== null) ||
-    (filters.location && filters.location.trim() !== "") ||
-    filters.showFreeOnly;
-
-  const shouldShowFilters = vegetables.length > 0 || hasActiveFilters;
-
   return (
-    <>
-      {shouldShowFilters && (
-        <div className="container">
-          <div className="py-3">
-            <VegetableFilters
-              filters={filters}
-              onFilterChange={updateFilters}
-              totalCount={totalCount}
-            />
-          </div>
+    <div className="container">
+      {vegetables.length > 0 && (
+        <div className="py-3">
+          <VegetableFilters
+            filters={filters}
+            onFilterChange={updateFilters}
+            totalCount={totalCount}
+          />
         </div>
       )}
 
-      <div className="container ui-scroll ui-scroll-lg">
+      <div
+        className={`ui-scroll ${vegetables.length > 0 ? "ui-scroll-lg" : ""}`}
+      >
         <VegetableResults
           vegetables={vegetables}
           loading={loading}
           error={error}
         />
       </div>
-    </>
+    </div>
   );
 }

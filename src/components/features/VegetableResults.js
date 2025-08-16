@@ -29,10 +29,22 @@ const VegetableResults = memo(function VegetableResults({
   if (vegetables.length === 0) {
     return (
       <EmptyState
-        icon="ti-gift"
-        title="No vegetables available"
-        description="🌱 Fresh vegetables will appear here soon!<br />Check back later or contact local farmers to list their organic produce."
+        icon="ti-leaf"
+        title="Welcome to Fair Share!"
+        description="🌱 Our farmers are preparing fresh organic vegetables for you.<br/>Check back soon to discover locally grown produce at fair prices."
         size="xl"
+        className="bg-light rounded-4 shadow-sm border-0 py-5"
+        action={
+          <div className="d-flex flex-column align-items-center gap-3">
+            <div className="text-success">
+              <small>Want to sell your organic vegetables?</small>
+            </div>
+            <a href="/become-seller" className="btn btn-outline-success">
+              <i className="ti-user me-2"></i>
+              Become a Seller
+            </a>
+          </div>
+        }
       />
     );
   }
