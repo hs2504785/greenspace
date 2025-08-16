@@ -198,14 +198,14 @@ export default function Cart() {
 
   const handleRemoveItem = (id, name) => {
     removeFromCart(id);
-    toast(`Removed ${name} from cart`, {
+    toastService.success(`Removed ${name} from cart`, {
       icon: "🗑️",
     });
   };
 
   const handleClearCart = () => {
     clearCart();
-    toast("Cart cleared", {
+    toastService.success("Cart cleared", {
       icon: "🗑️",
     });
     handleClose();

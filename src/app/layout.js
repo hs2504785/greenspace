@@ -47,12 +47,13 @@ export default function RootLayout({ children }) {
             <CartProvider>
               <MainLayout>{children}</MainLayout>
               <Toaster
-                position="top-right"
+                position="bottom-right"
                 reverseOrder={false}
                 gutter={12}
                 containerStyle={{
-                  top: 16,
+                  bottom: 16,
                   right: 16,
+                  zIndex: 9999,
                 }}
                 toastOptions={{
                   duration: 4000,

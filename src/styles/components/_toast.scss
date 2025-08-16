@@ -93,15 +93,38 @@
   }
 }
 
-// Simple animations
+// Simple animations optimized for bottom positioning
 [data-hot-toast].react-hot-toast {
-  animation: slideIn 0.3s ease forwards !important;
+  animation: slideInFromBottom 0.3s ease forwards !important;
 }
 
 [data-hot-toast].react-hot-toast[data-hot-toast-exit] {
-  animation: slideOut 0.2s ease forwards !important;
+  animation: slideOutToBottom 0.2s ease forwards !important;
 }
 
+@keyframes slideInFromBottom {
+  from {
+    transform: translateX(100%) translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0%) translateY(0px);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToBottom {
+  from {
+    transform: translateX(0%) translateY(0px);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%) translateY(10px);
+    opacity: 0;
+  }
+}
+
+// Legacy animations (keeping for compatibility)
 @keyframes slideIn {
   from {
     transform: translateX(100%);
@@ -130,6 +153,11 @@
     min-width: 280px !important;
     max-width: calc(100vw - 32px) !important;
     margin: 0 16px !important;
+  }
+
+  // Adjust bottom positioning on mobile
+  .react-hot-toast-toaster {
+    bottom: 80px !important; // Space for mobile navigation/action buttons
   }
 }
 
