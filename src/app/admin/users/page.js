@@ -142,7 +142,15 @@ export default function UsersManagement() {
       fetchUsers();
     } catch (error) {
       console.error("Error saving user:", error);
-      toastService.error(error.message || "Failed to save user");
+
+      // Provide specific guidance based on error type
+      if (error.message?.includes("already exists")) {
+        toastService.error(
+          "A user with this email already exists. Please use a different email address."
+        );
+      } else {
+        toastService.error(error.message || "Failed to save user");
+      }
     } finally {
       setSubmitting(false);
     }
