@@ -265,7 +265,11 @@ export default function VegetableDetails({ vegetable }) {
             </div>
 
             {/* Description */}
-            <p className="text-muted lead mb-4">{vegetable.description}</p>
+            <div className="mb-4">
+              <p className="text-muted lead mb-0 product-description ui-scroll">
+                {vegetable.description}
+              </p>
+            </div>
 
             {/* Quick Info Cards */}
             <Row className="g-3 mb-4">

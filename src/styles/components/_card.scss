@@ -1,6 +1,6 @@
 .hover-shadow {
   transition: all 0.2s ease-in-out;
-  
+
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
@@ -19,11 +19,18 @@
 a.text-decoration-none {
   .card {
     color: inherit;
-    
+
     &:hover {
       .card-title {
         color: var(--bs-success) !important;
       }
     }
   }
+}
+
+// Product description with limited lines and scroll
+.product-description {
+  line-height: 1.6rem;
+  max-height: 4.8rem; // 3 lines * 1.6rem
+  padding-right: 0.5rem;
 }
