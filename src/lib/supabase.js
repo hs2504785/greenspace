@@ -27,6 +27,45 @@ try {
       );
     }
 
+    // Custom fetch implementation for better Vercel compatibility
+    const customFetch = async (url, options = {}) => {
+      console.log(`🌐 Custom fetch to: ${url.substring(0, 50)}...`);
+
+      try {
+        // Add timeout and better error handling
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+        const response = await fetch(url, {
+          ...options,
+          signal: controller.signal,
+          headers: {
+            "User-Agent": "@aryanaturalfarms/web",
+            ...options.headers,
+          },
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          console.error(
+            `❌ HTTP error ${response.status}: ${response.statusText} for ${url}`
+          );
+        } else {
+          console.log(`✅ Successful request to ${url.substring(0, 50)}...`);
+        }
+
+        return response;
+      } catch (error) {
+        console.error(`💥 Fetch error for ${url}:`, {
+          message: error.message,
+          name: error.name,
+          cause: error.cause,
+        });
+        throw error;
+      }
+    };
+
     supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         autoRefreshToken: true,
@@ -40,17 +79,7 @@ try {
         headers: {
           "x-client-info": "@aryanaturalfarms/web",
         },
-      },
-      // Add fetch options for better error handling
-      fetch: (url, options) => {
-        console.log(`🌐 Supabase fetch attempt to: ${url.substring(0, 50)}...`);
-        return fetch(url, {
-          ...options,
-          timeout: 10000, // 10 second timeout
-        }).catch((error) => {
-          console.error(`❌ Supabase fetch failed for ${url}:`, error.message);
-          throw error;
-        });
+        fetch: customFetch, // Use custom fetch implementation
       },
     });
 
