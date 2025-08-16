@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { Container, Row, Col, Card } from 'react-bootstrap';
-import { useParams } from 'next/navigation';
-import OrderDetails from '@/components/features/orders/OrderDetails';
-import OrderTimeline from '@/components/features/orders/OrderTimeline';
-import { useOrder } from '@/hooks/useOrder';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { Container, Row, Col, Card } from "react-bootstrap";
+import { useParams } from "next/navigation";
+import OrderDetails from "@/components/features/orders/OrderDetails";
+import OrderTimeline from "@/components/features/orders/OrderTimeline";
+import { useOrder } from "@/hooks/useOrder";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 export default function OrderDetailsPage() {
   const params = useParams();
-  console.log('Order ID from params:', params.id); // For debugging
+  console.log("Order ID from params:", params.id); // For debugging
 
   const { order, loading, error } = useOrder(params.id);
 
@@ -26,7 +26,7 @@ export default function OrderDetailsPage() {
       <Container className="py-5">
         <Card body className="text-center text-danger">
           <i className="ti-alert me-2"></i>
-          {error || 'Order not found'}
+          {error || "Order not found"}
         </Card>
       </Container>
     );
@@ -60,15 +60,15 @@ export default function OrderDetailsPage() {
 
 function OrderStatusBadge({ status }) {
   const styles = {
-    pending: { bg: 'warning', icon: 'ti-timer' },
-    confirmed: { bg: 'info', icon: 'ti-check' },
-    processing: { bg: 'primary', icon: 'ti-reload' },
-    shipped: { bg: 'success', icon: 'ti-truck' },
-    delivered: { bg: 'success', icon: 'ti-package' },
-    cancelled: { bg: 'danger', icon: 'ti-close' }
+    pending: { bg: "warning", icon: "ti-timer" },
+    confirmed: { bg: "info", icon: "ti-check" },
+    processing: { bg: "primary", icon: "ti-reload" },
+    shipped: { bg: "secondary", icon: "ti-truck" },
+    delivered: { bg: "success", icon: "ti-package" },
+    cancelled: { bg: "danger", icon: "ti-close" },
   };
 
-  const style = styles[status] || { bg: 'secondary', icon: 'ti-help' };
+  const style = styles[status] || { bg: "secondary", icon: "ti-help" };
 
   return (
     <div className={`badge bg-${style.bg} fs-6 d-flex align-items-center`}>

@@ -9,7 +9,7 @@ const ORDER_STATUS_STYLES = {
   pending: { bg: "warning", icon: "ti-timer" },
   confirmed: { bg: "info", icon: "ti-check" },
   processing: { bg: "primary", icon: "ti-reload" },
-  shipped: { bg: "success", icon: "ti-truck" },
+  shipped: { bg: "secondary", icon: "ti-truck" },
   delivered: { bg: "success", icon: "ti-package" },
   cancelled: { bg: "danger", icon: "ti-close" },
 };

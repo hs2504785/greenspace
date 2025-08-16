@@ -30,10 +30,10 @@ function SellerOrderCard({ order, onUpdateStatus }) {
         return "warning";
       case "confirmed":
         return "info";
-      case "preparing":
+      case "processing":
         return "primary";
-      case "ready":
-        return "success";
+      case "shipped":
+        return "secondary";
       case "delivered":
         return "success";
       case "cancelled":
@@ -165,21 +165,21 @@ function SellerOrderCard({ order, onUpdateStatus }) {
             <Button
               size="sm"
               variant="primary"
-              onClick={() => handleStatusChange("preparing")}
+              onClick={() => handleStatusChange("processing")}
             >
-              Start Preparing
+              Start Processing
             </Button>
           )}
-          {order.status === "preparing" && (
+          {order.status === "processing" && (
             <Button
               size="sm"
               variant="success"
-              onClick={() => handleStatusChange("ready")}
+              onClick={() => handleStatusChange("shipped")}
             >
-              Mark Ready
+              Mark Shipped
             </Button>
           )}
-          {order.status === "ready" && (
+          {order.status === "shipped" && (
             <Button
               size="sm"
               variant="success"
@@ -335,8 +335,8 @@ function SellerDashboardContent() {
             <option value="all">All Statuses</option>
             <option value="pending">Pending</option>
             <option value="confirmed">Confirmed</option>
-            <option value="preparing">Preparing</option>
-            <option value="ready">Ready</option>
+            <option value="processing">Processing</option>
+            <option value="shipped">Shipped</option>
             <option value="delivered">Delivered</option>
             <option value="cancelled">Cancelled</option>
           </Form.Select>

@@ -129,19 +129,29 @@ export default function VegetableForm({
       }
 
       // Debug session information
-      console.log("Session state:", {
+      console.log("🔍 Session state:", {
         isAuthenticated: !!session,
         user: session?.user,
         email: session?.user?.email,
+        userId: session?.user?.id,
+        fullSession: session,
       });
 
+      console.log("📸 Image file:", imageFile?.name);
       let imageUrl = "";
       if (imageFile) {
+        console.log("🔄 Uploading image...");
         imageUrl = await vegetableService.uploadImage(imageFile);
+        console.log("✅ Image upload result:", imageUrl);
+      } else {
+        console.log("ℹ️ No image to upload");
       }
 
       const ownerId = session?.user?.id;
+      console.log("👤 Owner ID:", ownerId);
+
       if (!ownerId) {
+        console.error("❌ No user ID in session:", session);
         throw new Error("User ID not found in session. Please log in again.");
       }
 
@@ -162,17 +172,31 @@ export default function VegetableForm({
 
       console.log("Submitting vegetable data:", vegetableData);
 
+      console.log("💾 Saving product to database...");
+
       if (vegetable?.id) {
-        const updated = await vegetableService.updateVegetable(
-          vegetable.id,
-          vegetableData
-        );
-        console.log("Update response:", updated);
-        toast.success("Product updated successfully!");
+        console.log("🔄 Updating existing vegetable:", vegetable.id);
+        try {
+          const updated = await vegetableService.updateVegetable(
+            vegetable.id,
+            vegetableData
+          );
+          console.log("✅ Update response:", updated);
+          toast.success("Product updated successfully!");
+        } catch (updateError) {
+          console.error("❌ Update failed:", updateError);
+          throw updateError;
+        }
       } else {
-        const created = await vegetableService.createVegetable(vegetableData);
-        console.log("Create response:", created);
-        toast.success("Product added successfully!");
+        console.log("🔄 Creating new vegetable...");
+        try {
+          const created = await vegetableService.createVegetable(vegetableData);
+          console.log("✅ Create response:", created);
+          toast.success("Product added successfully!");
+        } catch (createError) {
+          console.error("❌ Create failed:", createError);
+          throw createError;
+        }
       }
 
       // Add a small delay before refreshing the list
@@ -181,13 +205,22 @@ export default function VegetableForm({
         onHide();
       }, 500);
     } catch (error) {
-      console.error("Error saving product:", {
-        message: error.message,
+      console.error("💥 Error saving product:", {
+        message: error?.message || "No error message",
         error: error,
+        errorString: String(error),
+        errorStack: error?.stack,
         formData: formData,
         session: session?.user,
+        errorName: error?.name,
+        errorCode: error?.code,
       });
-      toast.error(error.message || "Failed to save product. Please try again.");
+
+      const errorMessage =
+        error?.message ||
+        error?.toString() ||
+        "Failed to save product. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

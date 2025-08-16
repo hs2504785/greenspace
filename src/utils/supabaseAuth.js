@@ -7,15 +7,35 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Create a Supabase client that bypasses RLS for NextAuth integration
 export const createSupabaseClient = () => {
+  console.log("🔧 Creating Supabase admin client:", {
+    hasUrl: !!supabaseUrl,
+    hasServiceKey: !!supabaseServiceKey,
+    hasAnonKey: !!supabaseAnonKey,
+    willUseServiceKey: !!supabaseServiceKey,
+  });
+
   if (!supabaseUrl || (!supabaseServiceKey && !supabaseAnonKey)) {
+    console.error("❌ Supabase configuration missing:", {
+      url: !!supabaseUrl,
+      serviceKey: !!supabaseServiceKey,
+      anonKey: !!supabaseAnonKey,
+    });
     throw new Error("Supabase configuration is missing");
   }
-  return createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
+
+  const client = createClient(
+    supabaseUrl,
+    supabaseServiceKey || supabaseAnonKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  );
+
+  console.log("✅ Supabase admin client created successfully");
+  return client;
 };
 
 // Helper function to get Supabase token from NextAuth session

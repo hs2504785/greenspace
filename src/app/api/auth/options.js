@@ -214,8 +214,11 @@ export const authOptions = {
       }
     },
     async session({ session, token }) {
-      console.log("🔄 Session callback triggered for user:", session.user);
-      console.log("🔍 Token data:", token);
+      console.log(
+        "🔄 Session callback triggered for user:",
+        session?.user?.email
+      );
+      console.log("🔍 Token data:", { id: token?.id, email: token?.email });
 
       if (!supabase) {
         console.log("⚠️ No supabase, returning session as-is");
@@ -223,118 +226,71 @@ export const authOptions = {
       }
 
       try {
-        // If we have user data in the token (from JWT callback), use it directly
-        if (token.id && token.provider === "mobile") {
-          console.log("📱 Using mobile user data from token");
-          session.user.id = token.id;
-          session.user.role = token.role;
-          session.user.phone = token.phone;
-          session.user.whatsappNumber = token.whatsappNumber;
-          session.user.provider = token.provider;
-
-          console.log(
-            "✅ Mobile user session populated from token:",
-            session.user.id
-          );
-          console.log("🎯 Final session being returned:", session);
-          return session;
-        }
-
-        let user = null;
-
-        // For mobile users, we need to find them by name pattern or phone
-        // Since mobile users are created as "User XXXX" where XXXX is last 4 digits of phone
-        if (!session.user?.email && session.user?.name?.startsWith("User ")) {
-          console.log("📱 Detected mobile user, searching by name pattern");
-
-          // Extract last 4 digits from name
-          const nameMatch = session.user.name.match(/User (\d{4})$/);
-          if (nameMatch) {
-            const lastFourDigits = nameMatch[1];
-
-            // Search for users with phone numbers ending in these digits
-            const { data: userData, error } = await supabase
-              .from("users")
-              .select(
-                "id, name, email, avatar_url, role, phone_number, whatsapp_number, provider"
-              )
-              .eq("provider", "mobile")
-              .like("phone_number", `%${lastFourDigits}`)
-              .single();
-
-            if (!error && userData) {
-              user = userData;
-              console.log("📱 Found mobile user by phone pattern:", userData);
-            }
-          }
-
-          // Fallback: search by exact name match
-          if (!user) {
-            const { data: userData, error } = await supabase
-              .from("users")
-              .select(
-                "id, name, email, avatar_url, role, phone_number, whatsapp_number, provider"
-              )
-              .eq("name", session.user.name)
-              .eq("provider", "mobile")
-              .single();
-
-            if (!error && userData) {
-              user = userData;
-              console.log("📱 Found mobile user by name:", userData);
-            }
-          }
-        }
         // For Google users, search by email
-        else if (session.user?.email) {
-          console.log(
-            "📧 Fetching email user from database for:",
-            session.user.email
-          );
+        if (session.user?.email) {
+          console.log("📧 Searching for user by email:", session.user.email);
 
           const { data: userData, error } = await supabase
             .from("users")
-            .select(
-              "id, name, email, avatar_url, role, phone_number, whatsapp_number, provider"
-            )
+            .select("*")
             .eq("email", session.user.email)
             .single();
 
+          console.log("📥 Database query result:", { userData, error });
+
           if (!error && userData) {
-            user = userData;
-          }
-        }
+            console.log("✅ Found user in database:", userData.id);
+            // Populate session with database user data
+            session.user.id = userData.id;
+            session.user.role = userData.role || "user";
+            session.user.phone = userData.phone;
+            session.user.whatsappNumber = userData.whatsapp_number;
+            session.user.location = userData.location;
 
-        console.log("📥 Database response - user:", user);
+            console.log("✅ Session populated with user data:", {
+              id: session.user.id,
+              email: session.user.email,
+              role: session.user.role,
+            });
+          } else {
+            console.log("❌ User not found in database, creating...");
 
-        if (user) {
-          console.log("✅ Adding user data to session:", user.id);
-          session.user.id = user.id;
-          session.user.role = user.role;
-          session.user.phone = user.phone_number;
-          session.user.whatsappNumber = user.whatsapp_number;
-          session.user.provider = user.provider;
+            // Create user if they don't exist
+            const { data: newUser, error: createError } = await supabase
+              .from("users")
+              .insert([
+                {
+                  email: session.user.email,
+                  name: session.user.name,
+                  avatar_url: session.user.image,
+                  role: "user",
+                },
+              ])
+              .select()
+              .single();
 
-          // For mobile users, ensure name is set
-          if (!session.user.name && user.name) {
-            session.user.name = user.name;
+            if (!createError && newUser) {
+              console.log("✅ Created new user:", newUser.id);
+              session.user.id = newUser.id;
+              session.user.role = newUser.role;
+            } else {
+              console.error("❌ Failed to create user:", createError);
+            }
           }
         } else {
-          console.log("❌ No user found in database");
-
-          // For debugging: show what we tried to search for
-          if (!session.user?.email && session.user?.name?.startsWith("User ")) {
-            console.log(
-              "🔍 Mobile user search failed for name:",
-              session.user.name
-            );
-          }
+          console.log("❌ No email in session user");
         }
       } catch (error) {
-        console.error("Session callback error:", error);
+        console.error("💥 Session callback error:", error);
       }
 
-      console.log("🎯 Final session being returned:", session);
+      console.log("🎯 Final session being returned:", {
+        hasUser: !!session.user,
+        hasId: !!session.user?.id,
+        email: session.user?.email,
+        id: session.user?.id,
+      });
+
       return session;
     },
   },

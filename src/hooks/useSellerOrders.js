@@ -100,14 +100,44 @@ export function useSellerOrders(initialFilters = {}) {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
+      console.log("🚀 useSellerOrders: Starting order status update:", {
+        orderId,
+        newStatus,
+      });
       setLoading(true);
+
+      console.log(
+        "📤 useSellerOrders: Calling OrderService.updateOrderStatus..."
+      );
       await OrderService.updateOrderStatus(orderId, newStatus);
+
+      console.log("✅ useSellerOrders: Order status updated successfully");
       toast.success("Order status updated successfully");
+
+      console.log("🔄 useSellerOrders: Refreshing orders...");
       // Refresh orders
       await fetchSellerOrders();
     } catch (err) {
+      console.log(
+        "❌ useSellerOrders: Error updating order status - DETAILED DEBUG:",
+        {
+          message: err.message,
+          name: err.name,
+          stack: err.stack,
+          code: err.code || "No code",
+          errorType: typeof err,
+          errorConstructor: err.constructor.name,
+          errorKeys: Object.keys(err),
+          fullError: err,
+          orderId,
+          newStatus,
+        }
+      );
+
       console.error("Error updating order status:", err);
-      toast.error("Failed to update order status");
+      toast.error(
+        `Failed to update order status: ${err.message || "Unknown error"}`
+      );
     } finally {
       setLoading(false);
     }
