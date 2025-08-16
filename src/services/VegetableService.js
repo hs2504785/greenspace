@@ -670,6 +670,108 @@ class VegetableService extends ApiBaseService {
       return 0;
     }
   }
+
+  /**
+   * Updates vegetable quantities after an order is placed
+   * @param {Array} orderItems - Array of items with {id, quantity} structure
+   * @returns {Promise<boolean>} - Success status
+   */
+  async updateQuantitiesAfterOrder(orderItems) {
+    try {
+      console.log("🔄 Updating vegetable quantities after order:", orderItems);
+
+      if (
+        !orderItems ||
+        !Array.isArray(orderItems) ||
+        orderItems.length === 0
+      ) {
+        throw new Error("Order items are required");
+      }
+
+      if (!supabase) throw new Error("Supabase not initialized");
+
+      // Use admin client to ensure permissions
+      const adminClient = createSupabaseClient();
+
+      // Process each item in the order
+      for (const item of orderItems) {
+        const { id: vegetableId, quantity: orderedQuantity } = item;
+
+        if (!vegetableId || !orderedQuantity || orderedQuantity <= 0) {
+          console.warn("⚠️ Skipping invalid order item:", item);
+          continue;
+        }
+
+        console.log(
+          `📦 Processing vegetable ${vegetableId}, reducing by ${orderedQuantity}`
+        );
+
+        // First, get current quantity to validate the update
+        const { data: currentVeg, error: fetchError } = await adminClient
+          .from(this.tableName)
+          .select("id, name, quantity")
+          .eq("id", vegetableId)
+          .single();
+
+        if (fetchError) {
+          console.error(
+            `❌ Error fetching vegetable ${vegetableId}:`,
+            fetchError
+          );
+          continue; // Continue with other items
+        }
+
+        if (!currentVeg) {
+          console.warn(`⚠️ Vegetable ${vegetableId} not found, skipping`);
+          continue;
+        }
+
+        const currentQuantity = currentVeg.quantity || 0;
+        const newQuantity = Math.max(0, currentQuantity - orderedQuantity);
+
+        console.log(
+          `📊 ${currentVeg.name}: ${currentQuantity} → ${newQuantity} (ordered: ${orderedQuantity})`
+        );
+
+        // Update the quantity
+        const { data: updatedVeg, error: updateError } = await adminClient
+          .from(this.tableName)
+          .update({
+            quantity: newQuantity,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", vegetableId)
+          .select("id, name, quantity")
+          .single();
+
+        if (updateError) {
+          console.error(
+            `❌ Error updating quantity for vegetable ${vegetableId}:`,
+            updateError
+          );
+          // Continue with other items instead of failing completely
+          continue;
+        }
+
+        console.log(
+          `✅ Updated ${updatedVeg.name} quantity to ${updatedVeg.quantity}`
+        );
+
+        // Optional: Log if quantity went to zero or negative
+        if (newQuantity <= 0) {
+          console.log(
+            `⚠️ ${currentVeg.name} is now out of stock (quantity: ${newQuantity})`
+          );
+        }
+      }
+
+      console.log("✅ Finished updating all vegetable quantities");
+      return true;
+    } catch (error) {
+      console.error("💥 Error updating vegetable quantities:", error);
+      throw error;
+    }
+  }
 }
 
 export default new VegetableService();

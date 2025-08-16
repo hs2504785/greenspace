@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS guest_orders (
     seller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     total_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
     order_items JSONB NOT NULL, -- Store cart items as JSON
-    status VARCHAR(50) DEFAULT 'whatsapp_sent',
+    status VARCHAR(50) DEFAULT 'whatsapp_sent' CHECK (status IN ('whatsapp_sent', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled')),
     notes TEXT NULL, -- For seller notes
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -66,5 +66,5 @@ CREATE TRIGGER trigger_update_guest_orders_updated_at
 -- Insert some helpful comments
 COMMENT ON TABLE guest_orders IS 'Stores orders placed by anonymous users via WhatsApp';
 COMMENT ON COLUMN guest_orders.order_items IS 'JSON array of order items with id, name, quantity, price, total, unit';
-COMMENT ON COLUMN guest_orders.status IS 'Order status: whatsapp_sent, confirmed, delivered, cancelled';
+COMMENT ON COLUMN guest_orders.status IS 'Order status: whatsapp_sent, confirmed, processing, shipped, delivered, cancelled';
 COMMENT ON COLUMN guest_orders.notes IS 'Seller notes about the order';

@@ -12,8 +12,15 @@ export default function Home() {
   const searchParams = useSearchParams();
   const showFreeOnly = searchParams.get("showFreeOnly") === "true";
 
-  const { vegetables, loading, error, totalCount, filters, updateFilters } =
-    useVegetables({ showFreeOnly });
+  const {
+    vegetables,
+    loading,
+    error,
+    totalCount,
+    filters,
+    updateFilters,
+    refresh,
+  } = useVegetables({ showFreeOnly });
 
   // Update filter when URL parameter changes
   useEffect(() => {
@@ -21,6 +28,21 @@ export default function Home() {
       updateFilters({ showFreeOnly });
     }
   }, [showFreeOnly, filters.showFreeOnly, updateFilters]);
+
+  // Listen for order completion events to refresh product listings
+  useEffect(() => {
+    const handleOrderCompleted = () => {
+      console.log("🔄 Order completed, refreshing vegetable listings...");
+      refresh();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("order-completed", handleOrderCompleted);
+      return () => {
+        window.removeEventListener("order-completed", handleOrderCompleted);
+      };
+    }
+  }, [refresh]);
 
   return (
     <div className="container">

@@ -167,6 +167,11 @@ export default function Cart() {
       clearCart();
       handleClose();
 
+      // Dispatch event to refresh product listings
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("order-completed"));
+      }
+
       // Redirect to guest order page if we have an order ID
       if (result.guestOrder?.id) {
         router.push(`/orders/guest/${result.guestOrder.id}`);
@@ -183,6 +188,11 @@ export default function Cart() {
       // Clear cart and close even if order saving fails
       clearCart();
       handleClose();
+
+      // Dispatch event to refresh product listings
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("order-completed"));
+      }
 
       // Show a message to the user about the situation
       setTimeout(() => {
@@ -366,6 +376,12 @@ export default function Cart() {
           clearCart();
           setShow(false); // Close the cart Offcanvas
           setShowCheckout(false); // Close the checkout modal
+
+          // Dispatch event to refresh product listings
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new CustomEvent("order-completed"));
+          }
+
           router.push(`/orders/${order.id}`);
         }}
       />

@@ -1,6 +1,7 @@
 import ApiBaseService from "./ApiBaseService";
 import { supabase } from "@/lib/supabase";
 import { mockOrders } from "@/data/mockOrders";
+import VegetableService from "./VegetableService";
 
 class OrderService extends ApiBaseService {
   constructor() {
@@ -169,6 +170,18 @@ class OrderService extends ApiBaseService {
       if (itemsError) {
         console.error("Error creating order items:", itemsError);
         throw itemsError;
+      }
+
+      // Update vegetable quantities after successful order creation
+      try {
+        console.log("🔄 Updating vegetable quantities after order creation...");
+        await VegetableService.updateQuantitiesAfterOrder(orderData.items);
+        console.log("✅ Vegetable quantities updated successfully");
+      } catch (quantityError) {
+        console.error("⚠️ Error updating vegetable quantities:", quantityError);
+        // Don't fail the order creation if quantity update fails
+        // Log the error but continue with order completion
+        console.log("📝 Order created successfully but quantity update failed");
       }
 
       // Fetch the complete order with relationships

@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { createSupabaseClient } from "@/utils/supabaseAuth";
+import VegetableService from "@/services/VegetableService";
 
 export async function POST(request) {
   try {
@@ -110,6 +111,23 @@ export async function POST(request) {
     if (orderError) {
       console.error("Error creating guest order:", orderError);
 
+      // Update vegetable quantities even if order storage fails (WhatsApp order still valid)
+      try {
+        console.log(
+          "🔄 Updating vegetable quantities for guest order (despite db error)..."
+        );
+        await VegetableService.updateQuantitiesAfterOrder(items);
+        console.log(
+          "✅ Vegetable quantities updated successfully for guest order"
+        );
+      } catch (quantityError) {
+        console.error(
+          "⚠️ Error updating vegetable quantities for guest order:",
+          quantityError
+        );
+        // Continue anyway - don't block the WhatsApp order
+      }
+
       // Check if the table doesn't exist - still allow WhatsApp order to proceed
       if (orderError.code === "42P01") {
         // table doesn't exist - not a critical error, WhatsApp order can still work
@@ -167,6 +185,26 @@ export async function POST(request) {
           status: 200, // Success despite database issues
           headers: { "Content-Type": "application/json" },
         }
+      );
+    }
+
+    // Update vegetable quantities after successful guest order creation
+    try {
+      console.log(
+        "🔄 Updating vegetable quantities for successful guest order..."
+      );
+      await VegetableService.updateQuantitiesAfterOrder(items);
+      console.log(
+        "✅ Vegetable quantities updated successfully for guest order"
+      );
+    } catch (quantityError) {
+      console.error(
+        "⚠️ Error updating vegetable quantities for guest order:",
+        quantityError
+      );
+      // Don't fail the guest order if quantity update fails
+      console.log(
+        "📝 Guest order created successfully but quantity update failed"
       );
     }
 
