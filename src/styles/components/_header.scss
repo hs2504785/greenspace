@@ -12,4 +12,27 @@
   &.scrolled {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
+
+  // Minimal navigation link styles
+  .navbar-nav {
+    .nav-link {
+      margin: 0 0.5rem;
+      padding: 0.75rem 0.5rem !important;
+      transition: color 0.3s ease;
+      font-weight: 500;
+
+      // Active state with color and font weight only
+      &.active-nav-item {
+        color: var(--bs-primary) !important;
+        font-weight: 600;
+      }
+
+      // Special styling for Fair Share link
+      &.fair-share-link {
+        &.active-nav-item {
+          color: var(--bs-success) !important;
+        }
+      }
+    }
+  }
 }

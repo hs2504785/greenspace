@@ -3,12 +3,22 @@
 import { Navbar, Nav, Container, Button } from "react-bootstrap";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import ProfileDropdown from "@/components/common/ProfileDropdown";
 import { useCart } from "@/context/CartContext";
 
 export default function Header() {
   const { data: session, status } = useSession();
   const { items } = useCart();
+  const pathname = usePathname();
+
+  // Function to check if a nav item is active
+  const isActive = (path) => {
+    if (path === "/") {
+      return pathname === "/" || pathname.startsWith("/?");
+    }
+    return pathname.startsWith(path);
+  };
 
   return (
     <Navbar expand="lg" className="navbar-sticky py-0">
@@ -27,20 +37,54 @@ export default function Header() {
             <Nav.Link
               as={Link}
               href="/?showFreeOnly=true"
-              className="text-success fw-semibold"
+              className={`fair-share-link ${
+                pathname.includes("showFreeOnly=true") ? "active-nav-item" : ""
+              }`}
             >
               🎁 Fair Share
             </Nav.Link>
-            <Nav.Link as={Link} href="/" className="active">
+            <Nav.Link
+              as={Link}
+              href="/"
+              className={
+                isActive("/") && !pathname.includes("showFreeOnly")
+                  ? "active-nav-item"
+                  : ""
+              }
+            >
               Fresh Vegetables
             </Nav.Link>
             {session && (
               <>
-                <Nav.Link as={Link} href="/orders">
+                <Nav.Link
+                  as={Link}
+                  href="/orders"
+                  className={isActive("/orders") ? "active-nav-item" : ""}
+                >
                   Orders & Deliveries
                 </Nav.Link>
-                {/* <Nav.Link as={Link} href="/discussions">Discussions</Nav.Link>
-                <Nav.Link as={Link} href="/community">Community</Nav.Link> */}
+                {/* <Nav.Link 
+                  as={Link} 
+                  href="/discussions"
+                  className={
+                    isActive("/discussions")
+                      ? "active-nav-item"
+                      : ""
+                  }
+                >
+                  Discussions
+                </Nav.Link>
+                <Nav.Link 
+                  as={Link} 
+                  href="/community"
+                  className={
+                    isActive("/community")
+                      ? "active-nav-item"
+                      : ""
+                  }
+                >
+                  Community
+                </Nav.Link> */}
               </>
             )}
           </Nav>
