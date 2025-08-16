@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import VegetableService from "@/services/VegetableService";
-import toast from "react-hot-toast";
+import toastService from "@/utils/toastService";
 // import { mockVegetables } from '@/data/mockVegetables'; // Removed - no longer using mock data
 
 export function useVegetables(initialFilters = {}) {
@@ -80,7 +80,7 @@ export function useVegetables(initialFilters = {}) {
         error: err,
       });
       setError(errorMessage);
-      toast.error(errorMessage);
+      toastService.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -102,14 +102,14 @@ export function useVegetables(initialFilters = {}) {
   const createVegetable = async (data) => {
     try {
       if (!VegetableService) {
-        toast.error("Database not configured");
+        toastService.error("Database not configured");
         return null;
       }
       const result = await VegetableService.createVegetable(data);
-      toast.success("Vegetable created successfully");
+      toastService.success("Vegetable created successfully");
       return result;
     } catch (err) {
-      toast.error("Failed to create vegetable");
+      toastService.error("Failed to create vegetable");
       throw err;
     }
   };
@@ -117,14 +117,14 @@ export function useVegetables(initialFilters = {}) {
   const updateVegetable = async (id, data) => {
     try {
       if (!VegetableService) {
-        toast.error("Database not configured");
+        toastService.error("Database not configured");
         return null;
       }
       const result = await VegetableService.updateVegetable(id, data);
-      toast.success("Vegetable updated successfully");
+      toastService.success("Vegetable updated successfully");
       return result;
     } catch (err) {
-      toast.error("Failed to update vegetable");
+      toastService.error("Failed to update vegetable");
       throw err;
     }
   };
@@ -132,15 +132,15 @@ export function useVegetables(initialFilters = {}) {
   const deleteVegetable = async (id) => {
     try {
       if (!VegetableService) {
-        toast.error("Database not configured");
+        toastService.error("Database not configured");
         return false;
       }
       await vegetableService.deleteVegetable(id);
-      toast.success("Vegetable deleted successfully");
+      toastService.success("Vegetable deleted successfully");
       fetchVegetables(); // Refresh the list
       return true;
     } catch (err) {
-      toast.error("Failed to delete vegetable");
+      toastService.error("Failed to delete vegetable");
       throw err;
     }
   };
@@ -148,12 +148,12 @@ export function useVegetables(initialFilters = {}) {
   const uploadImage = async (file) => {
     try {
       if (!VegetableService) {
-        toast.error("Database not configured");
+        toastService.error("Database not configured");
         return null;
       }
       return await vegetableService.uploadImage(file);
     } catch (err) {
-      toast.error("Failed to upload image");
+      toastService.error("Failed to upload image");
       throw err;
     }
   };

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Modal, Form, Button, Row, Col } from "react-bootstrap";
 import { useSession } from "next-auth/react";
-import { toast } from "react-hot-toast";
+import toastService from "@/utils/toastService";
 import vegetableService from "@/services/VegetableService";
 
 const CATEGORIES = ["leafy", "root", "fruit", "exotic", "seasonal", "organic"];
@@ -182,7 +182,7 @@ export default function VegetableForm({
             vegetableData
           );
           console.log("✅ Update response:", updated);
-          toast.success("Product updated successfully!");
+          toastService.presets.saveSuccess();
         } catch (updateError) {
           console.error("❌ Update failed:", updateError);
           throw updateError;
@@ -192,7 +192,7 @@ export default function VegetableForm({
         try {
           const created = await vegetableService.createVegetable(vegetableData);
           console.log("✅ Create response:", created);
-          toast.success("Product added successfully!");
+          toastService.presets.saveSuccess();
         } catch (createError) {
           console.error("❌ Create failed:", createError);
           throw createError;
@@ -220,7 +220,7 @@ export default function VegetableForm({
         error?.message ||
         error?.toString() ||
         "Failed to save product. Please try again.";
-      toast.error(errorMessage);
+      toastService.presets.saveError();
     } finally {
       setLoading(false);
     }

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button, Form, Alert, InputGroup } from "react-bootstrap";
 import { signIn } from "next-auth/react";
-import { toast } from "react-hot-toast";
+import toastService from "@/utils/toastService";
 
 export default function MobileLoginForm({ onSuccess }) {
   const [step, setStep] = useState("phone"); // 'phone' or 'otp'
@@ -50,7 +50,7 @@ export default function MobileLoginForm({ onSuccess }) {
         setStep("otp");
         setOtpSent(true);
         setResendTimer(60); // 60 seconds countdown
-        toast.success("OTP sent successfully!");
+        toastService.success("OTP sent successfully!");
 
         // Start countdown timer
         const timer = setInterval(() => {
@@ -104,7 +104,7 @@ export default function MobileLoginForm({ onSuccess }) {
         setError(result.error);
       } else if (result?.ok) {
         console.log("✅ Login successful");
-        toast.success("Login successful!");
+        toastService.presets.loginSuccess();
         if (onSuccess) {
           onSuccess();
         } else {
@@ -146,7 +146,7 @@ export default function MobileLoginForm({ onSuccess }) {
 
       if (result.success) {
         setResendTimer(60);
-        toast.success("OTP resent successfully!");
+        toastService.success("OTP resent successfully!");
 
         // Start countdown timer
         const timer = setInterval(() => {

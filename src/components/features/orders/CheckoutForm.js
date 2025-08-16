@@ -1,31 +1,31 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Modal, Form, Button } from 'react-bootstrap';
-import { useSession } from 'next-auth/react';
-import { toast } from 'react-hot-toast';
-import OrderService from '@/services/OrderService';
+import { useState } from "react";
+import { Modal, Form, Button } from "react-bootstrap";
+import { useSession } from "next-auth/react";
+import toastService from "@/utils/toastService";
+import OrderService from "@/services/OrderService";
 
-export default function CheckoutForm({ 
-  show, 
-  onHide, 
-  cartItems, 
-  seller, 
-  total, 
-  onSuccess 
+export default function CheckoutForm({
+  show,
+  onHide,
+  cartItems,
+  seller,
+  total,
+  onSuccess,
 }) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    deliveryAddress: '',
-    contactNumber: ''
+    deliveryAddress: "",
+    contactNumber: "",
   });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -35,38 +35,38 @@ export default function CheckoutForm({
 
     try {
       if (!session?.user?.id) {
-        throw new Error('User session invalid. Please login again.');
+        throw new Error("User session invalid. Please login again.");
       }
 
-      console.log('Session state:', {
+      console.log("Session state:", {
         isAuthenticated: !!session,
         user: session?.user,
-        id: session?.user?.id
+        id: session?.user?.id,
       });
 
       const orderData = {
         userId: session.user.id,
         sellerId: seller?.id,
-        items: cartItems.map(item => ({
+        items: cartItems.map((item) => ({
           id: item.id,
           quantity: item.quantity,
-          price: item.price
+          price: item.price,
         })),
         total,
         deliveryAddress: formData.deliveryAddress,
-        contactNumber: formData.contactNumber
+        contactNumber: formData.contactNumber,
       };
 
-      console.log('Submitting order:', orderData);
+      console.log("Submitting order:", orderData);
 
       const order = await OrderService.createOrder(orderData);
-      
-      toast.success('Order placed successfully!');
+
+      toastService.presets.orderSuccess();
       onSuccess(order);
       onHide();
     } catch (error) {
-      console.error('Error placing order:', error);
-      toast.error('Failed to place order. Please try again.');
+      console.error("Error placing order:", error);
+      toastService.presets.orderError();
     } finally {
       setLoading(false);
     }
@@ -98,12 +98,18 @@ export default function CheckoutForm({
                     <tr key={item.id}>
                       <td>{item.name}</td>
                       <td>{item.quantity}</td>
-                      <td className="text-end">₹{(item.price * item.quantity).toFixed(2)}</td>
+                      <td className="text-end">
+                        ₹{(item.price * item.quantity).toFixed(2)}
+                      </td>
                     </tr>
                   ))}
                   <tr>
-                    <td colSpan="2" className="text-end"><strong>Total:</strong></td>
-                    <td className="text-end"><strong>₹{total.toFixed(2)}</strong></td>
+                    <td colSpan="2" className="text-end">
+                      <strong>Total:</strong>
+                    </td>
+                    <td className="text-end">
+                      <strong>₹{total.toFixed(2)}</strong>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -113,8 +119,11 @@ export default function CheckoutForm({
           <div className="mb-4">
             <h6>Seller Information</h6>
             <p className="mb-0">
-              <strong>{seller?.name || 'Unknown Seller'}</strong><br />
-              <small className="text-muted">{seller?.location || 'Location not available'}</small>
+              <strong>{seller?.name || "Unknown Seller"}</strong>
+              <br />
+              <small className="text-muted">
+                {seller?.location || "Location not available"}
+              </small>
             </p>
           </div>
 
@@ -155,14 +164,14 @@ export default function CheckoutForm({
           <Button variant="secondary" onClick={onHide} disabled={loading}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
-            type="submit"
-            disabled={loading}
-          >
+          <Button variant="primary" type="submit" disabled={loading}>
             {loading ? (
               <>
-                <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                <span
+                  className="spinner-border spinner-border-sm me-1"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
                 Placing Order...
               </>
             ) : (

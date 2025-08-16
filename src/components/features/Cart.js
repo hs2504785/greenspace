@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useSession } from "next-auth/react";
 import UserAvatar from "../common/UserAvatar";
-import toast from "react-hot-toast";
+import toastService from "@/utils/toastService";
 import CheckoutForm from "./orders/CheckoutForm";
 
 export default function Cart() {
@@ -37,9 +37,7 @@ export default function Cart() {
   // Show cart errors as toast messages
   useEffect(() => {
     if (error) {
-      toast.error(error, {
-        duration: 4000,
-      });
+      toastService.error(error);
       clearError();
     }
   }, [error, clearError]);
@@ -52,7 +50,7 @@ export default function Cart() {
     console.log("WhatsApp number:", currentSeller?.whatsapp_number);
 
     if (!currentSeller?.whatsapp_number) {
-      toast.error("WhatsApp number not available for this seller");
+      toastService.error("WhatsApp number not available for this seller");
       return;
     }
 
@@ -86,7 +84,7 @@ export default function Cart() {
       )}&type=phone_number&app_absent=0`,
       "_blank"
     );
-    toast.success("Opening WhatsApp to place your order");
+    toastService.success("Opening WhatsApp to place your order");
     handleClose();
   };
 
@@ -156,7 +154,7 @@ export default function Cart() {
                           }
 
                           if (newQuantity > maxAllowed) {
-                            toast.error(
+                            toastService.error(
                               `Maximum ${maxAllowed} ${
                                 item.unit || "kg"
                               } available for this item`
@@ -205,7 +203,7 @@ export default function Cart() {
                     size="lg"
                     onClick={() => {
                       if (!session) {
-                        toast.error("Please sign in to place an order");
+                        toastService.error("Please sign in to place an order");
                         router.push("/login");
                         return;
                       }

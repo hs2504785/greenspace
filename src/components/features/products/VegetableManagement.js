@@ -12,7 +12,7 @@ import {
   Badge,
 } from "react-bootstrap";
 import { useSession } from "next-auth/react";
-import { toast } from "react-hot-toast";
+import toastService from "@/utils/toastService";
 import vegetableService from "@/services/VegetableService";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import SearchInput from "@/components/common/SearchInput";
@@ -84,11 +84,11 @@ export default function VegetableManagement() {
     setDeleteLoading(true);
     try {
       await vegetableService.deleteVegetable(selectedVegetable.id);
-      toast.success("Product deleted successfully");
+      toastService.presets.deleteSuccess();
       loadVegetables();
     } catch (error) {
       console.error("Error deleting product:", error);
-      toast.error("Failed to delete product");
+      toastService.presets.deleteError();
     } finally {
       setDeleteLoading(false);
       setShowDeleteModal(false);
@@ -115,7 +115,7 @@ export default function VegetableManagement() {
       console.log("Loaded vegetables:", data);
       setVegetables(data || []);
     } catch (error) {
-      toast.error("Failed to load products");
+      toastService.error("Failed to load products");
       console.error("Error loading products:", error);
       setVegetables([]); // Reset vegetables on error
     } finally {

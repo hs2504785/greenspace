@@ -46,7 +46,30 @@ export default function RootLayout({ children }) {
           <NextAuthProvider>
             <CartProvider>
               <MainLayout>{children}</MainLayout>
-              <Toaster position="top-right" reverseOrder={false} />
+              <Toaster
+                position="top-right"
+                reverseOrder={false}
+                gutter={12}
+                containerStyle={{
+                  top: 16,
+                  right: 16,
+                }}
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    fontSize: "14px",
+                    fontWeight: "400",
+                    minWidth: "280px",
+                    maxWidth: "400px",
+                  },
+                  success: {
+                    duration: 3000,
+                  },
+                  error: {
+                    duration: 5000,
+                  },
+                }}
+              />
             </CartProvider>
           </NextAuthProvider>
         </Providers>

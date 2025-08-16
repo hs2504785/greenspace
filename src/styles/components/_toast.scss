@@ -1,0 +1,190 @@
+// Clean, Simple, Light, Flat Toast Styles
+// Minimal design with subtle colors
+
+// Global toast container styling
+[data-hot-toast] {
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+// Success Toast - Light Green
+.toast-success {
+  background: #f8f9fa !important;
+  color: #155724 !important;
+  border-left: 3px solid #28a745 !important;
+
+  // Clean styling
+  padding: 12px 16px !important;
+
+  > div {
+    color: #155724 !important;
+  }
+}
+
+// Error Toast - Light Red
+.toast-error {
+  background: #f8f9fa !important;
+  color: #721c24 !important;
+  border-left: 3px solid #dc3545 !important;
+
+  // Clean styling
+  padding: 12px 16px !important;
+
+  > div {
+    color: #721c24 !important;
+  }
+}
+
+// Warning Toast - Light Orange
+.toast-warning {
+  background: #f8f9fa !important;
+  color: #856404 !important;
+  border-left: 3px solid #ffc107 !important;
+
+  // Clean styling
+  padding: 12px 16px !important;
+
+  > div {
+    color: #856404 !important;
+  }
+}
+
+// Info Toast - Light Blue
+.toast-info {
+  background: #f8f9fa !important;
+  color: #0c5460 !important;
+  border-left: 3px solid #17a2b8 !important;
+
+  // Clean styling
+  padding: 12px 16px !important;
+
+  > div {
+    color: #0c5460 !important;
+  }
+}
+
+// Loading Toast - Light Gray
+.toast-loading {
+  background: #f8f9fa !important;
+  color: #495057 !important;
+  border-left: 3px solid #6c757d !important;
+
+  // Clean styling
+  padding: 12px 16px !important;
+
+  > div {
+    color: #495057 !important;
+  }
+}
+
+// Custom toast (default fallback)
+.toast-custom {
+  background: #f8f9fa !important;
+  color: #495057 !important;
+  border-left: 3px solid #007bff !important;
+
+  // Clean styling
+  padding: 12px 16px !important;
+
+  > div {
+    color: #495057 !important;
+  }
+}
+
+// Simple animations
+[data-hot-toast].react-hot-toast {
+  animation: slideIn 0.3s ease forwards !important;
+}
+
+[data-hot-toast].react-hot-toast[data-hot-toast-exit] {
+  animation: slideOut 0.2s ease forwards !important;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  [data-hot-toast] {
+    min-width: 280px !important;
+    max-width: calc(100vw - 32px) !important;
+    margin: 0 16px !important;
+  }
+}
+
+// Clean content layout for custom toasts
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .toast-message {
+    flex: 1;
+    line-height: 1.4;
+  }
+
+  .toast-title {
+    font-weight: 500;
+    margin-bottom: 2px;
+    font-size: 14px;
+  }
+
+  .toast-description {
+    font-size: 13px;
+    opacity: 0.8;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 576px) {
+  .react-hot-toast {
+    .toast-container {
+      margin: 8px;
+      border-radius: 8px;
+    }
+  }
+
+  .toast-content {
+    padding: 12px;
+    min-height: 48px;
+
+    .toast-message {
+      font-size: 13px;
+    }
+
+    .toast-title {
+      font-size: 14px;
+    }
+  }
+
+  .toast-icon {
+    width: 24px !important;
+    height: 24px !important;
+    margin-right: 8px !important;
+
+    &::before {
+      font-size: 12px !important;
+    }
+  }
+}

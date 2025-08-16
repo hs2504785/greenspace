@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Container, Card, Form, Button } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import UserAvatar from "@/components/common/UserAvatar";
-import { toast } from "react-hot-toast";
+import toastService from "@/utils/toastService";
 
 export default function ProfilePage() {
   const { data: session, update: updateSession } = useSession();
@@ -72,7 +72,7 @@ export default function ProfilePage() {
         data = JSON.parse(responseText);
       } catch (parseError) {
         console.error("Failed to parse response:", parseError);
-        toast.error("Invalid response from server");
+        toastService.error("Invalid response from server");
         setIsLoading(false);
         return;
       }
@@ -80,7 +80,7 @@ export default function ProfilePage() {
       console.log("Response status:", response.status, "Data:", data);
 
       if (response.ok) {
-        toast.success("Profile updated successfully!");
+        toastService.presets.saveSuccess();
 
         // Update the session to reflect the changes
         try {
@@ -109,7 +109,7 @@ export default function ProfilePage() {
         const errorMessage = data.details
           ? `${data.message}: ${data.details}`
           : data.message || "Failed to update profile";
-        toast.error(errorMessage);
+        toastService.error(errorMessage);
       }
     } catch (err) {
       console.error("Profile update error:", {
@@ -117,7 +117,7 @@ export default function ProfilePage() {
         message: err.message,
         stack: err.stack,
       });
-      toast.error(
+      toastService.error(
         `Error: ${
           err.message || "An error occurred while updating your profile"
         }`

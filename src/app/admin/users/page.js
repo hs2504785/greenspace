@@ -14,7 +14,7 @@ import {
 } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
+import toastService from "@/utils/toastService";
 
 import AdminGuard from "@/components/common/AdminGuard";
 import UserAvatar from "@/components/common/UserAvatar";
@@ -67,7 +67,7 @@ export default function UsersManagement() {
       setUsers(data || []);
     } catch (error) {
       console.error("Error fetching users:", error);
-      toast.error("Failed to fetch users");
+      toastService.error("Failed to fetch users");
     } finally {
       setLoading(false);
     }
@@ -79,13 +79,13 @@ export default function UsersManagement() {
 
     // Basic validation
     if (!formData.name.trim()) {
-      toast.error("Name is required");
+      toastService.error("Name is required");
       setSubmitting(false);
       return;
     }
 
     if (!formData.email.trim()) {
-      toast.error("Email is required");
+      toastService.error("Email is required");
       setSubmitting(false);
       return;
     }
@@ -96,7 +96,7 @@ export default function UsersManagement() {
         (user) => user.email.toLowerCase() === formData.email.toLowerCase()
       );
       if (existingUser) {
-        toast.error("A user with this email already exists");
+        toastService.error("A user with this email already exists");
         setSubmitting(false);
         return;
       }
@@ -118,7 +118,7 @@ export default function UsersManagement() {
           throw new Error(errorData.error || "Failed to update user");
         }
 
-        toast.success("User updated successfully");
+        toastService.success("User updated successfully");
       } else {
         // Create new user
         const response = await fetch("/api/admin/users", {
@@ -134,7 +134,7 @@ export default function UsersManagement() {
           throw new Error(errorData.error || "Failed to create user");
         }
 
-        toast.success("User created successfully");
+        toastService.success("User created successfully");
       }
 
       setShowModal(false);
@@ -142,7 +142,7 @@ export default function UsersManagement() {
       fetchUsers();
     } catch (error) {
       console.error("Error saving user:", error);
-      toast.error(error.message || "Failed to save user");
+      toastService.error(error.message || "Failed to save user");
     } finally {
       setSubmitting(false);
     }
@@ -170,11 +170,11 @@ export default function UsersManagement() {
         throw new Error(errorData.error || "Failed to delete user");
       }
 
-      toast.success(`User "${selectedUser.name}" deleted successfully`);
+      toastService.success(`User "${selectedUser.name}" deleted successfully`);
       fetchUsers();
     } catch (error) {
       console.error("Error deleting user:", error);
-      toast.error(error.message || "Failed to delete user");
+      toastService.error(error.message || "Failed to delete user");
     } finally {
       setDeleteLoading(false);
       setShowDeleteModal(false);

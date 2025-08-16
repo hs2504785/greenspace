@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useUserRole } from '@/hooks/useUserRole';
-import LoadingSpinner from './LoadingSpinner';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { toast } from 'react-hot-toast';
+import { useUserRole } from "@/hooks/useUserRole";
+import LoadingSpinner from "./LoadingSpinner";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import toastService from "@/utils/toastService";
 
 export default function SellerGuard({ children }) {
   const { isSeller, isAdmin, loading } = useUserRole();
@@ -14,8 +14,8 @@ export default function SellerGuard({ children }) {
 
   useEffect(() => {
     if (!loading && !hasAccess) {
-      toast.error('Access denied. Seller or Admin account required.');
-      router.push('/');
+      toastService.presets.permissionDenied();
+      router.push("/");
     }
   }, [loading, hasAccess, router]);
 

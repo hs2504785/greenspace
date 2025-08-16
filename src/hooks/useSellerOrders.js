@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { toast } from "react-hot-toast";
+import toastService from "@/utils/toastService";
 import OrderService from "@/services/OrderService";
 
 export function useSellerOrders(initialFilters = {}) {
@@ -79,7 +79,7 @@ export function useSellerOrders(initialFilters = {}) {
     } catch (err) {
       console.error("Error fetching seller orders:", err);
       setError(err.message || "Failed to fetch seller orders");
-      toast.error("Failed to load seller orders");
+      toastService.error("Failed to load seller orders");
     } finally {
       setLoading(false);
     }
@@ -112,7 +112,7 @@ export function useSellerOrders(initialFilters = {}) {
       await OrderService.updateOrderStatus(orderId, newStatus);
 
       console.log("✅ useSellerOrders: Order status updated successfully");
-      toast.success("Order status updated successfully");
+      toastService.success("Order status updated successfully");
 
       console.log("🔄 useSellerOrders: Refreshing orders...");
       // Refresh orders
@@ -135,7 +135,7 @@ export function useSellerOrders(initialFilters = {}) {
       );
 
       console.error("Error updating order status:", err);
-      toast.error(
+      toastService.error(
         `Failed to update order status: ${err.message || "Unknown error"}`
       );
     } finally {

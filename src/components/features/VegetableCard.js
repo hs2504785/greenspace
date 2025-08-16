@@ -9,7 +9,7 @@ import UserAvatar from "../common/UserAvatar";
 import { useCart } from "@/context/CartContext";
 import { useSession } from "next-auth/react";
 import { checkCartForSimilarFreeItems } from "@/utils/freeItemValidation";
-import toast from "react-hot-toast";
+import toastService from "@/utils/toastService";
 
 export default function VegetableCard({
   id,
@@ -98,17 +98,15 @@ export default function VegetableCard({
         );
 
         if (result.success) {
-          toast.success(`Added ${name} to cart!`, {
+          toastService.success(`Added ${name} to cart!`, {
             icon: isFree ? "🎁" : "🛒",
           });
         } else if (result.error) {
-          toast.error(result.error, {
-            duration: 5000,
-          });
+          toastService.error(result.error);
         }
       } catch (error) {
         console.error("Error adding to cart:", error);
-        toast.error("Failed to add item to cart. Please try again.");
+        toastService.error("Failed to add item to cart. Please try again.");
       }
     }
   };

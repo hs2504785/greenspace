@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Container, Row, Col, Card, Button, Nav } from "react-bootstrap";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import MobileLoginForm from "@/components/auth/MobileLoginForm";
-import { toast } from "react-hot-toast";
+import toastService from "@/utils/toastService";
 
 export default function LoginPage() {
   const { data: session, status } = useSession();
@@ -27,7 +27,7 @@ export default function LoginPage() {
       await signIn("google", { callbackUrl: "/" });
     } catch (error) {
       console.error("Sign in error:", error);
-      toast.error("Failed to sign in with Google");
+      toastService.presets.loginError();
     } finally {
       setLoading(false);
     }

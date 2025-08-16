@@ -16,7 +16,7 @@ import { useCart } from "@/context/CartContext";
 import { useSession } from "next-auth/react";
 import { checkCartForSimilarFreeItems } from "@/utils/freeItemValidation";
 import UserAvatar from "../common/UserAvatar";
-import toast from "react-hot-toast";
+import toastService from "@/utils/toastService";
 
 export default function VegetableDetails({ vegetable }) {
   const router = useRouter();
@@ -63,15 +63,13 @@ export default function VegetableDetails({ vegetable }) {
       );
 
       if (!result.success) {
-        toast.error(result.error, {
-          duration: 5000, // Show error for longer
-        });
+        toastService.error(result.error);
       } else {
         const isFree = Number(vegetable.price) === 0;
-        toast.success(
+        toastService.success(
           `Added ${quantity} ${vegetable.unit || "kg"} of ${
             vegetable.name
-          } to cart`,
+          } to cart!`,
           {
             icon: isFree ? "🎁" : "🛒",
           }
@@ -79,7 +77,7 @@ export default function VegetableDetails({ vegetable }) {
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
-      toast.error("Failed to add item to cart. Please try again.");
+      toastService.error("Failed to add item to cart. Please try again.");
     }
   };
 

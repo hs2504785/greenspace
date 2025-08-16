@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Card, Button } from "react-bootstrap";
 import { useSession } from "next-auth/react";
-import { toast } from "react-hot-toast";
+import toastService from "@/utils/toastService";
 import OrderService from "@/services/OrderService";
 import { generateOrderStatusMessage, openWhatsApp } from "@/utils/whatsapp";
 
@@ -62,7 +62,7 @@ export default function OrderTimeline({ order }) {
     try {
       await OrderService.updateOrderStatus(order.id, nextStatus);
       setCurrentStatus(nextStatus);
-      toast.success("Order status updated to " + nextStatus);
+      toastService.success("Order status updated to " + nextStatus);
 
       // Send WhatsApp notification if status has a message
       try {
@@ -76,7 +76,7 @@ export default function OrderTimeline({ order }) {
       }
     } catch (error) {
       console.error("Error updating order status:", error);
-      toast.error("Failed to update order status");
+      toastService.error("Failed to update order status");
     } finally {
       setLoading(false);
     }
