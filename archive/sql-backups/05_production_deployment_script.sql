@@ -17,14 +17,13 @@
 DO $$
 BEGIN
     RAISE NOTICE '';
-    RAISE NOTICE '🚀 ================================';
-    RAISE NOTICE '🚀 GREENSPACE PRODUCTION DEPLOYMENT';
-    RAISE NOTICE '🚀 ================================';
-    RAISE NOTICE '📅 Deployment Date: %', NOW();
-    RAISE NOTICE '📦 Version: 1.0 - Phase 1 Launch';
-    RAISE NOTICE '🎯 Target: Production Database';
-    RAISE NOTICE '⏱️  Estimated Time: 2-3 minutes';
-    RAISE NOTICE '🚀 ================================';
+    RAISE NOTICE 'GREENSPACE PRODUCTION DEPLOYMENT';
+    RAISE NOTICE '================================';
+    RAISE NOTICE 'Deployment Date: %', NOW();
+    RAISE NOTICE 'Version: 1.0 - Phase 1 Launch';
+    RAISE NOTICE 'Target: Production Database';
+    RAISE NOTICE 'Estimated Time: 2-3 minutes';
+    RAISE NOTICE '================================';
     RAISE NOTICE '';
 END $$;
 
@@ -34,7 +33,7 @@ END $$;
 
 DO $$
 BEGIN
-    RAISE NOTICE '📦 Step 1: Installing database extensions...';
+    RAISE NOTICE 'Step 1: Installing database extensions...';
 END $$;
 
 -- Enable UUID extension for unique identifiers
@@ -49,7 +48,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 DO $$
 BEGIN
-    RAISE NOTICE '🗄️  Step 2: Creating database tables...';
+    RAISE NOTICE 'Step 2: Creating database tables...';
 END $$;
 
 -- Users Table (Core user management and authentication)
@@ -164,7 +163,7 @@ CREATE TABLE IF NOT EXISTS comments (
     author_id UUID REFERENCES users(id) ON DELETE SET NULL,
     content TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW')
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
 -- ===================================================
@@ -173,7 +172,7 @@ CREATE TABLE IF NOT EXISTS comments (
 
 DO $$
 BEGIN
-    RAISE NOTICE '⚡ Step 3: Creating performance indexes...';
+    RAISE NOTICE 'Step 3: Creating performance indexes...';
 END $$;
 
 -- Users table indexes
@@ -230,7 +229,7 @@ CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments(created_at DESC);
 
 DO $$
 BEGIN
-    RAISE NOTICE '⚙️  Step 4: Creating database functions...';
+    RAISE NOTICE 'Step 4: Creating database functions...';
 END $$;
 
 -- Function: Update timestamp automatically
@@ -278,7 +277,7 @@ $$ LANGUAGE plpgsql;
 
 DO $$
 BEGIN
-    RAISE NOTICE '🔄 Step 5: Creating database triggers...';
+    RAISE NOTICE 'Step 5: Creating database triggers...';
 END $$;
 
 -- Users table timestamp trigger
@@ -329,7 +328,7 @@ CREATE TRIGGER update_comments_updated_at
 
 DO $$
 BEGIN
-    RAISE NOTICE '🔐 Step 6: Configuring security policies...';
+    RAISE NOTICE 'Step 6: Configuring security policies...';
 END $$;
 
 -- Phase 1: RLS DISABLED for stability (can be enabled later)
@@ -362,7 +361,7 @@ ALTER TABLE otp_verifications ENABLE ROW LEVEL SECURITY;
 
 DO $$
 BEGIN
-    RAISE NOTICE '🔑 Step 7: Setting up permissions...';
+    RAISE NOTICE 'Step 7: Setting up permissions...';
 END $$;
 
 -- Core table permissions (Full access for working authentication)
@@ -419,7 +418,7 @@ GRANT USAGE ON SCHEMA public TO service_role;
 
 DO $$
 BEGIN
-    RAISE NOTICE '📝 Step 8: Adding table documentation...';
+    RAISE NOTICE 'Step 8: Adding table documentation...';
 END $$;
 
 COMMENT ON TABLE users IS 'Core user management with support for Google OAuth and mobile authentication';
@@ -437,7 +436,7 @@ COMMENT ON TABLE comments IS 'Comments on community discussions';
 
 DO $$
 BEGIN
-    RAISE NOTICE '✅ Step 9: Verifying deployment...';
+    RAISE NOTICE 'Step 9: Verifying deployment...';
 END $$;
 
 -- Verify all tables are created
@@ -452,9 +451,9 @@ BEGIN
       AND table_name IN ('users', 'vegetables', 'orders', 'order_items', 'guest_orders', 'otp_verifications', 'discussions', 'comments');
     
     IF table_count = expected_tables THEN
-        RAISE NOTICE '✅ All % tables created successfully', expected_tables;
+        RAISE NOTICE 'SUCCESS: All % tables created successfully', expected_tables;
     ELSE
-        RAISE EXCEPTION '❌ Only % of % tables created. Deployment incomplete.', table_count, expected_tables;
+        RAISE EXCEPTION 'ERROR: Only % of % tables created. Deployment incomplete.', table_count, expected_tables;
     END IF;
 END $$;
 
@@ -468,7 +467,7 @@ BEGIN
     WHERE schemaname = 'public'
       AND indexname LIKE 'idx_%';
     
-    RAISE NOTICE '✅ % performance indexes created', index_count;
+    RAISE NOTICE 'SUCCESS: % performance indexes created', index_count;
 END $$;
 
 -- Verify functions are created
@@ -481,7 +480,7 @@ BEGIN
     WHERE routine_schema = 'public'
       AND routine_name NOT LIKE 'pg_%';
     
-    RAISE NOTICE '✅ % custom functions created', function_count;
+    RAISE NOTICE 'SUCCESS: % custom functions created', function_count;
 END $$;
 
 -- Verify triggers are created
@@ -493,7 +492,7 @@ BEGIN
     FROM information_schema.triggers
     WHERE trigger_schema = 'public';
     
-    RAISE NOTICE '✅ % triggers created', trigger_count;
+    RAISE NOTICE 'SUCCESS: % triggers created', trigger_count;
 END $$;
 
 -- ===================================================
@@ -503,22 +502,22 @@ END $$;
 DO $$
 BEGIN
     RAISE NOTICE '';
-    RAISE NOTICE '🎉 ================================';
-    RAISE NOTICE '🎉 PRODUCTION DEPLOYMENT COMPLETE!';
-    RAISE NOTICE '🎉 ================================';
-    RAISE NOTICE '⏰ Completion Time: %', NOW();
-    RAISE NOTICE '📊 Database Status: PRODUCTION READY';
-    RAISE NOTICE '✅ Schema: Complete with 8 tables';
-    RAISE NOTICE '✅ Indexes: Optimized for performance';
-    RAISE NOTICE '✅ Functions: Core utilities active';
-    RAISE NOTICE '✅ Triggers: Timestamp automation enabled';
-    RAISE NOTICE '✅ Security: Phase 1 configuration applied';
-    RAISE NOTICE '✅ Permissions: Full access granted';
+    RAISE NOTICE '================================';
+    RAISE NOTICE 'PRODUCTION DEPLOYMENT COMPLETE!';
+    RAISE NOTICE '================================';
+    RAISE NOTICE 'Completion Time: %', NOW();
+    RAISE NOTICE 'Database Status: PRODUCTION READY';
+    RAISE NOTICE 'Schema: Complete with 8 tables';
+    RAISE NOTICE 'Indexes: Optimized for performance';
+    RAISE NOTICE 'Functions: Core utilities active';
+    RAISE NOTICE 'Triggers: Timestamp automation enabled';
+    RAISE NOTICE 'Security: Phase 1 configuration applied';
+    RAISE NOTICE 'Permissions: Full access granted';
     RAISE NOTICE '';
-    RAISE NOTICE '🚀 Your Greenspace Marketplace is ready!';
-    RAISE NOTICE '🌱 Next: Deploy your application and test';
-    RAISE NOTICE '📞 Support: Check deployment verification below';
-    RAISE NOTICE '🎉 ================================';
+    RAISE NOTICE 'Your Greenspace Marketplace is ready!';
+    RAISE NOTICE 'Next: Deploy your application and test';
+    RAISE NOTICE 'Support: Check deployment verification below';
+    RAISE NOTICE '================================';
     RAISE NOTICE '';
 END $$;
 
