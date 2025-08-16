@@ -123,6 +123,51 @@ export function generateAuthenticatedOrderMessage(items, total, user) {
   return `🛒 *New Order Request*\n\n${customerSection}${itemsMessage}${totalMessage}\n\n_Please confirm delivery details and payment method._`;
 }
 
+export function generateExistingOrderMessage(order) {
+  if (!order) {
+    console.warn("WhatsApp: No order data provided");
+    return "";
+  }
+
+  const orderId = order.id || "Unknown";
+  const total = order.total_amount || order.total || 0;
+  const deliveryAddress = order.delivery_address || "Address not available";
+  const contactNumber = order.contact_number || "Contact not available";
+
+  // Format each order item with bold product name
+  const itemsMessage = (order.items || [])
+    .map((item) => {
+      const name = item.vegetable?.name || item.name || "Unknown item";
+      const quantity = item.quantity || 0;
+      const price = item.price_per_unit || item.price || 0;
+      const unit = item.unit || "kg";
+      const itemTotal = item.total_price || price * quantity || 0;
+
+      return (
+        `*${name}*\n` +
+        `   • Quantity: ${quantity} ${unit}\n` +
+        `   • Price: ${price === 0 ? "FREE" : `₹${price}/${unit}`}\n` +
+        `   • Subtotal: ₹${itemTotal.toFixed(2)}`
+      );
+    })
+    .join("\n\n");
+
+  // Customer/Order details section
+  const orderSection =
+    `*Order Details:*\n` +
+    `🆔 Order ID: #${orderId}\n` +
+    `📦 Status: ${order.status || "Pending"}\n` +
+    `📱 Contact: ${contactNumber}\n` +
+    `📍 Delivery Address:\n${deliveryAddress}\n\n`;
+
+  // Add divider and total
+  const divider = "------------------------";
+  const totalMessage = `\n${divider}\n*Total Amount: ₹${total.toFixed(2)}*`;
+
+  // Compose the full message
+  return `📋 *Order Information*\n\n${orderSection}${itemsMessage}${totalMessage}\n\n_Regarding the above order details._`;
+}
+
 export function openWhatsApp(phoneNumber, message) {
   const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
     message

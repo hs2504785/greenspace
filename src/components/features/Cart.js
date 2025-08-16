@@ -306,28 +306,41 @@ export default function Cart() {
                 </div>
 
                 <div className="d-grid gap-2">
-                  <Button
-                    variant="success"
-                    size="lg"
-                    onClick={() => {
-                      if (!session) {
-                        toastService.error("Please sign in to place an order");
-                        router.push("/login");
-                        return;
-                      }
-                      setShowCheckout(true);
-                    }}
-                  >
-                    <i className="ti-shopping-cart-full me-2"></i>
-                    Proceed to Checkout
-                  </Button>
-                  <Button
-                    variant="outline-success"
-                    onClick={handleWhatsAppOrder}
-                  >
-                    <i className="ti-comment me-2"></i>
-                    Order via WhatsApp
-                  </Button>
+                  {session ? (
+                    // Authenticated users - only show checkout
+                    <Button
+                      variant="success"
+                      size="lg"
+                      onClick={() => setShowCheckout(true)}
+                    >
+                      <i className="ti-shopping-cart-full me-2"></i>
+                      Proceed to Checkout
+                    </Button>
+                  ) : (
+                    // Guest users - show both checkout and WhatsApp options
+                    <>
+                      <Button
+                        variant="success"
+                        size="lg"
+                        onClick={() => {
+                          toastService.error(
+                            "Please sign in to place an order"
+                          );
+                          router.push("/login");
+                        }}
+                      >
+                        <i className="ti-shopping-cart-full me-2"></i>
+                        Proceed to Checkout
+                      </Button>
+                      <Button
+                        variant="outline-success"
+                        onClick={handleWhatsAppOrder}
+                      >
+                        <i className="ti-comment me-2"></i>
+                        Order via WhatsApp
+                      </Button>
+                    </>
+                  )}
                   <Button variant="outline-danger" onClick={handleClearCart}>
                     Clear Cart
                   </Button>

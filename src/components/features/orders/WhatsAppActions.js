@@ -5,6 +5,7 @@ import {
   openWhatsApp,
   generateOrderStatusMessage,
   generateBuyerMessage,
+  generateExistingOrderMessage,
 } from "@/utils/whatsapp";
 
 export default function WhatsAppActions({ order, userRole = "buyer" }) {
@@ -45,7 +46,7 @@ export default function WhatsAppActions({ order, userRole = "buyer" }) {
     const message =
       userRole === "seller"
         ? `Hi! Regarding your order #${order.id}, `
-        : generateBuyerMessage(order, "status");
+        : generateExistingOrderMessage(order);
 
     openWhatsApp(phoneNumber, message);
   };
@@ -152,6 +153,14 @@ export default function WhatsAppActions({ order, userRole = "buyer" }) {
 
       <Dropdown.Menu>
         <Dropdown.Header>Quick Messages</Dropdown.Header>
+        <Dropdown.Item
+          onClick={() => handleCustomMessage()}
+          className="d-flex align-items-center"
+        >
+          <i className="ti-clipboard text-primary me-2"></i>
+          Share Order Details
+        </Dropdown.Item>
+        <Dropdown.Divider />
         <Dropdown.Item
           onClick={() => handleOrderInquiry("status")}
           className="d-flex align-items-center"
