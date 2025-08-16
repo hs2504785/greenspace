@@ -129,7 +129,10 @@ export const authOptions = {
 
           if (fetchError && fetchError.code !== "PGRST116") {
             console.error("Error checking user:", fetchError);
-            return false;
+            console.warn(
+              "Allowing sign-in despite database error to prevent AccessDenied"
+            );
+            // Don't return false - allow auth to proceed
           }
 
           // If user doesn't exist, create them
