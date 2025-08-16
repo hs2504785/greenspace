@@ -139,15 +139,23 @@ export const authOptions = {
       try {
         // Handle Google authentication
         if (account?.provider === "google") {
+          console.log("🔍 Google auth - checking if user exists:", user.email);
+
           // Check if user exists in database by email
           const { data: existingUser, error: fetchError } = await supabase
             .from("users")
-            .select("id")
+            .select("id, email, name")
             .eq("email", user.email)
             .single();
 
+          console.log("📥 User lookup result:", {
+            existingUser,
+            fetchError: fetchError?.message,
+            errorCode: fetchError?.code,
+          });
+
           if (fetchError && fetchError.code !== "PGRST116") {
-            console.error("Error checking user:", fetchError);
+            console.error("❌ Error checking user:", fetchError);
             console.warn(
               "Allowing sign-in despite database error to prevent AccessDenied"
             );
@@ -156,23 +164,45 @@ export const authOptions = {
 
           // If user doesn't exist, create them
           if (!existingUser) {
-            const { error: insertError } = await supabase.from("users").insert([
-              {
-                email: user.email,
-                name: user.name,
-                avatar_url: user.image,
-                provider: account.provider,
-                role: "buyer",
-              },
-            ]);
+            console.log("👤 User not found, creating new user:", {
+              email: user.email,
+              name: user.name,
+              avatar_url: user.image,
+              provider: account.provider,
+              role: "buyer",
+            });
+
+            const { data: newUser, error: insertError } = await supabase
+              .from("users")
+              .insert([
+                {
+                  email: user.email,
+                  name: user.name,
+                  avatar_url: user.image,
+                  provider: account.provider,
+                  role: "buyer",
+                },
+              ])
+              .select()
+              .single();
 
             if (insertError) {
-              console.error("Error creating user:", insertError);
+              console.error("❌ Error creating user:", insertError);
+              console.error("📊 Insert error details:", {
+                code: insertError.code,
+                message: insertError.message,
+                details: insertError.details,
+                hint: insertError.hint,
+              });
               console.warn(
                 "⚠️ Failed to create user in database, but allowing sign-in to prevent AccessDenied"
               );
               return true; // Don't block auth due to database creation failure
+            } else {
+              console.log("✅ Successfully created user:", newUser);
             }
+          } else {
+            console.log("✅ User already exists:", existingUser);
           }
         }
 
