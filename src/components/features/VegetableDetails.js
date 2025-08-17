@@ -339,11 +339,20 @@ export default function VegetableDetails({ vegetable }) {
               <Col sm={6}>
                 <Card className="border-0 bg-light h-100">
                   <Card.Body className="d-flex align-items-center">
-                    <i className={`ti-package fs-4 me-3 ${isOutOfStock ? 'text-danger' : 'text-success'}`}></i>
+                    <i
+                      className={`ti-package fs-4 me-3 ${
+                        isOutOfStock ? "text-danger" : "text-success"
+                      }`}
+                    ></i>
                     <div>
                       <div className="text-muted small">Available Quantity</div>
-                      <div className={`fw-semibold ${isOutOfStock ? 'text-danger' : ''}`}>
-                        {isOutOfStock ? '0' : vegetable.quantity} {vegetable.unit || "kg"}
+                      <div
+                        className={`fw-semibold ${
+                          isOutOfStock ? "text-danger" : ""
+                        }`}
+                      >
+                        {isOutOfStock ? "0" : vegetable.quantity}{" "}
+                        {vegetable.unit || "kg"}
                         {isOutOfStock && (
                           <small className="text-danger d-block">
                             Out of Stock
