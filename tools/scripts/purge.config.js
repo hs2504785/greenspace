@@ -54,6 +54,42 @@ module.exports = {
       /^collapse/,
       /^modal/,
       /^dropdown/,
+      /^offcanvas/,
+
+      // Critical state classes for Bootstrap components
+      "show",
+      "fade",
+      "showing",
+      "hiding",
+      "active",
+      "disabled",
+
+      // Specific offcanvas positioning classes (critical)
+      "offcanvas-start",
+      "offcanvas-end",
+      "offcanvas-top",
+      "offcanvas-bottom",
+      "offcanvas-backdrop",
+
+      // Specific tooltip classes (critical)
+      "tooltip",
+      "tooltip-inner",
+      "tooltip-arrow",
+      "bs-tooltip-top",
+      "bs-tooltip-bottom",
+      "bs-tooltip-start",
+      "bs-tooltip-end",
+      "bs-tooltip-auto",
+
+      // Specific modal classes (critical)
+      "modal",
+      "modal-dialog",
+      "modal-content",
+      "modal-header",
+      "modal-title",
+      "modal-body",
+      "modal-footer",
+      "modal-backdrop",
 
       // Custom brand classes for Arya Natural Farms
       /^brand-/,
@@ -89,10 +125,24 @@ module.exports = {
     greedy: [
       // Essential Bootstrap dynamic components (like working reference)
       /offcanvas/,
+      /offcanvas-start/,
+      /offcanvas-end/,
+      /offcanvas-top/,
+      /offcanvas-bottom/,
       /tooltip/,
+      /tooltip-inner/,
+      /tooltip-arrow/,
+      /bs-tooltip-top/,
+      /bs-tooltip-bottom/,
+      /bs-tooltip-start/,
+      /bs-tooltip-end/,
       /popover/,
       /modal/,
-      /tooltip-arrow/,
+      /modal-dialog/,
+      /modal-content/,
+      /modal-header/,
+      /modal-body/,
+      /modal-footer/,
       /popover-arrow/,
       /modal-backdrop/,
       /offcanvas-backdrop/,
@@ -106,7 +156,9 @@ module.exports = {
       /collapse/,
       /active/,
       /disabled/,
-      
+      /showing/,
+      /hiding/,
+
       // Positioning classes for tooltips/popovers
       /top/,
       /bottom/,
