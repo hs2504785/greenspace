@@ -208,6 +208,14 @@ export default function Header() {
               >
                 Fresh Vegetables
               </Nav.Link>
+              <Nav.Link
+                as={Link}
+                href="/nearby-sellers"
+                className={isActive("/nearby-sellers") ? "active-nav-item" : ""}
+              >
+                <i className="ti-map-alt me-1"></i>
+                Nearby Farmers
+              </Nav.Link>
               {session && (
                 <>
                   <Nav.Link
@@ -281,6 +289,17 @@ export default function Header() {
                   onClick={handleLinkClick}
                 >
                   Fresh Vegetables
+                </Nav.Link>
+                <Nav.Link
+                  as={Link}
+                  href="/nearby-sellers"
+                  className={`mobile-nav-link ${
+                    isActive("/nearby-sellers") ? "active-nav-item" : ""
+                  }`}
+                  onClick={handleLinkClick}
+                >
+                  <i className="ti-map-alt me-1"></i>
+                  Nearby Farmers
                 </Nav.Link>
                 {session && (
                   <>
