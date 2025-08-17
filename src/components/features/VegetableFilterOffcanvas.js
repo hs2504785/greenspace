@@ -1,17 +1,6 @@
 "use client";
 
-import {
-  Offcanvas,
-  Form,
-  Button,
-  InputGroup,
-  Badge,
-  Row,
-  Col,
-  Card,
-  OverlayTrigger,
-  Tooltip,
-} from "react-bootstrap";
+import { Offcanvas, Form, Button, Row, Col } from "react-bootstrap";
 import { useCallback, useEffect, useState, useMemo, memo } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import VegetableService from "@/services/VegetableService";
@@ -143,109 +132,90 @@ const VegetableFilterOffcanvas = memo(function VegetableFilterOffcanvas({
       placement="end"
       className="vegetable-filter-offcanvas"
     >
-      <Offcanvas.Header closeButton className="border-bottom">
-        <Offcanvas.Title>Filter & Sort</Offcanvas.Title>
-        <div className="clear-button-container ms-2">
-          <OverlayTrigger
-            placement="bottom"
-            overlay={
-              <Tooltip id="clear-filters-tooltip">
-                Clear all filters and reset to default
-              </Tooltip>
-            }
-          >
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              onClick={clearAllFilters}
-              className="d-flex align-items-center gap-1 px-2"
-              style={{
-                opacity: hasActiveFilters ? 1 : 0,
-                visibility: hasActiveFilters ? "visible" : "hidden",
-                transition: "opacity 0.2s ease-in-out",
-                fontSize: "0.875rem", // Slightly smaller text
-              }}
-            >
-              <i className="ti-refresh" style={{ fontSize: "0.85rem" }}></i>
-              <span>Clear</span>
-            </Button>
-          </OverlayTrigger>
-        </div>
+      <Offcanvas.Header closeButton className="d-flex align-items-center">
+        <Offcanvas.Title className="me-auto">Filter & Sort</Offcanvas.Title>
+        <Button
+          variant="link"
+          size="sm"
+          onClick={clearAllFilters}
+          className="text-decoration-none text-danger px-3 py-1 me-2"
+          style={{
+            opacity: hasActiveFilters ? 1 : 0,
+            visibility: hasActiveFilters ? "visible" : "hidden",
+            fontSize: "0.8rem",
+            fontWeight: "500",
+            minWidth: "60px",
+          }}
+        >
+          Clear All
+        </Button>
       </Offcanvas.Header>
 
-      <Offcanvas.Body className="p-3">
+      <Offcanvas.Body>
         {/* Search Section */}
-        <Card className="border-0 shadow-sm mb-3">
-          <Card.Body className="p-3">
-            <h6 className="mb-2 fw-semibold">Search</h6>
-            <SearchInput
-              value={searchValue}
-              onChange={handleSearchChange}
-              onClear={handleSearchClear}
-              placeholder="Search vegetables..."
-              className="w-100"
-            />
-          </Card.Body>
-        </Card>
+        <div className="mb-4">
+          <h6 className="mb-3 fw-semibold text-muted">Search</h6>
+          <SearchInput
+            value={searchValue}
+            onChange={handleSearchChange}
+            onClear={handleSearchClear}
+            placeholder="Search vegetables..."
+            className="w-100"
+          />
+        </div>
 
         {/* Category Section */}
-        <Card className="border-0 shadow-sm mb-3">
-          <Card.Body className="p-3">
-            <h6 className="mb-3 fw-semibold">Category</h6>
-            <Row className="g-2">
-              {categories.map((cat) => (
-                <Col key={cat} xs={6}>
-                  <Form.Check
-                    type="radio"
-                    id={`category-${cat}`}
-                    name="category"
-                    label={cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    checked={tempFilters.category === cat}
-                    onChange={() => handleCategoryChange(cat)}
-                    className="mb-1"
-                  />
-                </Col>
-              ))}
-            </Row>
-          </Card.Body>
-        </Card>
+        <div className="mb-4">
+          <h6 className="mb-3 fw-semibold text-muted">Category</h6>
+          <Row className="g-2">
+            {categories.map((cat) => (
+              <Col key={cat} xs={6}>
+                <Form.Check
+                  type="radio"
+                  id={`category-${cat}`}
+                  name="category"
+                  label={cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  checked={tempFilters.category === cat}
+                  onChange={() => handleCategoryChange(cat)}
+                  className="mb-1"
+                />
+              </Col>
+            ))}
+          </Row>
+        </div>
 
         {/* Sort Section */}
-        <Card className="border-0 shadow-sm mb-3">
-          <Card.Body className="p-3">
-            <h6 className="mb-3 fw-semibold">Sort by</h6>
-            <Form.Select
-              value={`${tempFilters.sortBy}-${tempFilters.sortDirection}`}
-              onChange={(e) => handleSortChange(e.target.value)}
-              className="w-100"
-            >
-              <option value="name-asc">Name (A-Z)</option>
-              <option value="name-desc">Name (Z-A)</option>
-              <option value="price-asc">Price (Low to High)</option>
-              <option value="price-desc">Price (High to Low)</option>
-              <option value="created_at-desc">Newest First</option>
-              <option value="created_at-asc">Oldest First</option>
-            </Form.Select>
-          </Card.Body>
-        </Card>
+        <div className="mb-4">
+          <h6 className="mb-3 fw-semibold text-muted">Sort by</h6>
+          <Form.Select
+            value={`${tempFilters.sortBy}-${tempFilters.sortDirection}`}
+            onChange={(e) => handleSortChange(e.target.value)}
+            className="w-100"
+          >
+            <option value="name-asc">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
+            <option value="price-asc">Price (Low to High)</option>
+            <option value="price-desc">Price (High to Low)</option>
+            <option value="created_at-desc">Newest First</option>
+            <option value="created_at-asc">Oldest First</option>
+          </Form.Select>
+        </div>
 
         {/* Special Options */}
-        <Card className="border-0 shadow-sm mb-3">
-          <Card.Body className="p-3">
-            <h6 className="mb-3 fw-semibold">Special Offers</h6>
-            <Form.Check
-              type="switch"
-              id="show-free-only"
-              label="🎁 Fair Share (Free items only)"
-              checked={tempFilters.showFreeOnly || false}
-              onChange={(e) => handleShowFreeOnlyToggle(e.target.checked)}
-              className="custom-fair-share-switch"
-            />
-          </Card.Body>
-        </Card>
+        <div className="mb-4">
+          <h6 className="mb-3 fw-semibold text-muted">Special Offers</h6>
+          <Form.Check
+            type="switch"
+            id="show-free-only"
+            label="🎁 Fair Share (Free items only)"
+            checked={tempFilters.showFreeOnly || false}
+            onChange={(e) => handleShowFreeOnlyToggle(e.target.checked)}
+            className="custom-fair-share-switch"
+          />
+        </div>
       </Offcanvas.Body>
 
-      <div className="border-top p-3 bg-white">
+      <div className="border-top p-3">
         <Row className="g-2">
           <Col>
             <Button
