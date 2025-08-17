@@ -196,11 +196,23 @@ export default function VegetableForm({
       if (!formData.location || formData.location.trim() === "") {
         throw new Error("Location is required. Please enter a location.");
       }
-      if (!formData.price || formData.price === "") {
+      if (
+        formData.price === "" ||
+        formData.price === null ||
+        formData.price === undefined
+      ) {
         throw new Error("Price is required. Enter 0 for free items.");
       }
-      if (!formData.quantity || formData.quantity === "") {
-        throw new Error("Quantity is required.");
+      if (isNaN(Number(formData.price)) || Number(formData.price) < 0) {
+        throw new Error("Price must be a valid number and cannot be negative.");
+      }
+      if (
+        formData.quantity === "" ||
+        formData.quantity === null ||
+        formData.quantity === undefined ||
+        Number(formData.quantity) <= 0
+      ) {
+        throw new Error("Quantity is required and must be greater than 0.");
       }
 
       // Debug session information
