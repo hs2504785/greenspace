@@ -11,12 +11,11 @@ class VegetableService extends ApiBaseService {
   async getAllVegetables() {
     try {
       if (!supabase) throw new Error("Supabase not initialized");
-      const { data, error } = await supabase.from(this.tableName).select(`
-          *,
-          owner:users!owner_id(
-            id, name, email, phone, whatsapp_number, location, avatar_url
-          )
-        `);
+
+      // WORKAROUND: Fetch vegetables without relationship first
+      const { data: vegetables, error } = await supabase
+        .from(this.tableName)
+        .select("*");
 
       if (error) {
         console.error("Supabase error details:", {
@@ -29,19 +28,51 @@ class VegetableService extends ApiBaseService {
         throw new Error(error.message || "Failed to fetch vegetables");
       }
 
-      if (!data) {
-        console.warn("No data returned from Supabase");
+      if (!vegetables || vegetables.length === 0) {
+        console.warn("No vegetables found");
         return [];
       }
 
-      return data;
+      // Get unique owner IDs
+      const ownerIds = [
+        ...new Set(vegetables.map((v) => v.owner_id).filter(Boolean)),
+      ];
+
+      if (ownerIds.length === 0) {
+        console.warn("No owner IDs found in vegetables");
+        return vegetables;
+      }
+
+      // Fetch all owners in one query
+      const { data: owners, error: ownerError } = await supabase
+        .from("users")
+        .select("id, name, email, phone, whatsapp_number, location, avatar_url")
+        .in("id", ownerIds);
+
+      if (ownerError) {
+        console.warn("Could not fetch owner data:", ownerError);
+        return vegetables;
+      }
+
+      // Create owner lookup map
+      const ownerMap = {};
+      owners?.forEach((owner) => {
+        ownerMap[owner.id] = owner;
+      });
+
+      // Combine vegetables with owner data
+      const vegetablesWithOwners = vegetables.map((vegetable) => ({
+        ...vegetable,
+        owner: ownerMap[vegetable.owner_id] || null,
+      }));
+
+      return vegetablesWithOwners;
     } catch (error) {
       console.error("Error fetching vegetables:", {
         message: error.message,
         stack: error.stack,
         fullError: error,
       });
-      // Return empty array instead of mock data
       console.log("Returning empty array - no vegetables available");
       return [];
     }
@@ -54,11 +85,11 @@ class VegetableService extends ApiBaseService {
       }
 
       if (!supabase) throw new Error("Supabase not initialized");
-      const { data, error } = await supabase
+
+      // WORKAROUND: Fetch vegetable without relationship first
+      const { data: vegetable, error } = await supabase
         .from(this.tableName)
-        .select(
-          "*, owner:users!owner_id(id, name, email, phone, whatsapp_number, location, avatar_url)"
-        )
+        .select("*")
         .eq("id", id)
         .single();
 
@@ -73,11 +104,34 @@ class VegetableService extends ApiBaseService {
         throw new Error(error.message || "Failed to fetch vegetable");
       }
 
-      if (!data) {
+      if (!vegetable) {
         throw new Error("Vegetable not found");
       }
 
-      return data;
+      // Fetch owner data separately if owner_id exists
+      try {
+        if (vegetable.owner_id) {
+          const { data: ownerData, error: ownerError } = await supabase
+            .from("users")
+            .select(
+              "id, name, email, phone, whatsapp_number, location, avatar_url"
+            )
+            .eq("id", vegetable.owner_id)
+            .single();
+
+          if (!ownerError && ownerData) {
+            return {
+              ...vegetable,
+              owner: ownerData,
+            };
+          }
+        }
+
+        return vegetable;
+      } catch (ownerFetchError) {
+        console.warn("Could not fetch owner data:", ownerFetchError);
+        return vegetable;
+      }
     } catch (error) {
       console.error("Error fetching vegetable:", {
         message: error.message,
@@ -98,11 +152,11 @@ class VegetableService extends ApiBaseService {
       }
 
       if (!supabase) throw new Error("Supabase not initialized");
-      const { data, error } = await supabase
+
+      // WORKAROUND: Fetch vegetables without relationship first
+      const { data: vegetables, error } = await supabase
         .from(this.tableName)
-        .select(
-          "*, owner:users!owner_id(id, name, email, phone, whatsapp_number, location, avatar_url)"
-        )
+        .select("*")
         .eq("owner_id", ownerId);
 
       if (error) {
@@ -110,8 +164,35 @@ class VegetableService extends ApiBaseService {
         throw error;
       }
 
-      console.log("✅ Found vegetables:", data?.length || 0);
-      return data || [];
+      if (!vegetables || vegetables.length === 0) {
+        console.log("✅ No vegetables found for owner");
+        return [];
+      }
+
+      // Fetch owner data separately
+      try {
+        const { data: ownerData, error: ownerError } = await supabase
+          .from("users")
+          .select(
+            "id, name, email, phone, whatsapp_number, location, avatar_url"
+          )
+          .eq("id", ownerId)
+          .single();
+
+        // Combine data manually
+        const vegetablesWithOwner = vegetables.map((vegetable) => ({
+          ...vegetable,
+          owner: ownerError ? null : ownerData,
+        }));
+
+        console.log("✅ Found vegetables:", vegetablesWithOwner.length);
+        return vegetablesWithOwner;
+      } catch (ownerFetchError) {
+        console.warn(
+          "⚠️ Could not fetch owner data, returning vegetables without owner info"
+        );
+        return vegetables;
+      }
     } catch (error) {
       console.error("Error fetching vegetables:", error);
       return [];
@@ -216,12 +297,11 @@ class VegetableService extends ApiBaseService {
         "✅ Step 10: Attempting database insert to table:",
         this.tableName
       );
+      // WORKAROUND: Insert without relationship first
       const { data, error } = await adminClient
         .from(this.tableName)
         .insert([finalData])
-        .select(
-          "*, owner:users!owner_id(id, name, email, phone, whatsapp_number, location, avatar_url)"
-        );
+        .select("*");
 
       console.log("📥 Database response:", { data, error });
 
@@ -261,8 +341,43 @@ class VegetableService extends ApiBaseService {
         throw new Error("No data returned after creating vegetable");
       }
 
-      console.log("Successfully created vegetable:", data[0]);
-      return data[0];
+      console.log("Successfully created vegetable, fetching owner data...");
+
+      // Fetch owner data separately
+      try {
+        const createdVegetable = data[0];
+
+        if (createdVegetable.owner_id) {
+          const { data: ownerData, error: ownerError } = await adminClient
+            .from("users")
+            .select(
+              "id, name, email, phone, whatsapp_number, location, avatar_url"
+            )
+            .eq("id", createdVegetable.owner_id)
+            .single();
+
+          if (!ownerError && ownerData) {
+            const completeVegetable = {
+              ...createdVegetable,
+              owner: ownerData,
+            };
+            console.log(
+              "Successfully created vegetable with owner data:",
+              completeVegetable
+            );
+            return completeVegetable;
+          }
+        }
+
+        console.log("Successfully created vegetable:", createdVegetable);
+        return createdVegetable;
+      } catch (ownerFetchError) {
+        console.warn(
+          "Could not fetch owner data for created vegetable:",
+          ownerFetchError
+        );
+        return data[0];
+      }
     } catch (error) {
       console.error("💥 Error in createVegetable - DETAILED DEBUG:", {
         message: error?.message || "No message",
@@ -292,16 +407,10 @@ class VegetableService extends ApiBaseService {
   }
 
   async updateVegetable(id, vegetableData) {
-    console.log("🔄 updateVegetable called with:", { id, vegetableData });
-
     try {
-      console.log("✅ Update Step 1: Function entry");
-
       if (!id) {
-        console.error("❌ No vegetable ID provided");
         throw new Error("Vegetable ID is required");
       }
-      console.log("✅ Update Step 2: Vegetable ID provided:", id);
 
       // Prepare update data (exclude created_at, add updated_at)
       const updateData = {
@@ -312,92 +421,64 @@ class VegetableService extends ApiBaseService {
       // Remove created_at from update data if it exists
       delete updateData.created_at;
 
-      console.log("✅ Update Step 3: Prepared update data:", updateData);
-
-      // Use admin client for consistent permissions
       const adminClient = createSupabaseClient();
-      console.log("✅ Update Step 4: Admin client created");
-
-      console.log("📤 Update Step 5: Attempting database update...");
 
       let data, error;
       try {
-        console.log("🔍 Making Supabase update call...");
+        // Update without relationship query to avoid schema cache issue
         const response = await adminClient
           .from(this.tableName)
           .update(updateData)
           .eq("id", id)
-          .select(
-            "*, owner:users!owner_id(id, name, email, phone, whatsapp_number, location, avatar_url)"
-          );
+          .select("*");
 
-        console.log("🔍 Raw Supabase response:", response);
-        data = response.data;
-        error = response.error;
+        data = response?.data;
+        error = response?.error;
       } catch (updateException) {
-        console.error("💥 Exception during update call:", updateException);
         throw updateException;
       }
 
-      console.log("📥 Update database response:", { data, error });
-      console.log("📥 Error type check:", {
-        hasError: !!error,
-        errorType: typeof error,
-        errorConstructor: error?.constructor?.name,
-        errorIsNull: error === null,
-        errorIsUndefined: error === undefined,
-        errorIsObject: typeof error === "object",
-        errorKeys: error ? Object.keys(error) : "no error",
-      });
-
       if (error) {
-        console.error("❌ Update error details:", {
-          message: error?.message || "No message",
-          details: error?.details || "No details",
-          hint: error?.hint || "No hint",
-          code: error?.code || "No code",
-          errorObject: error,
-          errorString: String(error),
-          errorJSON: JSON.stringify(error, null, 2),
-          errorProto: Object.getPrototypeOf(error),
-          updateData: updateData,
-          vegetableId: id,
-          tableName: this.tableName,
-        });
-
-        // Log the error in multiple ways
-        console.log("🔍 Raw error object:", error);
-        console.log("🔍 Error toString:", error?.toString());
-        console.log("🔍 Error properties:", Object.getOwnPropertyNames(error));
-
-        const errorMessage =
-          error?.message || error?.toString() || "Failed to update vegetable";
-        throw new Error(`Update error: ${errorMessage}`);
+        throw new Error(
+          `Update error: ${error.message || "Failed to update vegetable"}`
+        );
       }
 
       if (!data || data.length === 0) {
-        console.error("❌ No data returned from update");
         throw new Error("No data returned after updating vegetable");
       }
 
-      console.log("✅ Update Step 6: Successfully updated vegetable:", data[0]);
-      return data[0];
-    } catch (error) {
-      console.error("💥 Error in updateVegetable - DETAILED DEBUG:", {
-        message: error?.message || "No message",
-        name: error?.name || "No name",
-        stack: error?.stack || "No stack",
-        code: error?.code || "No code",
-        errorType: typeof error,
-        errorConstructor: error?.constructor?.name,
-        errorKeys: Object.keys(error || {}),
-        errorString: String(error),
-        vegetableId: id,
-        vegetableData: vegetableData,
-        hasError: !!error,
-        isErrorObject: error instanceof Error,
-      });
+      // Fetch owner data separately to avoid schema cache issue
+      const updatedVegetable = data[0];
 
+      try {
+        if (!updatedVegetable?.owner_id) {
+          return updatedVegetable;
+        }
+
+        const { data: ownerData, error: ownerError } = await adminClient
+          .from("users")
+          .select(
+            "id, name, email, phone, whatsapp_number, location, avatar_url"
+          )
+          .eq("id", updatedVegetable.owner_id)
+          .single();
+
+        if (ownerError) {
+          console.warn("Could not fetch owner data:", ownerError);
+          return updatedVegetable;
+        }
+
+        return {
+          ...updatedVegetable,
+          owner: ownerData,
+        };
+      } catch (ownerFetchError) {
+        console.warn("Error fetching owner data:", ownerFetchError);
+        return updatedVegetable;
+      }
+    } catch (error) {
+      console.error("Error updating vegetable:", error);
       throw error;
     }
   }
@@ -632,11 +713,10 @@ class VegetableService extends ApiBaseService {
   async getFreeVegetables() {
     try {
       if (!supabase) throw new Error("Supabase not initialized");
-      const { data, error } = await supabase
+      // WORKAROUND: Fetch free vegetables without relationship first
+      const { data: vegetables, error } = await supabase
         .from(this.tableName)
-        .select(
-          "*, owner:users!owner_id(id, name, email, phone, whatsapp_number, location, avatar_url)"
-        )
+        .select("*")
         .eq("price", 0);
 
       if (error) {
@@ -644,7 +724,46 @@ class VegetableService extends ApiBaseService {
         throw error;
       }
 
-      return data || [];
+      if (!vegetables || vegetables.length === 0) {
+        return [];
+      }
+
+      // Get unique owner IDs
+      const ownerIds = [
+        ...new Set(vegetables.map((v) => v.owner_id).filter(Boolean)),
+      ];
+
+      if (ownerIds.length === 0) {
+        return vegetables;
+      }
+
+      // Fetch all owners in one query
+      const { data: owners, error: ownerError } = await supabase
+        .from("users")
+        .select("id, name, email, phone, whatsapp_number, location, avatar_url")
+        .in("id", ownerIds);
+
+      if (ownerError) {
+        console.warn(
+          "Could not fetch owner data for free vegetables:",
+          ownerError
+        );
+        return vegetables;
+      }
+
+      // Create owner lookup map
+      const ownerMap = {};
+      owners?.forEach((owner) => {
+        ownerMap[owner.id] = owner;
+      });
+
+      // Combine vegetables with owner data
+      const vegetablesWithOwners = vegetables.map((vegetable) => ({
+        ...vegetable,
+        owner: ownerMap[vegetable.owner_id] || null,
+      }));
+
+      return vegetablesWithOwners;
     } catch (error) {
       console.error("Error fetching free vegetables:", error);
       return [];

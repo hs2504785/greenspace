@@ -246,9 +246,10 @@ export default function VegetableForm({
         throw new Error("User ID not found in session. Please log in again.");
       }
 
-      // Debug data being sent
+      // Debug data being sent - exclude owner field to prevent database error
+      const { owner, ...cleanFormData } = formData; // Remove owner field if present
       const vegetableData = {
-        ...formData,
+        ...cleanFormData,
         price: parseFloat(formData.price),
         quantity: parseInt(formData.quantity),
         owner_id: ownerId,
