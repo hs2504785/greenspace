@@ -87,7 +87,7 @@ export default function GuestOrderPage() {
   }
 
   return (
-    <Container className="py-4">
+    <Container className="pb-4">
       {/* Header */}
       <Row className="mb-4">
         <Col>

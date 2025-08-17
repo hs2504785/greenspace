@@ -76,7 +76,7 @@ export default function NewDiscussionPage() {
 
   if (!session) {
     return (
-      <div className="container py-4">
+      <div className="container pb-4">
         <div className="alert alert-warning">
           <h4>Authentication Required</h4>
           <p>You need to be logged in to create a discussion.</p>
@@ -89,7 +89,7 @@ export default function NewDiscussionPage() {
   }
 
   return (
-    <div className="container py-4">
+    <div className="container pb-4">
       <div className="row justify-content-center">
         <div className="col-md-8">
           <div className="d-flex justify-content-between align-items-center mb-4">

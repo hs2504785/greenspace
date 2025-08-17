@@ -255,7 +255,7 @@ function SellerDashboardContent() {
 
   if (loading) {
     return (
-      <Container className="py-4">
+      <Container className="pb-4">
         <div className="text-center">
           <div className="spinner-border text-success" role="status">
             <span className="visually-hidden">Loading...</span>
@@ -267,7 +267,7 @@ function SellerDashboardContent() {
   }
 
   return (
-    <Container className="py-3 py-md-4">
+    <Container className="pb-3 py-mb-3">
       <div className="mb-4">
         <Row className="g-3 align-items-center">
           <Col>

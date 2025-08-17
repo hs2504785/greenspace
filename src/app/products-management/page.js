@@ -5,13 +5,13 @@ import VegetableManagement from "@/components/features/products/VegetableManagem
 
 export default async function ProductsManagementPage() {
   const session = await getServerSession();
-  
+
   if (!session) {
     redirect("/login");
   }
 
   return (
-    <Container className="py-4">
+    <Container className="pb-4">
       <Row>
         <Col>
           <h1 className="mb-4">

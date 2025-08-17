@@ -116,7 +116,7 @@ export default function SellerRequestsPage() {
   }
 
   return (
-    <Container className="py-4">
+    <Container className="pb-4">
       <Card>
         <Card.Header>
           <h4 className="mb-0">
@@ -126,7 +126,7 @@ export default function SellerRequestsPage() {
         </Card.Header>
         <Card.Body>
           {requests.length === 0 ? (
-            <div className="text-center py-4">
+            <div className="text-center pb-4">
               <i className="ti-info-alt text-muted display-4"></i>
               <p className="mt-3 mb-0">No seller requests found</p>
             </div>

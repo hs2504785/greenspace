@@ -76,19 +76,19 @@ export default function DiscussionDetailPage({ params }) {
 
   if (discussionLoading)
     return (
-      <div className="container py-4">
+      <div className="container pb-4">
         <div className="alert alert-info">Loading discussion...</div>
       </div>
     );
   if (discussionError)
     return (
-      <div className="container py-4">
+      <div className="container pb-4">
         <div className="alert alert-danger">{discussionError.message}</div>
       </div>
     );
 
   return (
-    <div className="container py-4">
+    <div className="container pb-4">
       {/* Discussion Header */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <button

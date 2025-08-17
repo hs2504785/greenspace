@@ -33,7 +33,7 @@ export default function OrderDetailsPage() {
   }
 
   return (
-    <Container className="py-4">
+    <Container className="pb-4">
       <Row className="mb-4">
         <Col>
           <div className="d-flex justify-content-between align-items-center">

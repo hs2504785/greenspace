@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useSession } from "next-auth/react";
 import { Container, Card } from "react-bootstrap";
@@ -7,7 +7,7 @@ export default function TestSessionPage() {
   const { data: session, status } = useSession();
 
   return (
-    <Container className="py-4">
+    <Container className="pb-4">
       <Card>
         <Card.Header>Session Data</Card.Header>
         <Card.Body>

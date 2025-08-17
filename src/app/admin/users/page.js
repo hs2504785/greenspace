@@ -256,7 +256,7 @@ export default function UsersManagement() {
 
   return (
     <AdminGuard requiredRole="superadmin">
-      <Container className="py-3 py-md-4">
+      <Container className="pb-3 py-md-3 container">
         {/* Header Section with Improved Mobile Layout */}
         <div className="mb-4">
           <Row className="g-3 align-items-start">
