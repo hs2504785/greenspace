@@ -96,7 +96,7 @@ module.exports = {
       /navbar/,
       /carousel/,
       /offcanvas/,
-      
+
       // All tooltip and popover related classes
       /tooltip-/,
       /popover-/,
@@ -153,20 +153,20 @@ module.exports = {
       standard: [
         // Specific tooltip classes that are dynamically added
         "tooltip",
-        "tooltip-inner", 
+        "tooltip-inner",
         "tooltip-arrow",
         "bs-tooltip-top",
-        "bs-tooltip-bottom", 
+        "bs-tooltip-bottom",
         "bs-tooltip-start",
         "bs-tooltip-end",
         "bs-tooltip-auto",
         "popover",
         "popover-header",
-        "popover-body", 
+        "popover-body",
         "popover-arrow",
         "bs-popover-top",
         "bs-popover-bottom",
-        "bs-popover-start", 
+        "bs-popover-start",
         "bs-popover-end",
         "bs-popover-auto",
         "show",
