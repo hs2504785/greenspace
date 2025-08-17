@@ -43,13 +43,20 @@ export default function Header() {
     <>
       <Navbar className="navbar-sticky py-0">
         <Container>
-          <Navbar.Brand as={Link} href="/">
+          <Navbar.Brand as={Link} href="/" className="brand-container">
             <img
               src="/images/logo.svg"
-              width="60"
-              className="d-inline-block align-top me-2"
+              width="50"
+              height="50"
+              className="d-inline-block align-top me-2 brand-logo"
               alt="Arya Natural Farms Logo"
             />
+            <div className="brand-text d-flex flex-column">
+              <span className="brand-name">Arya Natural Farms</span>
+              <span className="brand-tagline d-none d-sm-block">
+                Fresh • Natural • Local
+              </span>
+            </div>
           </Navbar.Brand>
 
           {/* Filter and Cart buttons - always visible, appears before profile on desktop */}
