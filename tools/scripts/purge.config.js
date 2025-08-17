@@ -106,6 +106,13 @@ module.exports = {
       /collapse/,
       /active/,
       /disabled/,
+      
+      // Positioning classes for tooltips/popovers
+      /top/,
+      /bottom/,
+      /start/,
+      /end/,
+      /auto/,
 
       // Responsive classes
       /^.*-sm-.*$/,
