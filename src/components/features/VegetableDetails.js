@@ -25,6 +25,55 @@ export default function VegetableDetails({ vegetable }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
+  // Helper function to check if a string is a valid URL
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  // Helper function to render location with link if it's a URL
+  const renderLocation = (location) => {
+    if (isValidUrl(location)) {
+      return (
+        <a
+          href={location}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fw-semibold text-decoration-none text-primary"
+          style={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            display: "block",
+            maxWidth: "100%",
+          }}
+          title={location}
+        >
+          {location}
+        </a>
+      );
+    } else {
+      return (
+        <div
+          className="fw-semibold"
+          style={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            maxWidth: "100%",
+          }}
+          title={location}
+        >
+          {location}
+        </div>
+      );
+    }
+  };
+
   // Check if item is free and similar items in cart
   const isFree = Number(vegetable?.price) === 0;
   const similarFreeItemCheck = isFree
@@ -260,7 +309,7 @@ export default function VegetableDetails({ vegetable }) {
             <div className="d-flex justify-content-between align-items-start mb-3">
               <h1 className="mb-0 fw-bold">{vegetable.name}</h1>
               <Badge bg="success" className="fs-5 px-3 py-2">
-                ₹{vegetable.price}/kg
+                ₹{vegetable.price}/{vegetable.unit || "kg"}
               </Badge>
             </div>
 
@@ -277,9 +326,9 @@ export default function VegetableDetails({ vegetable }) {
                 <Card className="border-0 bg-light h-100">
                   <Card.Body className="d-flex align-items-center">
                     <i className="ti-location-pin fs-4 me-3 text-success"></i>
-                    <div>
+                    <div style={{ minWidth: 0, flex: 1 }}>
                       <div className="text-muted small">Location</div>
-                      <div className="fw-semibold">{vegetable.location}</div>
+                      {renderLocation(vegetable.location)}
                     </div>
                   </Card.Body>
                 </Card>
@@ -290,7 +339,9 @@ export default function VegetableDetails({ vegetable }) {
                     <i className="ti-package fs-4 me-3 text-success"></i>
                     <div>
                       <div className="text-muted small">Available Quantity</div>
-                      <div className="fw-semibold">{vegetable.quantity} kg</div>
+                      <div className="fw-semibold">
+                        {vegetable.quantity} {vegetable.unit || "kg"}
+                      </div>
                     </div>
                   </Card.Body>
                 </Card>

@@ -199,7 +199,7 @@ export default function VegetableCard({
 
         <div className="text-muted mb-2" style={{ fontSize: "0.85rem" }}>
           <i className="ti-package me-1"></i>
-          {maxQuantity} {unit} available
+          {maxQuantity} {unit || "kg"} available
         </div>
 
         <div>

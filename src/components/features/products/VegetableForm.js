@@ -22,10 +22,10 @@ const UNIT_TYPES = [
     quantityLabel: "pieces",
   },
   {
-    value: "bundles",
-    label: "Bundles",
+    value: "bundle",
+    label: "Bundle",
     priceLabel: "₹/bundle",
-    quantityLabel: "bundles",
+    quantityLabel: "bundle",
   },
   {
     value: "grams",
