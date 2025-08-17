@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Header from './Header';
-import Cart from '../features/Cart';
+import { useEffect, useState } from "react";
+import Header from "./Header";
+import Cart from "../features/Cart";
 
 const MainLayout = ({ children }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -15,17 +15,17 @@ const MainLayout = ({ children }) => {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [isScrolled]);
 
   useEffect(() => {
-    const navbar = document.querySelector('.navbar-sticky');
+    const navbar = document.querySelector(".navbar-sticky");
     if (navbar) {
       if (isScrolled) {
-        navbar.classList.add('scrolled');
+        navbar.classList.add("scrolled");
       } else {
-        navbar.classList.remove('scrolled');
+        navbar.classList.remove("scrolled");
       }
     }
   }, [isScrolled]);
@@ -33,9 +33,7 @@ const MainLayout = ({ children }) => {
   return (
     <div className="layout-wrapper">
       <Header />
-      <main className="main-content">
-        {children}
-      </main>
+      <main className="main-content mt-4">{children}</main>
       <Cart />
     </div>
   );

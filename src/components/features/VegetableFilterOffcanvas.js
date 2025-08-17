@@ -9,6 +9,8 @@ import {
   Row,
   Col,
   Card,
+  OverlayTrigger,
+  Tooltip,
 } from "react-bootstrap";
 import { useCallback, useEffect, useState, useMemo, memo } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -144,21 +146,30 @@ const VegetableFilterOffcanvas = memo(function VegetableFilterOffcanvas({
       <Offcanvas.Header closeButton className="border-bottom">
         <Offcanvas.Title>Filter & Sort</Offcanvas.Title>
         <div className="clear-button-container ms-2">
-          <Button
-            variant="outline-secondary"
-            size="sm"
-            onClick={clearAllFilters}
-            className="d-flex align-items-center gap-1"
-            title="Clear all filters"
-            style={{
-              opacity: hasActiveFilters ? 1 : 0,
-              visibility: hasActiveFilters ? "visible" : "hidden",
-              transition: "opacity 0.2s ease-in-out",
-            }}
+          <OverlayTrigger
+            placement="bottom"
+            overlay={
+              <Tooltip id="clear-filters-tooltip">
+                Clear all filters and reset to default
+              </Tooltip>
+            }
           >
-            <i className="ti-refresh" style={{ fontSize: "0.9rem" }}></i>
-            <span className="d-none d-sm-inline">Clear</span>
-          </Button>
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              onClick={clearAllFilters}
+              className="d-flex align-items-center gap-1 px-2"
+              style={{
+                opacity: hasActiveFilters ? 1 : 0,
+                visibility: hasActiveFilters ? "visible" : "hidden",
+                transition: "opacity 0.2s ease-in-out",
+                fontSize: "0.875rem", // Slightly smaller text
+              }}
+            >
+              <i className="ti-refresh" style={{ fontSize: "0.85rem" }}></i>
+              <span>Clear</span>
+            </Button>
+          </OverlayTrigger>
         </div>
       </Offcanvas.Header>
 

@@ -3,10 +3,8 @@
 import { useVegetables } from "@/hooks/useVegetables";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
 import VegetableFilterOffcanvas from "@/components/features/VegetableFilterOffcanvas";
 import VegetableResults from "@/components/features/VegetableResults";
-import VegetableCount from "@/components/features/VegetableCount";
 
 export default function Home() {
   const searchParams = useSearchParams();

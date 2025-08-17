@@ -1,0 +1,82 @@
+// Custom tooltip styles for green theme
+.tooltip {
+  // Enhanced appearance
+  .tooltip-inner {
+    background-color: #ffffff;
+    color: #2d3748;
+    border: 1px solid var(--bs-success);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 2px 8px rgba(25, 135, 84, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  // Arrow styling for each direction
+  &.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: var(--bs-success);
+  }
+
+  &.bs-tooltip-bottom .tooltip-arrow::before {
+    border-bottom-color: var(--bs-success);
+  }
+
+  &.bs-tooltip-start .tooltip-arrow::before,
+  &.bs-tooltip-left .tooltip-arrow::before {
+    border-left-color: var(--bs-success);
+  }
+
+  &.bs-tooltip-end .tooltip-arrow::before,
+  &.bs-tooltip-right .tooltip-arrow::before {
+    border-right-color: var(--bs-success);
+  }
+
+  // White arrow fill
+  &.bs-tooltip-top .tooltip-arrow::after {
+    border-top-color: #ffffff;
+  }
+
+  &.bs-tooltip-bottom .tooltip-arrow::after {
+    border-bottom-color: #ffffff;
+  }
+
+  &.bs-tooltip-start .tooltip-arrow::after,
+  &.bs-tooltip-left .tooltip-arrow::after {
+    border-left-color: #ffffff;
+  }
+
+  &.bs-tooltip-end .tooltip-arrow::after,
+  &.bs-tooltip-right .tooltip-arrow::after {
+    border-right-color: #ffffff;
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .tooltip {
+    .tooltip-inner {
+      background-color: #1a202c;
+      color: #e2e8f0;
+      border-color: #38a169;
+    }
+
+    // Dark mode arrows
+    &.bs-tooltip-top .tooltip-arrow::after {
+      border-top-color: #1a202c;
+    }
+
+    &.bs-tooltip-bottom .tooltip-arrow::after {
+      border-bottom-color: #1a202c;
+    }
+
+    &.bs-tooltip-start .tooltip-arrow::after,
+    &.bs-tooltip-left .tooltip-arrow::after {
+      border-left-color: #1a202c;
+    }
+
+    &.bs-tooltip-end .tooltip-arrow::after,
+    &.bs-tooltip-right .tooltip-arrow::after {
+      border-right-color: #1a202c;
+    }
+  }
+}

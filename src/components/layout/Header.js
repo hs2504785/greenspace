@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Navbar, Nav, Container, Button } from "react-bootstrap";
+import {
+  Navbar,
+  Nav,
+  Container,
+  Button,
+  OverlayTrigger,
+  Tooltip,
+} from "react-bootstrap";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
@@ -49,54 +56,71 @@ export default function Header() {
           <div className="d-flex align-items-center order-lg-3">
             {/* Filter button - only show on vegetables listing pages */}
             {(pathname === "/" || pathname.startsWith("/?")) && (
-              <div
-                className="text-decoration-none me-3 d-flex align-items-center cursor-pointer"
-                onClick={() =>
-                  window.dispatchEvent(
-                    new CustomEvent("toggle-vegetable-filters")
-                  )
+              <OverlayTrigger
+                placement="bottom"
+                overlay={
+                  <Tooltip id="filter-tooltip">
+                    Filter & Sort vegetables
+                  </Tooltip>
                 }
-                style={{ cursor: "pointer" }}
-                title="Filter & Sort"
               >
-                <i
-                  className="ti-filter text-success"
-                  style={{ fontSize: "1.4rem" }}
-                ></i>
-              </div>
+                <div
+                  className="text-decoration-none me-3 d-flex align-items-center cursor-pointer"
+                  onClick={() =>
+                    window.dispatchEvent(
+                      new CustomEvent("toggle-vegetable-filters")
+                    )
+                  }
+                  style={{ cursor: "pointer" }}
+                >
+                  <i
+                    className="ti-filter text-success"
+                    style={{ fontSize: "1.4rem" }}
+                  ></i>
+                </div>
+              </OverlayTrigger>
             )}
 
             {/* Cart button */}
-            <div
-              className="text-decoration-none me-3 d-flex align-items-center cursor-pointer"
-              onClick={() =>
-                window.dispatchEvent(new CustomEvent("toggle-cart"))
+            <OverlayTrigger
+              placement="bottom"
+              overlay={
+                <Tooltip id="cart-tooltip">
+                  Shopping Cart
+                  {items.length > 0 ? ` (${items.length} items)` : ""}
+                </Tooltip>
               }
-              style={{ cursor: "pointer" }}
-              title="Shopping Cart"
             >
-              <div className="position-relative">
-                <i
-                  className="ti-shopping-cart text-success"
-                  style={{ fontSize: "1.5rem" }}
-                ></i>
-                {items.length > 0 && (
-                  <div
-                    className="position-absolute bg-success text-white rounded-circle d-flex align-items-center justify-content-center"
-                    style={{
-                      top: "-10px",
-                      right: "-10px",
-                      width: "18px",
-                      height: "18px",
-                      fontSize: "0.7rem",
-                      fontWeight: "600",
-                    }}
-                  >
-                    {items.length}
-                  </div>
-                )}
+              <div
+                className="text-decoration-none me-3 d-flex align-items-center cursor-pointer"
+                onClick={() =>
+                  window.dispatchEvent(new CustomEvent("toggle-cart"))
+                }
+                style={{ cursor: "pointer" }}
+              >
+                <div className="position-relative">
+                  <i
+                    className="ti-shopping-cart text-success"
+                    style={{ fontSize: "1.5rem" }}
+                  ></i>
+                  {items.length > 0 && (
+                    <div
+                      className="position-absolute bg-success text-white rounded-circle d-flex align-items-center justify-content-center"
+                      style={{
+                        top: "-10px",
+                        right: "-10px",
+                        width: "18px",
+                        height: "18px",
+                        fontSize: "0.7rem",
+                        fontWeight: "600",
+                      }}
+                    >
+                      {items.length}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </OverlayTrigger>
 
             {/* User Authentication - visible on mobile only */}
             <div className="d-lg-none">

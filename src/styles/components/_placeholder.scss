@@ -5,7 +5,7 @@
 .ui-block {
   background: linear-gradient(90deg, #f0f0f0 0%, #f8f8f8 50%, #f0f0f0 100%);
   background-size: 200% 100%;
-  border-radius: 4px;
+  border-radius: 0.5rem; // Softer rounded corners (8px)
   animation: shimmer 4s linear infinite;
 }
 
@@ -47,5 +47,27 @@
   }
   100% {
     background-position: 200% 0;
+  }
+}
+
+// Softer placeholder cards
+.card {
+  // Ensure placeholder cards have softer borders and corners
+  &:has(.ui-line, .ui-block) {
+    border: 1px solid rgba(0, 0, 0, 0.08); // Much softer border
+    border-radius: 0.75rem; // More rounded corners (12px)
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); // Subtle shadow
+    overflow: hidden; // Ensure rounded corners work with content
+
+    .card-body {
+      padding: 1.25rem; // Slightly more padding for breathing room
+    }
+  }
+
+  // Make the image placeholder fit nicely in the rounded card
+  .ui-block:first-child {
+    border-radius: 0; // Remove border radius from top image to fit card
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
   }
 }
