@@ -38,10 +38,12 @@ module.exports = {
       /^text-/,
       /^bg-/,
       /^border-/,
-      /^m[tblrxy]?-/,
-      /^p[tblrxy]?-/,
-      /^w-/,
-      /^h-/,
+      // Size utilities (like working reference)
+      /w-(25|50|75|100|auto)/,
+      /h-(25|50|75|100|auto)/,
+      // Margin and padding utilities (like working reference)
+      /m[tebsxy]?-?(0|1|2|3|4|5|6|7|8|9|10|auto)/,
+      /p[tebsxy]?-?(0|1|2|3|4|5|6|7|8|9|10|auto)/,
       /^position-/,
 
       // React Bootstrap dynamic classes
@@ -85,16 +87,25 @@ module.exports = {
       /carousel/,
     ],
     greedy: [
-      // Essential Bootstrap dynamic components (proven patterns)
+      // Essential Bootstrap dynamic components (like working reference)
       /offcanvas/,
+      /tooltip/,
+      /popover/,
+      /modal/,
       /tooltip-arrow/,
       /popover-arrow/,
+      /modal-backdrop/,
+      /offcanvas-backdrop/,
       /bs-tooltip/,
       /bs-popover/,
+      /bs-modal/,
       /dropdown-menu/,
+      /dropdown-item/,
       /show/,
       /fade/,
       /collapse/,
+      /active/,
+      /disabled/,
 
       // Responsive classes
       /^.*-sm-.*$/,
