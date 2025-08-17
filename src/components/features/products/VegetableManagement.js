@@ -150,78 +150,104 @@ export default function VegetableManagement() {
   }
 
   return (
-    <Container className="py-3">
-      <Row className="mb-3 align-items-center">
-        <Col>
-          <div className="d-flex align-items-center gap-3">
-            <div>
-              <h1 className="h3 mb-1">My Products</h1>
+    <Container className="py-3 py-md-4">
+      {/* Header Section with Improved Mobile Layout */}
+      <div className="mb-4">
+        <Row className="g-3 align-items-start">
+          <Col xs={12} lg={8}>
+            <div className="mb-3 mb-lg-0">
+              <div className="d-flex align-items-center flex-wrap gap-3 mb-2">
+                <h1 className="h3 mb-0 lh-1">My Products</h1>
+                {vegetables.length > 0 && (
+                  <div className="d-flex align-items-center flex-wrap gap-2">
+                    <Badge
+                      bg="info"
+                      className="small px-2 py-1 d-flex align-items-center"
+                    >
+                      <i className="ti ti-package me-1"></i>
+                      {vegetables.length} Products
+                    </Badge>
+                    <Badge
+                      bg="success"
+                      className="small px-2 py-1 d-flex align-items-center"
+                    >
+                      <i className="ti ti-check me-1"></i>
+                      {filteredVegetables.length} Shown
+                    </Badge>
+                  </div>
+                )}
+              </div>
               <p className="text-muted mb-0 small">
                 {vegetables.length === 0
                   ? "Start your natural farming business"
                   : "Manage your product listings"}
               </p>
             </div>
-            {vegetables.length > 0 && (
-              <div className="d-flex align-items-center gap-2">
-                <Badge bg="info" className="small">
-                  <i className="ti ti-package me-1"></i>
-                  {vegetables.length} Products
-                </Badge>
-                <Badge bg="success" className="small">
-                  <i className="ti ti-check me-1"></i>
-                  {filteredVegetables.length} Shown
-                </Badge>
-              </div>
-            )}
-          </div>
-        </Col>
-        <Col xs="auto">
-          <Button variant="success" onClick={() => setShowForm(true)}>
-            <i className="ti ti-plus me-2"></i>
-            {vegetables.length === 0
-              ? "Add Your First Product"
-              : "Add New Product"}
-          </Button>
-        </Col>
-      </Row>
+          </Col>
+          <Col xs={12} lg={4}>
+            <div className="d-grid d-lg-flex justify-content-lg-end">
+              <Button
+                variant="success"
+                onClick={() => setShowForm(true)}
+                className="px-4 py-2 fw-semibold shadow-sm"
+              >
+                <i className="ti ti-plus me-2"></i>
+                <span className="d-none d-sm-inline">
+                  {vegetables.length === 0
+                    ? "Add Your First Product"
+                    : "Add New Product"}
+                </span>
+                <span className="d-sm-none">
+                  {vegetables.length === 0 ? "Add First" : "Add New"}
+                </span>
+              </Button>
+            </div>
+          </Col>
+        </Row>
+      </div>
 
-      <Card>
-        <Card.Body>
-          {/* Search and Filter Controls - Only show when there are products */}
-          {vegetables.length > 0 && (
-            <Row className="mb-3">
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Search Products</Form.Label>
-                  <SearchInput
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onClear={() => setSearchTerm("")}
-                    placeholder="Search by name or description..."
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={3}>
-                <Form.Group>
-                  <Form.Label>Filter by Category</Form.Label>
-                  <Form.Select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                  >
-                    <option value="all">All Categories</option>
-                    <option value="leafy">Leafy</option>
-                    <option value="root">Root</option>
-                    <option value="fruit">Fruit</option>
-                    <option value="exotic">Exotic</option>
-                    <option value="seasonal">Seasonal</option>
-                    <option value="organic">Organic</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={3} className="d-flex align-items-end">
+      {/* Search and Filter Controls - Only show when there are products */}
+      {vegetables.length > 0 && (
+        <div className="mb-4">
+          <Row className="g-3 align-items-end">
+            <Col xs={12} lg={6}>
+              <Form.Group className="mb-0">
+                <Form.Label className="small fw-medium text-muted mb-2">
+                  Search Products
+                </Form.Label>
+                <SearchInput
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onClear={() => setSearchTerm("")}
+                  placeholder="Search by name or description..."
+                />
+              </Form.Group>
+            </Col>
+            <Col xs={12} sm={6} lg={3}>
+              <Form.Group className="mb-0">
+                <Form.Label className="small fw-medium text-muted mb-2">
+                  Filter by Category
+                </Form.Label>
+                <Form.Select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                >
+                  <option value="all">All Categories</option>
+                  <option value="leafy">Leafy</option>
+                  <option value="root">Root</option>
+                  <option value="fruit">Fruit</option>
+                  <option value="exotic">Exotic</option>
+                  <option value="seasonal">Seasonal</option>
+                  <option value="organic">Organic</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col xs={12} sm={6} lg={3}>
+              <div className="d-flex align-items-end h-100">
                 <Button
-                  variant="outline-secondary"
+                  variant="light"
+                  className="btn btn-outline-info w-100"
+                  style={{ height: "38px" }}
                   onClick={() => {
                     setSearchTerm("");
                     setCategoryFilter("all");
@@ -230,181 +256,206 @@ export default function VegetableManagement() {
                   <i className="ti ti-refresh me-2"></i>
                   Clear Filters
                 </Button>
-              </Col>
-            </Row>
-          )}
+              </div>
+            </Col>
+          </Row>
+        </div>
+      )}
 
-          {vegetables.length > 0 ? (
-            <div className="table-responsive">
-              <Table hover className="mb-0">
-                <thead className="table-light">
-                  <tr>
-                    <th className="border-0">Product</th>
-                    <th className="border-0">Price</th>
-                    <th className="border-0">Quantity</th>
-                    <th className="border-0">Category</th>
-                    <th className="border-0">Location</th>
-                    <th className="border-0">Created</th>
-                    <th className="border-0">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredVegetables.length > 0 ? (
-                    filteredVegetables.map((vegetable) => (
-                      <tr key={vegetable.id} className="align-middle">
-                        <td>
-                          <div className="d-flex align-items-center">
-                            {vegetable.images?.[0] ? (
-                              <img
-                                src={vegetable.images[0]}
-                                alt={vegetable.name}
-                                className="rounded me-3"
-                                style={{
-                                  width: 40,
-                                  height: 40,
-                                  objectFit: "cover",
-                                }}
-                              />
-                            ) : (
-                              <div
-                                className="bg-light rounded me-3 d-flex align-items-center justify-content-center"
-                                style={{ width: 40, height: 40 }}
+      {vegetables.length > 0 ? (
+        <div className="table-responsive">
+          <Table
+            hover
+            className="mb-0 bg-white rounded-3 shadow-sm overflow-hidden"
+          >
+            <thead className="table-light">
+              <tr>
+                <th className="border-0 ps-3">Product</th>
+                <th className="border-0">Price</th>
+                <th className="border-0 d-none d-md-table-cell">Quantity</th>
+                <th className="border-0 d-none d-lg-table-cell">Category</th>
+                <th className="border-0 d-none d-xl-table-cell">Location</th>
+                <th className="border-0 d-none d-lg-table-cell">Created</th>
+                <th className="border-0 text-center" style={{ width: "100px" }}>
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredVegetables.length > 0 ? (
+                filteredVegetables.map((vegetable) => (
+                  <tr key={vegetable.id} className="align-middle">
+                    <td className="ps-3">
+                      <div className="d-flex align-items-center">
+                        {vegetable.images?.[0] ? (
+                          <img
+                            src={vegetable.images[0]}
+                            alt={vegetable.name}
+                            className="rounded me-3 flex-shrink-0"
+                            style={{
+                              width: 40,
+                              height: 40,
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          <div
+                            className="bg-light rounded me-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                            style={{ width: 40, height: 40 }}
+                          >
+                            <i className="ti ti-package text-muted"></i>
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <div className="fw-bold text-truncate">
+                            {vegetable.name}
+                          </div>
+                          {vegetable.description && (
+                            <small className="text-muted d-block text-truncate">
+                              {vegetable.description.length > 40
+                                ? `${vegetable.description.substring(0, 40)}...`
+                                : vegetable.description}
+                            </small>
+                          )}
+                          {/* Show category and quantity on mobile */}
+                          <div className="d-md-none mt-1">
+                            <div className="d-flex flex-wrap gap-1">
+                              <span className="d-lg-none">
+                                {getCategoryBadge(vegetable.category)}
+                              </span>
+                              <Badge
+                                bg="light"
+                                text="dark"
+                                className="small d-md-none"
                               >
-                                <i className="ti ti-package text-muted"></i>
-                              </div>
-                            )}
-                            <div>
-                              <div className="fw-bold">{vegetable.name}</div>
-                              {vegetable.description && (
-                                <small className="text-muted">
-                                  {vegetable.description.length > 50
-                                    ? `${vegetable.description.substring(
-                                        0,
-                                        50
-                                      )}...`
-                                    : vegetable.description}
-                                </small>
-                              )}
+                                {vegetable.quantity} {vegetable.unit || "kg"}
+                              </Badge>
                             </div>
                           </div>
-                        </td>
-                        <td>
-                          <span className="fw-bold text-success">
-                            ₹{vegetable.price}
-                          </span>
-                          <small className="text-muted d-block">
-                            per {vegetable.unit || "kg"}
-                          </small>
-                        </td>
-                        <td>
-                          <span className="fw-bold">{vegetable.quantity}</span>
-                          <small className="text-muted d-block">
-                            {vegetable.unit || "kg"} available
-                          </small>
-                        </td>
-                        <td>{getCategoryBadge(vegetable.category)}</td>
-                        <td>
-                          <i className="ti ti-map-pin me-1 text-muted"></i>
-                          {vegetable.location || (
-                            <span className="text-muted">Not specified</span>
-                          )}
-                        </td>
-                        <td>
-                          <small className="text-muted">
-                            {new Date(
-                              vegetable.created_at
-                            ).toLocaleDateString()}
-                          </small>
-                        </td>
-                        <td>
-                          <div className="btn-group" role="group">
-                            <button
-                              type="button"
-                              className="btn btn-link text-primary p-0 me-3 text-decoration-none"
-                              onClick={() => handleEdit(vegetable)}
-                              title="Edit product"
-                            >
-                              <i className="ti ti-pencil fs-5"></i>
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-link text-danger p-0 text-decoration-none"
-                              onClick={() => handleDelete(vegetable)}
-                              title="Delete product"
-                            >
-                              <i className="ti ti-trash fs-5"></i>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="7" className="text-center py-4">
-                        <div className="text-muted">
-                          <i
-                            className="ti ti-search"
-                            style={{ fontSize: "2rem" }}
-                          ></i>
-                          <p className="mt-2 mb-0">
-                            No products found matching your criteria
-                          </p>
-                          <small>
-                            Try adjusting your search terms or filters
-                          </small>
                         </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            </div>
-          ) : (
-            <div className="text-center py-5">
-              <div className="mb-4">
-                <div
-                  className="bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3"
-                  style={{ width: "80px", height: "80px" }}
-                >
-                  <i
-                    className="ti ti-package text-success"
-                    style={{ fontSize: "2.5rem" }}
-                  ></i>
-                </div>
-              </div>
-              <h5 className="text-dark mb-2">No products added yet</h5>
-              <p
-                className="text-muted mb-4 mx-auto"
-                style={{ maxWidth: "400px" }}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="text-nowrap">
+                        <span className="fw-bold text-success">
+                          ₹{vegetable.price}
+                        </span>
+                        <small className="text-muted d-block">
+                          per {vegetable.unit || "kg"}
+                        </small>
+                      </div>
+                    </td>
+                    <td className="d-none d-md-table-cell">
+                      <span className="fw-bold">{vegetable.quantity}</span>
+                      <small className="text-muted d-block">
+                        {vegetable.unit || "kg"} available
+                      </small>
+                    </td>
+                    <td className="d-none d-lg-table-cell">
+                      {getCategoryBadge(vegetable.category)}
+                    </td>
+                    <td className="d-none d-xl-table-cell">
+                      <i className="ti ti-map-pin me-1 text-muted"></i>
+                      {vegetable.location || (
+                        <span className="text-muted">Not specified</span>
+                      )}
+                    </td>
+                    <td className="d-none d-lg-table-cell">
+                      <small className="text-muted">
+                        {new Date(vegetable.created_at).toLocaleDateString()}
+                      </small>
+                    </td>
+                    <td className="text-center">
+                      <div className="d-flex justify-content-center gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-link text-primary p-1 border-0"
+                          onClick={() => handleEdit(vegetable)}
+                          title="Edit product"
+                          style={{ width: "32px", height: "32px" }}
+                        >
+                          <i className="ti ti-pencil"></i>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-link text-danger p-1 border-0"
+                          onClick={() => handleDelete(vegetable)}
+                          title="Delete product"
+                          style={{ width: "32px", height: "32px" }}
+                        >
+                          <i className="ti ti-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="text-center py-5">
+                    <div className="text-muted">
+                      <i
+                        className="ti ti-search mb-3"
+                        style={{ fontSize: "2.5rem" }}
+                      ></i>
+                      <h6 className="mb-2">
+                        No products found matching your criteria
+                      </h6>
+                      <p className="small mb-0">
+                        Try adjusting your search terms or filters
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </div>
+      ) : (
+        <Card className="shadow-sm">
+          <Card.Body className="text-center py-5 px-3">
+            <div className="mb-4">
+              <div
+                className="bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center mb-4"
+                style={{ width: "80px", height: "80px" }}
               >
-                Start selling your fresh, natural products by adding your first
-                item to the marketplace. It only takes a few minutes!
-              </p>
-              <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-                <Button
-                  variant="success"
-                  size="lg"
-                  onClick={() => setShowForm(true)}
-                  className="px-4"
-                >
-                  <i className="ti ti-plus me-2"></i>
-                  Add Your First Product
-                </Button>
-                <Button variant="outline-primary" size="lg" className="px-4">
-                  <i className="ti ti-help me-2"></i>
-                  How it works
-                </Button>
-              </div>
-              <div className="mt-4">
-                <small className="text-muted">
-                  💡 <strong>Tips:</strong> Add high-quality photos, detailed
-                  descriptions, and competitive pricing to attract more buyers
-                </small>
+                <i
+                  className="ti ti-package text-success"
+                  style={{ fontSize: "2.5rem" }}
+                ></i>
               </div>
             </div>
-          )}
-        </Card.Body>
-      </Card>
+            <h5 className="text-dark mb-3">No products added yet</h5>
+            <p
+              className="text-muted mb-4 mx-auto"
+              style={{ maxWidth: "400px" }}
+            >
+              Start selling your fresh, natural products by adding your first
+              item to the marketplace. It only takes a few minutes!
+            </p>
+            <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center mb-4">
+              <Button
+                variant="success"
+                size="lg"
+                onClick={() => setShowForm(true)}
+                className="px-4 py-2"
+              >
+                <i className="ti ti-plus me-2"></i>
+                Add Your First Product
+              </Button>
+              <Button variant="outline-primary" size="lg" className="px-4 py-2">
+                <i className="ti ti-help me-2"></i>
+                How it works
+              </Button>
+            </div>
+            <div className="mt-4 pt-3 border-top">
+              <small className="text-muted px-3">
+                💡 <strong>Tips:</strong> Add high-quality photos, detailed
+                descriptions, and competitive pricing to attract more buyers
+              </small>
+            </div>
+          </Card.Body>
+        </Card>
+      )}
 
       <VegetableForm
         show={showForm}

@@ -34,3 +34,117 @@ a.text-decoration-none {
   max-height: 4.8rem; // 3 lines * 1.6rem
   padding-right: 0.5rem;
 }
+
+// Products management table improvements
+.table-responsive {
+  // Better mobile table spacing - no borders for max width usage
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  .table {
+    margin-bottom: 0;
+
+    &.overflow-hidden {
+      // Ensure rounded corners work with table
+      border-collapse: separate;
+      border-spacing: 0;
+
+      thead th:first-child {
+        border-top-left-radius: 0.375rem;
+      }
+
+      thead th:last-child {
+        border-top-right-radius: 0.375rem;
+      }
+
+      tbody tr:last-child td:first-child {
+        border-bottom-left-radius: 0.375rem;
+      }
+
+      tbody tr:last-child td:last-child {
+        border-bottom-right-radius: 0.375rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      td,
+      th {
+        white-space: nowrap;
+        vertical-align: middle;
+      }
+
+      // Ensure proper minimum column widths on mobile
+      th:first-child,
+      td:first-child {
+        min-width: 200px; // Product column
+      }
+
+      th:nth-child(2),
+      td:nth-child(2) {
+        min-width: 100px; // Price column
+      }
+
+      th:last-child,
+      td:last-child {
+        min-width: 80px; // Actions column
+      }
+    }
+  }
+}
+
+// Mobile-specific improvements for product cards
+@media (max-width: 576px) {
+  .min-w-0 {
+    min-width: 0;
+    flex: 1;
+  }
+}
+
+// Better button hierarchy for products management
+.btn-light.text-muted {
+  transition: all 0.2s ease;
+
+  &:hover,
+  &:focus {
+    background-color: #e9ecef;
+    color: #495057 !important;
+    border-color: #dee2e6;
+    transform: translateY(-1px);
+  }
+}
+
+// Enhanced primary button styling
+.btn-success.fw-semibold {
+  transition: all 0.2s ease;
+
+  &:hover,
+  &:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3) !important;
+  }
+}
+
+// Clean action buttons with no fill/outline
+.btn-link.text-primary,
+.btn-link.text-danger {
+  transition: all 0.2s ease;
+  border-radius: 0.375rem;
+  text-decoration: none !important;
+
+  &:hover,
+  &:focus {
+    background-color: rgba(0, 0, 0, 0.04);
+    transform: scale(1.1);
+    box-shadow: none;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+}
+
+.btn-link.text-danger {
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+  }
+}
