@@ -292,12 +292,14 @@ export default function VegetableManagement() {
                           <span className="fw-bold text-success">
                             ₹{vegetable.price}
                           </span>
-                          <small className="text-muted d-block">per kg</small>
+                          <small className="text-muted d-block">
+                            per {vegetable.unit || "kg"}
+                          </small>
                         </td>
                         <td>
                           <span className="fw-bold">{vegetable.quantity}</span>
                           <small className="text-muted d-block">
-                            kg available
+                            {vegetable.unit || "kg"} available
                           </small>
                         </td>
                         <td>{getCategoryBadge(vegetable.category)}</td>
