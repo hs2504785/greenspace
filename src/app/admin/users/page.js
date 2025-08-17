@@ -19,6 +19,7 @@ import toastService from "@/utils/toastService";
 import AdminGuard from "@/components/common/AdminGuard";
 import UserAvatar from "@/components/common/UserAvatar";
 import SearchInput from "@/components/common/SearchInput";
+import ClearFiltersButton from "@/components/common/ClearFiltersButton";
 import DeleteConfirmationModal from "@/components/common/DeleteConfirmationModal";
 
 export default function UsersManagement() {
@@ -255,186 +256,205 @@ export default function UsersManagement() {
 
   return (
     <AdminGuard requiredRole="superadmin">
-      <Container className="py-3">
-        <Row className="mb-3 align-items-center">
-          <Col>
-            <div className="d-flex align-items-center gap-3">
-              <div>
-                <h1 className="h3 mb-1">User Management</h1>
+      <Container className="py-3 py-md-4">
+        {/* Header Section with Improved Mobile Layout */}
+        <div className="mb-4">
+          <Row className="g-3 align-items-start">
+            <Col xs={12} lg={8}>
+              <div className="mb-3 mb-lg-0">
+                <div className="d-flex align-items-center flex-wrap gap-3 mb-2">
+                  <h1 className="h3 mb-0 lh-1">User Management</h1>
+                  <div className="d-flex flex-wrap gap-2">
+                    <Badge bg="info" className="small px-2 py-1">
+                      <i className="ti ti-users me-1"></i>
+                      {users.length} Users
+                    </Badge>
+                    <Badge bg="success" className="small px-2 py-1">
+                      <i className="ti ti-user-check me-1"></i>
+                      {users.filter((u) => u.role !== "deleted").length} Active
+                    </Badge>
+                  </div>
+                </div>
                 <p className="text-muted mb-0 small">
                   Manage all users in the system
                 </p>
               </div>
-              <div className="d-flex align-items-center gap-2">
-                <Badge bg="info" className="small">
-                  <i className="ti ti-users me-1"></i>
-                  {users.length} Users
-                </Badge>
-                <Badge bg="success" className="small">
-                  <i className="ti ti-user-check me-1"></i>
-                  {users.filter((u) => u.role !== "deleted").length} Active
-                </Badge>
-              </div>
-            </div>
-          </Col>
-          <Col xs="auto">
-            <Button variant="success" onClick={openCreateModal}>
-              <i className="ti ti-plus me-2"></i>
-              Add New User
-            </Button>
-          </Col>
-        </Row>
-
-        <Card>
-          <Card.Body>
-            {/* Search and Filter Controls */}
-            <Row className="mb-3">
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Search Users</Form.Label>
-                  <SearchInput
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onClear={() => setSearchTerm("")}
-                    placeholder="Search by name or email..."
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={3}>
-                <Form.Group>
-                  <Form.Label>Filter by Role</Form.Label>
-                  <Form.Select
-                    value={roleFilter}
-                    onChange={(e) => setRoleFilter(e.target.value)}
-                  >
-                    <option value="all">All Roles</option>
-                    <option value="buyer">Buyer</option>
-                    <option value="seller">Seller</option>
-                    <option value="admin">Admin</option>
-                    <option value="superadmin">Super Admin</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={3} className="d-flex align-items-end">
+            </Col>
+            <Col xs={12} lg={4}>
+              <div className="d-grid d-lg-flex justify-content-lg-end">
                 <Button
-                  variant="outline-secondary"
-                  onClick={() => {
-                    setSearchTerm("");
-                    setRoleFilter("all");
-                  }}
+                  variant="success"
+                  onClick={openCreateModal}
+                  className="px-4 py-2 fw-semibold shadow-sm"
                 >
-                  <i className="ti ti-refresh me-2"></i>
-                  Clear Filters
+                  <i className="ti ti-plus me-2"></i>
+                  <span className="d-none d-sm-inline">Add New User</span>
+                  <span className="d-sm-none">Add User</span>
                 </Button>
-              </Col>
-            </Row>
+              </div>
+            </Col>
+          </Row>
+        </div>
 
-            <div className="table-responsive">
-              <Table hover className="mb-0">
-                <thead className="table-light">
-                  <tr>
-                    <th className="border-0">User</th>
-                    <th className="border-0">Role</th>
-                    <th className="border-0">Contact</th>
-                    <th className="border-0">Location</th>
-                    <th className="border-0">Joined</th>
-                    <th className="border-0">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.length > 0 ? (
-                    filteredUsers.map((user) => (
-                      <tr key={user.id} className="align-middle">
-                        <td>
-                          <div className="d-flex align-items-center">
-                            <UserAvatar
-                              user={{
-                                name: user.name,
-                                image: user.avatar_url,
-                              }}
-                              size={40}
-                              className="me-3"
-                            />
-                            <div>
-                              <div className="fw-bold">{user.name}</div>
-                              <small className="text-muted">{user.email}</small>
-                            </div>
+        {/* Search and Filter Controls */}
+        <div className="mb-4">
+          <Row className="g-3 align-items-end">
+            <Col xs={12} lg={6}>
+              <Form.Group className="mb-0">
+                <Form.Label className="small fw-medium text-muted mb-2">
+                  Search Users
+                </Form.Label>
+                <SearchInput
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onClear={() => setSearchTerm("")}
+                  placeholder="Search by name or email..."
+                />
+              </Form.Group>
+            </Col>
+            <Col xs={12} sm={6} lg={3}>
+              <Form.Group className="mb-0">
+                <Form.Label className="small fw-medium text-muted mb-2">
+                  Filter by Role
+                </Form.Label>
+                <Form.Select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                >
+                  <option value="all">All Roles</option>
+                  <option value="buyer">Buyer</option>
+                  <option value="seller">Seller</option>
+                  <option value="admin">Admin</option>
+                  <option value="superadmin">Super Admin</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col xs={12} sm={6} lg={3}>
+              <ClearFiltersButton
+                onClick={() => {
+                  setSearchTerm("");
+                  setRoleFilter("all");
+                }}
+              />
+            </Col>
+          </Row>
+        </div>
+
+        <div className="table-responsive">
+          <Table
+            hover
+            className="mb-0 bg-white rounded-3 shadow-sm overflow-hidden"
+          >
+            <thead className="table-light">
+              <tr>
+                <th className="border-0 ps-3">User</th>
+                <th className="border-0">Role</th>
+                <th className="border-0">Contact</th>
+                <th className="border-0">Location</th>
+                <th className="border-0">Joined</th>
+                <th className="border-0 text-center" style={{ width: "100px" }}>
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map((user) => (
+                  <tr key={user.id} className="align-middle">
+                    <td className="ps-3">
+                      <div className="d-flex align-items-center">
+                        <UserAvatar
+                          user={{
+                            name: user.name,
+                            image: user.avatar_url,
+                          }}
+                          size={40}
+                          className="me-3 flex-shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <div className="fw-bold text-truncate">
+                            {user.name}
                           </div>
-                        </td>
-                        <td>{getRoleBadge(user.role)}</td>
-                        <td>
-                          <div>
-                            {user.whatsapp_number ? (
-                              <div>
-                                <i className="ti ti-brand-whatsapp me-1 text-success"></i>
-                                {user.whatsapp_number}
-                              </div>
-                            ) : user.phone ? (
-                              <div>
-                                <i className="ti ti-phone me-1"></i>
-                                {user.phone}
-                              </div>
-                            ) : (
-                              <span className="text-muted">Not provided</span>
-                            )}
-                          </div>
-                        </td>
-                        <td>
-                          {user.location || (
-                            <span className="text-muted">Not specified</span>
-                          )}
-                        </td>
-                        <td>
-                          <small className="text-muted">
-                            {new Date(user.created_at).toLocaleDateString()}
-                          </small>
-                        </td>
-                        <td>
-                          <div className="btn-group" role="group">
-                            <button
-                              type="button"
-                              className="btn btn-link text-primary p-0 me-3 text-decoration-none"
-                              onClick={() => openEditModal(user)}
-                              title="Edit user"
-                            >
-                              <i className="ti ti-pencil fs-5"></i>
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-link text-danger p-0 text-decoration-none"
-                              onClick={() => handleDelete(user.id)}
-                              disabled={user.role === "superadmin"}
-                              title="Delete user"
-                            >
-                              <i className="ti ti-trash fs-5"></i>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="7" className="text-center py-4">
-                        <div className="text-muted">
-                          <i
-                            className="ti ti-search"
-                            style={{ fontSize: "2rem" }}
-                          ></i>
-                          <p className="mt-2 mb-0">
-                            No users found matching your criteria
-                          </p>
-                          <small>
-                            Try adjusting your search terms or filters
+                          <small className="text-muted d-block text-truncate">
+                            {user.email}
                           </small>
                         </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            </div>
-          </Card.Body>
-        </Card>
+                      </div>
+                    </td>
+                    <td>{getRoleBadge(user.role)}</td>
+                    <td>
+                      <div>
+                        {user.whatsapp_number ? (
+                          <div>
+                            <i className="ti ti-brand-whatsapp me-1 text-success"></i>
+                            {user.whatsapp_number}
+                          </div>
+                        ) : user.phone ? (
+                          <div>
+                            <i className="ti ti-phone me-1"></i>
+                            {user.phone}
+                          </div>
+                        ) : (
+                          <span className="text-muted">Not provided</span>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      {user.location || (
+                        <span className="text-muted">Not specified</span>
+                      )}
+                    </td>
+                    <td>
+                      <small className="text-muted">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </small>
+                    </td>
+                    <td className="text-center">
+                      <div className="d-flex justify-content-center gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-link text-primary p-1 border-0"
+                          onClick={() => openEditModal(user)}
+                          title="Edit user"
+                          style={{ width: "32px", height: "32px" }}
+                        >
+                          <i className="ti ti-pencil"></i>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-link text-danger p-1 border-0"
+                          onClick={() => handleDelete(user.id)}
+                          disabled={user.role === "superadmin"}
+                          title="Delete user"
+                          style={{ width: "32px", height: "32px" }}
+                        >
+                          <i className="ti ti-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="text-center py-5">
+                    <div className="text-muted">
+                      <i
+                        className="ti ti-search mb-3"
+                        style={{ fontSize: "2.5rem" }}
+                      ></i>
+                      <h6 className="mb-2">
+                        No users found matching your criteria
+                      </h6>
+                      <p className="small mb-0">
+                        Try adjusting your search terms or filters
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </div>
 
         {/* User Modal */}
         <Modal

@@ -1,4 +1,51 @@
-# 🎯 Simple Placeholder Components
+# 🎯 Common Components
+
+Collection of reusable components for consistent UI patterns across the application.
+
+## 🧹 ClearFiltersButton
+
+A reusable clear filters button with consistent styling and height alignment.
+
+### Usage
+
+```jsx
+import ClearFiltersButton from "@/components/common/ClearFiltersButton";
+
+<ClearFiltersButton
+  onClick={() => {
+    setSearchTerm("");
+    setCategoryFilter("all");
+  }}
+/>;
+```
+
+### Props
+
+| Prop        | Type     | Default         | Description                             |
+| ----------- | -------- | --------------- | --------------------------------------- |
+| `onClick`   | function | -               | Handler function when button is clicked |
+| `text`      | string   | "Clear Filters" | Button text                             |
+| `className` | string   | ""              | Additional CSS classes                  |
+| `disabled`  | boolean  | false           | Whether button is disabled              |
+| `style`     | object   | {}              | Additional inline styles                |
+
+### Features
+
+- ✅ **Consistent height** (38px) to align with form controls
+- ✅ **Responsive design** with proper flex alignment
+- ✅ **Refresh icon** with consistent spacing
+- ✅ **Bootstrap styling** with light variant and muted text
+- ✅ **Flexible text** - customizable button text
+
+### Used In
+
+- Products Management (search + category filters)
+- Users Management (search + role filters)
+- Seller Dashboard (search + status + period filters)
+
+---
+
+## 🎯 Simple Placeholder Components
 
 Minimal, reusable placeholder components using `ui-line` and `ui-block` CSS classes.
 

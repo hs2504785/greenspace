@@ -13,6 +13,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useSellerOrders } from "@/hooks/useSellerOrders";
 import SellerGuard from "@/components/common/SellerGuard";
 import SearchInput from "@/components/common/SearchInput";
+import ClearFiltersButton from "@/components/common/ClearFiltersButton";
 import React, {
   useState,
   useCallback,
@@ -266,20 +267,25 @@ function SellerDashboardContent() {
   }
 
   return (
-    <Container className="py-4">
-      <Row className="mb-4">
-        <Col>
-          <div className="d-flex align-items-center mb-3">
-            <i className="ti-package me-3" style={{ fontSize: "2rem" }}></i>
-            <div>
-              <h1 className="h3 mb-0">Seller Dashboard</h1>
-              <p className="text-muted mb-0">
-                Manage orders from your customers
-              </p>
+    <Container className="py-3 py-md-4">
+      <div className="mb-4">
+        <Row className="g-3 align-items-center">
+          <Col>
+            <div className="d-flex align-items-center">
+              <i
+                className="ti-package me-3 text-success"
+                style={{ fontSize: "2rem" }}
+              ></i>
+              <div>
+                <h1 className="h3 mb-1 lh-1">Seller Dashboard</h1>
+                <p className="text-muted mb-0 small">
+                  Manage orders from your customers
+                </p>
+              </div>
             </div>
-          </div>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      </div>
 
       {/* Stats Cards */}
       <Row className="mb-4">
@@ -326,47 +332,72 @@ function SellerDashboardContent() {
         </Col>
       </Row>
 
-      {/* Filters */}
-      <Row className="mb-4">
-        <Col md={6}>
-          <SearchInput
-            ref={searchInputRef}
-            value={searchValue}
-            onChange={handleSearchChange}
-            onSubmit={handleSearchSubmit}
-            onClear={handleSearchClear}
-            placeholder="Search orders by order ID, customer name, or item..."
-          />
-        </Col>
-        <Col md={3}>
-          <Form.Select
-            value={filters.status}
-            onChange={(e) => updateFilters({ status: e.target.value })}
-          >
-            <option value="all">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="whatsapp_sent">WhatsApp Sent</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
-          </Form.Select>
-        </Col>
-        <Col md={3}>
-          <Form.Select
-            value={filters.period}
-            onChange={(e) => updateFilters({ period: e.target.value })}
-          >
-            <option value="all">All Time</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="3months">Last 3 Months</option>
-            <option value="year">This Year</option>
-          </Form.Select>
-        </Col>
-      </Row>
+      {/* Search and Filter Controls */}
+      <div className="mb-4">
+        <Row className="g-3 align-items-end">
+          <Col xs={12} lg={5}>
+            <Form.Group className="mb-0">
+              <Form.Label className="small fw-medium text-muted mb-2">
+                Search Orders
+              </Form.Label>
+              <SearchInput
+                ref={searchInputRef}
+                value={searchValue}
+                onChange={handleSearchChange}
+                onSubmit={handleSearchSubmit}
+                onClear={handleSearchClear}
+                placeholder="Search orders by order ID, customer name, or item..."
+              />
+            </Form.Group>
+          </Col>
+          <Col xs={12} sm={6} lg={2}>
+            <Form.Group className="mb-0">
+              <Form.Label className="small fw-medium text-muted mb-2">
+                Filter by Status
+              </Form.Label>
+              <Form.Select
+                value={filters.status}
+                onChange={(e) => updateFilters({ status: e.target.value })}
+              >
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="whatsapp_sent">WhatsApp Sent</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col xs={12} sm={6} lg={2}>
+            <Form.Group className="mb-0">
+              <Form.Label className="small fw-medium text-muted mb-2">
+                Filter by Time
+              </Form.Label>
+              <Form.Select
+                value={filters.period}
+                onChange={(e) => updateFilters({ period: e.target.value })}
+              >
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="3months">Last 3 Months</option>
+                <option value="year">This Year</option>
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col xs={12} lg={3}>
+            <ClearFiltersButton
+              onClick={() => {
+                handleSearchClear();
+                updateFilters({ status: "all", period: "all" });
+              }}
+            />
+          </Col>
+        </Row>
+      </div>
 
       {/* Orders List */}
       <Row>

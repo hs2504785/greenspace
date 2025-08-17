@@ -14,8 +14,8 @@ import {
 import { useSession } from "next-auth/react";
 import toastService from "@/utils/toastService";
 import vegetableService from "@/services/VegetableService";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
 import SearchInput from "@/components/common/SearchInput";
+import ClearFiltersButton from "@/components/common/ClearFiltersButton";
 import VegetableForm from "./VegetableForm";
 import DeleteConfirmationModal from "@/components/common/DeleteConfirmationModal";
 
@@ -243,20 +243,12 @@ export default function VegetableManagement() {
               </Form.Group>
             </Col>
             <Col xs={12} sm={6} lg={3}>
-              <div className="d-flex align-items-end h-100">
-                <Button
-                  variant="light"
-                  className="btn btn-outline-info w-100"
-                  style={{ height: "38px" }}
-                  onClick={() => {
-                    setSearchTerm("");
-                    setCategoryFilter("all");
-                  }}
-                >
-                  <i className="ti ti-refresh me-2"></i>
-                  Clear Filters
-                </Button>
-              </div>
+              <ClearFiltersButton
+                onClick={() => {
+                  setSearchTerm("");
+                  setCategoryFilter("all");
+                }}
+              />
             </Col>
           </Row>
         </div>
@@ -272,10 +264,10 @@ export default function VegetableManagement() {
               <tr>
                 <th className="border-0 ps-3">Product</th>
                 <th className="border-0">Price</th>
-                <th className="border-0 d-none d-md-table-cell">Quantity</th>
-                <th className="border-0 d-none d-lg-table-cell">Category</th>
-                <th className="border-0 d-none d-xl-table-cell">Location</th>
-                <th className="border-0 d-none d-lg-table-cell">Created</th>
+                <th className="border-0">Quantity</th>
+                <th className="border-0">Category</th>
+                <th className="border-0">Location</th>
+                <th className="border-0">Created</th>
                 <th className="border-0 text-center" style={{ width: "100px" }}>
                   Actions
                 </th>
@@ -317,21 +309,6 @@ export default function VegetableManagement() {
                                 : vegetable.description}
                             </small>
                           )}
-                          {/* Show category and quantity on mobile */}
-                          <div className="d-md-none mt-1">
-                            <div className="d-flex flex-wrap gap-1">
-                              <span className="d-lg-none">
-                                {getCategoryBadge(vegetable.category)}
-                              </span>
-                              <Badge
-                                bg="light"
-                                text="dark"
-                                className="small d-md-none"
-                              >
-                                {vegetable.quantity} {vegetable.unit || "kg"}
-                              </Badge>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </td>
@@ -345,22 +322,20 @@ export default function VegetableManagement() {
                         </small>
                       </div>
                     </td>
-                    <td className="d-none d-md-table-cell">
+                    <td>
                       <span className="fw-bold">{vegetable.quantity}</span>
                       <small className="text-muted d-block">
                         {vegetable.unit || "kg"} available
                       </small>
                     </td>
-                    <td className="d-none d-lg-table-cell">
-                      {getCategoryBadge(vegetable.category)}
-                    </td>
-                    <td className="d-none d-xl-table-cell">
+                    <td>{getCategoryBadge(vegetable.category)}</td>
+                    <td>
                       <i className="ti ti-map-pin me-1 text-muted"></i>
                       {vegetable.location || (
                         <span className="text-muted">Not specified</span>
                       )}
                     </td>
-                    <td className="d-none d-lg-table-cell">
+                    <td>
                       <small className="text-muted">
                         {new Date(vegetable.created_at).toLocaleDateString()}
                       </small>
