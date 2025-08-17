@@ -81,6 +81,9 @@ export default function VegetableDetails({ vegetable }) {
     : { hasConflict: false };
   const hasSimilarFreeItemInCart = similarFreeItemCheck.hasConflict;
 
+  // Check if item is out of stock
+  const isOutOfStock = !vegetable?.quantity || vegetable.quantity <= 0;
+
   // Use the actual available quantity for both free and paid items
   const maxQuantity = vegetable?.quantity || 1;
 
@@ -336,11 +339,16 @@ export default function VegetableDetails({ vegetable }) {
               <Col sm={6}>
                 <Card className="border-0 bg-light h-100">
                   <Card.Body className="d-flex align-items-center">
-                    <i className="ti-package fs-4 me-3 text-success"></i>
+                    <i className={`ti-package fs-4 me-3 ${isOutOfStock ? 'text-danger' : 'text-success'}`}></i>
                     <div>
                       <div className="text-muted small">Available Quantity</div>
-                      <div className="fw-semibold">
-                        {vegetable.quantity} {vegetable.unit || "kg"}
+                      <div className={`fw-semibold ${isOutOfStock ? 'text-danger' : ''}`}>
+                        {isOutOfStock ? '0' : vegetable.quantity} {vegetable.unit || "kg"}
+                        {isOutOfStock && (
+                          <small className="text-danger d-block">
+                            Out of Stock
+                          </small>
+                        )}
                       </div>
                     </div>
                   </Card.Body>
@@ -426,9 +434,16 @@ export default function VegetableDetails({ vegetable }) {
                     max={maxQuantity}
                     style={{ width: "100px" }}
                     className="me-3"
-                    title={undefined}
+                    disabled={isOutOfStock}
+                    title={isOutOfStock ? "Out of stock" : undefined}
                   />
                   <div className="text-muted">{vegetable.unit || "kg"}</div>
+                  {isOutOfStock && (
+                    <div className="text-danger small ms-2">
+                      <i className="ti-alert-circle me-1"></i>
+                      Currently unavailable
+                    </div>
+                  )}
                 </div>
 
                 <div className="d-flex justify-content-between align-items-center mb-3">
@@ -439,24 +454,36 @@ export default function VegetableDetails({ vegetable }) {
                 </div>
                 <div className="d-grid">
                   <Button
-                    variant={hasSimilarFreeItemInCart ? "secondary" : "success"}
+                    variant={
+                      isOutOfStock
+                        ? "outline-danger"
+                        : hasSimilarFreeItemInCart
+                        ? "secondary"
+                        : "success"
+                    }
                     size="lg"
                     onClick={handleAddToCart}
-                    disabled={hasSimilarFreeItemInCart}
+                    disabled={isOutOfStock || hasSimilarFreeItemInCart}
                     title={
-                      hasSimilarFreeItemInCart
+                      isOutOfStock
+                        ? "This item is currently out of stock"
+                        : hasSimilarFreeItemInCart
                         ? `You already have a similar free item (${similarFreeItemCheck.conflictingItem?.name}) in your cart`
                         : undefined
                     }
                   >
                     <i
                       className={
-                        hasSimilarFreeItemInCart
+                        isOutOfStock
+                          ? "ti-alert-circle me-2"
+                          : hasSimilarFreeItemInCart
                           ? "ti-ban me-2"
                           : "ti-shopping-cart me-2"
                       }
                     ></i>
-                    {hasSimilarFreeItemInCart
+                    {isOutOfStock
+                      ? "Out of Stock"
+                      : hasSimilarFreeItemInCart
                       ? "Similar Item Already in Cart"
                       : isFree
                       ? "🎁 Claim Free Item"
