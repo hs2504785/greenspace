@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "npm run uncss",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "uncss": "node tools/scripts/uncss.js"
   },
   "dependencies": {
     "@auth/core": "^0.34.2",
@@ -23,6 +25,7 @@
     "react-dom": "19.1.0",
     "react-hot-toast": "^2.5.2",
     "sass": "^1.90.0",
-    "twilio": "^5.8.0"
+    "twilio": "^5.8.0",
+    "purgecss": "^5.0.0"
   }
 }
