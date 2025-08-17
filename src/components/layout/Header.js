@@ -45,14 +45,35 @@ export default function Header() {
             />
           </Navbar.Brand>
 
-          {/* Cart button - always visible, appears before profile on desktop */}
+          {/* Filter and Cart buttons - always visible, appears before profile on desktop */}
           <div className="d-flex align-items-center order-lg-3">
+            {/* Filter button - only show on vegetables listing pages */}
+            {(pathname === "/" || pathname.startsWith("/?")) && (
+              <div
+                className="text-decoration-none me-3 d-flex align-items-center cursor-pointer"
+                onClick={() =>
+                  window.dispatchEvent(
+                    new CustomEvent("toggle-vegetable-filters")
+                  )
+                }
+                style={{ cursor: "pointer" }}
+                title="Filter & Sort"
+              >
+                <i
+                  className="ti-filter text-success"
+                  style={{ fontSize: "1.4rem" }}
+                ></i>
+              </div>
+            )}
+
+            {/* Cart button */}
             <div
               className="text-decoration-none me-3 d-flex align-items-center cursor-pointer"
               onClick={() =>
                 window.dispatchEvent(new CustomEvent("toggle-cart"))
               }
               style={{ cursor: "pointer" }}
+              title="Shopping Cart"
             >
               <div className="position-relative">
                 <i

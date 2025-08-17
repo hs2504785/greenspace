@@ -1,16 +1,17 @@
 "use client";
 
 import { useVegetables } from "@/hooks/useVegetables";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
-import VegetableFilters from "@/components/features/VegetableFilters";
+import VegetableFilterOffcanvas from "@/components/features/VegetableFilterOffcanvas";
 import VegetableResults from "@/components/features/VegetableResults";
 import VegetableCount from "@/components/features/VegetableCount";
 
 export default function Home() {
   const searchParams = useSearchParams();
   const showFreeOnly = searchParams.get("showFreeOnly") === "true";
+  const [showFilters, setShowFilters] = useState(false);
 
   const {
     vegetables,
@@ -44,23 +45,41 @@ export default function Home() {
     }
   }, [refresh]);
 
-  return (
-    <div className="container">
-      {vegetables.length > 0 && (
-        <div className="py-3">
-          <VegetableFilters
-            filters={filters}
-            onFilterChange={updateFilters}
-            totalCount={totalCount}
-          />
-        </div>
-      )}
+  // Listen for filter toggle events from header
+  useEffect(() => {
+    const handleToggleFilters = () => {
+      setShowFilters(true);
+    };
 
-      <VegetableResults
-        vegetables={vegetables}
-        loading={loading}
-        error={error}
+    if (typeof window !== "undefined") {
+      window.addEventListener("toggle-vegetable-filters", handleToggleFilters);
+      return () => {
+        window.removeEventListener(
+          "toggle-vegetable-filters",
+          handleToggleFilters
+        );
+      };
+    }
+  }, []);
+
+  return (
+    <>
+      <div className="container">
+        <VegetableResults
+          vegetables={vegetables}
+          loading={loading}
+          error={error}
+        />
+      </div>
+
+      {/* Filter Offcanvas */}
+      <VegetableFilterOffcanvas
+        show={showFilters}
+        onHide={() => setShowFilters(false)}
+        filters={filters}
+        onFilterChange={updateFilters}
+        totalCount={totalCount}
       />
-    </div>
+    </>
   );
 }

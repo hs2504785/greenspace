@@ -1,0 +1,273 @@
+/* VegetableFilterOffcanvas Component Styles */
+
+.vegetable-filter-offcanvas {
+  --bs-offcanvas-width: 380px;
+}
+
+.vegetable-filter-offcanvas .offcanvas-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem 1.25rem;
+}
+
+.vegetable-filter-offcanvas .offcanvas-title {
+  font-weight: 600;
+  color: #343a40;
+  font-size: 1.1rem;
+}
+
+/* Clear button container - prevents layout shift */
+.vegetable-filter-offcanvas .clear-button-container {
+  width: 70px; /* Reserve consistent space */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.vegetable-filter-offcanvas .clear-button-container .btn {
+  min-width: 60px;
+}
+
+.vegetable-filter-offcanvas .offcanvas-body {
+  background-color: #f8f9fa;
+}
+
+/* Card styling within offcanvas */
+.vegetable-filter-offcanvas .card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease;
+}
+
+.vegetable-filter-offcanvas .card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.vegetable-filter-offcanvas .card-body {
+  padding: 1rem;
+}
+
+.vegetable-filter-offcanvas .card h6 {
+  color: #495057;
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+/* Form controls styling */
+.vegetable-filter-offcanvas .form-check {
+  margin-bottom: 0.5rem;
+}
+
+.vegetable-filter-offcanvas .form-check-input:checked {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.vegetable-filter-offcanvas .form-check-label {
+  font-size: 0.9rem;
+  color: #495057;
+  cursor: pointer;
+}
+
+.vegetable-filter-offcanvas .form-select {
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.vegetable-filter-offcanvas .form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Custom Fair Share Switch Styling */
+.custom-fair-share-switch {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.custom-fair-share-switch .form-check-input {
+  width: 2.5rem;
+  height: 1.25rem;
+  border-radius: 1.25rem;
+  background-color: #dee2e6;
+  border: 1px solid #ced4da;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  margin-right: 0.75rem;
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.custom-fair-share-switch .form-check-input:checked {
+  background-color: #28a745;
+  border-color: #28a745;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+
+.custom-fair-share-switch .form-check-input:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.custom-fair-share-switch .form-check-input:not(:checked) {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%2833, 37, 41, 0.75%29'/%3e%3c/svg%3e");
+}
+
+.custom-fair-share-switch .form-check-label {
+  cursor: pointer;
+  font-weight: 500;
+  color: #495057;
+  line-height: 1.4;
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.custom-fair-share-switch:hover .form-check-input:not(:disabled) {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.1rem rgba(13, 110, 253, 0.1);
+}
+
+/* Removed badge styling - not needed anymore */
+
+/* Button styling in footer */
+.vegetable-filter-offcanvas .btn {
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.vegetable-filter-offcanvas .btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.vegetable-filter-offcanvas .btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.vegetable-filter-offcanvas .btn-outline-secondary {
+  border-color: #6c757d;
+  color: #6c757d;
+}
+
+.vegetable-filter-offcanvas .btn-outline-secondary:hover {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: #fff;
+}
+
+/* Results count styling */
+.vegetable-filter-offcanvas .text-muted {
+  font-size: 0.85rem;
+}
+
+/* Search input within offcanvas */
+.vegetable-filter-offcanvas .form-control {
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.vegetable-filter-offcanvas .form-control:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.vegetable-filter-offcanvas .input-group-text {
+  background-color: #f8f9fa;
+  border-color: #ced4da;
+}
+
+/* Mobile optimizations */
+@media (max-width: 575.98px) {
+  .vegetable-filter-offcanvas {
+    --bs-offcanvas-width: 100vw;
+  }
+
+  .vegetable-filter-offcanvas .offcanvas-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .vegetable-filter-offcanvas .offcanvas-title {
+    font-size: 1rem;
+  }
+
+  .vegetable-filter-offcanvas .card-body {
+    padding: 0.75rem;
+  }
+
+  .vegetable-filter-offcanvas .form-check-label {
+    font-size: 0.85rem;
+  }
+
+  .vegetable-filter-offcanvas .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .vegetable-filter-offcanvas {
+    --bs-offcanvas-width: 85vw;
+    max-width: 400px;
+  }
+}
+
+/* Animation enhancements */
+.vegetable-filter-offcanvas .card {
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Removed icon styling - icons removed from sections */
+
+/* Ensure proper scrolling on mobile */
+.vegetable-filter-offcanvas .offcanvas-body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Clear button styling */
+.vegetable-filter-offcanvas .btn-link {
+  color: #dc3545;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.vegetable-filter-offcanvas .btn-link:hover {
+  color: #b02a37;
+  text-decoration: underline;
+}
+
+/* Accessibility improvements */
+.vegetable-filter-offcanvas .form-check-input:focus {
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.vegetable-filter-offcanvas .btn:focus {
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Print styles */
+@media print {
+  .vegetable-filter-offcanvas {
+    display: none !important;
+  }
+}

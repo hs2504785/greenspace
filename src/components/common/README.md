@@ -45,6 +45,42 @@ import ClearFiltersButton from "@/components/common/ClearFiltersButton";
 
 ---
 
+## 🔄 ToggleSwitch
+
+A reusable toggle switch component that fixes Bootstrap's switch styling issues.
+
+### Usage
+
+```jsx
+import ToggleSwitch from "@/components/common/ToggleSwitch";
+
+<ToggleSwitch
+  id="notifications"
+  label="Enable notifications"
+  checked={isEnabled}
+  onChange={setIsEnabled}
+  variant="success"
+  size="md"
+/>;
+```
+
+### Features
+
+- ✅ **Clean, modern design** - No more rectangular Bootstrap switch issues
+- ✅ **Multiple sizes** - sm, md, lg variants
+- ✅ **Color variants** - primary, success, danger, warning, info
+- ✅ **Responsive** - Mobile-optimized touch targets
+- ✅ **Accessible** - Proper focus states and ARIA support
+- ✅ **Smooth animations** - Professional slide transitions
+
+### Used In
+
+- Filter panels (Fair Share toggle)
+- Settings pages (notifications, preferences)
+- Feature flags (dark mode, beta features)
+
+---
+
 ## 🎯 Simple Placeholder Components
 
 Minimal, reusable placeholder components using `ui-line` and `ui-block` CSS classes.
