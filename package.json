@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "hkpostbuild": "npm run uncss",
+    "postbuild": "npm run uncss",
     "start": "next start",
     "lint": "next lint",
     "uncss": "node tools/scripts/uncss.js"

@@ -24,28 +24,6 @@ module.exports = {
   // Safelist configuration for Bootstrap 5 + React Bootstrap + Custom styles
   safelist: {
     standard: [
-      // Bootstrap utility classes
-      /^btn/,
-      /^navbar/,
-      /^nav/,
-      /^container/,
-      /^row/,
-      /^col/,
-      /^d-/,
-      /^flex-/,
-      /^justify-/,
-      /^align-/,
-      /^text-/,
-      /^bg-/,
-      /^border-/,
-      // Size utilities (like working reference)
-      /w-(25|50|75|100|auto)/,
-      /h-(25|50|75|100|auto)/,
-      // Margin and padding utilities (like working reference)
-      /m[tebsxy]?-?(0|1|2|3|4|5|6|7|8|9|10|auto)/,
-      /p[tebsxy]?-?(0|1|2|3|4|5|6|7|8|9|10|auto)/,
-      /^position-/,
-
       // React Bootstrap dynamic classes
       /^show$/,
       /^active$/,
@@ -55,6 +33,7 @@ module.exports = {
       /^modal/,
       /^dropdown/,
       /^offcanvas/,
+      /^col/,
 
       // Critical state classes for Bootstrap components
       "show",
@@ -64,38 +43,45 @@ module.exports = {
       "active",
       "disabled",
 
-      // Specific offcanvas positioning classes (critical)
-      "offcanvas-start",
-      "offcanvas-end",
-      "offcanvas-top",
-      "offcanvas-bottom",
-      "offcanvas-backdrop",
+      // ESSENTIAL STRUCTURAL CLASSES + DYNAMIC CLASSES
+      // Some structural classes might not be detected by static analysis
 
-      // Specific tooltip classes (critical)
-      "tooltip",
-      "tooltip-inner",
-      "tooltip-arrow",
-      "bs-tooltip-top",
-      "bs-tooltip-bottom",
-      "bs-tooltip-start",
-      "bs-tooltip-end",
-      "bs-tooltip-auto",
-
-      // Specific modal classes (critical)
+      // Modal structural classes (essential for functionality)
       "modal",
       "modal-dialog",
-      "modal-content",
+      "modal-content", // CRITICAL: Modal structure
       "modal-header",
       "modal-title",
       "modal-body",
       "modal-footer",
-      "modal-backdrop",
+      "modal-dialog-centered",
+      "modal-lg",
+      // JavaScript-added backdrop elements
+      "offcanvas-backdrop", // JS creates backdrop element
+      "modal-backdrop", // JS creates backdrop element
 
-      // Custom brand classes for Arya Natural Farms
-      /^brand-/,
-      /^navbar-sticky/,
-      /^mobile-menu/,
-      /^fair-share/,
+      // Essential positioning classes (some are set via JS props like placement="end")
+      "offcanvas-end", // Used via React prop placement="end" - might not be detected statically
+
+      // Offcanvas structural classes
+      "offcanvas",
+      "offcanvas-header",
+      "offcanvas-title",
+      "offcanvas-body",
+
+      // Dropdown structural classes
+      "dropdown",
+      "dropdown-toggle",
+      "dropdown-menu",
+      "dropdown-menu-end",
+      "dropdown-item",
+      "dropdown-header",
+      "dropdown-divider",
+
+      // Tooltip structural classes (CRITICAL - was missing!)
+      "tooltip",
+      "tooltip-inner", // CRITICAL: Tooltip content container
+      "tooltip-arrow", // CRITICAL: Tooltip arrow/pointer
 
       // Animation classes
       /^animate/,
@@ -109,9 +95,6 @@ module.exports = {
       // Themify icons
       /^ti-/,
       /^themify/,
-
-      // Cursor pointer for interactive elements
-      "cursor-pointer",
     ],
     deep: [
       // Bootstrap component states that might be dynamically applied
@@ -119,97 +102,30 @@ module.exports = {
       /tooltip/,
       /popover/,
       /dropdown/,
-      /navbar/,
-      /carousel/,
     ],
     greedy: [
-      // Essential Bootstrap dynamic components (like working reference)
-      /offcanvas/,
-      /offcanvas-start/,
-      /offcanvas-end/,
-      /offcanvas-top/,
-      /offcanvas-bottom/,
-      /tooltip/,
-      /tooltip-inner/,
+      // Spinner/Loading patterns
+      /spinner/, // All spinner classes: spinner-border, spinner-grow, etc.
+
+      // Offcanvas structural patterns
+      /offcanvas/, // All offcanvas classes
+
+      // JS-added backdrop elements
+      /modal-backdrop/, // JS creates backdrop
+      /offcanvas-backdrop/, // JS creates backdrop
+
+      // === CRITICAL COMPONENT STATES (JS-added classes) ===
+      /^show$/, // Bootstrap JS adds these
+      /^showing$/,
+      /^hide$/,
+      /^hiding$/,
+      /^fade$/,
+      /^active$/,
+      /^disabled$/,
+      /arrow/,
       /tooltip-arrow/,
-      /bs-tooltip-top/,
-      /bs-tooltip-bottom/,
-      /bs-tooltip-start/,
-      /bs-tooltip-end/,
-      /popover/,
-      /modal/,
-      /modal-dialog/,
-      /modal-content/,
-      /modal-header/,
-      /modal-body/,
-      /modal-footer/,
-      /popover-arrow/,
-      /modal-backdrop/,
-      /offcanvas-backdrop/,
-      /bs-tooltip/,
-      /bs-popover/,
-      /bs-modal/,
-      /dropdown-menu/,
-      /dropdown-item/,
-      /show/,
-      /fade/,
-      /collapse/,
-      /active/,
-      /disabled/,
-      /showing/,
-      /hiding/,
-
-      // Positioning classes for tooltips/popovers
-      /top/,
-      /bottom/,
-      /start/,
-      /end/,
-      /auto/,
-
-      // Responsive classes
-      /^.*-sm-.*$/,
-      /^.*-md-.*$/,
-      /^.*-lg-.*$/,
-      /^.*-xl-.*$/,
-      /^.*-xxl-.*$/,
-
-      // Bootstrap color variants
-      /^.*-primary.*$/,
-      /^.*-secondary.*$/,
-      /^.*-success.*$/,
-      /^.*-danger.*$/,
-      /^.*-warning.*$/,
-      /^.*-info.*$/,
-      /^.*-light.*$/,
-      /^.*-dark.*$/,
-    ],
-    variables: [
-      // CSS custom properties
-      "--bs-*",
-      "--brand-*",
-    ],
-    keyframes: [
-      "fadeIn",
-      "slideDown",
-      "spinner-border",
-      "spinner-grow",
-      "placeholder-glow",
-      "placeholder-wave",
     ],
   },
-
-  // PurgeCSS options
-  options: {
-    variables: true,
-    keyframes: true,
-    fontFace: true,
-    rejected: true, // This helps with debugging by showing which selectors were removed
-    safelist: {
-      // Minimal additional safelist - most is handled by main greedy patterns above
-      greedy: [
-        // Protect all Bootstrap utility classes
-        /^(btn|nav|container|row|col|d-|flex-|justify-|align-|text-|bg-|border-|m[tblrxy]?-|p[tblrxy]?-)/,
-      ],
-    },
-  },
+  variables: true,
+  keyframes: true,
 };
