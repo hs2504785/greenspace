@@ -51,10 +51,19 @@ module.exports = {
       /^fade$/,
       /^collapse/,
       /^modal/,
-      /^tooltip/,
-      /^popover/,
       /^dropdown/,
       /^offcanvas/,
+
+      // Tooltip & Popover styles (critical for React Bootstrap)
+      /^tooltip/,
+      /^popover/,
+      /^bs-tooltip/,
+      /^bs-popover/,
+      "tooltip-inner",
+      "tooltip-arrow",
+      "popover-header",
+      "popover-body",
+      "popover-arrow",
 
       // Custom brand classes for Arya Natural Farms
       /^brand-/,
@@ -74,6 +83,9 @@ module.exports = {
       // Themify icons
       /^ti-/,
       /^themify/,
+
+      // Cursor pointer for interactive elements
+      "cursor-pointer",
     ],
     deep: [
       // Bootstrap component states that might be dynamically applied
@@ -84,6 +96,12 @@ module.exports = {
       /navbar/,
       /carousel/,
       /offcanvas/,
+      
+      // All tooltip and popover related classes
+      /tooltip-/,
+      /popover-/,
+      /bs-tooltip/,
+      /bs-popover/,
     ],
     greedy: [
       // Responsive classes
@@ -102,6 +120,12 @@ module.exports = {
       /^.*-info.*$/,
       /^.*-light.*$/,
       /^.*-dark.*$/,
+
+      // Tooltip and popover positioning classes
+      /^.*tooltip.*$/,
+      /^.*popover.*$/,
+      /^.*placement.*$/,
+      /^.*arrow.*$/,
     ],
     variables: [
       // CSS custom properties
@@ -126,9 +150,36 @@ module.exports = {
     rejected: true, // This helps with debugging by showing which selectors were removed
     safelist: {
       // Additional programmatic safelist
+      standard: [
+        // Specific tooltip classes that are dynamically added
+        "tooltip",
+        "tooltip-inner", 
+        "tooltip-arrow",
+        "bs-tooltip-top",
+        "bs-tooltip-bottom", 
+        "bs-tooltip-start",
+        "bs-tooltip-end",
+        "bs-tooltip-auto",
+        "popover",
+        "popover-header",
+        "popover-body", 
+        "popover-arrow",
+        "bs-popover-top",
+        "bs-popover-bottom",
+        "bs-popover-start", 
+        "bs-popover-end",
+        "bs-popover-auto",
+        "show",
+        "fade",
+      ],
       greedy: [
         // Protect all Bootstrap utility classes
         /^(btn|nav|container|row|col|d-|flex-|justify-|align-|text-|bg-|border-|m[tblrxy]?-|p[tblrxy]?-)/,
+        // Protect all tooltip and popover related classes
+        /^tooltip/,
+        /^popover/,
+        /^bs-tooltip/,
+        /^bs-popover/,
       ],
     },
   },
