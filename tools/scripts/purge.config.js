@@ -78,11 +78,24 @@ module.exports = {
     deep: [
       // Bootstrap component states that might be dynamically applied
       /modal/,
+      /tooltip/,
+      /popover/,
       /dropdown/,
       /navbar/,
       /carousel/,
     ],
     greedy: [
+      // Essential Bootstrap dynamic components (proven patterns)
+      /offcanvas/,
+      /tooltip-arrow/,
+      /popover-arrow/,
+      /bs-tooltip/,
+      /bs-popover/,
+      /dropdown-menu/,
+      /show/,
+      /fade/,
+      /collapse/,
+
       // Responsive classes
       /^.*-sm-.*$/,
       /^.*-md-.*$/,
@@ -99,13 +112,6 @@ module.exports = {
       /^.*-info.*$/,
       /^.*-light.*$/,
       /^.*-dark.*$/,
-
-      // Dynamic component classes (comprehensive patterns)
-      /^.*tooltip.*$/,
-      /^.*popover.*$/,
-      /^.*offcanvas.*$/,
-      /^.*modal.*$/,
-      /^.*dropdown.*$/,
     ],
     variables: [
       // CSS custom properties
