@@ -25,6 +25,9 @@ const urlsToCache = [
 // Install event
 self.addEventListener("install", (event) => {
   console.log("Service Worker installing...");
+  
+  // Skip waiting immediately to activate new service worker
+  self.skipWaiting();
 
   event.waitUntil(
     caches
@@ -46,16 +49,16 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     Promise.all([
       // Clean up old caches
-      caches.keys().then((cacheNames) => {
+    caches.keys().then((cacheNames) => {
         const validCaches = [CACHE_NAME, STATIC_CACHE_NAME, DYNAMIC_CACHE_NAME];
-        return Promise.all(
-          cacheNames.map((cacheName) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
             if (!validCaches.includes(cacheName)) {
-              console.log("Deleting old cache:", cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
+            console.log("Deleting old cache:", cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
       }),
       // Take control of all clients immediately
       self.clients.claim(),
@@ -75,13 +78,13 @@ self.addEventListener("fetch", (event) => {
 
     // Handle different types of requests with appropriate caching strategies
     if (event.request.method === "GET") {
-      event.respondWith(
+  event.respondWith(
         handleFetch(event.request).catch((error) => {
           console.error("❌ Fetch handler error:", error);
           // Return a basic fetch as fallback
-          return fetch(event.request);
-        })
-      );
+      return fetch(event.request);
+    })
+  );
     }
   } catch (error) {
     console.error("❌ Fetch event error:", error);
@@ -191,7 +194,7 @@ self.addEventListener("push", (event) => {
     icon: "/favicon/android-chrome-192x192.png",
     badge: "/favicon/android-chrome-192x192.png",
     tag: "arya-farms-notification",
-    requireInteraction: true,
+          requireInteraction: false, // Changed to false to force display regardless of focus
     vibrate: [100, 50, 100],
     actions: [
       {
@@ -258,8 +261,8 @@ self.addEventListener("push", (event) => {
       // Attempt to show notification with detailed error handling
       try {
         await self.registration.showNotification(
-          notificationOptions.title || "Arya Natural Farms",
-          notificationOptions
+        notificationOptions.title || "Arya Natural Farms",
+        notificationOptions
         );
         console.log("✅ SW: Notification shown successfully!");
 
@@ -355,7 +358,7 @@ self.addEventListener("push", (event) => {
           );
         }
       }
-    })
+      })
   );
 });
 

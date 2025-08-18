@@ -76,6 +76,18 @@ export default function ServiceWorkerRegistration() {
           );
         }
 
+        // Handle service worker updates immediately
+        if (registration.waiting) {
+          console.log("🔄 Service Worker update pending, activating immediately...");
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          
+          // Wait for the new service worker to take control
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log("🔄 Service Worker updated and activated");
+            window.location.reload();
+          });
+        }
+
         // Wait for service worker to be ready
         await navigator.serviceWorker.ready;
         console.log("🚀 Service Worker is ready");
@@ -94,9 +106,8 @@ export default function ServiceWorkerRegistration() {
                   newWorker.state === "installed" &&
                   navigator.serviceWorker.controller
                 ) {
-                  console.log(
-                    "🔄 New service worker installed, refresh recommended"
-                  );
+                  console.log("🔄 New service worker installed, activating...");
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
                 }
               });
             }

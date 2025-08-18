@@ -70,7 +70,10 @@ export default function useNotificationCount() {
     }
 
     // Register manual increment listener for testing
-    window.addEventListener("manual-notification-increment", handleManualIncrement);
+    window.addEventListener(
+      "manual-notification-increment",
+      handleManualIncrement
+    );
 
     // Listen for notification clicks to decrement count
     const handleNotificationClick = () => {
@@ -95,7 +98,10 @@ export default function useNotificationCount() {
         "notification-clicked",
         handleNotificationClick
       );
-      window.removeEventListener("manual-notification-increment", handleManualIncrement);
+      window.removeEventListener(
+        "manual-notification-increment",
+        handleManualIncrement
+      );
     };
   }, []); // Remove unreadCount dependency to prevent recreation of listeners
 
