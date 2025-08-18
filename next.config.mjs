@@ -1,5 +1,3 @@
-import withPWA from "next-pwa";
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -11,15 +9,11 @@ const nextConfig = {
   },
 };
 
-const withPWAConfig = withPWA({
-  dest: "public",
-  register: false, // Disable automatic service worker registration - we use custom one
-  skipWaiting: false, // Disable skipWaiting - handled by custom service worker
-  disable: process.env.NODE_ENV === "development", // Disable PWA in development
-  sw: false, // Disable service worker generation - use our custom sw.js
-  workboxOptions: {
-    disableDevLogs: true,
-  },
-});
+// Note: next-pwa disabled - using custom service worker in public/sw.js
+// The custom service worker handles:
+// - Push notifications
+// - Caching strategies
+// - PWA functionality
+// - Offline support
 
-export default withPWAConfig(nextConfig);
+export default nextConfig;
