@@ -274,6 +274,19 @@ self.addEventListener("push", (event) => {
             tag: n.tag,
           }))
         );
+
+        // Notify clients about new notification for badge update
+        const clients = await self.clients.matchAll();
+        clients.forEach((client) => {
+          client.postMessage({
+            type: "NEW_NOTIFICATION",
+            notification: {
+              title: notificationOptions.title || "Arya Natural Farms",
+              body: notificationOptions.body,
+              tag: notificationOptions.tag,
+            },
+          });
+        });
       } catch (error) {
         console.error("❌ SW: Failed to show notification:", error);
         console.error("❌ SW: Error details:", {
