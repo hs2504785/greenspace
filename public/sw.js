@@ -6,12 +6,12 @@ const STATIC_CACHE_NAME = "arya-farms-static-v2";
 const DYNAMIC_CACHE_NAME = "arya-farms-dynamic-v2";
 
 // Global error handlers to prevent uncaught promise rejections
-self.addEventListener('error', (event) => {
-  console.error('❌ Service Worker error:', event.error);
+self.addEventListener("error", (event) => {
+  console.error("❌ Service Worker error:", event.error);
 });
 
-self.addEventListener('unhandledrejection', (event) => {
-  console.error('❌ Service Worker unhandled promise rejection:', event.reason);
+self.addEventListener("unhandledrejection", (event) => {
+  console.error("❌ Service Worker unhandled promise rejection:", event.reason);
   event.preventDefault(); // Prevent the default behavior
 });
 
@@ -27,12 +27,15 @@ self.addEventListener("install", (event) => {
   console.log("Service Worker installing...");
 
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log("Opened cache");
-      return cache.addAll(urlsToCache);
-    }).catch((error) => {
-      console.error("❌ Cache setup failed during install:", error);
-    })
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => {
+        console.log("Opened cache");
+        return cache.addAll(urlsToCache);
+      })
+      .catch((error) => {
+        console.error("❌ Cache setup failed during install:", error);
+      })
   );
 });
 
@@ -64,7 +67,7 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   try {
     const url = new URL(event.request.url);
-    
+
     // Only handle same-origin requests
     if (url.origin !== location.origin) {
       return;
@@ -74,14 +77,14 @@ self.addEventListener("fetch", (event) => {
     if (event.request.method === "GET") {
       event.respondWith(
         handleFetch(event.request).catch((error) => {
-          console.error('❌ Fetch handler error:', error);
+          console.error("❌ Fetch handler error:", error);
           // Return a basic fetch as fallback
           return fetch(event.request);
         })
       );
     }
   } catch (error) {
-    console.error('❌ Fetch event error:', error);
+    console.error("❌ Fetch event error:", error);
   }
 });
 
@@ -373,10 +376,10 @@ self.addEventListener("message", (event) => {
 
   // Handle other message types and always send a response
   if (event.ports && event.ports[0]) {
-    event.ports[0].postMessage({ 
-      success: true, 
+    event.ports[0].postMessage({
+      success: true,
       message: "Message received",
-      type: event.data?.type || "unknown" 
+      type: event.data?.type || "unknown",
     });
   }
 });
