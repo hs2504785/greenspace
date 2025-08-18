@@ -88,6 +88,29 @@ export default function Header() {
               </OverlayTrigger>
             )}
 
+            {/* Notifications button - only show for authenticated users */}
+            {session && (
+              <OverlayTrigger
+                placement="bottom"
+                overlay={
+                  <Tooltip id="notifications-tooltip">
+                    Notification Settings
+                  </Tooltip>
+                }
+              >
+                <Link
+                  href="/notifications"
+                  className="text-decoration-none me-3 d-flex align-items-center"
+                  style={{ cursor: "pointer" }}
+                >
+                  <i
+                    className="ti-bell text-success"
+                    style={{ fontSize: "1.4rem" }}
+                  ></i>
+                </Link>
+              </OverlayTrigger>
+            )}
+
             {/* Cart button */}
             <OverlayTrigger
               placement="bottom"
@@ -292,7 +315,17 @@ export default function Header() {
                       }`}
                       onClick={handleLinkClick}
                     >
-                      Orders & Deliveries
+                      📦 Orders & Deliveries
+                    </Nav.Link>
+                    <Nav.Link
+                      as={Link}
+                      href="/notifications"
+                      className={`mobile-nav-link ${
+                        isActive("/notifications") ? "active-nav-item" : ""
+                      }`}
+                      onClick={handleLinkClick}
+                    >
+                      🔔 Notifications
                     </Nav.Link>
                     {/* <Nav.Link 
                       as={Link} 

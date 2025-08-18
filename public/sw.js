@@ -1,7 +1,10 @@
 // Custom Service Worker for Push Notifications
 // This will be enhanced by next-pwa
 
-const CACHE_NAME = "arya-farms-v1";
+const CACHE_NAME = "arya-farms-v2";
+const STATIC_CACHE_NAME = "arya-farms-static-v2";
+const DYNAMIC_CACHE_NAME = "arya-farms-dynamic-v2";
+
 const urlsToCache = [
   "/",
   "/favicon/android-chrome-192x192.png",
@@ -26,31 +29,128 @@ self.addEventListener("activate", (event) => {
   console.log("Service Worker activating...");
 
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log("Deleting old cache:", cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    Promise.all([
+      // Clean up old caches
+      caches.keys().then((cacheNames) => {
+        const validCaches = [CACHE_NAME, STATIC_CACHE_NAME, DYNAMIC_CACHE_NAME];
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (!validCaches.includes(cacheName)) {
+              console.log("Deleting old cache:", cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      // Take control of all clients immediately
+      self.clients.claim()
+    ])
   );
 });
 
-// Fetch event
+// Fetch event with improved caching strategies
 self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Return cached version or fetch from network
-      if (response) {
-        return response;
-      }
-      return fetch(event.request);
-    })
-  );
+  const url = new URL(event.request.url);
+  
+  // Only handle same-origin requests
+  if (url.origin !== location.origin) {
+    return;
+  }
+
+  // Handle different types of requests with appropriate caching strategies
+  if (event.request.method === "GET") {
+    event.respondWith(handleFetch(event.request));
+  }
 });
+
+async function handleFetch(request) {
+  const url = new URL(request.url);
+  
+  try {
+    // Static assets (images, fonts, icons) - Cache First
+    if (request.url.match(/\.(jpg|jpeg|png|gif|svg|ico|webp|woff|woff2|ttf|eot)$/i)) {
+      return await cacheFirst(request, STATIC_CACHE_NAME);
+    }
+    
+    // CSS and JS files - Stale While Revalidate
+    if (request.url.match(/\.(css|js)$/i)) {
+      return await staleWhileRevalidate(request, STATIC_CACHE_NAME);
+    }
+    
+    // API requests - Network First
+    if (url.pathname.startsWith('/api/')) {
+      return await networkFirst(request, DYNAMIC_CACHE_NAME);
+    }
+    
+    // Pages - Network First with cache fallback
+    return await networkFirst(request, DYNAMIC_CACHE_NAME);
+    
+  } catch (error) {
+    console.error('Fetch handler error:', error);
+    // Fallback to cache or offline page
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    // Return offline fallback for navigation requests
+    if (request.mode === 'navigate') {
+      return caches.match('/');
+    }
+    
+    throw error;
+  }
+}
+
+// Cache First Strategy - good for static assets
+async function cacheFirst(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  const cachedResponse = await cache.match(request);
+  
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  const networkResponse = await fetch(request);
+  if (networkResponse.status === 200) {
+    cache.put(request, networkResponse.clone());
+  }
+  return networkResponse;
+}
+
+// Stale While Revalidate Strategy - good for CSS/JS
+async function staleWhileRevalidate(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  const cachedResponse = await cache.match(request);
+  
+  const networkResponsePromise = fetch(request).then(networkResponse => {
+    if (networkResponse.status === 200) {
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  }).catch(() => null);
+  
+  return cachedResponse || await networkResponsePromise;
+}
+
+// Network First Strategy - good for dynamic content
+async function networkFirst(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse.status === 200) {
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await cache.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    throw error;
+  }
+}
 
 // Push event - handle incoming push notifications
 self.addEventListener("push", (event) => {

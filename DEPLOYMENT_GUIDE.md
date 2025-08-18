@@ -34,6 +34,12 @@ Set up the following environment variables in Vercel:
 - `TWILIO_AUTH_TOKEN` - Your Twilio auth token
 - `TWILIO_PHONE_NUMBER` - Your Twilio phone number
 
+### Push Notifications (VAPID Keys)
+
+- `NEXT_PUBLIC_VAPID_PUBLIC_KEY` - Your VAPID public key (client-accessible)
+- `VAPID_PRIVATE_KEY` - Your VAPID private key (server-only)
+- `VAPID_EMAIL` - Contact email for VAPID (e.g., mailto:admin@yourdomain.com)
+
 ## Step-by-Step Deployment
 
 ### 1. Prepare Your Code
