@@ -484,6 +484,64 @@ self.addEventListener("message", (event) => {
     return;
   }
 
+  if (event.data && event.data.type === "SIMULATE_PUSH") {
+    console.log("🧪 Service Worker: Simulating push event");
+    const pushData = event.data.pushData;
+    
+    // Use the exact same notification options as the push handler
+    const notificationOptions = {
+      body: pushData.message || "Simulated push notification",
+      icon: pushData.icon || "/favicon/android-chrome-192x192.png",
+      badge: pushData.badge || "/favicon/android-chrome-192x192.png",
+      tag: "simulated-push",
+      requireInteraction: false,
+      vibrate: [100, 50, 100],
+      actions: [
+        {
+          action: "view",
+          title: "View Products",
+          icon: "/favicon/android-chrome-192x192.png",
+        },
+        {
+          action: "close",
+          title: "Close",
+        },
+      ],
+      data: {
+        ...pushData.data,
+        url: pushData.url || "/",
+        timestamp: Date.now(),
+      },
+    };
+
+    try {
+      await self.registration.showNotification(
+        pushData.title || "🧪 Push Simulation",
+        notificationOptions
+      );
+      
+      console.log("✅ Simulated push notification shown successfully!");
+      
+      // Send response back
+      if (event.ports && event.ports[0]) {
+        event.ports[0].postMessage({
+          success: true,
+          message: "Simulated push notification sent",
+          options: notificationOptions
+        });
+      }
+    } catch (error) {
+      console.error("❌ Simulated push notification failed:", error);
+      if (event.ports && event.ports[0]) {
+        event.ports[0].postMessage({
+          success: false,
+          error: error.message
+        });
+      }
+    }
+    return;
+  }
+
   // Handle other message types and always send a response
   if (event.ports && event.ports[0]) {
     event.ports[0].postMessage({
