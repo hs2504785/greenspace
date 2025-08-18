@@ -16,19 +16,20 @@ export const metadata = {
   description:
     "Connect with local vegetable producers and buy fresh produce directly from farms and home gardens",
   manifest: "/manifest.json",
-  themeColor: "#28a745",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Arya Farms",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: "cover",
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#28a745",
 };
 
 export default function RootLayout({ children }) {
