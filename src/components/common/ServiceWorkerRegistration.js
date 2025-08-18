@@ -13,10 +13,34 @@ export default function ServiceWorkerRegistration() {
     // Only run on client side
     if (typeof window === 'undefined') return;
 
+    // Add global error handler for message channel errors
+    const handleError = (event) => {
+      const errorMessage = event.error?.message || event.message || '';
+      if (errorMessage.includes('message channel closed')) {
+        console.warn('⚠️ Service Worker message channel error caught (likely from browser extension):', errorMessage);
+        // Prevent the error from showing in console
+        event.preventDefault();
+      }
+    };
+
+    const handleUnhandledRejection = (event) => {
+      const reason = event.reason?.message || event.reason || '';
+      if (typeof reason === 'string' && reason.includes('message channel closed')) {
+        console.warn('⚠️ Service Worker promise rejection caught (likely from browser extension):', reason);
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
     // Check if service workers are supported
     if (!('serviceWorker' in navigator)) {
       console.log('🚫 Service Workers not supported');
-      return;
+      return () => {
+        window.removeEventListener('error', handleError);
+        window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      };
     }
 
     const registerServiceWorker = async () => {
@@ -38,50 +62,39 @@ export default function ServiceWorkerRegistration() {
         await navigator.serviceWorker.ready;
         console.log('🚀 Service Worker is ready');
 
-        // Add event listener for service worker updates
-        registration.addEventListener('updatefound', () => {
-          console.log('🔄 Service Worker update found');
-          const newWorker = registration.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('🔄 New service worker installed, refresh recommended');
-                // Optionally, you can show a notification to refresh the page
-              }
-            });
-          }
-        });
+        // Add event listener for service worker updates (with error handling)
+        if (registration && typeof registration.addEventListener === 'function') {
+          registration.addEventListener('updatefound', () => {
+            console.log('🔄 Service Worker update found');
+            const newWorker = registration.installing;
+            if (newWorker && typeof newWorker.addEventListener === 'function') {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('🔄 New service worker installed, refresh recommended');
+                }
+              });
+            }
+          });
+        }
 
-        // Handle service worker controller change
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          console.log('🔄 Service Worker controller changed');
-        });
-
-        // Handle service worker messages
-        navigator.serviceWorker.addEventListener('message', (event) => {
-          console.log('📨 Message from Service Worker:', event.data);
-        });
+        return registration;
 
       } catch (error) {
         console.error('❌ Service Worker registration failed:', error);
+        // Don't throw - let the app continue without service worker
+        return null;
       }
     };
 
     // Register service worker immediately
-    registerServiceWorker();
+    registerServiceWorker().catch(error => {
+      console.error('❌ Failed to register service worker:', error);
+    });
 
-    // Also register on page visibility change (when user returns to tab)
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        registerServiceWorker();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Cleanup
+    // Cleanup function
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
 
