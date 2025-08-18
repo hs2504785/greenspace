@@ -365,17 +365,45 @@ class VegetableService extends ApiBaseService {
               "Successfully created vegetable with owner data:",
               completeVegetable
             );
+
+            // 🔔 TRIGGER NOTIFICATIONS FOR NEW PRODUCT
+            try {
+              await this.triggerNewProductNotifications(
+                completeVegetable,
+                ownerData
+              );
+            } catch (notificationError) {
+              console.warn("Failed to send notifications:", notificationError);
+              // Don't fail the product creation if notifications fail
+            }
+
             return completeVegetable;
           }
         }
 
         console.log("Successfully created vegetable:", createdVegetable);
+
+        // 🔔 FALLBACK NOTIFICATION TRIGGER
+        try {
+          await this.triggerNewProductNotifications(createdVegetable);
+        } catch (notificationError) {
+          console.warn("Failed to send notifications:", notificationError);
+        }
+
         return createdVegetable;
       } catch (ownerFetchError) {
         console.warn(
           "Could not fetch owner data for created vegetable:",
           ownerFetchError
         );
+
+        // 🔔 FALLBACK NOTIFICATION TRIGGER
+        try {
+          await this.triggerNewProductNotifications(data[0]);
+        } catch (notificationError) {
+          console.warn("Failed to send notifications:", notificationError);
+        }
+
         return data[0];
       }
     } catch (error) {
@@ -402,6 +430,56 @@ class VegetableService extends ApiBaseService {
       console.log("Error toString:", error?.toString());
       console.log("Error valueOf:", error?.valueOf());
 
+      throw error;
+    }
+  }
+
+  /**
+   * Trigger push notifications when a new product is added
+   * @param {Object} vegetable - The created vegetable object
+   * @param {Object} owner - The owner/seller object (optional)
+   */
+  async triggerNewProductNotifications(vegetable, owner = null) {
+    try {
+      console.log(
+        "🔔 Triggering notifications for new product:",
+        vegetable.name
+      );
+
+      // Skip notifications during build time or if no fetch available
+      if (typeof fetch === "undefined") {
+        console.log("Skipping notifications - fetch not available");
+        return;
+      }
+
+      const response = await fetch(
+        "/api/notifications/send-product-notification",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            productId: vegetable.id,
+            productName: vegetable.name,
+            sellerId: vegetable.owner_id,
+            sellerName: owner?.name || "A seller",
+          }),
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("✅ Notifications sent successfully:", result.message);
+        console.log(
+          `📊 Notification stats: ${result.notificationsSent} sent, ${result.notificationsFailed} failed`
+        );
+      } else {
+        const errorData = await response.json();
+        console.error("❌ Failed to send notifications:", errorData.error);
+      }
+    } catch (error) {
+      console.error("❌ Error triggering notifications:", error);
       throw error;
     }
   }

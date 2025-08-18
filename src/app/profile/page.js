@@ -142,55 +142,78 @@ export default function ProfilePage() {
 
   return (
     <Container className="py-5">
-      <Card className="shadow-sm">
-        <Card.Header className="bg-light">
-          <h4 className="mb-0">Profile Settings</h4>
-        </Card.Header>
-        <Card.Body>
-          <div className="text-center mb-4">
-            <div className="d-flex justify-content-center mb-3">
-              <UserAvatar user={session.user} size={100} />
-            </div>
-            <h5>{session.user.name}</h5>
-            <p className="text-muted">{session.user.email}</p>
-          </div>
+      <div className="row justify-content-center">
+        <div className="col-lg-8 col-xl-6">
+          <Card className="shadow-sm">
+            <Card.Header className="bg-light">
+              <h4 className="mb-0">
+                <i className="ti ti-user me-2"></i>
+                Profile Settings
+              </h4>
+            </Card.Header>
+            <Card.Body>
+              <div className="text-center mb-4">
+                <div className="d-flex justify-content-center mb-3">
+                  <UserAvatar user={session.user} size={100} />
+                </div>
+                <h5>{session.user.name}</h5>
+                <p className="text-muted">{session.user.email}</p>
+              </div>
 
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>WhatsApp Number</Form.Label>
-              <Form.Control
-                type="tel"
-                placeholder="Enter 10-digit number"
-                value={whatsappNumber}
-                onChange={(e) => {
-                  // Remove any non-digit characters
-                  const cleaned = e.target.value.replace(/\D/g, "");
-                  // Limit to 10 digits
-                  const truncated = cleaned.slice(0, 10);
-                  setWhatsappNumber(truncated);
-                }}
-                pattern="[0-9]{10}"
-                maxLength={10}
-                title="Please enter a 10-digit phone number"
-                className="font-monospace"
-              />
-              <Form.Text className="text-muted">
-                This will be used for order communications. Format: 9876543210
-                (10 digits)
-              </Form.Text>
-            </Form.Group>
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label>WhatsApp Number</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    placeholder="Enter 10-digit number"
+                    value={whatsappNumber}
+                    onChange={(e) => {
+                      // Remove any non-digit characters
+                      const cleaned = e.target.value.replace(/\D/g, "");
+                      // Limit to 10 digits
+                      const truncated = cleaned.slice(0, 10);
+                      setWhatsappNumber(truncated);
+                    }}
+                    pattern="[0-9]{10}"
+                    maxLength={10}
+                    title="Please enter a 10-digit phone number"
+                    className="font-monospace"
+                  />
+                  <Form.Text className="text-muted">
+                    This will be used for order communications. Format:
+                    9876543210 (10 digits)
+                  </Form.Text>
+                </Form.Group>
 
-            <Button
-              type="submit"
-              variant="success"
-              className="w-100"
-              disabled={isLoading}
-            >
-              {isLoading ? "Updating..." : "Update Profile"}
-            </Button>
-          </Form>
-        </Card.Body>
-      </Card>
+                <Button
+                  type="submit"
+                  variant="success"
+                  className="w-100"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Updating..." : "Update Profile"}
+                </Button>
+              </Form>
+
+              {/* Quick Link to Notifications */}
+              <div className="text-center mt-4 pt-3 border-top">
+                <small className="text-muted d-block mb-2">
+                  Want to manage your notification preferences?
+                </small>
+                <Button
+                  as="a"
+                  href="/notifications"
+                  variant="outline-primary"
+                  size="sm"
+                >
+                  <i className="ti ti-bell me-2"></i>
+                  Notification Settings
+                </Button>
+              </div>
+            </Card.Body>
+          </Card>
+        </div>
+      </div>
     </Container>
   );
 }

@@ -44,6 +44,11 @@ export default function ProfileDropdown({ user }) {
           <i className="ti ti-user me-2"></i>
           Profile
         </Dropdown.Item>
+        {/* Notifications for all users */}
+        <Dropdown.Item as={Link} href="/notifications">
+          <i className="ti ti-bell me-2"></i>
+          Notifications
+        </Dropdown.Item>
         {!loading && (isSeller || isAdmin) && (
           <>
             <Dropdown.Item as={Link} href="/products-management">

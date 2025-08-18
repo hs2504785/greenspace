@@ -15,6 +15,20 @@ export const metadata = {
   title: "Arya Natural Farms - Fresh Local Vegetables",
   description:
     "Connect with local vegetable producers and buy fresh produce directly from farms and home gardens",
+  manifest: "/manifest.json",
+  themeColor: "#28a745",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Arya Farms",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: "cover",
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -39,7 +53,29 @@ export default function RootLayout({ children }) {
           sizes="16x16"
           href="/favicon/favicon-16x16.png"
         />
-        {/* <link rel="manifest" href="/favicon/site.webmanifest" /> */}
+
+        {/* PWA Manifest */}
+        <link rel="manifest" href="/manifest.json" />
+
+        {/* PWA Meta Tags */}
+        <meta name="theme-color" content="#28a745" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Arya Farms" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta
+          name="msapplication-config"
+          content="/favicon/browserconfig.xml"
+        />
+        <meta name="msapplication-TileColor" content="#28a745" />
+        <meta name="msapplication-tap-highlight" content="no" />
+
+        {/* iOS Splash Screens */}
+        <meta
+          name="apple-touch-startup-image"
+          content="/favicon/apple-touch-icon.png"
+        />
       </head>
       <body className={geistSans.variable}>
         <Providers>
