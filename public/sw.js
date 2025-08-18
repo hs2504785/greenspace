@@ -218,16 +218,16 @@ self.addEventListener("push", (event) => {
     Promise.resolve().then(async () => {
       // Check notification permission before attempting to show
       const permission = await self.registration.pushManager.permissionState({
-        userVisibleOnly: true
+        userVisibleOnly: true,
       });
       console.log("🔐 SW: Notification permission state:", permission);
-      
+
       // Check if registration is active
       console.log("📱 SW: Service worker registration state:", {
         scope: self.registration.scope,
         active: !!self.registration.active,
         installing: !!self.registration.installing,
-        waiting: !!self.registration.waiting
+        waiting: !!self.registration.waiting,
       });
 
       // Attempt to show notification with detailed error handling
@@ -237,35 +237,40 @@ self.addEventListener("push", (event) => {
           notificationOptions
         );
         console.log("✅ SW: Notification shown successfully!");
-        
+
         // Double-check: Get all notifications to verify it was actually created
         const notifications = await self.registration.getNotifications();
         console.log("📋 SW: Active notifications count:", notifications.length);
-        console.log("📋 SW: Active notifications:", notifications.map(n => ({
-          title: n.title, 
-          body: n.body, 
-          tag: n.tag
-        })));
-        
+        console.log(
+          "📋 SW: Active notifications:",
+          notifications.map((n) => ({
+            title: n.title,
+            body: n.body,
+            tag: n.tag,
+          }))
+        );
       } catch (error) {
         console.error("❌ SW: Failed to show notification:", error);
         console.error("❌ SW: Error details:", {
           name: error.name,
           message: error.message,
-          stack: error.stack
+          stack: error.stack,
         });
-        
+
         // Try alternative notification approach
         try {
           console.log("🔄 SW: Attempting fallback notification...");
           await self.registration.showNotification("Test Notification", {
             body: "Fallback notification test",
             icon: "/favicon/android-chrome-192x192.png",
-            tag: "fallback-test"
+            tag: "fallback-test",
           });
           console.log("✅ SW: Fallback notification shown!");
         } catch (fallbackError) {
-          console.error("❌ SW: Fallback notification also failed:", fallbackError);
+          console.error(
+            "❌ SW: Fallback notification also failed:",
+            fallbackError
+          );
         }
       }
     })
