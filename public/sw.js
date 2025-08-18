@@ -25,7 +25,7 @@ const urlsToCache = [
 // Install event
 self.addEventListener("install", (event) => {
   console.log("Service Worker installing...");
-  
+
   // Skip waiting immediately to activate new service worker
   self.skipWaiting();
 
@@ -49,16 +49,16 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     Promise.all([
       // Clean up old caches
-    caches.keys().then((cacheNames) => {
+      caches.keys().then((cacheNames) => {
         const validCaches = [CACHE_NAME, STATIC_CACHE_NAME, DYNAMIC_CACHE_NAME];
-      return Promise.all(
-        cacheNames.map((cacheName) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
             if (!validCaches.includes(cacheName)) {
-            console.log("Deleting old cache:", cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
+              console.log("Deleting old cache:", cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
       }),
       // Take control of all clients immediately
       self.clients.claim(),
@@ -78,13 +78,13 @@ self.addEventListener("fetch", (event) => {
 
     // Handle different types of requests with appropriate caching strategies
     if (event.request.method === "GET") {
-  event.respondWith(
+      event.respondWith(
         handleFetch(event.request).catch((error) => {
           console.error("❌ Fetch handler error:", error);
           // Return a basic fetch as fallback
-      return fetch(event.request);
-    })
-  );
+          return fetch(event.request);
+        })
+      );
     }
   } catch (error) {
     console.error("❌ Fetch event error:", error);
@@ -194,7 +194,7 @@ self.addEventListener("push", (event) => {
     icon: "/favicon/android-chrome-192x192.png",
     badge: "/favicon/android-chrome-192x192.png",
     tag: "arya-farms-notification",
-          requireInteraction: false, // Changed to false to force display regardless of focus
+    requireInteraction: false, // Changed to false to force display regardless of focus
     vibrate: [100, 50, 100],
     actions: [
       {
@@ -261,8 +261,8 @@ self.addEventListener("push", (event) => {
       // Attempt to show notification with detailed error handling
       try {
         await self.registration.showNotification(
-        notificationOptions.title || "Arya Natural Farms",
-        notificationOptions
+          notificationOptions.title || "Arya Natural Farms",
+          notificationOptions
         );
         console.log("✅ SW: Notification shown successfully!");
 
@@ -313,14 +313,45 @@ self.addEventListener("push", (event) => {
         console.log("  💡 Try: Switch to another tab or minimize browser");
 
         // Notify clients about new notification for badge update
-        const clients = await self.clients.matchAll();
+        const clients = await self.clients.matchAll({
+          includeUncontrolled: true,
+          type: 'window'
+        });
         console.log(
           "📡 SW: Notifying clients about new notification, client count:",
           clients.length
         );
 
+        if (clients.length === 0) {
+          console.warn("⚠️ SW: No clients found - trying alternative methods");
+          
+          // Try to get all clients including uncontrolled ones
+          const allClients = await self.clients.matchAll({
+            includeUncontrolled: true
+          });
+          console.log("📡 SW: All clients (including uncontrolled):", allClients.length);
+          
+          // Also try broadcasting to all possible clients
+          try {
+            // Use BroadcastChannel as fallback
+            const channel = new BroadcastChannel('notification-updates');
+            channel.postMessage({
+              type: "NEW_NOTIFICATION",
+              notification: {
+                title: notificationOptions.title || "Arya Natural Farms",
+                body: notificationOptions.body,
+                tag: notificationOptions.tag,
+              },
+            });
+            console.log("📻 SW: Sent via BroadcastChannel");
+            channel.close();
+          } catch (broadcastError) {
+            console.warn("⚠️ SW: BroadcastChannel not available");
+          }
+        }
+
         clients.forEach((client) => {
-          console.log("📨 SW: Sending message to client:", client.id);
+          console.log("📨 SW: Sending message to client:", client.id, "URL:", client.url);
           try {
             client.postMessage({
               type: "NEW_NOTIFICATION",
@@ -358,7 +389,7 @@ self.addEventListener("push", (event) => {
           );
         }
       }
-      })
+    })
   );
 });
 

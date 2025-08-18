@@ -78,11 +78,13 @@ export default function ServiceWorkerRegistration() {
 
         // Handle service worker updates immediately
         if (registration.waiting) {
-          console.log("🔄 Service Worker update pending, activating immediately...");
-          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-          
+          console.log(
+            "🔄 Service Worker update pending, activating immediately..."
+          );
+          registration.waiting.postMessage({ type: "SKIP_WAITING" });
+
           // Wait for the new service worker to take control
-          navigator.serviceWorker.addEventListener('controllerchange', () => {
+          navigator.serviceWorker.addEventListener("controllerchange", () => {
             console.log("🔄 Service Worker updated and activated");
             window.location.reload();
           });
@@ -107,7 +109,7 @@ export default function ServiceWorkerRegistration() {
                   navigator.serviceWorker.controller
                 ) {
                   console.log("🔄 New service worker installed, activating...");
-                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  newWorker.postMessage({ type: "SKIP_WAITING" });
                 }
               });
             }

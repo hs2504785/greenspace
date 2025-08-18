@@ -75,6 +75,21 @@ export default function useNotificationCount() {
       handleManualIncrement
     );
 
+    // Listen for BroadcastChannel messages as fallback
+    let broadcastChannel;
+    try {
+      broadcastChannel = new BroadcastChannel('notification-updates');
+      broadcastChannel.addEventListener('message', (event) => {
+        console.log("📻 Received BroadcastChannel message:", event.data);
+        if (event.data?.type === "NEW_NOTIFICATION") {
+          handleNewNotification();
+        }
+      });
+      console.log("📻 BroadcastChannel listener registered");
+    } catch (error) {
+      console.warn("⚠️ BroadcastChannel not available:", error);
+    }
+
     // Listen for notification clicks to decrement count
     const handleNotificationClick = () => {
       setUnreadCount((prev) => {
@@ -102,6 +117,9 @@ export default function useNotificationCount() {
         "manual-notification-increment",
         handleManualIncrement
       );
+      if (broadcastChannel) {
+        broadcastChannel.close();
+      }
     };
   }, []); // Remove unreadCount dependency to prevent recreation of listeners
 
