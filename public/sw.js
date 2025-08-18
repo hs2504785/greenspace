@@ -43,7 +43,7 @@ self.addEventListener("activate", (event) => {
         );
       }),
       // Take control of all clients immediately
-      self.clients.claim()
+      self.clients.claim(),
     ])
   );
 });
@@ -51,7 +51,7 @@ self.addEventListener("activate", (event) => {
 // Fetch event with improved caching strategies
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
-  
+
   // Only handle same-origin requests
   if (url.origin !== location.origin) {
     return;
@@ -65,39 +65,42 @@ self.addEventListener("fetch", (event) => {
 
 async function handleFetch(request) {
   const url = new URL(request.url);
-  
+
   try {
     // Static assets (images, fonts, icons) - Cache First
-    if (request.url.match(/\.(jpg|jpeg|png|gif|svg|ico|webp|woff|woff2|ttf|eot)$/i)) {
+    if (
+      request.url.match(
+        /\.(jpg|jpeg|png|gif|svg|ico|webp|woff|woff2|ttf|eot)$/i
+      )
+    ) {
       return await cacheFirst(request, STATIC_CACHE_NAME);
     }
-    
+
     // CSS and JS files - Stale While Revalidate
     if (request.url.match(/\.(css|js)$/i)) {
       return await staleWhileRevalidate(request, STATIC_CACHE_NAME);
     }
-    
+
     // API requests - Network First
-    if (url.pathname.startsWith('/api/')) {
+    if (url.pathname.startsWith("/api/")) {
       return await networkFirst(request, DYNAMIC_CACHE_NAME);
     }
-    
+
     // Pages - Network First with cache fallback
     return await networkFirst(request, DYNAMIC_CACHE_NAME);
-    
   } catch (error) {
-    console.error('Fetch handler error:', error);
+    console.error("Fetch handler error:", error);
     // Fallback to cache or offline page
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;
     }
-    
+
     // Return offline fallback for navigation requests
-    if (request.mode === 'navigate') {
-      return caches.match('/');
+    if (request.mode === "navigate") {
+      return caches.match("/");
     }
-    
+
     throw error;
   }
 }
@@ -106,11 +109,11 @@ async function handleFetch(request) {
 async function cacheFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cachedResponse = await cache.match(request);
-  
+
   if (cachedResponse) {
     return cachedResponse;
   }
-  
+
   const networkResponse = await fetch(request);
   if (networkResponse.status === 200) {
     cache.put(request, networkResponse.clone());
@@ -122,21 +125,23 @@ async function cacheFirst(request, cacheName) {
 async function staleWhileRevalidate(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cachedResponse = await cache.match(request);
-  
-  const networkResponsePromise = fetch(request).then(networkResponse => {
-    if (networkResponse.status === 200) {
-      cache.put(request, networkResponse.clone());
-    }
-    return networkResponse;
-  }).catch(() => null);
-  
-  return cachedResponse || await networkResponsePromise;
+
+  const networkResponsePromise = fetch(request)
+    .then((networkResponse) => {
+      if (networkResponse.status === 200) {
+        cache.put(request, networkResponse.clone());
+      }
+      return networkResponse;
+    })
+    .catch(() => null);
+
+  return cachedResponse || (await networkResponsePromise);
 }
 
 // Network First Strategy - good for dynamic content
 async function networkFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
-  
+
   try {
     const networkResponse = await fetch(request);
     if (networkResponse.status === 200) {
