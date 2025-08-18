@@ -219,14 +219,19 @@ console.log("🚀 Run: immediateNotificationFix()");
 
 // Quick functions
 window.testBadgeNow = function() {
+  console.log("🔔 Testing badge update...");
+  
+  // Only use BroadcastChannel (not both methods to avoid double increment)
   const channel = new BroadcastChannel('notification-updates');
   channel.postMessage({
     type: "NEW_NOTIFICATION",
     notification: { title: "Badge Test", body: "Testing", tag: "test" }
   });
   channel.close();
-  window.dispatchEvent(new CustomEvent("manual-notification-increment"));
-  console.log("🔔 Badge test sent - check header!");
+  console.log("📻 Badge test sent via BroadcastChannel - check header!");
+  
+  // Alternative: use manual event only
+  // window.dispatchEvent(new CustomEvent("manual-notification-increment"));
 };
 
 window.testVisualNow = function() {

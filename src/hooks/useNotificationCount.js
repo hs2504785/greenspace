@@ -78,8 +78,8 @@ export default function useNotificationCount() {
     // Listen for BroadcastChannel messages as fallback
     let broadcastChannel;
     try {
-      broadcastChannel = new BroadcastChannel('notification-updates');
-      broadcastChannel.addEventListener('message', (event) => {
+      broadcastChannel = new BroadcastChannel("notification-updates");
+      broadcastChannel.addEventListener("message", (event) => {
         console.log("📻 Received BroadcastChannel message:", event.data);
         if (event.data?.type === "NEW_NOTIFICATION") {
           handleNewNotification();

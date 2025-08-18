@@ -315,7 +315,7 @@ self.addEventListener("push", (event) => {
         // Notify clients about new notification for badge update
         const clients = await self.clients.matchAll({
           includeUncontrolled: true,
-          type: 'window'
+          type: "window",
         });
         console.log(
           "📡 SW: Notifying clients about new notification, client count:",
@@ -324,17 +324,20 @@ self.addEventListener("push", (event) => {
 
         if (clients.length === 0) {
           console.warn("⚠️ SW: No clients found - trying alternative methods");
-          
+
           // Try to get all clients including uncontrolled ones
           const allClients = await self.clients.matchAll({
-            includeUncontrolled: true
+            includeUncontrolled: true,
           });
-          console.log("📡 SW: All clients (including uncontrolled):", allClients.length);
-          
+          console.log(
+            "📡 SW: All clients (including uncontrolled):",
+            allClients.length
+          );
+
           // Also try broadcasting to all possible clients
           try {
             // Use BroadcastChannel as fallback
-            const channel = new BroadcastChannel('notification-updates');
+            const channel = new BroadcastChannel("notification-updates");
             channel.postMessage({
               type: "NEW_NOTIFICATION",
               notification: {
@@ -351,7 +354,12 @@ self.addEventListener("push", (event) => {
         }
 
         clients.forEach((client) => {
-          console.log("📨 SW: Sending message to client:", client.id, "URL:", client.url);
+          console.log(
+            "📨 SW: Sending message to client:",
+            client.id,
+            "URL:",
+            client.url
+          );
           try {
             client.postMessage({
               type: "NEW_NOTIFICATION",
