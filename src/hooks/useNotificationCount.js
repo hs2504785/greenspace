@@ -55,30 +55,49 @@ export default function useNotificationCount() {
       }
     };
 
+    // Listen for manual increment events (for testing)
+    const handleManualIncrement = () => {
+      console.log("🧪 Manual notification count increment");
+      setUnreadCount((prev) => prev + 1);
+    };
+
     // Register message listener
     if (navigator.serviceWorker) {
-      navigator.serviceWorker.addEventListener("message", handleServiceWorkerMessage);
+      navigator.serviceWorker.addEventListener(
+        "message",
+        handleServiceWorkerMessage
+      );
     }
+
+    // Register manual increment listener for testing
+    window.addEventListener("manual-notification-increment", handleManualIncrement);
 
     // Listen for notification clicks to decrement count
     const handleNotificationClick = () => {
-      if (unreadCount > 0) {
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      }
+      setUnreadCount((prev) => {
+        if (prev > 0) {
+          return Math.max(0, prev - 1);
+        }
+        return prev;
+      });
     };
 
     window.addEventListener("notification-clicked", handleNotificationClick);
 
     return () => {
       if (navigator.serviceWorker) {
-        navigator.serviceWorker.removeEventListener("message", handleServiceWorkerMessage);
+        navigator.serviceWorker.removeEventListener(
+          "message",
+          handleServiceWorkerMessage
+        );
       }
       window.removeEventListener(
         "notification-clicked",
         handleNotificationClick
       );
+      window.removeEventListener("manual-notification-increment", handleManualIncrement);
     };
-  }, [unreadCount]);
+  }, []); // Remove unreadCount dependency to prevent recreation of listeners
 
   const markAllAsRead = () => {
     setUnreadCount(0);

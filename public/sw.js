@@ -277,17 +277,32 @@ self.addEventListener("push", (event) => {
 
         // Additional debugging for visual notification display
         console.log("🔍 SW: Notification debugging info:");
-        console.log("  - Notification options used:", JSON.stringify(notificationOptions, null, 2));
+        console.log(
+          "  - Notification options used:",
+          JSON.stringify(notificationOptions, null, 2)
+        );
         console.log("  - Registration scope:", self.registration.scope);
-        console.log("  - Service worker state:", self.registration.active?.state);
-        
+        console.log(
+          "  - Service worker state:",
+          self.registration.active?.state
+        );
+
         // Check if notifications were actually created with the tag
-        const taggedNotifications = await self.registration.getNotifications({ tag: notificationOptions.tag });
-        console.log("🏷️ SW: Notifications with same tag:", taggedNotifications.length);
+        const taggedNotifications = await self.registration.getNotifications({
+          tag: notificationOptions.tag,
+        });
+        console.log(
+          "🏷️ SW: Notifications with same tag:",
+          taggedNotifications.length
+        );
 
         // Log potential reasons why notification might not appear visually
-        console.log("💡 SW: If notification doesn't appear visually, possible causes:");
-        console.log("  1. Browser tab is active (many browsers only show when tab is inactive)");
+        console.log(
+          "💡 SW: If notification doesn't appear visually, possible causes:"
+        );
+        console.log(
+          "  1. Browser tab is active (many browsers only show when tab is inactive)"
+        );
         console.log("  2. Browser notification settings block the site");
         console.log("  3. OS notification settings are disabled");
         console.log("  4. 'Do Not Disturb' mode is enabled");
@@ -296,8 +311,11 @@ self.addEventListener("push", (event) => {
 
         // Notify clients about new notification for badge update
         const clients = await self.clients.matchAll();
-        console.log("📡 SW: Notifying clients about new notification, client count:", clients.length);
-        
+        console.log(
+          "📡 SW: Notifying clients about new notification, client count:",
+          clients.length
+        );
+
         clients.forEach((client) => {
           console.log("📨 SW: Sending message to client:", client.id);
           try {
@@ -419,7 +437,7 @@ self.addEventListener("message", (event) => {
     event.source.postMessage({
       type: "TEST_RESPONSE",
       message: "Service Worker received test message successfully!",
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
     return;
   }
