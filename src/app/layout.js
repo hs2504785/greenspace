@@ -3,6 +3,7 @@ import { CartProvider } from "@/context/CartContext";
 import { Toaster } from "react-hot-toast";
 import MainLayout from "@/components/layout/MainLayout";
 import { NextAuthProvider } from "@/context/NextAuthProvider";
+import ServiceWorkerRegistration from "@/components/common/ServiceWorkerRegistration";
 import "../styles/main.scss";
 import Providers from "./providers";
 
@@ -81,6 +82,9 @@ export default function RootLayout({ children }) {
         <Providers>
           <NextAuthProvider>
             <CartProvider>
+              {/* Global Service Worker Registration */}
+              <ServiceWorkerRegistration />
+              
               <MainLayout>{children}</MainLayout>
               <Toaster
                 position="bottom-right"

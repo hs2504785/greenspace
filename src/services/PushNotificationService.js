@@ -45,16 +45,42 @@ class PushNotificationService {
     }
 
     try {
-      const permission = await Notification.requestPermission();
-      return permission === "granted";
+      // First check current permission
+      let permission = Notification.permission;
+      console.log("🔐 Current notification permission:", permission);
+      
+      if (permission === "granted") {
+        return true;
+      }
+      
+      if (permission === "denied") {
+        console.warn("❌ Notification permission is permanently denied");
+        throw new Error("Notification permission is denied. Please enable notifications in your browser settings.");
+      }
+      
+      // Request permission (only works if current permission is "default")
+      if (permission === "default") {
+        console.log("🔔 Requesting notification permission...");
+        permission = await Notification.requestPermission();
+        console.log("🔐 Permission request result:", permission);
+      }
+      
+      const granted = permission === "granted";
+      if (granted) {
+        console.log("✅ Notification permission granted!");
+      } else {
+        console.warn("❌ Notification permission not granted:", permission);
+      }
+      
+      return granted;
     } catch (error) {
-      console.error("Error requesting notification permission:", error);
+      console.error("❌ Error requesting notification permission:", error);
       return false;
     }
   }
 
   /**
-   * Register service worker if not already registered
+   * Get service worker registration (assumes it's already registered globally)
    * @returns {Promise<ServiceWorkerRegistration>}
    */
   async registerServiceWorker() {
@@ -63,22 +89,26 @@ class PushNotificationService {
     }
 
     try {
-      // Check if already registered
+      // Get existing registration (should be registered globally)
       let registration = await navigator.serviceWorker.getRegistration();
 
       if (!registration) {
-        // Register new service worker
+        console.log("🔧 No service worker found, registering...");
+        // Fallback: register service worker if not already registered
         registration = await navigator.serviceWorker.register("/sw.js", {
           scope: "/",
         });
-        console.log("Service Worker registered:", registration.scope);
+        console.log("🔧 Service Worker registered as fallback:", registration.scope);
+      } else {
+        console.log("✅ Using existing service worker registration:", registration.scope);
       }
 
       // Wait for service worker to be ready
       await navigator.serviceWorker.ready;
+      console.log("🚀 Service Worker is ready for push notifications");
       return registration;
     } catch (error) {
-      console.error("Service Worker registration failed:", error);
+      console.error("❌ Service Worker registration failed:", error);
       throw error;
     }
   }

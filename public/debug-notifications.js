@@ -105,8 +105,18 @@ window.debugNotifications = async function() {
   console.log("  - Document visibility:", document.visibilityState);
   console.log("  - Window focused:", document.hasFocus());
   
-  // 7. Common solutions
-  console.log("\n7️⃣ Common Solutions if notifications don't appear:");
+  // 7. Test permission request flow
+  console.log("\n7️⃣ Testing Permission Request:");
+  if (Notification.permission === 'default') {
+    console.log("  - Permission is 'default', you can request permission");
+    console.log("  - Run this to request permission:");
+    console.log("    Notification.requestPermission().then(p => console.log('New permission:', p))");
+  } else {
+    console.log("  - Permission already decided:", Notification.permission);
+  }
+  
+  // 8. Common solutions
+  console.log("\n8️⃣ Common Solutions if notifications don't appear:");
   console.log("  a) Check browser notification settings (chrome://settings/content/notifications)");
   console.log("  b) Check OS notification settings");
   console.log("  c) Ensure site permissions allow notifications");
@@ -114,6 +124,19 @@ window.debugNotifications = async function() {
   console.log("  e) Try with different tab focus (background/foreground)");
   console.log("  f) Check if 'Do Not Disturb' is enabled");
   console.log("  g) Try restarting browser");
+  console.log("  h) Check if service worker is globally registered (should be automatic now)");
+  console.log("  i) Clear browser cache and reload page");
+  
+  // 9. Quick fixes
+  console.log("\n9️⃣ Quick Fixes to Try:");
+  console.log("  // 1. Force request permission:");
+  console.log("  Notification.requestPermission().then(console.log)");
+  console.log("");
+  console.log("  // 2. Test immediate notification:");
+  console.log("  if(Notification.permission === 'granted') new Notification('Test', {body: 'Works!'})");
+  console.log("");
+  console.log("  // 3. Force service worker registration:");
+  console.log("  navigator.serviceWorker.register('/sw.js').then(console.log)");
   
   console.log("\n🔍 === DEBUG COMPLETE ===");
 };
