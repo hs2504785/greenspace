@@ -52,9 +52,26 @@ export default function Header() {
               alt="Arya Natural Farms Logo"
             />
             <div className="brand-text d-flex flex-column">
-              <span className="brand-name">Arya Natural Farms</span>
+              {/* Full name for larger screens */}
+              <span className="brand-name d-none d-md-inline">
+                Arya Natural Farms
+              </span>
+              {/* Shortened name for medium mobile screens */}
+              <span className="brand-name d-none d-sm-inline d-md-none">
+                Arya Farms
+              </span>
+              {/* Acronym for small mobile screens */}
+              <span className="brand-name d-inline d-sm-none brand-name-acronym">
+                ANF
+              </span>
+
+              {/* Full tagline for desktop and tablet screens */}
               <span className="brand-tagline d-none d-sm-block">
                 Fresh • Natural • Local
+              </span>
+              {/* Short tagline for mobile screens only */}
+              <span className="brand-tagline d-block d-sm-none brand-tagline-small">
+                Natural
               </span>
             </div>
           </Navbar.Brand>

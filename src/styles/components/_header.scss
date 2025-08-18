@@ -42,13 +42,44 @@
     color: #2d5016 !important;
     margin: 0;
     letter-spacing: -0.5px;
+    white-space: nowrap; // Prevent wrapping
 
-    @media (max-width: 576px) {
-      font-size: 1.2rem;
+    // Medium screens and below - slightly smaller for "Arya Farms"
+    @media (max-width: 768px) {
+      font-size: 1.3rem;
     }
 
+    // Small screens - optimized for "Arya"
+    @media (max-width: 576px) {
+      font-size: 1.2rem;
+      letter-spacing: 0; // Remove negative letter spacing for short name
+    }
+
+    // Custom styling for acronym (ANF) on small screens
+    &.brand-name-acronym {
+      // Optimize styling for acronym
+      font-size: 1.2rem;
+      letter-spacing: 1px; // Add spacing between letters for acronym
+      font-weight: 800; // Slightly bolder for acronym
+
+      @media (max-width: 400px) {
+        font-size: 1.1rem;
+      }
+
+      @media (max-width: 320px) {
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    // General very small screen adjustments
     @media (max-width: 400px) {
       font-size: 1.1rem;
+    }
+
+    // Extra small screens - compact styling
+    @media (max-width: 320px) {
+      font-size: 1rem;
     }
   }
 
@@ -64,6 +95,21 @@
     @media (max-width: 768px) {
       font-size: 0.7rem;
     }
+
+    // Small tagline styling for "Natural" (mobile only)
+    &.brand-tagline-small {
+      font-size: 0.65rem;
+      letter-spacing: 0.2px;
+      font-weight: 600; // Slightly bolder for single word
+
+      @media (max-width: 400px) {
+        font-size: 0.6rem;
+      }
+
+      @media (max-width: 320px) {
+        font-size: 0.55rem;
+      }
+    }
   }
 
   // Mobile-specific improvements for always-visible cart
@@ -77,7 +123,8 @@
 
     .navbar-brand {
       flex-shrink: 0;
-      max-width: 70%;
+      max-width: 60%; // Slightly reduced to accommodate shorter names better
+      min-width: 120px; // Ensure minimum space for "Arya" + logo
     }
 
     .brand-logo {
