@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import VegetableFilterOffcanvas from "@/components/features/VegetableFilterOffcanvas";
 import VegetableResults from "@/components/features/VegetableResults";
-import NotificationPrompt from "@/components/common/NotificationPrompt";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -64,9 +63,6 @@ export default function Home() {
   return (
     <>
       <div className="container">
-        {/* Notification prompt for new users */}
-        <NotificationPrompt />
-
         <VegetableResults
           vegetables={vegetables}
           loading={loading}

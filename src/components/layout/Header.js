@@ -14,13 +14,11 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import ProfileDropdown from "@/components/common/ProfileDropdown";
 import { useCart } from "@/context/CartContext";
-import useNotificationCount from "@/hooks/useNotificationCount";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: session, status } = useSession();
   const { items } = useCart();
-  const { unreadCount } = useNotificationCount();
   const pathname = usePathname();
 
   // Function to check if a nav item is active
@@ -87,42 +85,6 @@ export default function Header() {
                     style={{ fontSize: "1.4rem" }}
                   ></i>
                 </div>
-              </OverlayTrigger>
-            )}
-
-            {/* Notifications button - only show for authenticated users */}
-            {session && (
-              <OverlayTrigger
-                placement="bottom"
-                overlay={
-                  <Tooltip id="notifications-tooltip">
-                    {unreadCount > 0
-                      ? `${unreadCount} unread notifications`
-                      : "Notification Settings"}
-                  </Tooltip>
-                }
-              >
-                <Link
-                  href="/notifications"
-                  className="text-decoration-none me-3 d-flex align-items-center position-relative"
-                  style={{ cursor: "pointer" }}
-                >
-                  <i
-                    className="ti-bell text-success"
-                    style={{ fontSize: "1.4rem" }}
-                  ></i>
-                  {unreadCount > 0 && (
-                    <span
-                      className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                      style={{ fontSize: "0.7rem", minWidth: "1.2rem" }}
-                    >
-                      {unreadCount > 99 ? "99+" : unreadCount}
-                      <span className="visually-hidden">
-                        unread notifications
-                      </span>
-                    </span>
-                  )}
-                </Link>
               </OverlayTrigger>
             )}
 
@@ -331,16 +293,6 @@ export default function Header() {
                       onClick={handleLinkClick}
                     >
                       📦 Orders & Deliveries
-                    </Nav.Link>
-                    <Nav.Link
-                      as={Link}
-                      href="/notifications"
-                      className={`mobile-nav-link ${
-                        isActive("/notifications") ? "active-nav-item" : ""
-                      }`}
-                      onClick={handleLinkClick}
-                    >
-                      🔔 Notifications
                     </Nav.Link>
                     {/* <Nav.Link 
                       as={Link} 
