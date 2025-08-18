@@ -275,17 +275,43 @@ self.addEventListener("push", (event) => {
           }))
         );
 
+        // Additional debugging for visual notification display
+        console.log("🔍 SW: Notification debugging info:");
+        console.log("  - Notification options used:", JSON.stringify(notificationOptions, null, 2));
+        console.log("  - Registration scope:", self.registration.scope);
+        console.log("  - Service worker state:", self.registration.active?.state);
+        
+        // Check if notifications were actually created with the tag
+        const taggedNotifications = await self.registration.getNotifications({ tag: notificationOptions.tag });
+        console.log("🏷️ SW: Notifications with same tag:", taggedNotifications.length);
+
+        // Log potential reasons why notification might not appear visually
+        console.log("💡 SW: If notification doesn't appear visually, possible causes:");
+        console.log("  1. Browser tab is active (many browsers only show when tab is inactive)");
+        console.log("  2. Browser notification settings block the site");
+        console.log("  3. OS notification settings are disabled");
+        console.log("  4. 'Do Not Disturb' mode is enabled");
+        console.log("  5. Browser extensions are interfering");
+        console.log("  💡 Try: Switch to another tab or minimize browser");
+
         // Notify clients about new notification for badge update
         const clients = await self.clients.matchAll();
+        console.log("📡 SW: Notifying clients about new notification, client count:", clients.length);
+        
         clients.forEach((client) => {
-          client.postMessage({
-            type: "NEW_NOTIFICATION",
-            notification: {
-              title: notificationOptions.title || "Arya Natural Farms",
-              body: notificationOptions.body,
-              tag: notificationOptions.tag,
-            },
-          });
+          console.log("📨 SW: Sending message to client:", client.id);
+          try {
+            client.postMessage({
+              type: "NEW_NOTIFICATION",
+              notification: {
+                title: notificationOptions.title || "Arya Natural Farms",
+                body: notificationOptions.body,
+                tag: notificationOptions.tag,
+              },
+            });
+          } catch (error) {
+            console.error("❌ SW: Failed to send message to client:", error);
+          }
         });
       } catch (error) {
         console.error("❌ SW: Failed to show notification:", error);
@@ -376,7 +402,7 @@ self.addEventListener("sync", (event) => {
 
 // Message event for communication with main thread
 self.addEventListener("message", (event) => {
-  console.log("Service Worker received message:", event.data);
+  console.log("📨 Service Worker received message:", event.data);
 
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
@@ -384,6 +410,17 @@ self.addEventListener("message", (event) => {
     if (event.ports && event.ports[0]) {
       event.ports[0].postMessage({ success: true });
     }
+    return;
+  }
+
+  if (event.data && event.data.type === "TEST_MESSAGE") {
+    console.log("🧪 Service Worker: Handling test message");
+    // Send response back to client
+    event.source.postMessage({
+      type: "TEST_RESPONSE",
+      message: "Service Worker received test message successfully!",
+      timestamp: Date.now()
+    });
     return;
   }
 

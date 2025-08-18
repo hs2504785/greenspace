@@ -43,15 +43,22 @@ export default function useNotificationCount() {
     if (typeof window === "undefined") return;
 
     const handleNewNotification = () => {
+      console.log("🔔 Incrementing notification count");
       setUnreadCount((prev) => prev + 1);
     };
 
-    // Listen for custom events from service worker
-    navigator.serviceWorker?.addEventListener("message", (event) => {
+    // Listen for service worker messages
+    const handleServiceWorkerMessage = (event) => {
+      console.log("📨 Received service worker message:", event.data);
       if (event.data?.type === "NEW_NOTIFICATION") {
         handleNewNotification();
       }
-    });
+    };
+
+    // Register message listener
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.addEventListener("message", handleServiceWorkerMessage);
+    }
 
     // Listen for notification clicks to decrement count
     const handleNotificationClick = () => {
@@ -63,6 +70,9 @@ export default function useNotificationCount() {
     window.addEventListener("notification-clicked", handleNotificationClick);
 
     return () => {
+      if (navigator.serviceWorker) {
+        navigator.serviceWorker.removeEventListener("message", handleServiceWorkerMessage);
+      }
       window.removeEventListener(
         "notification-clicked",
         handleNotificationClick
