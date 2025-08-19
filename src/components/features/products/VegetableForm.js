@@ -5,6 +5,7 @@ import { Modal, Form, Button, Row, Col } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import toastService from "@/utils/toastService";
 import vegetableService from "@/services/VegetableService";
+import LocationAutoDetect from "@/components/common/LocationAutoDetect";
 
 const CATEGORIES = ["leafy", "root", "fruit", "exotic", "seasonal", "organic"];
 const SOURCE_TYPES = ["farm", "home garden"];
@@ -477,22 +478,16 @@ export default function VegetableForm({
             </Col>
           </Row>
 
-          <Form.Group className="mb-3">
-            <Form.Label>
-              Location <span className="text-danger">*</span>
-            </Form.Label>
-            <Form.Control
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleInputChange}
-              required
-              placeholder="Enter your location (e.g., Bangalore, Sector 15, or Village Name)"
-            />
-            <Form.Text className="text-muted">
-              Specify where the product is available for pickup/delivery
-            </Form.Text>
-          </Form.Group>
+          <LocationAutoDetect
+            name="location"
+            value={formData.location}
+            onChange={handleInputChange}
+            placeholder="Type your location or click 'Detect' to auto-fill"
+            required
+            label="Location"
+            showRequiredIndicator
+            className="mb-3"
+          />
 
           <Form.Group className="mb-3">
             <Form.Label>
