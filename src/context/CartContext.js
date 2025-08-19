@@ -216,6 +216,37 @@ export function CartProvider({ children }) {
 
       console.log("[DEBUG] Adding to cart:", item.name, "Price:", item.price);
 
+      // Pre-validate before dispatching
+      // Check if cart is not empty and item is from different seller
+      if (state.items.length > 0) {
+        const newOwnerId = item.owner?.id;
+        if (state.currentSeller.id !== newOwnerId) {
+          const error = `Items in cart are from ${state.currentSeller.name}. Please clear your cart to add items from a different seller.`;
+          dispatch({ type: "SET_ERROR", payload: error });
+          return {
+            success: false,
+            error: error,
+            currentSeller: state.currentSeller,
+          };
+        }
+      }
+
+      // For free items, check if user already has a similar item in cart
+      const isFree = item.price === 0;
+      if (isFree) {
+        const cartCheck = checkCartForSimilarFreeItems(state.items, item.name);
+        if (cartCheck.hasConflict) {
+          const category = getProductCategory(item.name);
+          const error = `You already have "${cartCheck.conflictingItem.name}" in your cart. To ensure fair distribution, you can only claim one free ${category} item per order.`;
+          dispatch({ type: "SET_ERROR", payload: error });
+          return {
+            success: false,
+            error: error,
+            currentSeller: state.currentSeller,
+          };
+        }
+      }
+
       dispatch({
         type: "ADD_TO_CART",
         payload: {
@@ -224,14 +255,14 @@ export function CartProvider({ children }) {
         },
       });
 
-      // Return the updated state for error handling
+      // Return success since validation passed
       return {
-        success: !state.error,
-        error: state.error,
+        success: true,
+        error: null,
         currentSeller: state.currentSeller,
       };
     },
-    [state.error, state.currentSeller]
+    [state.items, state.currentSeller]
   );
 
   const updateQuantity = useCallback((id, quantity) => {
