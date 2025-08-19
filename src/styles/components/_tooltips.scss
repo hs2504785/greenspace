@@ -12,6 +12,20 @@
     box-shadow: 0 2px 8px rgba(25, 135, 84, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1);
   }
 
+  // Hide tooltips on mobile devices to prevent sticky behavior
+  @media (max-width: 991.98px) {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  // Only show tooltips on devices that can truly hover (desktop)
+  @media (hover: none) {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
   // Arrow styling for each direction
   &.bs-tooltip-top .tooltip-arrow::before {
     border-top-color: var(--bs-success);
