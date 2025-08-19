@@ -10,8 +10,6 @@ export function useVegetables(initialFilters = {}) {
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState({
-    page: 1,
-    limit: 12,
     category: null,
     location: null,
     searchQuery: "",
@@ -65,14 +63,10 @@ export function useVegetables(initialFilters = {}) {
         return direction * (aValue - bValue);
       });
 
-      // Apply pagination
-      const startIndex = (filters.page - 1) * filters.limit;
-      const endIndex = startIndex + filters.limit;
-      const paginatedData = data.slice(startIndex, endIndex);
-
-      setVegetables(paginatedData);
+      // Show ALL vegetables - no pagination/limits
+      setVegetables(data);
       setTotalCount(data.length);
-      setTotalPages(Math.ceil(data.length / filters.limit));
+      setTotalPages(1);
     } catch (err) {
       const errorMessage = err.message || "Failed to fetch vegetables";
       console.error("Fetch vegetables error:", {
@@ -94,8 +88,6 @@ export function useVegetables(initialFilters = {}) {
     setFilters((prev) => ({
       ...prev,
       ...newFilters,
-      // Reset to page 1 when filters change
-      page: newFilters.page || 1,
     }));
   }, []);
 
