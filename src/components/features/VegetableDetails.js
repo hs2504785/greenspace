@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Container,
@@ -87,24 +87,74 @@ export default function VegetableDetails({ vegetable }) {
   // Use the actual available quantity for both free and paid items
   const maxQuantity = vegetable?.quantity || 1;
 
+  // Check current quantity in cart
+  const cartItem = items.find((item) => item.id === vegetable.id);
+  const currentCartQuantity = cartItem?.quantity || 0;
+
+  // Check if adding the selected quantity would exceed availability
+  const wouldExceedStock = currentCartQuantity + quantity > maxQuantity;
+
+  // Remaining quantity that can be added to cart
+  const remainingQuantity = Math.max(0, maxQuantity - currentCartQuantity);
+
+  // Adjust quantity when remaining quantity changes (e.g., when items added to cart)
+  useEffect(() => {
+    if (quantity > remainingQuantity && remainingQuantity > 0) {
+      setQuantity(remainingQuantity);
+    } else if (remainingQuantity <= 0 && quantity > 1) {
+      setQuantity(1);
+    }
+  }, [remainingQuantity, quantity]);
+
   if (!vegetable) {
     router.push("/");
     return null;
   }
 
   const handleWhatsAppClick = () => {
+    const whatsappNumber = vegetable.owner?.whatsapp_number;
+
+    if (!whatsappNumber) {
+      toastService.error("WhatsApp number not available for this seller.");
+      return;
+    }
+
+    // Clean the WhatsApp number (remove spaces, dashes, etc.)
+    const cleanedNumber = whatsappNumber.replace(/[^\d+]/g, "");
+
     const message = `Hi, I'm interested in buying ${vegetable.name}`;
-    const whatsappUrl = `https://wa.me/${
-      vegetable.owner?.whatsapp
-    }?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(
+      message
+    )}`;
+
+    console.log("Opening WhatsApp URL:", whatsappUrl);
     window.open(whatsappUrl, "_blank");
   };
 
   const handleAddToCart = async () => {
     try {
+      // Validate stock before adding to cart
+      if (isOutOfStock) {
+        toastService.error("This item is currently out of stock.");
+        return;
+      }
+
+      if (wouldExceedStock) {
+        toastService.error(
+          `Cannot add ${quantity} ${
+            vegetable.unit || "kg"
+          }. Only ${remainingQuantity} ${vegetable.unit || "kg"} available${
+            currentCartQuantity > 0
+              ? ` (${currentCartQuantity} already in cart)`
+              : ""
+          }.`
+        );
+        return;
+      }
+
       console.log("Adding to cart - Vegetable:", vegetable);
       console.log("Owner details:", vegetable.owner);
-      console.log("WhatsApp number:", vegetable.owner?.whatsapp);
+      console.log("WhatsApp number:", vegetable.owner?.whatsapp_number);
 
       const result = await addToCart(
         {
@@ -489,12 +539,18 @@ export default function VegetableDetails({ vegetable }) {
                         variant="outline-info"
                         size="lg"
                         onClick={handleWhatsAppClick}
+                        disabled={!vegetable.owner?.whatsapp_number}
                         className="contact-seller-btn"
                         style={{
                           borderColor: "#17a2b8",
                           color: "#17a2b8",
                           fontWeight: "600",
                         }}
+                        title={
+                          !vegetable.owner?.whatsapp_number
+                            ? "WhatsApp number not available for this seller"
+                            : "Contact seller via WhatsApp"
+                        }
                       >
                         <i className="ti-brand-whatsapp me-2"></i>
                         Contact Seller
@@ -517,22 +573,41 @@ export default function VegetableDetails({ vegetable }) {
                         1,
                         parseInt(e.target.value) || 1
                       );
-                      setQuantity(Math.min(newQuantity, maxQuantity));
+                      // Limit quantity to what's actually available considering cart
+                      const maxAllowedQuantity = Math.max(1, remainingQuantity);
+                      setQuantity(Math.min(newQuantity, maxAllowedQuantity));
                     }}
                     min="1"
-                    max={maxQuantity}
+                    max={Math.max(1, remainingQuantity)}
                     style={{ width: "100px" }}
                     className="me-3"
-                    disabled={isOutOfStock}
-                    title={isOutOfStock ? "Out of stock" : undefined}
+                    disabled={isOutOfStock || remainingQuantity <= 0}
+                    title={
+                      isOutOfStock
+                        ? "Out of stock"
+                        : remainingQuantity <= 0
+                        ? `Already have maximum available quantity (${currentCartQuantity}) in cart`
+                        : undefined
+                    }
                   />
                   <div className="text-muted">{vegetable.unit || "kg"}</div>
-                  {isOutOfStock && (
+                  {isOutOfStock ? (
                     <div className="text-danger small ms-2">
                       <i className="ti-alert-circle me-1"></i>
                       Currently unavailable
                     </div>
-                  )}
+                  ) : remainingQuantity <= 0 ? (
+                    <div className="text-warning small ms-2">
+                      <i className="ti-info-circle me-1"></i>
+                      Maximum quantity in cart ({currentCartQuantity})
+                    </div>
+                  ) : currentCartQuantity > 0 ? (
+                    <div className="text-info small ms-2">
+                      <i className="ti-shopping-cart me-1"></i>
+                      {currentCartQuantity} already in cart, {remainingQuantity}{" "}
+                      more available
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="d-flex justify-content-between align-items-center mb-3">
@@ -552,12 +627,19 @@ export default function VegetableDetails({ vegetable }) {
                     }
                     size="lg"
                     onClick={handleAddToCart}
-                    disabled={isOutOfStock || hasSimilarFreeItemInCart}
+                    disabled={
+                      isOutOfStock ||
+                      hasSimilarFreeItemInCart ||
+                      wouldExceedStock ||
+                      remainingQuantity <= 0
+                    }
                     title={
                       isOutOfStock
                         ? "This item is currently out of stock"
                         : hasSimilarFreeItemInCart
                         ? `You already have a similar free item (${similarFreeItemCheck.conflictingItem?.name}) in your cart`
+                        : wouldExceedStock || remainingQuantity <= 0
+                        ? `Cannot add more. Maximum available: ${maxQuantity}, Currently in cart: ${currentCartQuantity}`
                         : undefined
                     }
                   >
@@ -574,6 +656,8 @@ export default function VegetableDetails({ vegetable }) {
                       ? "Out of Stock"
                       : hasSimilarFreeItemInCart
                       ? "Similar Item Already in Cart"
+                      : wouldExceedStock || remainingQuantity <= 0
+                      ? "Maximum Quantity in Cart"
                       : isFree
                       ? "🎁 Claim Free Item"
                       : "Add to Cart"}
