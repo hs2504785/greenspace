@@ -156,6 +156,67 @@ export default function VegetableDetails({ vegetable }) {
         .image-container:hover .nav-arrow {
           opacity: 1;
         }
+        
+        /* Modern styling for the product details */
+        .price-badge {
+          box-shadow: 0 2px 8px rgba(111, 66, 193, 0.2) !important;
+          transition: transform 0.2s ease;
+        }
+        .price-badge:hover {
+          transform: translateY(-1px);
+        }
+        
+        .contact-seller-btn {
+          transition: all 0.2s ease;
+          border-width: 2px !important;
+        }
+        .contact-seller-btn:hover {
+          background-color: #17a2b8 !important;
+          color: white !important;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+        }
+        
+        .seller-info-card {
+          border-radius: 12px !important;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+          transition: transform 0.2s ease;
+        }
+        .seller-info-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Responsive price badge */
+        @media (max-width: 576px) {
+          .price-badge {
+            font-size: 1rem !important;
+            padding: 0.5rem 1rem !important;
+          }
+        }
+        
+        /* Info cards styling */
+        .info-card {
+          border-radius: 10px !important;
+          transition: all 0.2s ease;
+          box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05) !important;
+        }
+        .info-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Better responsive layout for small screens */
+        @media (max-width: 576px) {
+          /* Stack info cards on mobile */
+          .info-card .d-flex {
+            flex-direction: column;
+            text-align: center;
+          }
+          .info-card .d-flex i {
+            margin: 0 0 0.5rem 0 !important;
+          }
+        }
       `}</style>
       <Row className="g-4">
         <Col lg={6}>
@@ -311,7 +372,15 @@ export default function VegetableDetails({ vegetable }) {
             {/* Title and Price */}
             <div className="d-flex justify-content-between align-items-start mb-3">
               <h1 className="mb-0 fw-bold">{vegetable.name}</h1>
-              <Badge bg="success" className="fs-5 px-3 py-2">
+              <Badge
+                className="fs-5 px-3 py-2 price-badge"
+                style={{
+                  backgroundColor: "#6f42c1",
+                  color: "white",
+                  borderRadius: "8px",
+                  fontWeight: "600",
+                }}
+              >
                 ₹{vegetable.price}/{vegetable.unit || "kg"}
               </Badge>
             </div>
@@ -325,10 +394,10 @@ export default function VegetableDetails({ vegetable }) {
 
             {/* Quick Info Cards */}
             <Row className="g-3 mb-4">
-              <Col sm={6}>
-                <Card className="border-0 bg-light h-100">
-                  <Card.Body className="d-flex align-items-center">
-                    <i className="ti-location-pin fs-4 me-3 text-success"></i>
+              <Col xs={6} lg={6}>
+                <Card className="border-0 bg-light h-100 info-card">
+                  <Card.Body className="d-flex align-items-center p-3">
+                    <i className="ti-location-pin fs-4 me-3 text-info"></i>
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div className="text-muted small">Location</div>
                       {renderLocation(vegetable.location)}
@@ -336,12 +405,12 @@ export default function VegetableDetails({ vegetable }) {
                   </Card.Body>
                 </Card>
               </Col>
-              <Col sm={6}>
-                <Card className="border-0 bg-light h-100">
-                  <Card.Body className="d-flex align-items-center">
+              <Col xs={6} lg={6}>
+                <Card className="border-0 bg-light h-100 info-card">
+                  <Card.Body className="d-flex align-items-center p-3">
                     <i
                       className={`ti-package fs-4 me-3 ${
-                        isOutOfStock ? "text-danger" : "text-success"
+                        isOutOfStock ? "text-danger" : "text-warning"
                       }`}
                     ></i>
                     <div>
@@ -363,10 +432,10 @@ export default function VegetableDetails({ vegetable }) {
                   </Card.Body>
                 </Card>
               </Col>
-              <Col sm={6}>
-                <Card className="border-0 bg-light h-100">
-                  <Card.Body className="d-flex align-items-center">
-                    <i className="ti-tag fs-4 me-3 text-success"></i>
+              <Col xs={6} lg={6}>
+                <Card className="border-0 bg-light h-100 info-card">
+                  <Card.Body className="d-flex align-items-center p-3">
+                    <i className="ti-tag fs-4 me-3 text-primary"></i>
                     <div>
                       <div className="text-muted small">Category</div>
                       <div className="fw-semibold text-capitalize">
@@ -376,10 +445,10 @@ export default function VegetableDetails({ vegetable }) {
                   </Card.Body>
                 </Card>
               </Col>
-              <Col sm={6}>
-                <Card className="border-0 bg-light h-100">
-                  <Card.Body className="d-flex align-items-center">
-                    <i className="ti-home fs-4 me-3 text-success"></i>
+              <Col xs={6} lg={6}>
+                <Card className="border-0 bg-light h-100 info-card">
+                  <Card.Body className="d-flex align-items-center p-3">
+                    <i className="ti-home fs-4 me-3 text-secondary"></i>
                     <div>
                       <div className="text-muted small">Source</div>
                       <div className="fw-semibold">
@@ -394,33 +463,44 @@ export default function VegetableDetails({ vegetable }) {
             </Row>
 
             {/* Seller Information */}
-            <Card className="border-0 bg-light mb-4">
+            <Card className="border-0 bg-light mb-4 seller-info-card">
               <Card.Body>
-                <h5 className="mb-4">Seller Information</h5>
-                <div className="d-flex justify-content-between align-items-center">
-                  <div className="d-flex align-items-center">
-                    <div className="me-3">
-                      <UserAvatar user={vegetable.owner} size={48} />
-                    </div>
-                    <div>
-                      <div className="fw-semibold">
-                        {vegetable.owner?.name || "Anonymous Seller"}
+                <h5 className="mb-3">Seller Information</h5>
+                <div className="row g-3">
+                  <div className="col-12 col-sm-8">
+                    <div className="d-flex align-items-center">
+                      <div className="me-3">
+                        <UserAvatar user={vegetable.owner} size={48} />
                       </div>
-                      <div className="text-muted small">
-                        <i className="ti-check-box text-success me-1"></i>
-                        Verified Seller
+                      <div className="flex-grow-1">
+                        <div className="fw-semibold">
+                          {vegetable.owner?.name || "Anonymous Seller"}
+                        </div>
+                        <div className="text-muted small">
+                          <i className="ti-check-box text-success me-1"></i>
+                          Verified Seller
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <Button
-                    variant="success"
-                    size="lg"
-                    onClick={handleWhatsAppClick}
-                    className="px-4"
-                  >
-                    <i className="ti-comment me-2"></i>
-                    Contact Seller
-                  </Button>
+                  <div className="col-12 col-sm-4">
+                    <div className="d-grid">
+                      <Button
+                        variant="outline-info"
+                        size="lg"
+                        onClick={handleWhatsAppClick}
+                        className="contact-seller-btn"
+                        style={{
+                          borderColor: "#17a2b8",
+                          color: "#17a2b8",
+                          fontWeight: "600",
+                        }}
+                      >
+                        <i className="ti-brand-whatsapp me-2"></i>
+                        Contact Seller
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </Card.Body>
             </Card>
