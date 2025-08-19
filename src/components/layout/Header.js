@@ -6,8 +6,10 @@ import {
   Nav,
   Container,
   Button,
+  Dropdown,
   OverlayTrigger,
   Tooltip,
+  Offcanvas,
 } from "react-bootstrap";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -41,43 +43,58 @@ export default function Header() {
 
   return (
     <>
-      <Navbar className="navbar-sticky py-0">
+      <Navbar className="navbar-sticky">
         <Container>
-          <Navbar.Brand as={Link} href="/" className="brand-container">
-            <img
-              src="/images/logo.svg"
-              width="50"
-              height="50"
-              className="d-inline-block align-top me-2 brand-logo"
-              alt="Arya Natural Farms Logo"
-            />
-            <div className="brand-text d-flex flex-column">
-              {/* Full name for larger screens */}
-              <span className="brand-name d-none d-md-inline">
-                Arya Natural Farms
-              </span>
-              {/* Shortened name for medium mobile screens */}
-              <span className="brand-name d-none d-sm-inline d-md-none">
-                Arya Farms
-              </span>
-              {/* Acronym for small mobile screens */}
-              <span className="brand-name d-inline d-sm-none brand-name-acronym">
-                ANF
-              </span>
+          {/* Logo and Hamburger grouped together */}
+          <div className="d-flex align-items-center">
+            <Navbar.Brand as={Link} href="/" className="brand-container">
+              <img
+                src="/images/logo.svg"
+                width="50"
+                height="50"
+                className="d-inline-block align-top me-2 brand-logo"
+                alt="Arya Natural Farms Logo"
+              />
+              <div className="brand-text d-flex flex-column">
+                {/* Full name for larger screens */}
+                <span className="brand-name d-none d-md-inline">
+                  Arya Natural Farms
+                </span>
+                {/* Shortened name for medium mobile screens */}
+                <span className="brand-name d-none d-sm-inline d-md-none">
+                  Arya Farms
+                </span>
+                {/* Acronym for small mobile screens */}
+                <span className="brand-name d-inline d-sm-none brand-name-acronym">
+                  ANF
+                </span>
 
-              {/* Full tagline for desktop and tablet screens */}
-              <span className="brand-tagline d-none d-sm-block">
-                Fresh • Natural • Local
-              </span>
-              {/* Short tagline for mobile screens only */}
-              <span className="brand-tagline d-block d-sm-none brand-tagline-small">
-                Natural
-              </span>
-            </div>
-          </Navbar.Brand>
+                {/* Full tagline for desktop and tablet screens */}
+                <span className="brand-tagline d-none d-sm-block">
+                  Fresh • Natural • Local
+                </span>
+                {/* Short tagline for mobile screens only */}
+                <span className="brand-tagline d-block d-sm-none brand-tagline-small">
+                  Fresh
+                </span>
+              </div>
+            </Navbar.Brand>
+
+            {/* Hamburger toggle - positioned next to logo, mobile only */}
+            <button
+              className="navbar-toggler d-lg-none"
+              type="button"
+              onClick={toggleMenu}
+              aria-controls="mobile-menu"
+              aria-expanded={isMenuOpen}
+              aria-label="Toggle navigation"
+            >
+              <span className="navbar-toggler-icon"></span>
+            </button>
+          </div>
 
           {/* Filter and Cart buttons - always visible, appears before profile on desktop */}
-          <div className="d-flex align-items-center order-lg-3">
+          <div className="d-flex align-items-center ms-auto order-lg-3">
             {/* Filter button - only show on vegetables listing pages */}
             {(pathname === "/" || pathname.startsWith("/?")) && (
               <OverlayTrigger
@@ -188,18 +205,6 @@ export default function Header() {
             )}
           </div>
 
-          {/* Custom hamburger toggle - visible on mobile only */}
-          <button
-            className="navbar-toggler d-lg-none"
-            type="button"
-            onClick={toggleMenu}
-            aria-controls="mobile-menu"
-            aria-expanded={isMenuOpen}
-            aria-label="Toggle navigation"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-
           {/* Desktop navigation - always visible on large screens */}
           <div className="d-none d-lg-flex order-lg-2 flex-grow-1">
             <Nav className="me-auto">
@@ -263,85 +268,60 @@ export default function Header() {
         </Container>
       </Navbar>
 
-      {/* Mobile Menu Overlay */}
-      {isMenuOpen && (
-        <div
-          className="mobile-menu-backdrop d-lg-none"
-          onClick={() => setIsMenuOpen(false)}
-        >
-          <div
-            className="mobile-menu-overlay"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mobile-menu-content">
-              <Nav className="flex-column">
+      {/* Mobile Menu using Bootstrap Offcanvas */}
+      <Offcanvas
+        show={isMenuOpen}
+        onHide={() => setIsMenuOpen(false)}
+        placement="end"
+        className="d-lg-none"
+      >
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>Navigation</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+          <Nav className="flex-column">
+            <Nav.Link
+              as={Link}
+              href="/?showFreeOnly=true"
+              className={`mobile-nav-link fair-share-link ${
+                pathname.includes("showFreeOnly=true") ? "active-nav-item" : ""
+              }`}
+              onClick={handleLinkClick}
+            >
+              <i className="ti-gift me-2"></i>
+              Fair Share
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              href="/"
+              className={`mobile-nav-link ${
+                isActive("/") && !pathname.includes("showFreeOnly")
+                  ? "active-nav-item"
+                  : ""
+              }`}
+              onClick={handleLinkClick}
+            >
+              <i className="ti-shopping-cart me-2"></i>
+              Fresh Vegetables
+            </Nav.Link>
+            {session && (
+              <>
                 <Nav.Link
                   as={Link}
-                  href="/?showFreeOnly=true"
-                  className={`mobile-nav-link fair-share-link ${
-                    pathname.includes("showFreeOnly=true")
-                      ? "active-nav-item"
-                      : ""
-                  }`}
-                  onClick={handleLinkClick}
-                >
-                  🎁 Fair Share
-                </Nav.Link>
-                <Nav.Link
-                  as={Link}
-                  href="/"
+                  href="/orders"
                   className={`mobile-nav-link ${
-                    isActive("/") && !pathname.includes("showFreeOnly")
-                      ? "active-nav-item"
-                      : ""
+                    isActive("/orders") ? "active-nav-item" : ""
                   }`}
                   onClick={handleLinkClick}
                 >
-                  Fresh Vegetables
+                  <i className="ti-package me-2"></i>
+                  Orders & Deliveries
                 </Nav.Link>
-                {session && (
-                  <>
-                    <Nav.Link
-                      as={Link}
-                      href="/orders"
-                      className={`mobile-nav-link ${
-                        isActive("/orders") ? "active-nav-item" : ""
-                      }`}
-                      onClick={handleLinkClick}
-                    >
-                      📦 Orders & Deliveries
-                    </Nav.Link>
-                    {/* <Nav.Link 
-                      as={Link} 
-                      href="/discussions"
-                      className={`mobile-nav-link ${
-                        isActive("/discussions")
-                          ? "active-nav-item"
-                          : ""
-                      }`}
-                      onClick={handleLinkClick}
-                    >
-                      Discussions
-                    </Nav.Link>
-                    <Nav.Link 
-                      as={Link} 
-                      href="/community"
-                      className={`mobile-nav-link ${
-                        isActive("/community")
-                          ? "active-nav-item"
-                          : ""
-                      }`}
-                      onClick={handleLinkClick}
-                    >
-                      Community
-                    </Nav.Link> */}
-                  </>
-                )}
-              </Nav>
-            </div>
-          </div>
-        </div>
-      )}
+              </>
+            )}
+          </Nav>
+        </Offcanvas.Body>
+      </Offcanvas>
     </>
   );
 }

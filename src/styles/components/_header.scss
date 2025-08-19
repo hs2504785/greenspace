@@ -6,6 +6,9 @@
   backdrop-filter: blur(8px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
+  // Ensure consistent padding across all screen sizes
+  padding: 0;
+
   // Add a subtle animation when scrolling
   transition: box-shadow 0.2s ease;
 
@@ -44,42 +47,14 @@
     letter-spacing: -0.5px;
     white-space: nowrap; // Prevent wrapping
 
-    // Medium screens and below - slightly smaller for "Arya Farms"
-    @media (max-width: 768px) {
-      font-size: 1.3rem;
-    }
-
-    // Small screens - optimized for "Arya"
-    @media (max-width: 576px) {
-      font-size: 1.2rem;
-      letter-spacing: 0; // Remove negative letter spacing for short name
-    }
+    // Keep consistent font size across all screen sizes for consistent header height
 
     // Custom styling for acronym (ANF) on small screens
     &.brand-name-acronym {
-      // Optimize styling for acronym
-      font-size: 1.2rem;
+      // Keep same font size for consistent header height
+      font-size: 1.5rem; // Same as default brand name
       letter-spacing: 1px; // Add spacing between letters for acronym
       font-weight: 800; // Slightly bolder for acronym
-
-      @media (max-width: 400px) {
-        font-size: 1.1rem;
-      }
-
-      @media (max-width: 320px) {
-        font-size: 1rem;
-        letter-spacing: 0.5px;
-      }
-    }
-
-    // General very small screen adjustments
-    @media (max-width: 400px) {
-      font-size: 1.1rem;
-    }
-
-    // Extra small screens - compact styling
-    @media (max-width: 320px) {
-      font-size: 1rem;
     }
   }
 
@@ -92,28 +67,27 @@
     letter-spacing: 0.5px;
     text-transform: uppercase;
 
-    @media (max-width: 768px) {
-      font-size: 0.7rem;
-    }
+    // Keep consistent font size across all screen sizes for consistent header height
 
-    // Small tagline styling for "Natural" (mobile only)
+    // Small tagline styling for "Fresh" (mobile only)
     &.brand-tagline-small {
-      font-size: 0.65rem;
-      letter-spacing: 0.2px;
+      font-size: 0.75rem; // Same as default tagline
+      letter-spacing: 0.5px; // Same as default tagline
       font-weight: 600; // Slightly bolder for single word
-
-      @media (max-width: 400px) {
-        font-size: 0.6rem;
-      }
-
-      @media (max-width: 320px) {
-        font-size: 0.55rem;
-      }
     }
   }
 
-  // Mobile-specific improvements for always-visible cart
+  // Mobile-specific improvements for hamburger next to logo
   @media (max-width: 991.98px) {
+    // Force hamburger visibility on mobile
+    .navbar-toggler.d-lg-none {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      min-width: 44px !important;
+      min-height: 44px !important;
+    }
+
     .container {
       display: flex;
       align-items: center;
@@ -121,25 +95,52 @@
       flex-wrap: nowrap;
     }
 
+    // Logo and hamburger container
+    .container > .d-flex:first-child {
+      flex-shrink: 0;
+      max-width: 60%; // Allow space for brand + hamburger
+    }
+
     .navbar-brand {
       flex-shrink: 0;
-      max-width: 60%; // Slightly reduced to accommodate shorter names better
-      min-width: 120px; // Ensure minimum space for "Arya" + logo
+      min-width: 120px;
+      margin-right: 0;
     }
 
     .brand-logo {
-      width: 40px;
-      height: 40px;
+      width: 50px; // Keep same size as desktop
+      height: 50px; // Keep same size as desktop
     }
 
     .navbar-toggler {
-      order: 4;
-      border: none;
-      padding: 0.25rem 0.5rem;
-      margin-left: 0.5rem;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10002; // Ensure it's above the mobile menu
+      margin-left: 0.5rem; // Small gap after brand
+      border: 1px solid rgba(76, 175, 80, 0.3) !important;
+      padding: 0.5rem !important;
+      background: white !important;
+      border-radius: 6px !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+      display: block !important; // Force display on mobile
+      transition: all 0.2s ease;
 
       &:focus {
-        box-shadow: none;
+        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25) !important;
+        outline: none !important;
+        border-color: #4caf50 !important;
+      }
+
+      &:hover {
+        background-color: rgba(76, 175, 80, 0.05) !important;
+        border-color: #4caf50 !important;
+      }
+
+      .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2845, 80, 22, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        width: 1.2em !important;
+        height: 1.2em !important;
+        display: block !important;
       }
     }
 
@@ -165,37 +166,41 @@
     }
   }
 
-  // Custom mobile menu overlay styles
-  .mobile-menu-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1025; // Below navbar z-index but above content
-    animation: fadeIn 0.3s ease-out;
-  }
+  // Bootstrap Offcanvas mobile menu styling
+  .offcanvas {
+    &.d-lg-none {
+      // Only apply on mobile
+      @media (max-width: 991.98px) {
+        width: 300px;
+        max-width: 85vw;
+      }
+    }
 
-  .mobile-menu-overlay {
-    position: fixed;
-    top: 0; // Start from top of viewport
-    left: 0;
-    right: 0;
-    background-color: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    padding-top: 70px; // Account for header height
-    transform: translateY(-100%);
-    animation: slideDown 0.3s ease-out forwards;
-    z-index: 1026; // Above backdrop
-  }
+    .offcanvas-header {
+      background: linear-gradient(135deg, #f8fffe 0%, #f0f8f0 100%);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 
-  .mobile-menu-content {
-    padding: 1rem 0;
-    max-height: calc(100vh - 80px); // Account for header height
-    overflow-y: auto;
+      .offcanvas-title {
+        color: #2d5016;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+
+      .btn-close {
+        color: #2d5016;
+        opacity: 0.7;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+
+    .offcanvas-body {
+      padding: 1rem 0;
+    }
   }
 
   .mobile-nav-link {
@@ -224,41 +229,6 @@
 
     &:last-child {
       border-bottom: none;
-    }
-  }
-
-  // Animation keyframes
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideDown {
-    from {
-      transform: translateY(-100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  // Hamburger button improvements
-  .navbar-toggler {
-    border: none;
-    padding: 0.25rem 0.5rem;
-
-    &:focus {
-      box-shadow: none;
-    }
-
-    .navbar-toggler-icon {
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2833, 37, 41, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
     }
   }
 
