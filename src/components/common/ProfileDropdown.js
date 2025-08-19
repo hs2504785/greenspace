@@ -29,7 +29,10 @@ export default function ProfileDropdown({ user }) {
     <Dropdown align="end">
       <Dropdown.Toggle as={CustomToggle}>
         <UserAvatar user={user} size={36} />
-        <div className="d-flex flex-column me-1" style={{ lineHeight: "1.2" }}>
+        <div
+          className="d-flex flex-column me-1 user-name"
+          style={{ lineHeight: "1.2" }}
+        >
           <small className="text-muted" style={{ fontSize: "0.75rem" }}>
             Welcome,
           </small>

@@ -77,6 +77,13 @@
     }
   }
 
+  // Hide user name text on very small screens (< 410px)
+  @media (max-width: 410px) {
+    .user-name {
+      display: none !important;
+    }
+  }
+
   // Mobile-specific improvements for hamburger next to logo
   @media (max-width: 991.98px) {
     // Force hamburger visibility on mobile
@@ -117,30 +124,48 @@
       position: relative;
       z-index: 10002; // Ensure it's above the mobile menu
       margin-left: 0.5rem; // Small gap after brand
-      border: 1px solid rgba(76, 175, 80, 0.3) !important;
-      padding: 0.5rem !important;
-      background: white !important;
-      border-radius: 6px !important;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-      display: block !important; // Force display on mobile
-      transition: all 0.2s ease;
+      border: none !important;
+      padding: 0 !important; // Remove all padding
+      background: transparent !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      display: block !important;
+      transition: none; // Remove transitions to prevent interference
+      min-width: auto !important; // Let icon determine size
+      min-height: auto !important;
 
       &:focus {
-        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25) !important;
-        outline: none !important;
-        border-color: #4caf50 !important;
+        box-shadow: none !important;
+        outline: none !important; // Remove outline completely
+        background-color: transparent !important;
+
+        .navbar-toggler-icon {
+          // Make icon bold on focus as well for accessibility
+          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2845, 80, 22, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='3' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
       }
 
       &:hover {
-        background-color: rgba(76, 175, 80, 0.05) !important;
-        border-color: #4caf50 !important;
+        background-color: transparent !important; // No background change
+        transform: none !important; // No scaling
+
+        .navbar-toggler-icon {
+          // Make icon bold on hover by using thicker stroke
+          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2845, 80, 22, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='3' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+      }
+
+      &:active {
+        transform: none !important;
+        background-color: transparent !important;
       }
 
       .navbar-toggler-icon {
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2845, 80, 22, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-        width: 1.2em !important;
-        height: 1.2em !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2845, 80, 22, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2.5' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        width: 1.6em !important;
+        height: 1.6em !important;
         display: block !important;
+        transition: background-image 0.2s ease; // Smooth transition for bold effect
       }
     }
 
