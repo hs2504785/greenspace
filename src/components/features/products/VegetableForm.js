@@ -233,12 +233,32 @@ export default function VegetableForm({
 
       // Upload new image files
       if (imageFiles.length > 0) {
-        console.log("🔄 Uploading images...");
+        console.log("🔄 Uploading optimized images...");
         const uploadPromises = imageFiles.map((file) =>
           vegetableService.uploadImage(file)
         );
-        imageUrls = await Promise.all(uploadPromises);
-        console.log("✅ Image upload results:", imageUrls);
+        const uploadResults = await Promise.all(uploadPromises);
+
+        // Extract ALL variant URLs for each image
+        imageUrls = uploadResults.flatMap((result) => {
+          if (typeof result === "string") {
+            return [result]; // Old format - single URL
+          } else if (result.variants) {
+            // New format - return all three variants
+            return [
+              result.variants.thumbnail.url,
+              result.variants.medium.url,
+              result.variants.large.url,
+            ];
+          } else {
+            return [result.url]; // Fallback
+          }
+        });
+
+        console.log("✅ Optimized image upload results:", {
+          urls: imageUrls,
+          optimizationInfo: uploadResults.filter((r) => typeof r === "object"),
+        });
       } else {
         console.log("ℹ️ No new images to upload");
       }

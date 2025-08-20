@@ -11,6 +11,92 @@ import { useSession } from "next-auth/react";
 import { checkCartForSimilarFreeItems } from "@/utils/freeItemValidation";
 import toastService from "@/utils/toastService";
 
+// Helper function to validate if a string is a valid URL
+const isValidUrl = (str) => {
+  if (!str || typeof str !== "string") return false;
+  return str.startsWith("http://") || str.startsWith("https://");
+};
+
+// Helper function to group image variants into logical images
+const groupImageVariants = (images) => {
+  if (!images || images.length === 0) return [];
+
+  // Group images by their base filename
+  const grouped = {};
+
+  for (const imageUrl of images) {
+    if (typeof imageUrl !== "string") continue;
+
+    // Extract base filename (before _variant.webp)
+    const match = imageUrl.match(/(.+?)_(?:thumbnail|medium|large)\.webp$/);
+    if (match) {
+      const baseName = match[1];
+
+      if (!grouped[baseName]) {
+        grouped[baseName] = {
+          thumbnail: null,
+          medium: null,
+          large: null,
+        };
+      }
+
+      if (imageUrl.includes("_thumbnail.webp")) {
+        grouped[baseName].thumbnail = imageUrl;
+      } else if (imageUrl.includes("_medium.webp")) {
+        grouped[baseName].medium = imageUrl;
+      } else if (imageUrl.includes("_large.webp")) {
+        grouped[baseName].large = imageUrl;
+      }
+    } else {
+      // Non-optimized image (original format)
+      const uniqueKey = imageUrl;
+      grouped[uniqueKey] = {
+        thumbnail: null,
+        medium: imageUrl, // Use as medium
+        large: null,
+      };
+    }
+  }
+
+  // Convert to array of representative images (use medium as the main image)
+  return Object.values(grouped)
+    .map((variants) => variants.medium || variants.large || variants.thumbnail)
+    .filter(Boolean);
+};
+
+// Helper function to get the right image variant
+const getImageVariant = (images, variant = "medium") => {
+  if (!images || images.length === 0) return "";
+
+  // First, look for the specific variant pattern (_variant.webp)
+  const targetVariant = images.find((img) => {
+    if (typeof img !== "string") return false;
+    const pattern = new RegExp(`_${variant}\\.webp$`);
+    return pattern.test(img) && isValidUrl(img);
+  });
+
+  if (targetVariant) {
+    return targetVariant;
+  }
+
+  // Fallback: if looking for medium, any image with _medium in the name
+  if (variant === "medium") {
+    const mediumImage = images.find(
+      (img) =>
+        typeof img === "string" && img.includes("_medium") && isValidUrl(img)
+    );
+    if (mediumImage) {
+      return mediumImage;
+    }
+  }
+
+  // Final fallback: use the first valid URL
+  const firstValidImage = images.find(
+    (img) => typeof img === "string" && isValidUrl(img)
+  );
+  return firstValidImage || "";
+};
+
 export default function VegetableCard({
   id,
   name,
@@ -25,7 +111,14 @@ export default function VegetableCard({
   const [imageError, setImageError] = useState(false);
   const { addToCart, items, updateQuantity, removeFromCart } = useCart();
   const { data: session } = useSession();
-  const imageUrl = images?.[0] || "";
+
+  // Get unique logical images (group variants)
+  const uniqueImages = groupImageVariants(images);
+  const imageUrl = getImageVariant(images, "medium") || "";
+
+  // Safety check for valid imageUrl - must be a proper URL
+  const hasValidImage =
+    imageUrl && imageUrl.trim() !== "" && imageUrl.startsWith("http");
 
   // Check if item is free (price = 0)
   const isFree = Number(price) === 0;
@@ -111,6 +204,34 @@ export default function VegetableCard({
     }
   };
 
+  // Additional safety check - if anything goes wrong, show placeholder
+  const renderImage = () => {
+    try {
+      if (imageError || !hasValidImage) {
+        return <ImagePlaceholder />;
+      }
+
+      return (
+        <Image
+          src={imageUrl}
+          alt={name}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          style={{ objectFit: "cover" }}
+          onError={(e) => {
+            console.error(`❌ Image error for "${name}":`, imageUrl, e);
+            setImageError(true);
+          }}
+          priority={false}
+          loading="lazy"
+        />
+      );
+    } catch (error) {
+      console.error(`❌ Image rendering error for "${name}":`, error);
+      return <ImagePlaceholder />;
+    }
+  };
+
   return (
     <Card className="border-0 bg-white">
       <Link href={`/vegetables/${id}`} className="text-decoration-none">
@@ -118,23 +239,10 @@ export default function VegetableCard({
           style={{ position: "relative", height: "160px" }}
           className="rounded-3 overflow-hidden"
         >
-          {imageError || !imageUrl ? (
-            <ImagePlaceholder />
-          ) : (
-            <Image
-              src={imageUrl}
-              alt={name}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              style={{ objectFit: "cover" }}
-              onError={() => setImageError(true)}
-              priority={false}
-              loading="lazy"
-            />
-          )}
+          {renderImage()}
 
           {/* Multiple Images Indicator */}
-          {images && images.length > 1 && (
+          {uniqueImages && uniqueImages.length > 1 && (
             <div
               className="position-absolute bottom-0 end-0 m-2 px-2 py-1 rounded-pill text-white d-flex align-items-center"
               style={{
@@ -144,7 +252,7 @@ export default function VegetableCard({
               }}
             >
               <i className="ti-image me-1" style={{ fontSize: "0.7rem" }}></i>
-              {images.length}
+              {uniqueImages.length}
             </div>
           )}
         </div>

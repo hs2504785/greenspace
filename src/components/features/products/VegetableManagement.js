@@ -19,6 +19,8 @@ import ClearFiltersButton from "@/components/common/ClearFiltersButton";
 import VegetableForm from "./VegetableForm";
 import DeleteConfirmationModal from "@/components/common/DeleteConfirmationModal";
 
+// Helper function removed - using direct logic for better debugging
+
 export default function VegetableManagement() {
   const { data: session } = useSession();
   const [vegetables, setVegetables] = useState([]);
@@ -281,7 +283,16 @@ export default function VegetableManagement() {
                       <div className="d-flex align-items-center">
                         {vegetable.images?.[0] ? (
                           <img
-                            src={vegetable.images[0]}
+                            src={(() => {
+                              // Find the smallest thumbnail variant from any image
+                              const thumbnailImage = vegetable.images.find(
+                                (img) =>
+                                  typeof img === "string" &&
+                                  img.includes("_thumbnail.webp")
+                              );
+
+                              return thumbnailImage || vegetable.images[0];
+                            })()}
                             alt={vegetable.name}
                             className="rounded me-3 flex-shrink-0"
                             style={{

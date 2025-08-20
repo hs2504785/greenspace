@@ -1,6 +1,7 @@
 import ApiBaseService from "./ApiBaseService";
 import { supabase } from "@/lib/supabase";
 import { createSupabaseClient } from "@/utils/supabaseAuth";
+import { imageOptimizationService } from "./ImageOptimizationService";
 // import { mockVegetables } from '@/data/mockVegetables'; // Removed - no longer using mock data
 
 class VegetableService extends ApiBaseService {
@@ -366,15 +367,11 @@ class VegetableService extends ApiBaseService {
               completeVegetable
             );
 
-
-
             return completeVegetable;
           }
         }
 
         console.log("Successfully created vegetable:", createdVegetable);
-
-
 
         return createdVegetable;
       } catch (ownerFetchError) {
@@ -382,8 +379,6 @@ class VegetableService extends ApiBaseService {
           "Could not fetch owner data for created vegetable:",
           ownerFetchError
         );
-
-
 
         return data[0];
       }
@@ -414,8 +409,6 @@ class VegetableService extends ApiBaseService {
       throw error;
     }
   }
-
-
 
   async updateVegetable(id, vegetableData) {
     try {
@@ -609,69 +602,88 @@ class VegetableService extends ApiBaseService {
 
       console.log("⏭️ Skipping bucket check - proceeding with upload...");
 
-      // Basic file validation
-      const maxSize = 10 * 1024 * 1024; // 10MB
-      if (file.size > maxSize) {
-        throw new Error("File too large. Maximum size is 10MB.");
-      }
+      // Validate and optimize image
+      imageOptimizationService.validateImageFile(file);
+      console.log("✅ File validation passed");
 
-      const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/webp",
-        "image/gif",
-        "image/svg+xml",
-      ];
-      if (!allowedTypes.includes(file.type)) {
-        throw new Error(
-          `Invalid file type: ${file.type}. Allowed types: ${allowedTypes.join(
-            ", "
-          )}`
+      // Create optimized image variants
+      console.log("🎨 Creating optimized image variants...");
+      const variants = await imageOptimizationService.createImageVariants(file);
+
+      // Upload all variants to Supabase
+      const uploadedVariants = {};
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substring(2);
+
+      for (const [variantName, variantData] of Object.entries(variants)) {
+        const fileName = `${timestamp}-${randomId}_${variantName}.webp`;
+        const filePath = `vegetables/${fileName}`;
+
+        // Convert blob to file for upload
+        const optimizedFile = imageOptimizationService.blobToFile(
+          variantData.blob,
+          file.name,
+          variantName
+        );
+
+        console.log(
+          `📤 Uploading ${variantName} variant (${variantData.sizeKB}KB)...`
+        );
+
+        const { data, error } = await supabase.storage
+          .from("images")
+          .upload(filePath, optimizedFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (error) {
+          console.error(`❌ Upload failed for ${variantName}:`, error);
+          throw new Error(`Upload failed for ${variantName}: ${error.message}`);
+        }
+
+        if (!data) {
+          throw new Error(
+            `Upload succeeded but no data returned for ${variantName}`
+          );
+        }
+
+        // Get public URL for this variant
+        const { data: urlData } = supabase.storage
+          .from("images")
+          .getPublicUrl(filePath);
+
+        if (!urlData?.publicUrl) {
+          throw new Error(`Failed to get public URL for ${variantName}`);
+        }
+
+        uploadedVariants[variantName] = {
+          url: urlData.publicUrl,
+          size: variantData.size,
+          sizeKB: variantData.sizeKB,
+        };
+
+        console.log(
+          `✅ ${variantName} uploaded successfully: ${variantData.sizeKB}KB`
         );
       }
 
-      console.log("✅ File validation passed");
+      console.log("🎉 All variants uploaded successfully:", {
+        thumbnail: uploadedVariants.thumbnail.sizeKB + "KB",
+        medium: uploadedVariants.medium.sizeKB + "KB",
+        large: uploadedVariants.large.sizeKB + "KB",
+        totalSize:
+          Object.values(uploadedVariants)
+            .reduce((sum, v) => sum + parseFloat(v.sizeKB), 0)
+            .toFixed(1) + "KB",
+      });
 
-      // Create unique file path
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}-${Math.random()
-        .toString(36)
-        .substring(2)}.${fileExt}`;
-      const filePath = `vegetables/${fileName}`;
-
-      console.log("📁 Upload path:", filePath);
-
-      // Try upload with regular client first
-      console.log("🔄 Attempting upload with regular client...");
-      const { data, error } = await supabase.storage
-        .from("images")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (error) {
-        console.error("❌ Upload failed:", error);
-        throw new Error(`Upload failed: ${error.message}`);
-      }
-
-      if (!data) {
-        throw new Error("Upload succeeded but no data returned");
-      }
-
-      console.log("✅ Upload successful:", data);
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("images")
-        .getPublicUrl(filePath);
-
-      if (!urlData?.publicUrl) {
-        throw new Error("Failed to get public URL for uploaded file");
-      }
-
-      console.log("🔗 Public URL generated:", urlData.publicUrl);
-      return urlData.publicUrl;
+      // Return the medium variant URL as primary (for backward compatibility)
+      // But also return all variants for future use
+      return {
+        url: uploadedVariants.medium.url, // Primary URL
+        variants: uploadedVariants, // All variants
+      };
     } catch (error) {
       console.error("💥 Upload error:", error);
       throw error;

@@ -8,7 +8,9 @@
     "postbuild": "npm run uncss",
     "start": "next start",
     "lint": "next lint",
-    "uncss": "node tools/scripts/uncss.js"
+    "uncss": "node tools/scripts/uncss.js",
+    "fix-image-variants": "node scripts/fix-image-variants.js",
+    "rollback-invalid-variants": "node scripts/rollback-invalid-variants.js"
   },
   "dependencies": {
     "@auth/core": "^0.34.2",

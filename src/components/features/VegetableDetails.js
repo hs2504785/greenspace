@@ -18,12 +18,73 @@ import { checkCartForSimilarFreeItems } from "@/utils/freeItemValidation";
 import UserAvatar from "../common/UserAvatar";
 import toastService from "@/utils/toastService";
 
+// Helper function removed - using direct logic below for better debugging
+
 export default function VegetableDetails({ vegetable }) {
   const router = useRouter();
   const { addToCart, items } = useCart();
   const { data: session } = useSession();
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  // Helper function to group image variants into logical images
+  const groupImageVariants = (images) => {
+    if (!images || images.length === 0) return [];
+
+    // Group images by their base filename
+    const grouped = {};
+
+    for (const imageUrl of images) {
+      if (typeof imageUrl !== "string") continue;
+
+      // Extract base filename (before _variant.webp)
+      const match = imageUrl.match(/(.+?)_(?:thumbnail|medium|large)\.webp$/);
+      if (match) {
+        const baseName = match[1];
+
+        if (!grouped[baseName]) {
+          grouped[baseName] = {
+            thumbnail: null,
+            medium: null,
+            large: null,
+          };
+        }
+
+        if (imageUrl.includes("_thumbnail.webp")) {
+          grouped[baseName].thumbnail = imageUrl;
+        } else if (imageUrl.includes("_medium.webp")) {
+          grouped[baseName].medium = imageUrl;
+        } else if (imageUrl.includes("_large.webp")) {
+          grouped[baseName].large = imageUrl;
+        }
+      } else {
+        // Non-optimized image (original format)
+        const uniqueKey = imageUrl;
+        grouped[uniqueKey] = {
+          thumbnail: null,
+          medium: imageUrl, // Use as medium
+          large: null,
+        };
+      }
+    }
+
+    // Convert to array of representative images (use medium as the main image)
+    const result = Object.values(grouped)
+      .map(
+        (variants) => variants.medium || variants.large || variants.thumbnail
+      )
+      .filter(Boolean);
+
+    return result;
+  };
+
+  // Get unique logical images
+  const uniqueImages = groupImageVariants(vegetable.images);
+
+  // Debug: Log the image arrays
+  console.log("🔍 DEBUG - Original images:", vegetable.images);
+  console.log("🔍 DEBUG - Unique images:", uniqueImages);
+  console.log("🔍 DEBUG - Selected index:", selectedImageIndex);
 
   // Helper function to check if a string is a valid URL
   const isValidUrl = (string) => {
@@ -277,11 +338,47 @@ export default function VegetableDetails({ vegetable }) {
               className="position-relative rounded-4 overflow-hidden shadow-sm mb-3 image-container"
               style={{ height: "450px", backgroundColor: "#f8f9fa" }}
             >
-              {vegetable.images &&
-              vegetable.images.length > 0 &&
-              vegetable.images[selectedImageIndex] ? (
+              {uniqueImages &&
+              uniqueImages.length > 0 &&
+              uniqueImages[selectedImageIndex] ? (
                 <Image
-                  src={vegetable.images[selectedImageIndex]}
+                  src={(() => {
+                    const currentImageUrl = uniqueImages[selectedImageIndex];
+
+                    if (!currentImageUrl) return "";
+
+                    // Find the large variant for the current selected image
+                    const baseMatch = currentImageUrl.match(
+                      /(.+?)_(?:thumbnail|medium|large)\.webp$/
+                    );
+                    if (baseMatch) {
+                      const baseName = baseMatch[1];
+                      const largeVariant = vegetable.images.find(
+                        (img) => img && img.includes(`${baseName}_large.webp`)
+                      );
+
+                      if (largeVariant) {
+                        return largeVariant;
+                      }
+                    }
+
+                    // Smart URL construction fallback
+                    if (currentImageUrl.includes("_medium.webp")) {
+                      return currentImageUrl.replace(
+                        "_medium.webp",
+                        "_large.webp"
+                      );
+                    }
+                    if (currentImageUrl.includes("_thumbnail.webp")) {
+                      return currentImageUrl.replace(
+                        "_thumbnail.webp",
+                        "_large.webp"
+                      );
+                    }
+
+                    // Use current image as fallback
+                    return currentImageUrl;
+                  })()}
                   alt={`${vegetable.name} - Image ${selectedImageIndex + 1}`}
                   fill
                   style={{ objectFit: "cover" }}
@@ -299,7 +396,7 @@ export default function VegetableDetails({ vegetable }) {
               )}
 
               {/* Image Counter Badge */}
-              {vegetable.images && vegetable.images.length > 1 && (
+              {uniqueImages && uniqueImages.length > 1 && (
                 <div
                   className="position-absolute top-0 end-0 m-3 px-2 py-1 rounded-pill text-white"
                   style={{
@@ -307,20 +404,25 @@ export default function VegetableDetails({ vegetable }) {
                     fontSize: "0.85rem",
                   }}
                 >
-                  {selectedImageIndex + 1} / {vegetable.images.length}
+                  {selectedImageIndex + 1} / {uniqueImages.length}
                 </div>
               )}
 
               {/* Navigation Arrows */}
-              {vegetable.images && vegetable.images.length > 1 && (
+              {uniqueImages && uniqueImages.length > 1 && (
                 <>
                   <button
                     className="btn btn-link position-absolute top-50 start-0 translate-middle-y ms-2 text-white p-2 nav-arrow"
-                    onClick={() =>
-                      setSelectedImageIndex((prev) =>
-                        prev > 0 ? prev - 1 : vegetable.images.length - 1
-                      )
-                    }
+                    onClick={() => {
+                      const newIndex =
+                        selectedImageIndex > 0
+                          ? selectedImageIndex - 1
+                          : uniqueImages.length - 1;
+                      console.log(
+                        `⬅️ Previous arrow clicked: ${selectedImageIndex} → ${newIndex}`
+                      );
+                      setSelectedImageIndex(newIndex);
+                    }}
                     style={{
                       backgroundColor: "rgba(0, 0, 0, 0.5)",
                       borderRadius: "50%",
@@ -333,11 +435,16 @@ export default function VegetableDetails({ vegetable }) {
                   </button>
                   <button
                     className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 text-white p-2 nav-arrow"
-                    onClick={() =>
-                      setSelectedImageIndex((prev) =>
-                        prev < vegetable.images.length - 1 ? prev + 1 : 0
-                      )
-                    }
+                    onClick={() => {
+                      const newIndex =
+                        selectedImageIndex < uniqueImages.length - 1
+                          ? selectedImageIndex + 1
+                          : 0;
+                      console.log(
+                        `➡️ Next arrow clicked: ${selectedImageIndex} → ${newIndex}`
+                      );
+                      setSelectedImageIndex(newIndex);
+                    }}
                     style={{
                       backgroundColor: "rgba(0, 0, 0, 0.5)",
                       borderRadius: "50%",
@@ -353,9 +460,9 @@ export default function VegetableDetails({ vegetable }) {
             </div>
 
             {/* Thumbnail Navigation */}
-            {vegetable.images && vegetable.images.length > 1 && (
+            {uniqueImages && uniqueImages.length > 1 && (
               <div className="d-flex gap-2 flex-wrap justify-content-center">
-                {vegetable.images.map((image, index) => (
+                {uniqueImages.map((image, index) => (
                   <div
                     key={index}
                     className={`position-relative rounded-2 overflow-hidden cursor-pointer ${
@@ -370,10 +477,46 @@ export default function VegetableDetails({ vegetable }) {
                           : "2px solid transparent",
                       cursor: "pointer",
                     }}
-                    onClick={() => setSelectedImageIndex(index)}
+                    onClick={() => {
+                      console.log(`🖱️ Thumbnail clicked: index ${index}`);
+                      setSelectedImageIndex(index);
+                    }}
                   >
                     <Image
-                      src={image}
+                      src={(() => {
+                        // Find thumbnail variant for this unique image
+                        const baseMatch = image.match(
+                          /(.+?)_(?:thumbnail|medium|large)\.webp$/
+                        );
+                        if (baseMatch) {
+                          const baseName = baseMatch[1];
+                          const thumbnailVariant = vegetable.images.find(
+                            (img) =>
+                              img && img.includes(`${baseName}_thumbnail.webp`)
+                          );
+
+                          if (thumbnailVariant) {
+                            return thumbnailVariant;
+                          }
+                        }
+
+                        // Smart URL construction fallback
+                        if (image.includes("_medium.webp")) {
+                          return image.replace(
+                            "_medium.webp",
+                            "_thumbnail.webp"
+                          );
+                        }
+                        if (image.includes("_large.webp")) {
+                          return image.replace(
+                            "_large.webp",
+                            "_thumbnail.webp"
+                          );
+                        }
+
+                        // Use the image as-is for non-optimized images
+                        return image;
+                      })()}
                       alt={`${vegetable.name} thumbnail ${index + 1}`}
                       fill
                       style={{ objectFit: "cover" }}
@@ -393,11 +536,11 @@ export default function VegetableDetails({ vegetable }) {
             )}
 
             {/* Image Dots Indicator */}
-            {vegetable.images &&
-              vegetable.images.length > 1 &&
-              vegetable.images.length <= 5 && (
+            {uniqueImages &&
+              uniqueImages.length > 1 &&
+              uniqueImages.length <= 5 && (
                 <div className="d-flex justify-content-center mt-3 gap-2">
-                  {vegetable.images.map((_, index) => (
+                  {uniqueImages.map((_, index) => (
                     <button
                       key={index}
                       className="btn p-0 border-0"
