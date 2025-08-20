@@ -10,6 +10,7 @@ import {
   Button,
   Card,
   Form,
+  Carousel,
 } from "react-bootstrap";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
@@ -260,12 +261,33 @@ export default function VegetableDetails({ vegetable }) {
         .product-gallery img {
           transition: opacity 0.3s ease;
         }
-        .image-container .nav-arrow {
-          opacity: 0;
-          transition: opacity 0.3s ease;
+        /* Custom Carousel Navigation Controls */
+        .custom-carousel-btn {
+          opacity: 0.6;
+          transition: all 0.3s ease;
         }
-        .image-container:hover .nav-arrow {
+        
+        .product-carousel:hover .custom-carousel-btn {
           opacity: 1;
+        }
+        
+        .custom-carousel-btn:hover {
+          opacity: 1 !important;
+          transform: scale(1.1);
+          background-color: rgba(0, 0, 0, 0.8) !important;
+        }
+        
+        /* Mobile touch improvements */
+        @media (max-width: 768px) {
+          .custom-carousel-btn {
+            opacity: 0.8;
+            width: 40px !important;
+            height: 40px !important;
+          }
+          
+          .custom-carousel-btn i {
+            font-size: 16px !important;
+          }
         }
         
         /* Modern styling for the product details */
@@ -333,61 +355,86 @@ export default function VegetableDetails({ vegetable }) {
         <Col lg={6}>
           {/* Product Image Gallery */}
           <div className="product-gallery">
-            {/* Main Image Display */}
-            <div
-              className="position-relative rounded-4 overflow-hidden shadow-sm mb-3 image-container"
-              style={{ height: "450px", backgroundColor: "#f8f9fa" }}
-            >
-              {uniqueImages &&
-              uniqueImages.length > 0 &&
-              uniqueImages[selectedImageIndex] ? (
-                <Image
-                  src={(() => {
-                    const currentImageUrl = uniqueImages[selectedImageIndex];
-
-                    if (!currentImageUrl) return "";
-
-                    // Find the large variant for the current selected image
-                    const baseMatch = currentImageUrl.match(
-                      /(.+?)_(?:thumbnail|medium|large)\.webp$/
+            {/* Main Image Display with Carousel */}
+            <div className="position-relative rounded-4 overflow-hidden shadow-sm mb-3">
+              {uniqueImages && uniqueImages.length > 0 ? (
+                <Carousel
+                  activeIndex={selectedImageIndex}
+                  onSelect={(selectedIndex) => {
+                    console.log(
+                      `🎠 Carousel changed: ${selectedImageIndex} → ${selectedIndex}`
                     );
-                    if (baseMatch) {
-                      const baseName = baseMatch[1];
-                      const largeVariant = vegetable.images.find(
-                        (img) => img && img.includes(`${baseName}_large.webp`)
-                      );
+                    setSelectedImageIndex(selectedIndex);
+                  }}
+                  interval={null}
+                  touch={true}
+                  slide={true}
+                  fade={false}
+                  controls={false}
+                  indicators={false}
+                  className="product-carousel"
+                >
+                  {uniqueImages.map((image, index) => (
+                    <Carousel.Item key={index}>
+                      <div
+                        className="d-block w-100 position-relative"
+                        style={{ height: "450px", backgroundColor: "#f8f9fa" }}
+                      >
+                        <Image
+                          src={(() => {
+                            const currentImageUrl = image;
 
-                      if (largeVariant) {
-                        return largeVariant;
-                      }
-                    }
+                            if (!currentImageUrl) return "";
 
-                    // Smart URL construction fallback
-                    if (currentImageUrl.includes("_medium.webp")) {
-                      return currentImageUrl.replace(
-                        "_medium.webp",
-                        "_large.webp"
-                      );
-                    }
-                    if (currentImageUrl.includes("_thumbnail.webp")) {
-                      return currentImageUrl.replace(
-                        "_thumbnail.webp",
-                        "_large.webp"
-                      );
-                    }
+                            // Find the large variant for the current image
+                            const baseMatch = currentImageUrl.match(
+                              /(.+?)_(?:thumbnail|medium|large)\.webp$/
+                            );
+                            if (baseMatch) {
+                              const baseName = baseMatch[1];
+                              const largeVariant = vegetable.images.find(
+                                (img) =>
+                                  img && img.includes(`${baseName}_large.webp`)
+                              );
 
-                    // Use current image as fallback
-                    return currentImageUrl;
-                  })()}
-                  alt={`${vegetable.name} - Image ${selectedImageIndex + 1}`}
-                  fill
-                  style={{ objectFit: "cover" }}
-                  className="rounded-4"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority={selectedImageIndex === 0}
-                />
+                              if (largeVariant) {
+                                return largeVariant;
+                              }
+                            }
+
+                            // Smart URL construction fallback
+                            if (currentImageUrl.includes("_medium.webp")) {
+                              return currentImageUrl.replace(
+                                "_medium.webp",
+                                "_large.webp"
+                              );
+                            }
+                            if (currentImageUrl.includes("_thumbnail.webp")) {
+                              return currentImageUrl.replace(
+                                "_thumbnail.webp",
+                                "_large.webp"
+                              );
+                            }
+
+                            // Use current image as fallback
+                            return currentImageUrl;
+                          })()}
+                          alt={`${vegetable.name} - Image ${index + 1}`}
+                          fill
+                          style={{ objectFit: "cover" }}
+                          className="rounded-4"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          priority={index === 0}
+                        />
+                      </div>
+                    </Carousel.Item>
+                  ))}
+                </Carousel>
               ) : (
-                <div className="d-flex align-items-center justify-content-center h-100 bg-light rounded-4">
+                <div
+                  className="d-flex align-items-center justify-content-center bg-light rounded-4"
+                  style={{ height: "450px" }}
+                >
                   <div className="text-center text-muted">
                     <i className="ti-image display-1"></i>
                     <p className="mt-2">No image available</p>
@@ -402,58 +449,62 @@ export default function VegetableDetails({ vegetable }) {
                   style={{
                     backgroundColor: "rgba(0, 0, 0, 0.6)",
                     fontSize: "0.85rem",
+                    zIndex: 15,
                   }}
                 >
                   {selectedImageIndex + 1} / {uniqueImages.length}
                 </div>
               )}
 
-              {/* Navigation Arrows */}
+              {/* Custom Navigation Controls */}
               {uniqueImages && uniqueImages.length > 1 && (
                 <>
                   <button
-                    className="btn btn-link position-absolute top-50 start-0 translate-middle-y ms-2 text-white p-2 nav-arrow"
+                    className="position-absolute top-50 start-0 translate-middle-y ms-2 btn p-0 custom-carousel-btn"
                     onClick={() => {
                       const newIndex =
                         selectedImageIndex > 0
                           ? selectedImageIndex - 1
                           : uniqueImages.length - 1;
-                      console.log(
-                        `⬅️ Previous arrow clicked: ${selectedImageIndex} → ${newIndex}`
-                      );
                       setSelectedImageIndex(newIndex);
                     }}
                     style={{
                       backgroundColor: "rgba(0, 0, 0, 0.5)",
                       borderRadius: "50%",
-                      width: "40px",
-                      height: "40px",
-                      textDecoration: "none",
+                      width: "50px",
+                      height: "50px",
+                      border: "none",
+                      zIndex: 10,
                     }}
                   >
-                    <i className="ti-arrow-left"></i>
+                    <i
+                      className="ti-angle-left text-white"
+                      style={{ fontSize: "20px" }}
+                    ></i>
                   </button>
+
                   <button
-                    className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 text-white p-2 nav-arrow"
+                    className="position-absolute top-50 end-0 translate-middle-y me-2 btn p-0 custom-carousel-btn"
                     onClick={() => {
                       const newIndex =
                         selectedImageIndex < uniqueImages.length - 1
                           ? selectedImageIndex + 1
                           : 0;
-                      console.log(
-                        `➡️ Next arrow clicked: ${selectedImageIndex} → ${newIndex}`
-                      );
                       setSelectedImageIndex(newIndex);
                     }}
                     style={{
                       backgroundColor: "rgba(0, 0, 0, 0.5)",
                       borderRadius: "50%",
-                      width: "40px",
-                      height: "40px",
-                      textDecoration: "none",
+                      width: "50px",
+                      height: "50px",
+                      border: "none",
+                      zIndex: 10,
                     }}
                   >
-                    <i className="ti-arrow-right"></i>
+                    <i
+                      className="ti-angle-right text-white"
+                      style={{ fontSize: "20px" }}
+                    ></i>
                   </button>
                 </>
               )}
