@@ -261,6 +261,41 @@ export default function VegetableDetails({ vegetable }) {
         .product-gallery img {
           transition: opacity 0.3s ease;
         }
+        /* Carousel smooth transitions */
+        .product-carousel {
+          background-color: #f8f9fa !important;
+          height: 450px;
+          border-radius: 1rem;
+          overflow: hidden;
+        }
+        
+        .product-carousel .carousel-inner {
+          background-color: #f8f9fa;
+          border-radius: 1rem;
+          overflow: hidden;
+          height: 100%;
+        }
+        
+        .product-carousel .carousel-item {
+          background-color: #f8f9fa;
+        }
+        
+        .product-carousel .carousel-item-next,
+        .product-carousel .carousel-item-prev,
+        .product-carousel .carousel-item.active {
+          display: block;
+        }
+        
+        .product-carousel .carousel-item-next:not(.carousel-item-start),
+        .product-carousel .carousel-item-prev:not(.carousel-item-end) {
+          transform: translateX(0);
+        }
+        
+        /* Smooth slide transition */
+        .product-carousel .carousel-item {
+          transition: transform 0.4s ease-in-out;
+        }
+
         /* Custom Carousel Navigation Controls */
         .custom-carousel-btn {
           opacity: 0.6;
@@ -373,11 +408,12 @@ export default function VegetableDetails({ vegetable }) {
                   controls={false}
                   indicators={false}
                   className="product-carousel"
+                  style={{ backgroundColor: "#f8f9fa" }}
                 >
                   {uniqueImages.map((image, index) => (
-                    <Carousel.Item key={index}>
+                    <Carousel.Item key={index} className="h-100">
                       <div
-                        className="d-block w-100 position-relative"
+                        className="d-block w-100 position-relative h-100"
                         style={{ height: "450px", backgroundColor: "#f8f9fa" }}
                       >
                         <Image
