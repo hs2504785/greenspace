@@ -31,6 +31,8 @@ function SellerOrderCard({ order, onUpdateStatus }) {
         return "warning";
       case "whatsapp_sent":
         return "primary";
+      case "payment_received":
+        return "success";
       case "confirmed":
         return "info";
       case "processing":
@@ -153,8 +155,10 @@ function SellerOrderCard({ order, onUpdateStatus }) {
         </div>
 
         <div className="d-flex gap-2">
-          {/* Guest orders start with whatsapp_sent, regular orders start with pending */}
-          {(order.status === "pending" || order.status === "whatsapp_sent") && (
+          {/* Show confirm/cancel buttons for pending, whatsapp_sent, and payment_received statuses */}
+          {(order.status === "pending" ||
+            order.status === "whatsapp_sent" ||
+            order.status === "payment_received") && (
             <>
               <Button
                 size="sm"
@@ -362,6 +366,7 @@ function SellerDashboardContent() {
                 <option value="all">All Statuses</option>
                 <option value="pending">Pending</option>
                 <option value="whatsapp_sent">WhatsApp Sent</option>
+                <option value="payment_received">Payment Received</option>
                 <option value="confirmed">Confirmed</option>
                 <option value="processing">Processing</option>
                 <option value="shipped">Shipped</option>

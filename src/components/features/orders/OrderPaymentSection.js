@@ -7,7 +7,9 @@ import toastService from "@/utils/toastService";
 
 export default function OrderPaymentSection({ order }) {
   // Don't show payment section for post-payment statuses
-  if (["processing", "shipped", "delivered"].includes(order.status)) {
+  if (
+    ["confirmed", "processing", "shipped", "delivered"].includes(order.status)
+  ) {
     return null;
   }
   const [showUpiPayment, setShowUpiPayment] = useState(false);
