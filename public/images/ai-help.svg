@@ -1,0 +1,1587 @@
+<svg
+  aria-roledescription="flowchart-v2"
+  role="graphics-document document"
+  viewBox="-8 -8 2256.17578125 896"
+  style="max-width: 2256.17578125px"
+  xmlns="http://www.w3.org/2000/svg"
+  width="100%"
+  id="mermaid-svg-1755703120797-cqnkzfkur"
+>
+  <style>
+    #mermaid-svg-1755703120797-cqnkzfkur {
+      font-family: "trebuchet ms", verdana, arial, sans-serif;
+      font-size: 16px;
+      fill: #aaaaaa;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .error-icon {
+      fill: #193549;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .error-text {
+      fill: #a22929;
+      stroke: #a22929;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .edge-thickness-normal {
+      stroke-width: 2px;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .edge-thickness-thick {
+      stroke-width: 3.5px;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .edge-pattern-solid {
+      stroke-dasharray: 0;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .edge-pattern-dashed {
+      stroke-dasharray: 3;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .edge-pattern-dotted {
+      stroke-dasharray: 2;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .marker {
+      fill: #aaaaaa;
+      stroke: #aaaaaa;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .marker.cross {
+      stroke: #aaaaaa;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur svg {
+      font-family: "trebuchet ms", verdana, arial, sans-serif;
+      font-size: 16px;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .label {
+      font-family: "trebuchet ms", verdana, arial, sans-serif;
+      color: #aaaaaa;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .cluster-label text {
+      fill: #ffc600;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .cluster-label span,
+    #mermaid-svg-1755703120797-cqnkzfkur p {
+      color: #ffc600;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .label text,
+    #mermaid-svg-1755703120797-cqnkzfkur span,
+    #mermaid-svg-1755703120797-cqnkzfkur p {
+      fill: #aaaaaa;
+      color: #aaaaaa;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .node rect,
+    #mermaid-svg-1755703120797-cqnkzfkur .node circle,
+    #mermaid-svg-1755703120797-cqnkzfkur .node ellipse,
+    #mermaid-svg-1755703120797-cqnkzfkur .node polygon,
+    #mermaid-svg-1755703120797-cqnkzfkur .node path {
+      fill: #193549;
+      stroke: #15232d;
+      stroke-width: 1px;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .flowchart-label text {
+      text-anchor: middle;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .node .label {
+      text-align: center;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .node.clickable {
+      cursor: pointer;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .arrowheadPath {
+      fill: #e6cab6;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .edgePath .path {
+      stroke: #aaaaaa;
+      stroke-width: 2px;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .flowchart-link {
+      stroke: #aaaaaa;
+      fill: none;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .edgeLabel {
+      background-color: #19354999;
+      text-align: center;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .edgeLabel rect {
+      opacity: 0.5;
+      background-color: #19354999;
+      fill: #19354999;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .labelBkg {
+      background-color: rgba(25, 53, 73, 0.5);
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .cluster rect {
+      fill: #003b8b;
+      stroke: #0d3a58;
+      stroke-width: 1px;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .cluster text {
+      fill: #ffc600;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .cluster span,
+    #mermaid-svg-1755703120797-cqnkzfkur p {
+      color: #ffc600;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur div.mermaidTooltip {
+      position: absolute;
+      text-align: center;
+      max-width: 200px;
+      padding: 2px;
+      font-family: "trebuchet ms", verdana, arial, sans-serif;
+      font-size: 12px;
+      background: #ffc600;
+      border: 1px solid #0d3a58;
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 100;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .flowchartTitleText {
+      text-anchor: middle;
+      font-size: 18px;
+      fill: #aaaaaa;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur :root {
+      --mermaid-font-family: "trebuchet ms", verdana, arial, sans-serif;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .ai&gt;
+    * {
+      fill: #e3f2fd !important;
+      stroke: #1976d2 !important;
+      stroke-width: 2px !important;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .ai span {
+      fill: #e3f2fd !important;
+      stroke: #1976d2 !important;
+      stroke-width: 2px !important;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .enhanced&gt;
+    * {
+      fill: #f3e5f5 !important;
+      stroke: #7b1fa2 !important;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .enhanced span {
+      fill: #f3e5f5 !important;
+      stroke: #7b1fa2 !important;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .traditional&gt;
+    * {
+      fill: #e8f5e8 !important;
+      stroke: #388e3c !important;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .traditional span {
+      fill: #e8f5e8 !important;
+      stroke: #388e3c !important;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .usecases&gt;
+    * {
+      fill: #fff3e0 !important;
+      stroke: #f57c00 !important;
+    }
+    #mermaid-svg-1755703120797-cqnkzfkur .usecases span {
+      fill: #fff3e0 !important;
+      stroke: #f57c00 !important;
+    }
+  </style>
+  <g>
+    <marker
+      orient="auto"
+      markerHeight="12"
+      markerWidth="12"
+      markerUnits="userSpaceOnUse"
+      refY="5"
+      refX="6"
+      viewBox="0 0 10 10"
+      class="marker flowchart"
+      id="mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd"
+    >
+      <path
+        style="stroke-width: 1; stroke-dasharray: 1, 0"
+        class="arrowMarkerPath"
+        d="M 0 0 L 10 5 L 0 10 z"
+      />
+    </marker>
+    <marker
+      orient="auto"
+      markerHeight="12"
+      markerWidth="12"
+      markerUnits="userSpaceOnUse"
+      refY="5"
+      refX="4.5"
+      viewBox="0 0 10 10"
+      class="marker flowchart"
+      id="mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointStart"
+    >
+      <path
+        style="stroke-width: 1; stroke-dasharray: 1, 0"
+        class="arrowMarkerPath"
+        d="M 0 5 L 10 10 L 10 0 z"
+      />
+    </marker>
+    <marker
+      orient="auto"
+      markerHeight="11"
+      markerWidth="11"
+      markerUnits="userSpaceOnUse"
+      refY="5"
+      refX="11"
+      viewBox="0 0 10 10"
+      class="marker flowchart"
+      id="mermaid-svg-1755703120797-cqnkzfkur_flowchart-circleEnd"
+    >
+      <circle
+        style="stroke-width: 1; stroke-dasharray: 1, 0"
+        class="arrowMarkerPath"
+        r="5"
+        cy="5"
+        cx="5"
+      />
+    </marker>
+    <marker
+      orient="auto"
+      markerHeight="11"
+      markerWidth="11"
+      markerUnits="userSpaceOnUse"
+      refY="5"
+      refX="-1"
+      viewBox="0 0 10 10"
+      class="marker flowchart"
+      id="mermaid-svg-1755703120797-cqnkzfkur_flowchart-circleStart"
+    >
+      <circle
+        style="stroke-width: 1; stroke-dasharray: 1, 0"
+        class="arrowMarkerPath"
+        r="5"
+        cy="5"
+        cx="5"
+      />
+    </marker>
+    <marker
+      orient="auto"
+      markerHeight="11"
+      markerWidth="11"
+      markerUnits="userSpaceOnUse"
+      refY="5.2"
+      refX="12"
+      viewBox="0 0 11 11"
+      class="marker cross flowchart"
+      id="mermaid-svg-1755703120797-cqnkzfkur_flowchart-crossEnd"
+    >
+      <path
+        style="stroke-width: 2; stroke-dasharray: 1, 0"
+        class="arrowMarkerPath"
+        d="M 1,1 l 9,9 M 10,1 l -9,9"
+      />
+    </marker>
+    <marker
+      orient="auto"
+      markerHeight="11"
+      markerWidth="11"
+      markerUnits="userSpaceOnUse"
+      refY="5.2"
+      refX="-1"
+      viewBox="0 0 11 11"
+      class="marker cross flowchart"
+      id="mermaid-svg-1755703120797-cqnkzfkur_flowchart-crossStart"
+    >
+      <path
+        style="stroke-width: 2; stroke-dasharray: 1, 0"
+        class="arrowMarkerPath"
+        d="M 1,1 l 9,9 M 10,1 l -9,9"
+      />
+    </marker>
+    <g class="root">
+      <g class="clusters">
+        <g id="subGraph5" class="cluster default flowchart-label">
+          <rect
+            height="125.83332824707031"
+            width="1160.6510162353516"
+            y="603.3333129882812"
+            x="0"
+            ry="0"
+            rx="0"
+            style=""
+          />
+          <g
+            transform="translate(535.9374885559082, 603.3333129882812)"
+            class="cluster-label"
+          >
+            <foreignObject height="18.333332061767578" width="88.77603912353516"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel">AI Use Cases</span>
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g id="subGraph4" class="cluster default flowchart-label">
+          <rect
+            height="276.6666564941406"
+            width="392.66274642944336"
+            y="603.3333129882812"
+            x="1180.6510162353516"
+            ry="0"
+            rx="0"
+            style=""
+          />
+          <g
+            transform="translate(1306.155569076538, 603.3333129882812)"
+            class="cluster-label"
+          >
+            <foreignObject height="18.333332061767578" width="141.6536407470703"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel">Traditional Backend</span>
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g id="subGraph3" class="cluster default flowchart-label">
+          <rect
+            height="125.83332824707031"
+            width="646.8619842529297"
+            y="603.3333129882812"
+            x="1593.313762664795"
+            ry="0"
+            rx="0"
+            style=""
+          />
+          <g
+            transform="translate(1855.6379852294922, 603.3333129882812)"
+            class="cluster-label"
+          >
+            <foreignObject
+              height="18.333332061767578"
+              width="122.21353912353516"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel">Data Intelligence</span>
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g id="subGraph2" class="cluster default flowchart-label">
+          <rect
+            height="251.66665649414062"
+            width="1219.1015586853027"
+            y="301.6666564941406"
+            x="926.5494537353516"
+            ry="0"
+            rx="0"
+            style=""
+          />
+          <g
+            transform="translate(1465.8137798309326, 301.6666564941406)"
+            class="cluster-label"
+          >
+            <foreignObject
+              height="18.333332061767578"
+              width="140.57290649414062"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel">API Layer Enhanced</span>
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g id="subGraph1" class="cluster default flowchart-label">
+          <rect
+            height="251.66665649414062"
+            width="446.6666564941406"
+            y="301.6666564941406"
+            x="120.72916412353516"
+            ry="0"
+            rx="0"
+            style=""
+          />
+          <g
+            transform="translate(275.66405487060547, 301.6666564941406)"
+            class="cluster-label"
+          >
+            <foreignObject height="18.333332061767578" width="136.796875"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel">AI Processing Layer</span>
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g id="subGraph0" class="cluster default flowchart-label">
+          <rect
+            height="251.66665649414062"
+            width="1374.387990951538"
+            y="0"
+            x="30.364582061767578"
+            ry="0"
+            rx="0"
+            style=""
+          />
+          <g transform="translate(636.0351324081421, 0)" class="cluster-label">
+            <foreignObject
+              height="18.333332061767578"
+              width="163.04689025878906"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel">Frontend Layer with AI</span>
+              </div></foreignObject
+            >
+          </g>
+        </g>
+      </g>
+      <g class="edgePaths">
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-PWA LE-Chat"
+          id="L-PWA-Chat-0"
+          d="M476.908,80.847L430.707,88.345C384.506,95.843,292.105,110.838,245.904,121.619C199.704,132.4,199.704,138.967,199.704,142.25L199.704,145.533"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-PWA LE-Recommendations"
+          id="L-PWA-Recommendations-0"
+          d="M587.396,100.833L587.396,105C587.396,109.167,587.396,117.5,587.396,124.95C587.396,132.4,587.396,138.967,587.396,142.25L587.396,145.533"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-PWA LE-FarmingAI"
+          id="L-PWA-FarmingAI-0"
+          d="M697.884,90.595L721.328,96.468C744.772,102.341,791.66,114.087,815.104,123.244C838.548,132.4,838.548,138.967,838.548,142.25L838.548,145.533"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-Chat LE-OpenAI"
+          id="L-Chat-OpenAI-0"
+          d="M199.704,226.667L199.704,230.833C199.704,235,199.704,243.333,199.704,251.667C199.704,260,199.704,268.333,199.704,276.667C199.704,285,199.704,293.333,201.705,300.905C203.707,308.477,207.71,315.287,209.712,318.692L211.713,322.098"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-Recommendations LE-GoogleAI"
+          id="L-Recommendations-GoogleAI-0"
+          d="M504.606,226.667L495.508,230.833C486.411,235,468.215,243.333,459.117,251.667C450.02,260,450.02,268.333,450.02,276.667C450.02,285,450.02,293.333,450.02,300.783C450.02,308.233,450.02,314.8,450.02,318.083L450.02,321.367"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-FarmingAI LE-OpenAI"
+          id="L-FarmingAI-OpenAI-0"
+          d="M733.262,201.862L666.61,210.163C599.959,218.464,466.656,235.065,400.004,247.533C333.353,260,333.353,268.333,333.353,276.667C333.353,285,333.353,293.333,327.691,301.185C322.03,309.036,310.707,316.406,305.046,320.091L299.384,323.776"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-OpenAI LE-VectorDB"
+          id="L-OpenAI-VectorDB-0"
+          d="M236.686,402.5L236.686,406.667C236.686,410.833,236.686,419.167,241.906,426.993C247.126,434.819,257.565,442.138,262.785,445.798L268.005,449.457"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-GoogleAI LE-VectorDB"
+          id="L-GoogleAI-VectorDB-0"
+          d="M450.02,402.5L450.02,406.667C450.02,410.833,450.02,419.167,441.523,427.659C433.026,436.151,416.033,444.801,407.536,449.127L399.04,453.452"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-Chat LE-AIRoutes"
+          id="L-Chat-AIRoutes-0"
+          d="M266.696,193.635L399.338,203.307C531.98,212.979,797.265,232.323,929.907,246.161C1062.549,260,1062.549,268.333,1062.549,276.667C1062.549,285,1062.549,293.333,1096.324,304.532C1130.1,315.73,1197.651,329.794,1231.426,336.826L1265.202,343.858"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-Recommendations LE-AIRoutes"
+          id="L-Recommendations-AIRoutes-0"
+          d="M683.262,198.018L775.745,206.96C868.229,215.901,1053.197,233.784,1145.68,246.892C1238.164,260,1238.164,268.333,1238.164,276.667C1238.164,285,1238.164,293.333,1245.756,301.274C1253.349,309.214,1268.533,316.761,1276.126,320.534L1283.718,324.308"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-FarmingAI LE-AIRoutes"
+          id="L-FarmingAI-AIRoutes-0"
+          d="M943.835,200.878L1017.321,209.343C1090.807,217.807,1237.78,234.737,1311.266,247.369C1384.753,260,1384.753,268.333,1384.753,276.667C1384.753,285,1384.753,293.333,1383.696,300.825C1382.639,308.316,1380.525,314.966,1379.468,318.291L1378.411,321.616"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-AIRoutes LE-Analytics"
+          id="L-AIRoutes-Analytics-0"
+          d="M1270.391,383.019L1232.446,390.433C1194.501,397.846,1118.611,412.673,1080.666,423.37C1042.721,434.067,1042.721,440.633,1042.721,443.917L1042.721,447.2"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-AIRoutes LE-Context"
+          id="L-AIRoutes-Context-0"
+          d="M1459.115,376.152L1528.92,384.71C1598.725,393.268,1738.335,410.384,1808.141,422.225C1877.946,434.067,1877.946,440.633,1877.946,443.917L1877.946,447.2"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-Context LE-UserProfile"
+          id="L-Context-UserProfile-0"
+          d="M1794.489,519.209L1778.004,524.897C1761.519,530.584,1728.549,541.959,1712.064,551.813C1695.579,561.667,1695.579,570,1695.579,578.333C1695.579,586.667,1695.579,595,1695.579,602.45C1695.579,609.9,1695.579,616.467,1695.579,619.75L1695.579,623.033"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-Context LE-MarketData"
+          id="L-Context-MarketData-0"
+          d="M1893.94,528.333L1895.698,532.5C1897.455,536.667,1900.97,545,1902.728,553.333C1904.486,561.667,1904.486,570,1904.486,578.333C1904.486,586.667,1904.486,595,1904.486,602.45C1904.486,609.9,1904.486,616.467,1904.486,619.75L1904.486,623.033"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-Context LE-SeasonalData"
+          id="L-Context-SeasonalData-0"
+          d="M1961.403,511.615L1988.778,518.568C2016.152,525.521,2070.902,539.427,2098.276,550.547C2125.651,561.667,2125.651,570,2125.651,578.333C2125.651,586.667,2125.651,595,2125.651,602.45C2125.651,609.9,2125.651,616.467,2125.651,619.75L2125.651,623.033"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-AIRoutes LE-API"
+          id="L-AIRoutes-API-0"
+          d="M1353.267,402.5L1352.004,406.667C1350.742,410.833,1348.218,419.167,1346.956,433.819C1345.693,448.472,1345.693,469.444,1345.693,490.417C1345.693,511.389,1345.693,532.361,1345.693,547.014C1345.693,561.667,1345.693,570,1345.693,578.333C1345.693,586.667,1345.693,595,1345.693,602.45C1345.693,609.9,1345.693,616.467,1345.693,619.75L1345.693,623.033"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-API LE-DB"
+          id="L-API-DB-0"
+          d="M1283.564,702.961L1276.173,707.329C1268.781,711.696,1253.998,720.432,1246.607,728.966C1239.215,737.5,1239.215,745.833,1241.025,753.388C1242.835,760.942,1246.454,767.717,1248.264,771.104L1250.073,774.492"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-API LE-Storage"
+          id="L-API-Storage-0"
+          d="M1407.822,701.47L1415.965,706.086C1424.108,710.702,1440.394,719.934,1448.537,728.717C1456.68,737.5,1456.68,745.833,1456.68,754.811C1456.68,763.789,1456.68,773.411,1456.68,778.222L1456.68,783.033"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-UserProfile LE-DB"
+          id="L-UserProfile-DB-0"
+          d="M1695.579,704.167L1695.579,708.333C1695.579,712.5,1695.579,720.833,1631.507,729.167C1567.434,737.5,1439.288,745.833,1373.137,753.412C1306.986,760.991,1302.83,767.816,1300.752,771.228L1298.674,774.64"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-MarketData LE-DB"
+          id="L-MarketData-DB-0"
+          d="M1904.486,704.167L1904.486,708.333C1904.486,712.5,1904.486,720.833,1808.928,729.167C1713.371,737.5,1522.257,745.833,1423.438,753.519C1324.619,761.204,1318.096,768.242,1314.835,771.761L1311.573,775.28"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-SeasonalData LE-DB"
+          id="L-SeasonalData-DB-0"
+          d="M2125.651,704.167L2125.651,708.333C2125.651,712.5,2125.651,720.833,1997.168,729.167C1868.685,737.5,1611.719,745.833,1478.511,753.629C1345.302,761.424,1335.852,768.681,1331.127,772.31L1326.402,775.939"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-Chat LE-ChatSupport"
+          id="L-Chat-ChatSupport-0"
+          d="M140.057,226.667L133.502,230.833C126.948,235,113.838,243.333,107.284,251.667C100.729,260,100.729,268.333,100.729,276.667C100.729,285,100.729,293.333,100.729,307.986C100.729,322.639,100.729,343.611,100.729,364.583C100.729,385.556,100.729,406.528,100.729,427.5C100.729,448.472,100.729,469.444,100.729,490.417C100.729,511.389,100.729,532.361,100.729,547.014C100.729,561.667,100.729,570,100.729,578.333C100.729,586.667,100.729,595,100.729,602.45C100.729,609.9,100.729,616.467,100.729,619.75L100.729,623.033"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-Recommendations LE-ProductRecs"
+          id="L-Recommendations-ProductRecs-0"
+          d="M587.396,226.667L587.396,230.833C587.396,235,587.396,243.333,587.396,251.667C587.396,260,587.396,268.333,587.396,276.667C587.396,285,587.396,293.333,587.396,307.986C587.396,322.639,587.396,343.611,587.396,364.583C587.396,385.556,587.396,406.528,587.396,427.5C587.396,448.472,587.396,469.444,587.396,490.417C587.396,511.389,587.396,532.361,587.396,547.014C587.396,561.667,587.396,570,587.396,578.333C587.396,586.667,587.396,595,587.396,602.45C587.396,609.9,587.396,616.467,587.396,619.75L587.396,623.033"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-FarmingAI LE-FarmAdvice"
+          id="L-FarmingAI-FarmAdvice-0"
+          d="M838.548,226.667L838.548,230.833C838.548,235,838.548,243.333,838.548,251.667C838.548,260,838.548,268.333,838.548,276.667C838.548,285,838.548,293.333,838.548,307.986C838.548,322.639,838.548,343.611,838.548,364.583C838.548,385.556,838.548,406.528,838.548,427.5C838.548,448.472,838.548,469.444,838.548,490.417C838.548,511.389,838.548,532.361,838.548,547.014C838.548,561.667,838.548,570,838.548,578.333C838.548,586.667,838.548,595,838.548,602.45C838.548,609.9,838.548,616.467,838.548,619.75L838.548,623.033"
+        />
+        <path
+          marker-end="url(#mermaid-svg-1755703120797-cqnkzfkur_flowchart-pointEnd)"
+          style="fill: none"
+          class="edge-thickness-normal edge-pattern-solid flowchart-link LS-Analytics LE-BusinessIntel"
+          id="L-Analytics-BusinessIntel-0"
+          d="M1042.721,528.333L1042.721,532.5C1042.721,536.667,1042.721,545,1042.721,553.333C1042.721,561.667,1042.721,570,1042.721,578.333C1042.721,586.667,1042.721,595,1042.721,602.45C1042.721,609.9,1042.721,616.467,1042.721,619.75L1042.721,623.033"
+        />
+      </g>
+      <g class="edgeLabels">
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g transform="translate(0, 0)" class="label">
+            <foreignObject height="0" width="0"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="edgeLabel"></span></div
+            ></foreignObject>
+          </g>
+        </g>
+      </g>
+      <g class="nodes">
+        <g
+          transform="translate(100.72916412353516, 666.2499771118164)"
+          id="flowchart-ChatSupport-358"
+          class="node default usecases flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="131.4583282470703"
+            y="-37.91666603088379"
+            x="-65.72916412353516"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-58.229164123535156, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="116.45832824707031"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >💬 Chat Support<br />Payment Help<br />Order Tracking</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(587.3958206176758, 666.2499771118164)"
+          id="flowchart-ProductRecs-359"
+          class="node default usecases flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="172.5130157470703"
+            y="-37.91666603088379"
+            x="-86.25650787353516"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-78.75650787353516, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="157.5130157470703"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >🛒 Product Discovery<br />Seasonal Suggestions<br />Complementary
+                  Items</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(838.5481567382812, 666.2499771118164)"
+          id="flowchart-FarmAdvice-360"
+          class="node default usecases flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="142.48697662353516"
+            y="-37.91666603088379"
+            x="-71.24348831176758"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-63.74348831176758, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="127.48697662353516"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >🌱 Farming Tips<br />Pest Control<br />Planting
+                  Schedule</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(1042.7213287353516, 666.2499771118164)"
+          id="flowchart-BusinessIntel-361"
+          class="node default usecases flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="165.859375"
+            y="-37.91666603088379"
+            x="-82.9296875"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-75.4296875, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="150.859375"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >📊 Business Analytics<br />Demand Prediction<br />Price
+                  Strategy</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(1345.6933326721191, 666.2499771118164)"
+          id="flowchart-API-355"
+          class="node default enhanced flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="124.2578125"
+            y="-37.91666603088379"
+            x="-62.12890625"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-54.62890625, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="109.2578125"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >API Routes<br />⚡ Next.js API<br />REST Endpoints</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(1272.8254928588867, 817.0833053588867)"
+          id="flowchart-DB-356"
+          class="node default traditional flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="104.44010162353516"
+            y="-37.91666603088379"
+            x="-52.22005081176758"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-44.72005081176758, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="89.44010162353516"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >PostgreSQL<br />🗄️ Supabase<br />RLS Policies</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(1456.6796531677246, 817.0833053588867)"
+          id="flowchart-Storage-357"
+          class="node default traditional flowchart-label"
+        >
+          <rect
+            height="57.5"
+            width="163.26821899414062"
+            y="-28.75"
+            x="-81.63410949707031"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-74.13410949707031, -21.25)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="42.5" width="148.26821899414062"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >File Storage<br />📁 Supabase Storage</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(1695.579387664795, 666.2499771118164)"
+          id="flowchart-UserProfile-352"
+          class="node default ai flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="134.53125"
+            y="-37.91666603088379"
+            x="-67.265625"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-59.765625, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="119.53125"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >User Profiling<br />👤 Preferences<br />Purchase
+                  History</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(1904.4856452941895, 666.2499771118164)"
+          id="flowchart-MarketData-353"
+          class="node default ai flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="183.28126525878906"
+            y="-37.91666603088379"
+            x="-91.64063262939453"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-84.14063262939453, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="168.28126525878906"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >Market Intelligence<br />📊 Demand Forecasting<br />Price
+                  Optimization</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(2125.6510124206543, 666.2499771118164)"
+          id="flowchart-SeasonalData-354"
+          class="node default ai flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="159.04946899414062"
+            y="-37.91666603088379"
+            x="-79.52473449707031"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-72.02473449707031, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="144.04946899414062"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >Seasonal Insights<br />🌿 Crop Calendar<br />Weather
+                  Integration</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(1364.7525730133057, 364.5833206176758)"
+          id="flowchart-AIRoutes-349"
+          class="node default ai flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="188.7239532470703"
+            y="-37.91666603088379"
+            x="-94.36197662353516"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-86.86197662353516, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="173.7239532470703"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >AI API Routes<br />⚡ /api/ai/*<br />Chat,
+                  Recommendations</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(1042.7213287353516, 490.4166488647461)"
+          id="flowchart-Analytics-350"
+          class="node default ai flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="162.34375"
+            y="-37.91666603088379"
+            x="-81.171875"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-73.671875, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="147.34375"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >AI Analytics<br />📈 Usage Tracking<br />Performance
+                  Metrics</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(1877.945930480957, 490.4166488647461)"
+          id="flowchart-Context-351"
+          class="node default ai flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="166.9140625"
+            y="-37.91666603088379"
+            x="-83.45703125"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-75.95703125, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="151.9140625"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >Context Management<br />🔄 User History<br />Real-time
+                  Data</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(236.68619537353516, 364.5833206176758)"
+          id="flowchart-OpenAI-346"
+          class="node default ai flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="161.9140625"
+            y="-37.91666603088379"
+            x="-80.95703125"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-73.45703125, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="146.9140625"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >OpenAI GPT-4<br />🧠 Conversational AI<br />Natural
+                  Language</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(450.01952362060547, 364.5833206176758)"
+          id="flowchart-GoogleAI-347"
+          class="node default ai flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="164.75259399414062"
+            y="-37.91666603088379"
+            x="-82.37629699707031"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-74.87629699707031, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="149.75259399414062"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >Google AI<br />🔍 Vision &amp; Analytics<br />Image
+                  Recognition</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(326.42578125, 490.4166488647461)"
+          id="flowchart-VectorDB-348"
+          class="node default ai flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="135.78125"
+            y="-37.91666603088379"
+            x="-67.890625"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-60.390625, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="120.78125"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >Vector Database<br />📊 Embeddings<br />Similarity
+                  Search</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(587.3958206176758, 62.916664123535156)"
+          id="flowchart-PWA-342"
+          class="node default enhanced flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="220.97657775878906"
+            y="-37.91666603088379"
+            x="-110.48828887939453"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-102.98828887939453, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="205.97657775878906"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >PWA Interface<br />📱 Next.js 15 + React 19<br />Bootstrap 5
+                  + AI Components</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(199.70377349853516, 188.74999237060547)"
+          id="flowchart-Chat-343"
+          class="node default ai flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="133.984375"
+            y="-37.91666603088379"
+            x="-66.9921875"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-59.4921875, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="118.984375"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >AI Chat Assistant<br />🤖 24/7 Support<br />Vercel AI
+                  SDK</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(587.3958206176758, 188.74999237060547)"
+          id="flowchart-Recommendations-344"
+          class="node default ai flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="191.7317657470703"
+            y="-37.91666603088379"
+            x="-95.86588287353516"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-88.36588287353516, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="176.7317657470703"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >Smart Recommendations<br />🎯 Personalized<br />ML-Powered</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+        <g
+          transform="translate(838.5481567382812, 188.74999237060547)"
+          id="flowchart-FarmingAI-345"
+          class="node default ai flowchart-label"
+        >
+          <rect
+            height="75.83333206176758"
+            width="210.57290649414062"
+            y="-37.91666603088379"
+            x="-105.28645324707031"
+            ry="0"
+            rx="0"
+            style=""
+            class="basic label-container"
+          />
+          <g
+            transform="translate(-97.78645324707031, -30.41666603088379)"
+            style=""
+            class="label"
+          >
+            <rect />
+            <foreignObject height="60.83333206176758" width="195.57290649414062"
+              ><div
+                style="display: inline-block; white-space: nowrap"
+                xmlns="http://www.w3.org/1999/xhtml"
+              >
+                <span class="nodeLabel"
+                  >Farming Assistant<br />🌱 Agricultural Intelligence<br />Seasonal
+                  Advice</span
+                >
+              </div></foreignObject
+            >
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
