@@ -1,11 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Modal, Form, Button, Alert, Card, Badge } from "react-bootstrap";
+import {
+  Modal,
+  Form,
+  Button,
+  Alert,
+  Card,
+  Badge,
+  Spinner,
+} from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import toastService from "@/utils/toastService";
 import OrderService from "@/services/OrderService";
 import UpiQrPayment from "@/components/features/payments/UpiQrPayment";
+import LocationAutoDetect from "@/components/common/LocationAutoDetect";
 
 export default function CheckoutForm({
   show,
@@ -148,17 +157,39 @@ export default function CheckoutForm({
     setShowUpiPayment(true);
   };
 
-  const handlePlaceOrderOnly = () => {
-    if (!createdOrder) {
-      toastService.error("Order not created yet. Please try again.");
-      return;
+  const handlePlaceOrderOnly = async () => {
+    setLoading(true);
+    try {
+      if (!session?.user?.id) {
+        throw new Error("User session invalid. Please login again.");
+      }
+
+      const orderData = {
+        userId: session.user.id,
+        sellerId: seller?.id,
+        items: cartItems.map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        total,
+        deliveryAddress: formData.deliveryAddress,
+        contactNumber: formData.contactNumber,
+      };
+
+      const order = await OrderService.createOrder(orderData);
+      toastService.success(
+        "Order placed successfully! You can pay anytime from order details."
+      );
+      onSuccess(order);
+      onHide();
+      resetState();
+    } catch (error) {
+      console.error("Error placing order:", error);
+      toastService.presets.orderError();
+    } finally {
+      setLoading(false);
     }
-    toastService.success(
-      "Order placed successfully! You can pay anytime from order details."
-    );
-    onSuccess(createdOrder);
-    onHide();
-    resetState();
   };
 
   const handleCodPayment = () => {
@@ -254,18 +285,16 @@ export default function CheckoutForm({
 
               <div className="row">
                 <div className="col-md-8">
-                  <Form.Group className="mb-3">
-                    <Form.Label>Quick Delivery Address</Form.Label>
-                    <Form.Control
-                      as="textarea"
-                      rows={2}
-                      name="deliveryAddress"
-                      value={formData.deliveryAddress}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Enter delivery address (e.g., House no, Street, Area)"
-                    />
-                  </Form.Group>
+                  <LocationAutoDetect
+                    name="deliveryAddress"
+                    value={formData.deliveryAddress}
+                    onChange={handleInputChange}
+                    placeholder="Enter delivery address or click 'Detect' to auto-fill"
+                    required
+                    label="Quick Delivery Address"
+                    showRequiredIndicator
+                    className="mb-3"
+                  />
                 </div>
                 <div className="col-md-4">
                   <Form.Group className="mb-3">
@@ -283,57 +312,85 @@ export default function CheckoutForm({
                 </div>
               </div>
 
-              <Alert variant="info" className="mb-0 mt-2">
-                <i className="ti-info-alt me-2"></i>
-                <small>
-                  <strong>Two Options:</strong> Place order and pay later from
-                  order details, or proceed to payment immediately.
-                </small>
-              </Alert>
+              <div className="mt-4">
+                <h6 className="mb-3 text-primary">
+                  Choose Your Checkout Option
+                </h6>
+
+                <div className="row g-3">
+                  {/* Option 1: Place Order Only */}
+                  <div className="col-12">
+                    <Card
+                      className="border-0 shadow-sm hover-shadow cursor-pointer"
+                      onClick={handlePlaceOrderOnly}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <Card.Body className="p-3">
+                        <div className="d-flex align-items-center">
+                          <div className="me-3">
+                            <div className="bg-primary bg-opacity-10 rounded-circle p-2">
+                              <i className="ti-package text-primary"></i>
+                            </div>
+                          </div>
+                          <div className="flex-grow-1">
+                            <h6 className="mb-1">
+                              Place Order Now - Pay Later
+                            </h6>
+                            <p className="text-muted mb-0 small">
+                              Place your order now and pay conveniently later
+                            </p>
+                          </div>
+                          <div className="ms-2">
+                            <Badge
+                              bg="primary"
+                              className="bg-opacity-10 text-primary"
+                            >
+                              Recommended
+                            </Badge>
+                          </div>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </div>
+
+                  {/* Option 2: Proceed to Payment */}
+                  <div className="col-12">
+                    <Card
+                      className="border-0 shadow-sm hover-shadow cursor-pointer"
+                      onClick={handleProceedToPayment}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <Card.Body className="p-3">
+                        <div className="d-flex align-items-center">
+                          <div className="me-3">
+                            <div className="bg-success bg-opacity-10 rounded-circle p-2">
+                              <i className="ti-credit-card text-success"></i>
+                            </div>
+                          </div>
+                          <div className="flex-grow-1">
+                            <h6 className="mb-1">Pay Now</h6>
+                            <p className="text-muted mb-0 small">
+                              Proceed to payment immediately
+                            </p>
+                          </div>
+                          {loading && (
+                            <div className="ms-2">
+                              <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                role="status"
+                                aria-hidden="true"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </div>
+                </div>
+              </div>
             </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={onHide} disabled={loading}>
-                Cancel
-              </Button>
-              <Button variant="success" type="submit" disabled={loading}>
-                {loading ? (
-                  <>
-                    <span
-                      className="spinner-border spinner-border-sm me-1"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
-                    Creating Order...
-                  </>
-                ) : (
-                  <>
-                    <i className="ti-check me-1"></i>
-                    Place Order
-                  </>
-                )}
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleProceedToPayment}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <span
-                      className="spinner-border spinner-border-sm me-1"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
-                    Creating Order...
-                  </>
-                ) : (
-                  <>
-                    <i className="ti-arrow-right me-1"></i>
-                    Proceed to Payment
-                  </>
-                )}
-              </Button>
-            </Modal.Footer>
           </Form>
         ) : (
           <div>
@@ -474,12 +531,13 @@ export default function CheckoutForm({
               )}
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="outline-secondary" onClick={handleBackToDetails}>
+              <Button
+                variant="outline-secondary"
+                onClick={handleBackToDetails}
+                className="text-decoration-none border-0"
+              >
                 <i className="ti-arrow-left me-1"></i>
                 Back to Details
-              </Button>
-              <Button variant="secondary" onClick={onHide}>
-                Cancel
               </Button>
             </Modal.Footer>
           </div>

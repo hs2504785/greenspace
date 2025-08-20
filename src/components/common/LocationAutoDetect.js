@@ -422,10 +422,9 @@ const LocationAutoDetect = ({
       )}
 
       {!error && hasGeolocationSupport && !showEditHint && (
-        <Form.Text className="text-muted small">
+        <Form.Text className="text-muted small mt-1 d-inline-block">
           <i className="ti-target me-1"></i>
-          Click "Detect" to auto-fill your current location, then edit to add
-          specific details
+          Click "Detect" to auto-fill your current location.
         </Form.Text>
       )}
 
