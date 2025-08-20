@@ -54,6 +54,11 @@ export default function OrderStatusBadge({ status, isGuestOrder = false }) {
         text: "Pending",
         icon: "ti-clock",
       },
+      payment_received: {
+        bg: "success",
+        text: "Payment Received",
+        icon: "ti-check",
+      },
       confirmed: {
         bg: "primary",
         text: "Confirmed",

@@ -6,12 +6,22 @@ import LoadingSpinner from "@/components/common/LoadingSpinner";
 import UserAvatar from "@/components/common/UserAvatar";
 
 const ORDER_STATUS_STYLES = {
-  pending: { bg: "warning", icon: "ti-timer" },
-  confirmed: { bg: "info", icon: "ti-check" },
-  processing: { bg: "primary", icon: "ti-reload" },
-  shipped: { bg: "secondary", icon: "ti-truck" },
-  delivered: { bg: "success", icon: "ti-package" },
-  cancelled: { bg: "danger", icon: "ti-close" },
+  pending: { bg: "warning", icon: "ti-timer", text: "Pending Payment" },
+  pending_payment: {
+    bg: "warning",
+    icon: "ti-credit-card",
+    text: "Payment Pending",
+  },
+  payment_received: {
+    bg: "success",
+    icon: "ti-check",
+    text: "Payment Received",
+  },
+  confirmed: { bg: "info", icon: "ti-check", text: "Confirmed" },
+  processing: { bg: "primary", icon: "ti-reload", text: "Processing" },
+  shipped: { bg: "secondary", icon: "ti-truck", text: "Shipped" },
+  delivered: { bg: "success", icon: "ti-package", text: "Delivered" },
+  cancelled: { bg: "danger", icon: "ti-close", text: "Cancelled" },
 };
 
 export default function OrderList({ orders = [], loading, error }) {
@@ -53,9 +63,12 @@ export default function OrderList({ orders = [], loading, error }) {
               className="d-flex align-items-center"
             >
               <i
-                className={`${ORDER_STATUS_STYLES[order.status]?.icon} me-1`}
+                className={`${
+                  ORDER_STATUS_STYLES[order.status]?.icon || "ti-help"
+                } me-1`}
               ></i>
-              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+              {ORDER_STATUS_STYLES[order.status]?.text ||
+                order.status.charAt(0).toUpperCase() + order.status.slice(1)}
             </Badge>
           </Card.Header>
           <Card.Body>

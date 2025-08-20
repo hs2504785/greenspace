@@ -1,6 +1,6 @@
 "use client";
 
-import { useUserRole } from "@/hooks/useUserRole";
+import useUserRole from "@/hooks/useUserRole";
 import LoadingSpinner from "./LoadingSpinner";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";

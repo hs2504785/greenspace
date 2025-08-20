@@ -3,6 +3,7 @@
 import { Card, Table } from "react-bootstrap";
 import UserAvatar from "@/components/common/UserAvatar";
 import WhatsAppActions from "./WhatsAppActions";
+import OrderPaymentSection from "./OrderPaymentSection";
 
 export default function OrderDetails({ order }) {
   if (!order) {
@@ -54,6 +55,9 @@ export default function OrderDetails({ order }) {
           </Table>
         </Card.Body>
       </Card>
+
+      {/* Payment Section */}
+      <OrderPaymentSection order={order} />
 
       <div className="row">
         <div className="col-md-6">

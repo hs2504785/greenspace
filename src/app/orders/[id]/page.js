@@ -60,20 +60,34 @@ export default function OrderDetailsPage() {
 
 function OrderStatusBadge({ status }) {
   const styles = {
-    pending: { bg: "warning", icon: "ti-timer" },
-    confirmed: { bg: "info", icon: "ti-check" },
-    processing: { bg: "primary", icon: "ti-reload" },
-    shipped: { bg: "secondary", icon: "ti-truck" },
-    delivered: { bg: "success", icon: "ti-package" },
-    cancelled: { bg: "danger", icon: "ti-close" },
+    pending: { bg: "warning", icon: "ti-timer", text: "Pending Payment" },
+    pending_payment: {
+      bg: "warning",
+      icon: "ti-credit-card",
+      text: "Payment Pending",
+    },
+    payment_received: {
+      bg: "success",
+      icon: "ti-check",
+      text: "Payment Received",
+    },
+    confirmed: { bg: "info", icon: "ti-check", text: "Confirmed" },
+    processing: { bg: "primary", icon: "ti-reload", text: "Processing" },
+    shipped: { bg: "secondary", icon: "ti-truck", text: "Shipped" },
+    delivered: { bg: "success", icon: "ti-package", text: "Delivered" },
+    cancelled: { bg: "danger", icon: "ti-close", text: "Cancelled" },
   };
 
-  const style = styles[status] || { bg: "secondary", icon: "ti-help" };
+  const style = styles[status] || {
+    bg: "secondary",
+    icon: "ti-help",
+    text: status,
+  };
 
   return (
     <div className={`badge bg-${style.bg} fs-6 d-flex align-items-center`}>
       <i className={`${style.icon} me-1`}></i>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {style.text}
     </div>
   );
 }

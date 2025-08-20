@@ -5,7 +5,7 @@ import { Dropdown } from "react-bootstrap";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import UserAvatar from "./UserAvatar";
-import { useUserRole } from "@/hooks/useUserRole";
+import useUserRole from "@/hooks/useUserRole";
 
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
   <div
@@ -61,6 +61,10 @@ export default function ProfileDropdown({ user }) {
             <Dropdown.Item as={Link} href="/seller-dashboard">
               <i className="ti ti-shopping-cart me-2"></i>
               Orders Dashboard
+            </Dropdown.Item>
+            <Dropdown.Item as={Link} href="/payment-verification">
+              <i className="ti ti-credit-card me-2"></i>
+              Payment Verification
             </Dropdown.Item>
           </>
         )}

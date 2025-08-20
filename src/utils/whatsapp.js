@@ -36,6 +36,12 @@ export function generateOrderStatusMessage(order, status) {
   const contactNumber = order.contact_number || "Contact not available";
 
   const messages = {
+    payment_received: `Thank you for your payment! Your order #${orderId} payment has been received.\n\nOrder Details:\n${formatOrderItems(
+      order.items
+    )}\n\nTotal: ₹${total.toFixed(
+      2
+    )}\n\nDelivery Address:\n${deliveryAddress}\n\nWe'll confirm your order soon and start preparing your items.`,
+
     confirmed: `Great news! Your order #${orderId} has been confirmed.\n\nOrder Details:\n${formatOrderItems(
       order.items
     )}\n\nTotal: ₹${total.toFixed(

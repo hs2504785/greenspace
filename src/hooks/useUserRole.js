@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { createSupabaseClient } from "@/utils/supabaseAuth";
 
-export function useUserRole() {
+function useUserRole() {
   const { data: session } = useSession();
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -82,7 +82,7 @@ export function useUserRole() {
   }, [session]);
 
   return {
-    role,
+    userRole: role, // Changed to match the destructured name in the payment page
     loading,
     isBuyer: role === "buyer",
     isSeller: role === "seller",
@@ -90,3 +90,5 @@ export function useUserRole() {
     isSuperAdmin: role === "superadmin",
   };
 }
+
+export default useUserRole;

@@ -12,7 +12,19 @@ const STATUS_FLOW = {
     next: "confirmed",
     icon: "ti-timer",
     color: "warning",
-    description: "Order placed and waiting for confirmation",
+    description: "Order placed and waiting for payment",
+  },
+  pending_payment: {
+    next: "confirmed",
+    icon: "ti-credit-card",
+    color: "warning",
+    description: "Order placed - payment pending",
+  },
+  payment_received: {
+    next: "confirmed",
+    icon: "ti-check",
+    color: "success",
+    description: "Payment received - waiting for seller confirmation",
   },
   confirmed: {
     next: "processing",
@@ -114,6 +126,7 @@ export default function OrderTimeline({ order }) {
     // Normal flow: show all statuses with proper visual states
     const allStatuses = [
       "pending",
+      "payment_received",
       "confirmed",
       "processing",
       "shipped",
@@ -148,7 +161,13 @@ export default function OrderTimeline({ order }) {
             <h6 className="mb-1">
               {status.charAt(0).toUpperCase() + status.slice(1)}
             </h6>
-            <p className="mb-0 small text-muted">{statusConfig.description}</p>
+            <p className="mb-0 small text-muted">
+              {getTimelineDescription(
+                status,
+                currentStatus,
+                statusConfig.description
+              )}
+            </p>
             {state === "active" && canUpdateStatus && (
               <Button
                 variant={`outline-${statusConfig.color}`}
@@ -198,6 +217,7 @@ export default function OrderTimeline({ order }) {
 function getStatusWeight(status) {
   const weights = {
     pending: 0,
+    payment_received: 0.5,
     confirmed: 1,
     processing: 2,
     shipped: 3,
@@ -205,4 +225,17 @@ function getStatusWeight(status) {
     cancelled: -1,
   };
   return weights[status] || 0;
+}
+
+function getTimelineDescription(status, currentStatus, defaultDescription) {
+  // Special handling for "pending" status based on current order status
+  if (status === "pending") {
+    const currentWeight = getStatusWeight(currentStatus);
+    // If payment has been received or order is further along, show appropriate message
+    if (currentWeight >= 0.5) {
+      return "Order placed successfully";
+    }
+  }
+
+  return defaultDescription;
 }

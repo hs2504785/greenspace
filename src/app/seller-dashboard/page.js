@@ -9,7 +9,7 @@ import {
   Button,
   Form,
 } from "react-bootstrap";
-import { useUserRole } from "@/hooks/useUserRole";
+import useUserRole from "@/hooks/useUserRole";
 import { useSellerOrders } from "@/hooks/useSellerOrders";
 import SellerGuard from "@/components/common/SellerGuard";
 import SearchInput from "@/components/common/SearchInput";
