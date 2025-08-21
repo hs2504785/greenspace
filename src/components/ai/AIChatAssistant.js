@@ -471,13 +471,14 @@ I have access to real product data and can help you find, buy, and track orders!
           .ai-chat-icon {
             font-size: 24px;
           }
-          
+
           .ai-chat-button {
             bottom: 80px !important;
             right: 16px !important;
             width: 56px !important;
             height: 56px !important;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(40,167,69,0.1) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15),
+              0 0 0 1px rgba(40, 167, 69, 0.1) !important;
           }
         }
       `}</style>
@@ -496,8 +497,8 @@ I have access to real product data and can help you find, buy, and track orders!
           background: "white",
           backgroundColor: "white",
           color: "#28a745",
-          boxShadow: isMobile 
-            ? "0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(40,167,69,0.1)" 
+          boxShadow: isMobile
+            ? "0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(40,167,69,0.1)"
             : "0 4px 12px rgba(40, 167, 69, 0.4)",
           transform: "translateZ(0)", // Force hardware acceleration
         }}

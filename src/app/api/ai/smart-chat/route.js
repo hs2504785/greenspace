@@ -806,7 +806,7 @@ Thank you for shopping with GreenSpace! 🌱`;
       }),
       system: enhancedSystemPrompt,
       messages,
-      // tools, // Disabled - using manual buy command detection instead
+      tools, // ✅ RE-ENABLED - AI can now access real database!
       maxTokens: 1000,
       temperature: 0.7,
     });
