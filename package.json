@@ -13,9 +13,13 @@
     "rollback-invalid-variants": "node scripts/rollback-invalid-variants.js"
   },
   "dependencies": {
+    "@ai-sdk/google": "^2.0.7",
+    "@ai-sdk/ui-utils": "^1.2.11",
     "@auth/core": "^0.34.2",
+    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.54.0",
     "@tanstack/react-query": "^5.84.2",
+    "ai": "^5.0.19",
     "bootstrap": "^5.3.7",
     "bootswatch": "^5.3.7",
     "date-fns": "^4.1.0",

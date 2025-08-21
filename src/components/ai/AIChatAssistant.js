@@ -1,0 +1,816 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { Button, Card, Form, Alert, Badge } from "react-bootstrap";
+
+export default function AIChatAssistant({ user }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    {
+      id: "welcome",
+      role: "assistant",
+      content: `🌱 Hello! I'm your GreenSpace AI assistant!
+
+I can help you with:
+🥬 Finding fresh vegetables & seasonal produce
+💳 Payment help (UPI, GPay, PhonePe, Paytm)
+📦 Order tracking and information
+🌱 Farming tips and gardening advice
+📍 Local produce availability
+
+What would you like to know?`,
+    },
+  ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [inputValue, setInputValue] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(false);
+
+  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+
+  // Check for mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      scrollToBottom();
+    }
+  }, [messages, isOpen]);
+
+  // Close Quick Actions overlay when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showQuickActions &&
+        !event.target.closest(".quick-actions-overlay") &&
+        !event.target.closest(".quick-actions-button")
+      ) {
+        setShowQuickActions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showQuickActions]);
+
+  const quickActions = [
+    "💳 How to pay with UPI?",
+    "🥬 What vegetables are in season?",
+    "📦 How to track my order?",
+    "🌱 Farming tips for beginners",
+  ];
+
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
+
+  const sendMessage = async (messageContent) => {
+    if (!messageContent.trim()) return;
+
+    const userMessage = {
+      id: Date.now().toString(),
+      role: "user",
+      content: messageContent,
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      console.log("📨 Sending AI request...");
+      const response = await fetch("/api/ai/free-chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
+
+      console.log("📥 Response status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API Error: ${response.status} - ${errorText}`);
+      }
+
+      // Read the streaming response
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let aiResponse = "";
+
+      const aiMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "",
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        aiResponse += chunk;
+
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === aiMessage.id ? { ...m, content: aiResponse } : m
+          )
+        );
+      }
+
+      console.log("✅ AI response complete:", aiResponse);
+    } catch (err) {
+      console.error("❌ Chat error:", err);
+      setError(err.message);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 2).toString(),
+          role: "assistant",
+          content: "Sorry, I encountered an error. Please try again.",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmitMessage = (e) => {
+    e.preventDefault();
+    if (inputValue.trim()) {
+      sendMessage(inputValue);
+      setInputValue("");
+    }
+  };
+
+  const handleQuickAction = (action) => {
+    sendMessage(action);
+  };
+
+  return (
+    <>
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        /* Custom scrollbar for messages */
+        .messages-container::-webkit-scrollbar {
+          width: 4px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+          background: rgba(40, 167, 69, 0.3);
+          border-radius: 2px;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb:hover {
+          background: rgba(40, 167, 69, 0.5);
+        }
+
+        /* Remove focus outlines for better UX */
+        .form-control:focus {
+          outline: none !important;
+          box-shadow: none !important;
+          border-color: #e9ecef !important;
+        }
+        .btn:focus {
+          outline: none !important;
+          box-shadow: none !important;
+        }
+      `}</style>
+      {/* Floating Chat Button */}
+      <Button
+        className="position-fixed d-flex align-items-center justify-content-center"
+        style={{
+          bottom: "20px",
+          right: "20px",
+          zIndex: 1000,
+          borderRadius: "50%",
+          width: "72px",
+          height: "72px",
+          background: "rgba(255, 255, 255, 0.95)",
+          border: "3px solid #28a745",
+          boxShadow:
+            "0 8px 32px rgba(40, 167, 69, 0.25), 0 4px 16px rgba(0,0,0,0.1)",
+          fontSize: "32px",
+          transition: "all 0.3s ease",
+          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+          backdropFilter: "blur(10px)",
+          outline: "none",
+        }}
+        onFocus={(e) => {
+          // Custom focus style - add a subtle glow instead of default outline
+          e.target.style.boxShadow =
+            "0 8px 32px rgba(40, 167, 69, 0.4), 0 4px 16px rgba(0,0,0,0.15), 0 0 0 4px rgba(40, 167, 69, 0.2)";
+        }}
+        onBlur={(e) => {
+          // Remove focus glow when not focused
+          e.target.style.boxShadow =
+            "0 8px 32px rgba(40, 167, 69, 0.25), 0 4px 16px rgba(0,0,0,0.1)";
+        }}
+        onClick={() => setIsOpen(!isOpen)}
+        onMouseEnter={(e) => {
+          e.target.style.transform = "scale(1.1)";
+          e.target.style.background = "#28a745";
+          e.target.style.borderColor = "#28a745";
+          e.target.style.boxShadow =
+            "0 12px 40px rgba(40, 167, 69, 0.4), 0 6px 20px rgba(0,0,0,0.15)";
+          // Change icon color to white on hover (both states)
+          const icon = e.target.querySelector("span");
+          if (icon) icon.style.color = "#ffffff";
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.transform = "scale(1)";
+          e.target.style.background = "rgba(255, 255, 255, 0.95)";
+          e.target.style.borderColor = "#28a745";
+
+          // Check if button is focused to maintain focus glow
+          const hasFocus = document.activeElement === e.target;
+          e.target.style.boxShadow = hasFocus
+            ? "0 8px 32px rgba(40, 167, 69, 0.4), 0 4px 16px rgba(0,0,0,0.15), 0 0 0 4px rgba(40, 167, 69, 0.2)"
+            : "0 8px 32px rgba(40, 167, 69, 0.25), 0 4px 16px rgba(0,0,0,0.1)";
+
+          // Restore original icon colors (both states use green by default)
+          const icon = e.target.querySelector("span");
+          if (icon) {
+            icon.style.color = "#28a745";
+          }
+        }}
+      >
+        {isOpen ? (
+          <span
+            style={{
+              color: "#28a745",
+              fontWeight: "bold",
+              lineHeight: 1,
+              fontSize: "28px",
+            }}
+          >
+            ✕
+          </span>
+        ) : (
+          <span
+            style={{
+              color: "#28a745",
+              lineHeight: 1,
+              textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+            }}
+          >
+            ✨
+          </span>
+        )}
+      </Button>
+
+      {/* Chat Interface */}
+      {isOpen && (
+        <Card
+          className="position-fixed d-flex flex-column"
+          style={{
+            bottom: isMobile ? "10px" : "90px",
+            right: isMobile ? "10px" : "20px",
+            left: isMobile ? "10px" : "auto",
+            width: isMobile ? "auto" : "min(550px, 40vw)", // Even wider on desktop
+            maxWidth: isMobile ? "none" : "550px", // Increased max width
+            height: isMobile ? "calc(100vh - 20px)" : "600px", // Taller for more conversation space
+            zIndex: 1050, // Higher z-index
+            boxShadow:
+              "0 25px 80px rgba(0,0,0,0.25), 0 10px 40px rgba(0,0,0,0.15)", // Much stronger shadow
+            border: "1px solid #d1d5db",
+            borderRadius: isMobile ? "16px" : "20px",
+            overflow: "hidden",
+            animation: "slideUp 0.3s ease-out",
+            background: "#ffffff",
+          }}
+        >
+          <div
+            className="flex-shrink-0 position-relative"
+            style={{
+              background: "linear-gradient(135deg, #f8f9fa, #ffffff)",
+              borderBottom: "2px solid #e9ecef",
+              padding: "14px 20px",
+            }}
+          >
+            {/* Header Row */}
+            <div className="d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <div
+                  className="d-flex align-items-center justify-content-center me-3"
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    backgroundColor: "#28a745",
+                    borderRadius: "50%",
+                    fontSize: "14px",
+                    boxShadow: "0 2px 6px rgba(40, 167, 69, 0.3)",
+                    color: "#ffffff",
+                  }}
+                >
+                  ✨
+                </div>
+                <div>
+                  <span
+                    className="fw-bold"
+                    style={{ fontSize: "16px", color: "#1a1a1a" }}
+                  >
+                    AI Assistant
+                  </span>
+                  <div className="d-flex align-items-center mt-1">
+                    <div
+                      style={{
+                        width: "6px",
+                        height: "6px",
+                        backgroundColor: "#28a745",
+                        borderRadius: "50%",
+                        marginRight: "4px",
+                      }}
+                    ></div>
+                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                      Online
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="d-flex align-items-center gap-2">
+                {/* Help/Quick Actions Button */}
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="p-0 position-relative quick-actions-button"
+                  onClick={() => setShowQuickActions(!showQuickActions)}
+                  style={{
+                    color: showQuickActions ? "#28a745" : "#6c757d",
+                    fontSize: "18px",
+                    textDecoration: "none",
+                    transition: "all 0.2s ease",
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = "#e9ecef";
+                    e.target.style.color = "#495057";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = "transparent";
+                    e.target.style.color = showQuickActions
+                      ? "#28a745"
+                      : "#6c757d";
+                  }}
+                >
+                  💡
+                </Button>
+
+                {/* Close Button */}
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="p-0"
+                  onClick={() => setIsOpen(false)}
+                  style={{
+                    color: "#6c757d",
+                    fontSize: "20px",
+                    textDecoration: "none",
+                    transition: "all 0.2s ease",
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = "#e9ecef";
+                    e.target.style.color = "#495057";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = "transparent";
+                    e.target.style.color = "#6c757d";
+                  }}
+                >
+                  ✕
+                </Button>
+              </div>
+            </div>
+
+            {/* Quick Actions Overlay */}
+            {showQuickActions && (
+              <div
+                className="position-absolute quick-actions-overlay"
+                style={{
+                  top: "100%",
+                  right: isMobile ? "10px" : "60px", // Adjust for mobile
+                  left: isMobile ? "10px" : "auto", // Full width on mobile
+                  zIndex: 1100,
+                  background: "#ffffff",
+                  border: "2px solid #e9ecef",
+                  borderRadius: "12px",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+                  padding: "14px",
+                  minWidth: isMobile ? "auto" : "280px",
+                  maxWidth: isMobile ? "none" : "320px",
+                  animation: "fadeIn 0.2s ease-out",
+                }}
+                onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+              >
+                <div className="mb-2">
+                  <small
+                    className="text-muted fw-bold"
+                    style={{
+                      fontSize: "11px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    💡 Quick Actions
+                  </small>
+                </div>
+                <div className="d-flex flex-column">
+                  {quickActions.map((action, index) => (
+                    <Button
+                      key={index}
+                      variant="outline-success"
+                      size="sm"
+                      className="text-start border-0"
+                      style={{
+                        fontSize: "13px",
+                        padding: "10px 14px",
+                        backgroundColor: isLoading ? "#f1f3f4" : "#ffffff",
+                        color: isLoading ? "#9aa0a6" : "#28a745",
+                        boxShadow: "none",
+                        transition: "all 0.2s ease",
+                        fontWeight: "500",
+                        lineHeight: "1.4",
+                        borderRadius: "10px",
+                        border: "1px solid transparent",
+                      }}
+                      onClick={() => {
+                        handleQuickAction(action);
+                        setShowQuickActions(false); // Close overlay after action
+                      }}
+                      disabled={isLoading}
+                      onMouseEnter={(e) => {
+                        if (!isLoading) {
+                          e.target.style.backgroundColor = "#e8f5e8";
+                          e.target.style.borderColor = "#28a745";
+                          e.target.style.transform = "translateX(4px)";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isLoading) {
+                          e.target.style.backgroundColor = "#ffffff";
+                          e.target.style.borderColor = "transparent";
+                          e.target.style.transform = "translateX(0)";
+                        }
+                      }}
+                    >
+                      {action}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div
+            className="d-flex flex-column"
+            style={{
+              flex: 1,
+              minHeight: 0,
+              height: "100%",
+            }}
+          >
+            {/* Error Messages */}
+            {error && (
+              <Alert
+                variant="danger"
+                className="m-3 mb-0 flex-shrink-0"
+                style={{
+                  backgroundColor: "#fff2f0",
+                  borderColor: "#ffb3b3",
+                  color: "#d9534f",
+                  borderRadius: "12px",
+                  fontSize: "14px",
+                }}
+              >
+                <div className="d-flex align-items-center">
+                  <i className="ti-alert-triangle me-2"></i>
+                  <span>AI temporarily unavailable: {error}</span>
+                </div>
+              </Alert>
+            )}
+
+            {/* Messages */}
+            <div
+              ref={messagesContainerRef}
+              className="flex-grow-1 overflow-auto px-3 py-3 messages-container"
+              style={{
+                scrollBehavior: "smooth",
+                background: "#ffffff",
+                minHeight: 0, // Critical for flex shrinking
+                maxHeight: "100%", // Ensure it uses all available space
+              }}
+            >
+              {messages.map((message, index) => (
+                <div
+                  key={message.id}
+                  className={`mb-2 d-flex ${
+                    message.role === "user"
+                      ? "justify-content-end"
+                      : "justify-content-start"
+                  }`}
+                  style={{
+                    animation: `fadeIn 0.3s ease-out ${index * 0.1}s both`,
+                  }}
+                >
+                  <div
+                    className={`position-relative ${
+                      message.role === "user" ? "text-white" : ""
+                    }`}
+                    style={{
+                      maxWidth: "96%", // Increased even more to use maximum space
+                      background:
+                        message.role === "user"
+                          ? "linear-gradient(135deg, #28a745, #20c997)"
+                          : "#ffffff",
+                      borderRadius:
+                        message.role === "user"
+                          ? "18px 18px 4px 18px"
+                          : "4px 18px 18px 18px",
+                      boxShadow:
+                        message.role === "user"
+                          ? "0 1px 4px rgba(40, 167, 69, 0.15)" // Much lighter shadow
+                          : "0 1px 3px rgba(0, 0, 0, 0.05)", // Very light shadow
+                      border:
+                        message.role === "assistant"
+                          ? "1px solid #f0f0f0"
+                          : "none",
+                      padding: "14px 18px", // Slightly reduced padding for more content space
+                    }}
+                  >
+                    {/* Small AI indicator for assistant messages */}
+                    {message.role === "assistant" && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "-6px",
+                          left: "-6px",
+                          width: "18px",
+                          height: "18px",
+                          backgroundColor: "#28a745",
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "10px",
+                          boxShadow: "0 2px 4px rgba(40, 167, 69, 0.3)",
+                          color: "#ffffff",
+                        }}
+                      >
+                        ✨
+                      </div>
+                    )}
+
+                    <div
+                      style={{
+                        whiteSpace: "pre-wrap",
+                        fontSize: "15px",
+                        lineHeight: "1.5",
+                        color: message.role === "user" ? "#ffffff" : "#1a1a1a",
+                        fontWeight: message.role === "user" ? "500" : "400",
+                      }}
+                    >
+                      {message.content}
+                    </div>
+                    <div
+                      className={`text-end mt-2 ${
+                        message.role === "user" ? "text-white" : "text-muted"
+                      }`}
+                      style={{
+                        opacity: 0.7,
+                        fontSize: "11px",
+                      }}
+                    >
+                      {new Date().toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <div ref={messagesEndRef} />
+
+              {isLoading && (
+                <div className="d-flex justify-content-start mb-2">
+                  <div
+                    className="position-relative"
+                    style={{
+                      maxWidth: "96%",
+                      background: "#ffffff",
+                      borderRadius: "4px 18px 18px 18px",
+                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+                      border: "1px solid #f0f0f0",
+                      padding: "14px 18px",
+                    }}
+                  >
+                    {/* Small AI indicator */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "-6px",
+                        left: "-6px",
+                        width: "18px",
+                        height: "18px",
+                        backgroundColor: "#28a745",
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "10px",
+                        boxShadow: "0 2px 4px rgba(40, 167, 69, 0.3)",
+                        color: "#ffffff",
+                      }}
+                    >
+                      ✨
+                    </div>
+
+                    <div className="d-flex align-items-center">
+                      <div
+                        className="spinner-border spinner-border-sm text-success me-2"
+                        style={{ width: "14px", height: "14px" }}
+                      ></div>
+                      <span style={{ fontSize: "15px", color: "#666" }}>
+                        AI is thinking...
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Input Form */}
+            <div
+              className="flex-shrink-0"
+              style={{
+                background: "linear-gradient(to top, #f8f9fa, #ffffff)",
+                borderTop: "2px solid #e9ecef",
+                padding: "16px 20px 20px 20px",
+                boxShadow: "0 -4px 12px rgba(0,0,0,0.05)",
+              }}
+            >
+              <Form onSubmit={handleSubmitMessage}>
+                <div
+                  className="d-flex align-items-end gap-3"
+                  style={{
+                    background: "#ffffff",
+                    borderRadius: "24px",
+                    padding: "6px",
+                    border: "2px solid #e9ecef",
+                    transition: "all 0.2s ease",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <Form.Control
+                    as="textarea"
+                    placeholder="Type your message here..."
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    disabled={isLoading}
+                    name="message"
+                    rows="1"
+                    style={{
+                      border: "none",
+                      background: "transparent",
+                      resize: "none",
+                      fontSize: "15px",
+                      lineHeight: "1.4",
+                      padding: "12px 16px",
+                      maxHeight: "100px",
+                      minHeight: "20px",
+                      outline: "none",
+                      boxShadow: "none",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.outline = "none";
+                      e.target.style.boxShadow = "none";
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        if (inputValue.trim()) {
+                          handleSubmitMessage(e);
+                        }
+                      }
+                    }}
+                    onInput={(e) => {
+                      // Auto-resize textarea
+                      e.target.style.height = "auto";
+                      e.target.style.height =
+                        Math.min(e.target.scrollHeight, 100) + "px";
+                    }}
+                  />
+                  <Button
+                    type="submit"
+                    disabled={isLoading || !inputValue.trim()}
+                    style={{
+                      minWidth: "44px",
+                      height: "44px",
+                      borderRadius: "50%",
+                      background:
+                        isLoading || !inputValue.trim()
+                          ? "#e9ecef"
+                          : "linear-gradient(135deg, #28a745, #20c997)",
+                      border: "none",
+                      boxShadow:
+                        isLoading || !inputValue.trim()
+                          ? "none"
+                          : "0 4px 12px rgba(40, 167, 69, 0.4)",
+                      transition: "all 0.2s ease",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "16px",
+                      margin: "2px",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isLoading && inputValue.trim()) {
+                        e.target.style.transform = "scale(1.05)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isLoading && inputValue.trim()) {
+                        e.target.style.transform = "scale(1)";
+                      }
+                    }}
+                  >
+                    {isLoading ? (
+                      <div
+                        className="spinner-border spinner-border-sm text-white"
+                        style={{ width: "16px", height: "16px" }}
+                      ></div>
+                    ) : (
+                      "🚀"
+                    )}
+                  </Button>
+                </div>
+              </Form>
+            </div>
+          </div>
+        </Card>
+      )}
+    </>
+  );
+}

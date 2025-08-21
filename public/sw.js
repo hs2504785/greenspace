@@ -130,7 +130,8 @@ async function staleWhileRevalidate(request, cacheName) {
 async function networkFirst(request, cacheName) {
   try {
     const networkResponse = await fetch(request);
-    if (networkResponse.status === 200) {
+    // Only cache successful GET requests (POST requests can't be cached)
+    if (networkResponse.status === 200 && request.method === "GET") {
       const cache = await caches.open(cacheName);
       cache.put(request, networkResponse.clone());
     }
