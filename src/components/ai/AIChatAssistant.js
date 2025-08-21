@@ -441,6 +441,10 @@ I have access to real product data and can help you find, buy, and track orders!
           justify-content: center !important;
           background: white !important;
           background-color: white !important;
+          position: fixed !important;
+          z-index: 9999 !important;
+          -webkit-transform: translateZ(0) !important;
+          transform: translateZ(0) !important;
         }
 
         .ai-chat-button:hover {
@@ -467,6 +471,14 @@ I have access to real product data and can help you find, buy, and track orders!
           .ai-chat-icon {
             font-size: 24px;
           }
+          
+          .ai-chat-button {
+            bottom: 80px !important;
+            right: 16px !important;
+            width: 56px !important;
+            height: 56px !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(40,167,69,0.1) !important;
+          }
         }
       `}</style>
       {/* Floating Chat Button */}
@@ -474,16 +486,20 @@ I have access to real product data and can help you find, buy, and track orders!
         variant="outline-success"
         className="ai-chat-button position-fixed d-flex align-items-center justify-content-center"
         style={{
-          bottom: isMobile ? "20px" : "24px",
-          right: isMobile ? "20px" : "24px",
-          zIndex: 1000,
-          width: isMobile ? "64px" : "72px",
-          height: isMobile ? "64px" : "72px",
+          bottom: isMobile ? "80px" : "24px", // Higher on mobile to avoid nav bars
+          right: isMobile ? "16px" : "24px",
+          zIndex: 9999, // Much higher z-index to ensure visibility
+          width: isMobile ? "56px" : "72px", // Slightly smaller on mobile
+          height: isMobile ? "56px" : "72px",
           borderRadius: "50%",
           border: "2px solid #28a745",
           background: "white",
           backgroundColor: "white",
           color: "#28a745",
+          boxShadow: isMobile 
+            ? "0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(40,167,69,0.1)" 
+            : "0 4px 12px rgba(40, 167, 69, 0.4)",
+          transform: "translateZ(0)", // Force hardware acceleration
         }}
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? "Close chat" : "Open chat"}
