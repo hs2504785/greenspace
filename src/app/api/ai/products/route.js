@@ -40,11 +40,10 @@ export async function GET(request) {
 
     // Apply filters
     if (query) {
-      dbQuery = dbQuery.or(`
-        name.ilike.%${query}%,
-        description.ilike.%${query}%,
-        category.ilike.%${query}%
-      `);
+      // Search across multiple fields using or condition - fix syntax
+      dbQuery = dbQuery.or(
+        `name.ilike.%${query}%, description.ilike.%${query}%, category.ilike.%${query}%`
+      );
     }
 
     if (category && category !== "All") {
