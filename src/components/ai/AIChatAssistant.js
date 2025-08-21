@@ -432,7 +432,7 @@ I have access to real product data and can help you find, buy, and track orders!
           box-shadow: none !important;
         }
 
-        /* Simple AI Chat Button */
+        /* Simple AI Chat Button - Desktop */
         .ai-chat-button {
           border-radius: 50% !important;
           transition: all 0.2s ease !important;
@@ -443,11 +443,17 @@ I have access to real product data and can help you find, buy, and track orders!
           background-color: white !important;
           position: fixed !important;
           z-index: 9999 !important;
-          -webkit-transform: translateZ(0) !important;
-          transform: translateZ(0) !important;
-          /* Ensure it never gets pushed to the left */
-          margin-left: 0 !important;
-          margin-right: 0 !important;
+          bottom: 24px !important;
+          right: 24px !important;
+          width: 72px !important;
+          height: 72px !important;
+          /* Prevent distortion */
+          min-width: 72px !important;
+          min-height: 72px !important;
+          max-width: 72px !important;
+          max-height: 72px !important;
+          flex-shrink: 0 !important;
+          aspect-ratio: 1 !important;
         }
 
         .ai-chat-button:hover {
@@ -476,25 +482,66 @@ I have access to real product data and can help you find, buy, and track orders!
           }
 
           .ai-chat-button {
+            /* CRITICAL: Force exact positioning */
             position: fixed !important;
             bottom: 20px !important;
             right: 20px !important;
             left: auto !important;
             top: auto !important;
-            width: 60px !important;
-            height: 60px !important;
-            z-index: 99999 !important;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25),
-              0 0 0 1px rgba(40, 167, 69, 0.2) !important;
-            transform: translateZ(0) !important;
-            -webkit-transform: translateZ(0) !important;
-            /* Force viewport-relative positioning */
+
+            /* CRITICAL: Exact size to prevent ellipse distortion */
+            width: 56px !important;
+            height: 56px !important;
+            min-width: 56px !important;
+            min-height: 56px !important;
+            max-width: 56px !important;
+            max-height: 56px !important;
+
+            /* CRITICAL: Prevent any layout interference */
             margin: 0 !important;
-            float: none !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+
+            /* CRITICAL: Maximum visibility */
+            z-index: 999999 !important;
+
+            /* CRITICAL: NO transforms that cause ellipse */
+            transform: none !important;
+            -webkit-transform: none !important;
+
+            /* CRITICAL: Maintain perfect circle */
+            aspect-ratio: 1 / 1 !important;
+            flex-shrink: 0 !important;
+            flex-grow: 0 !important;
+
+            /* Visual improvements */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15),
+              0 0 0 1px rgba(40, 167, 69, 0.1) !important;
             display: flex !important;
-            /* Ensure it stays in viewport regardless of content */
-            -webkit-backface-visibility: hidden !important;
-            backface-visibility: hidden !important;
+          }
+        }
+
+        /* Additional safeguards against layout issues */
+        .ai-chat-button * {
+          pointer-events: none !important;
+        }
+
+        .ai-chat-button {
+          pointer-events: auto !important;
+          overflow: hidden !important;
+        }
+
+        /* Ensure button always stays circular on mobile */
+        @media (max-width: 768px) {
+          .ai-chat-button,
+          .ai-chat-button:hover,
+          .ai-chat-button:focus,
+          .ai-chat-button:active {
+            border-radius: 50% !important;
+            width: 56px !important;
+            height: 56px !important;
+            transform: none !important;
+            -webkit-transform: none !important;
           }
         }
       `}</style>
@@ -503,21 +550,16 @@ I have access to real product data and can help you find, buy, and track orders!
         variant="outline-success"
         className="ai-chat-button position-fixed d-flex align-items-center justify-content-center"
         style={{
-          // Desktop styles (mobile overridden by CSS media query)
-          bottom: isMobile ? undefined : "24px",
-          right: isMobile ? undefined : "24px",
-          zIndex: 9999,
-          width: isMobile ? undefined : "72px",
-          height: isMobile ? undefined : "72px",
-          borderRadius: "50%",
+          // Minimal inline styles - let CSS handle everything
           border: "2px solid #28a745",
           background: "white",
           backgroundColor: "white",
           color: "#28a745",
-          boxShadow: isMobile
-            ? undefined // Let CSS handle mobile
-            : "0 4px 12px rgba(40, 167, 69, 0.4)",
-          transform: "translateZ(0)",
+          ...(isMobile
+            ? {}
+            : {
+                boxShadow: "0 4px 12px rgba(40, 167, 69, 0.4)",
+              }),
         }}
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? "Close chat" : "Open chat"}
