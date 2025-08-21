@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import OrderService from "@/services/OrderService";
+import { getOrderUrl } from "@/utils/urlUtils";
 
-// Store AI-generated orders in memory for demo (in production, use a real database)
+// Store AI-generated orders in memory for demo (DEPRECATED - use /api/ai/orders/create instead)
 const aiOrders = new Map();
 
 export async function POST(request) {
@@ -86,7 +87,7 @@ export async function POST(request) {
       success: true,
       order: order,
       order_id: orderId,
-      order_url: `http://localhost:3000/orders/${orderId}`,
+      order_url: getOrderUrl(orderId, request),
     });
   } catch (error) {
     console.error("❌ Error creating order:", error);

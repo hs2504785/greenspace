@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import OrderService from "@/services/OrderService";
+import { getOrderUrl } from "@/utils/urlUtils";
 
 export async function POST(request) {
   try {
@@ -52,7 +53,7 @@ export async function POST(request) {
       success: true,
       order: order,
       order_id: order.id,
-      order_url: `http://localhost:3000/orders/${order.id}`,
+      order_url: getOrderUrl(order.id, request),
     });
   } catch (error) {
     console.error("❌ AI Order creation error:", error);

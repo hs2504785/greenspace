@@ -1,6 +1,7 @@
 import { google } from "@ai-sdk/google";
 import { streamText, tool } from "ai";
 import { z } from "zod";
+import { getBaseUrl, getApiUrl } from "@/utils/urlUtils";
 
 export async function POST(req) {
   try {
@@ -136,9 +137,7 @@ Remember: Always use your tools when customers ask about products, orders, or ne
             searchParams.append("limit", "10");
 
             const response = await fetch(
-              `${
-                process.env.NEXTAUTH_URL || "http://localhost:3000"
-              }/api/ai/products?${searchParams}`,
+              `${getApiUrl("/api/ai/products", req)}?${searchParams}`,
               {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
@@ -183,9 +182,7 @@ Remember: Always use your tools when customers ask about products, orders, or ne
         }),
         execute: async ({ search_term }) => {
           try {
-            let url = `${
-              process.env.NEXTAUTH_URL || "http://localhost:3000"
-            }/api/ai/orders`;
+            let url = getApiUrl("/api/ai/orders", req);
             const searchParams = new URLSearchParams();
 
             // Check if search_term looks like an order ID or phone number
@@ -254,9 +251,7 @@ Remember: Always use your tools when customers ask about products, orders, or ne
             searchParams.append("limit", "1");
 
             const searchResponse = await fetch(
-              `${
-                process.env.NEXTAUTH_URL || "http://localhost:3000"
-              }/api/ai/products?${searchParams}`,
+              `${getApiUrl("/api/ai/products", req)}?${searchParams}`,
               {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
@@ -291,9 +286,7 @@ Remember: Always use your tools when customers ask about products, orders, or ne
 
             // Create order via NEW AI orders API (database-persistent)
             const orderResponse = await fetch(
-              `${
-                process.env.NEXTAUTH_URL || "http://localhost:3000"
-              }/api/ai/orders/create`,
+              getApiUrl("/api/ai/orders/create", req),
               {
                 method: "POST",
                 headers: {
@@ -483,9 +476,7 @@ When users ask about specific products, provide this real information instead of
       try {
         // Get all products first (search API has issues)
         const productsResponse = await fetch(
-          `${
-            process.env.NEXTAUTH_URL || "http://localhost:3000"
-          }/api/ai/products?limit=20`,
+          `${getApiUrl("/api/ai/products", req)}?limit=20`,
           {
             method: "GET",
             headers: { "Content-Type": "application/json" },
@@ -659,9 +650,9 @@ Address: 123 Main Street, Jubilee Hills, Hyderabad, 500033`;
           );
 
           const productsResponse = await fetch(
-            `${
-              process.env.NEXTAUTH_URL || "http://localhost:3000"
-            }/api/ai/products?query=${encodeURIComponent(productName)}&limit=1`,
+            `${getApiUrl("/api/ai/products", req)}?query=${encodeURIComponent(
+              productName
+            )}&limit=1`,
             {
               method: "GET",
               headers: { "Content-Type": "application/json" },
@@ -691,9 +682,7 @@ Address: 123 Main Street, Jubilee Hills, Hyderabad, 500033`;
               "🔄 No specific product found, using any available product..."
             );
             const fallbackResponse = await fetch(
-              `${
-                process.env.NEXTAUTH_URL || "http://localhost:3000"
-              }/api/ai/products?limit=1`,
+              `${getApiUrl("/api/ai/products", req)}?limit=1`,
               {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
@@ -742,9 +731,7 @@ Address: 123 Main Street, Jubilee Hills, Hyderabad, 500033`;
         });
 
         const orderResponse = await fetch(
-          `${
-            process.env.NEXTAUTH_URL || "http://localhost:3000"
-          }/api/ai/orders/create`,
+          getApiUrl("/api/ai/orders/create", req),
           {
             method: "POST",
             headers: {
