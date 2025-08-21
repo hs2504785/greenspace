@@ -11,9 +11,17 @@ export function useOrder(orderId) {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [fetchAttempted, setFetchAttempted] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
+      // Prevent infinite loops - only attempt once per order ID
+      if (fetchAttempted) {
+        console.log(
+          `🔄 Skipping refetch for order ${orderId} - already attempted`
+        );
+        return;
+      }
       if (!orderId) {
         setError("Invalid order ID");
         setLoading(false);
@@ -23,6 +31,7 @@ export function useOrder(orderId) {
       try {
         setLoading(true);
         setError(null);
+        setFetchAttempted(true); // Mark as attempted to prevent retries
 
         console.log("Fetching order:", orderId);
         const data = await OrderService.getOrderById(orderId);
@@ -55,15 +64,34 @@ export function useOrder(orderId) {
         setOrder(data);
       } catch (err) {
         console.error("Error in useOrder hook:", err);
-        setError("Failed to load order details");
-        toastService.error("Failed to load order details");
+
+        // Handle "not found" errors more gracefully
+        if (
+          err.code === "ORDER_NOT_FOUND" ||
+          err.message.includes("not found")
+        ) {
+          console.log(`👻 Order ${orderId} not found - likely old/invalid ID`);
+          setError("Order not found");
+          // Don't show toast for not found errors (too noisy)
+        } else {
+          setError("Failed to load order details");
+          toastService.error("Failed to load order details");
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrder();
-  }, [orderId, session]);
+  }, [orderId, session, fetchAttempted]);
+
+  // Reset fetch attempt flag when orderId changes
+  useEffect(() => {
+    setFetchAttempted(false);
+    setLoading(true);
+    setError(null);
+    setOrder(null);
+  }, [orderId]);
 
   return { order, loading, error };
 }

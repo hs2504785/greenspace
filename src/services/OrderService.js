@@ -10,7 +10,7 @@ class OrderService extends ApiBaseService {
 
   async getOrdersByUser(userId) {
     try {
-      console.log("Fetching orders for user:", userId);
+      console.log("🔍 Fetching orders for user:", userId);
       if (!supabase) throw new Error("Supabase not initialized");
 
       const { data, error } = await supabase
@@ -32,7 +32,7 @@ class OrderService extends ApiBaseService {
           )
         `
         )
-        .eq("user_id", userId)
+        .eq("user_id", userId) // Only fetch orders for this specific user
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -40,7 +40,19 @@ class OrderService extends ApiBaseService {
         throw error;
       }
 
-      console.log("Orders fetched successfully:", data?.length || 0);
+      console.log("✅ Orders fetched successfully:", data?.length || 0);
+      if (data && data.length > 0) {
+        console.log(
+          "📋 Order IDs found:",
+          data.map((order) => order.id)
+        );
+        console.log(
+          "👤 Order user_ids:",
+          data.map((order) => order.user_id)
+        );
+      } else {
+        console.log("📭 No orders found for user:", userId);
+      }
       return data || [];
     } catch (error) {
       console.error("Error in getOrdersByUser:", error);
@@ -88,7 +100,17 @@ class OrderService extends ApiBaseService {
   async getOrderById(id) {
     try {
       console.log("Fetching order details:", { id });
-      if (!supabase) throw new Error("Supabase not initialized");
+
+      // First check database (where real orders are stored)
+      if (!supabase) {
+        console.log("Supabase not available, checking mock data");
+        // Check mock data
+        const mockOrder = mockOrders.find((order) => order.id === id);
+        if (mockOrder) {
+          return mockOrder;
+        }
+        throw new Error("Order not found in mock data");
+      }
 
       const { data, error } = await supabase
         .from("orders")
@@ -110,10 +132,25 @@ class OrderService extends ApiBaseService {
         .single();
 
       if (error) {
-        console.error("Error fetching order:", error);
+        console.error("Error fetching order from database:", error);
+
+        // Check if this is a "not found" error (common with old order IDs)
+        if (
+          error.code === "PGRST116" ||
+          error.details === "The result contains 0 rows"
+        ) {
+          console.log(
+            `📭 Order ${id} not found in database (likely old/invalid ID)`
+          );
+          const notFoundError = new Error(`Order ${id} not found`);
+          notFoundError.code = "ORDER_NOT_FOUND";
+          throw notFoundError;
+        }
+
         throw error;
       }
 
+      console.log("✅ Found order in database:", data.id);
       return data;
     } catch (error) {
       console.error("Error in getOrderById:", error);

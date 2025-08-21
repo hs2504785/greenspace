@@ -3,6 +3,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Button, Card, Form, Alert, Badge } from "react-bootstrap";
 import ReactMarkdown from "react-markdown";
+import InteractiveProductCard from "./InteractiveProductCard";
+
+import ChatOrderTracker from "./ChatOrderTracker";
+import toastService from "@/utils/toastService";
 
 export default function AIChatAssistant({ user }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,18 +14,20 @@ export default function AIChatAssistant({ user }) {
     {
       id: "welcome",
       role: "assistant",
-      content: `🌱 Hello! I'm your GreenSpace AI assistant!
+      content: `🌱 **Hello! I'm your GreenSpace AI assistant!**
 
 I can help you with:
-🥬 Finding fresh vegetables & checking prices
-💳 Payment help (UPI, GPay, PhonePe, Paytm)
-📦 Order tracking and status updates
-🌱 Farming tips and gardening advice
-📍 Local produce availability
-🛒 Shopping assistance and recommendations
+
+- 🥬 Finding fresh vegetables & checking prices
+- 💳 Payment help (UPI, GPay, PhonePe, Paytm)  
+- 📦 Order tracking and status updates
+- 🌱 Farming tips and gardening advice
+- 📍 Local produce availability
+- 🛒 Shopping assistance and recommendations
 
 I have access to real product data and can help you find, buy, and track orders!
-What would you like to know?`,
+
+**What would you like to know?**`,
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +35,10 @@ What would you like to know?`,
   const [inputValue, setInputValue] = useState("");
   const [isMobile, setIsMobile] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
+
+  // Shopping functionality state
+  const [productResults, setProductResults] = useState([]);
+  const [orderTracking, setOrderTracking] = useState(null);
 
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
@@ -74,13 +84,127 @@ What would you like to know?`,
   }, [showQuickActions]);
 
   const quickActions = [
-    "🥬 Show me fresh tomatoes under ₹50",
+    "🥬 Show available products",
+    "🛒 View my cart",
     "💳 How to pay with UPI?",
-    "📦 Track my order status",
-    "🌱 What vegetables are in season now?",
-    "🛒 Find organic vegetables near me",
-    "💰 Compare prices for onions",
+    "📦 Track my order",
+    "🌱 What vegetables are in season?",
+    "🚀 Quick buy tomatoes",
   ];
+
+  // Shopping action handlers
+  const handleAddToCart = async (product, quantity) => {
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      price: parseFloat(product.price.replace("₹", "")),
+      quantity: quantity,
+      seller: product.seller,
+      availableQuantity: product.quantity,
+    };
+
+    setCart((prevCart) => {
+      const existingItem = prevCart.find((item) => item.id === product.id);
+      if (existingItem) {
+        return prevCart.map((item) =>
+          item.id === product.id
+            ? {
+                ...item,
+                quantity: Math.min(item.quantity + quantity, product.quantity),
+              }
+            : item
+        );
+      }
+      return [...prevCart, cartItem];
+    });
+
+    toastService.success(`Added ${quantity}kg ${product.name} to cart!`);
+
+    // Add confirmation message
+    const confirmMessage = {
+      id: Date.now().toString(),
+      role: "assistant",
+      content: `✅ Added **${quantity}kg ${
+        product.name
+      }** to your cart!\n\nCart total: ${
+        cart.length + 1
+      } items\n\nWould you like to continue shopping or proceed to checkout?`,
+      type: "text",
+    };
+    setMessages((prev) => [...prev, confirmMessage]);
+  };
+
+  const handleBuyNow = async (product, quantity) => {
+    const item = {
+      id: product.id,
+      name: product.name,
+      price: parseFloat(product.price.replace("₹", "")),
+      quantity: quantity,
+      seller: product.seller,
+      availableQuantity: product.quantity,
+    };
+
+    setCheckoutItems([item]);
+    setShowCheckout(true);
+
+    // Add message about proceeding to checkout
+    const checkoutMessage = {
+      id: Date.now().toString(),
+      role: "assistant",
+      content: `🚀 **Quick Checkout** for ${quantity}kg ${
+        product.name
+      }\n\nTotal: ₹${(item.price * quantity).toFixed(
+        2
+      )}\n\nPlease fill in your delivery details below:`,
+      type: "text",
+    };
+    setMessages((prev) => [...prev, checkoutMessage]);
+  };
+
+  const handleTrackOrder = async (orderId) => {
+    try {
+      // Mock order tracking - replace with actual API call
+      const mockOrder = {
+        id: orderId,
+        status: "processing",
+        total_amount: "250.00",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        delivery_address: user?.location || "Hyderabad, India",
+        seller: {
+          name: "Arya Natural Farms",
+          phone: "+91-7799111008",
+          whatsapp: "+91-7799111008",
+        },
+        items: [
+          {
+            name: "Fresh Tomatoes",
+            quantity: 2,
+            price_per_unit: 45,
+            total_price: 90,
+          },
+          {
+            name: "Organic Onions",
+            quantity: 3,
+            price_per_unit: 35,
+            total_price: 105,
+          },
+        ],
+      };
+
+      setOrderTracking(mockOrder);
+
+      const trackingMessage = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: `📦 **Order Tracking**\n\nFound your order! Here's the current status:`,
+        type: "text",
+      };
+      setMessages((prev) => [...prev, trackingMessage]);
+    } catch (error) {
+      toastService.error("Order not found. Please check the order ID.");
+    }
+  };
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -149,6 +273,55 @@ What would you like to know?`,
       }
 
       console.log("✅ AI response complete:", aiResponse);
+
+      // Check if response contains order confirmation (from instant_order tool)
+      if (
+        aiResponse.includes("Order Confirmed!") &&
+        aiResponse.includes("Track Your Order")
+      ) {
+        // Show success toast
+        toastService.success("Order placed successfully via AI!");
+
+        // Dispatch event to refresh orders lists
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("ai-order-created"));
+          window.dispatchEvent(new CustomEvent("order-created"));
+        }
+      }
+
+      // Check if response mentions products and trigger product search
+      if (
+        aiResponse
+          .toLowerCase()
+          .includes("here are the currently available items") ||
+        (aiResponse.toLowerCase().includes("found") &&
+          aiResponse.toLowerCase().includes("available"))
+      ) {
+        // Mock product results - replace with actual API call to your product endpoint
+        setTimeout(() => {
+          const mockProducts = [
+            {
+              id: "1",
+              name: "w11 (Dragon fruit)",
+              description: "Fresh dragon fruit from local farms",
+              price: "₹3.00",
+              quantity: 3,
+              category: "Fruits",
+              seller: { name: "Arya Natural Farms", phone: "+91-7799111008" },
+            },
+            {
+              id: "2",
+              name: "re (product)",
+              description: "Fresh produce from organic farms",
+              price: "₹3.00",
+              quantity: 3,
+              category: "Vegetables",
+              seller: { name: "Arya Natural Farms", phone: "+91-7799111008" },
+            },
+          ];
+          setProductResults(mockProducts);
+        }, 1000);
+      }
     } catch (err) {
       console.error("❌ Chat error:", err);
       setError(err.message);
@@ -168,13 +341,40 @@ What would you like to know?`,
   const handleSubmitMessage = (e) => {
     e.preventDefault();
     if (inputValue.trim()) {
-      sendMessage(inputValue);
+      const message = inputValue.trim().toLowerCase();
+
+      // Handle special commands
+      if (
+        message === "cart" ||
+        message === "view cart" ||
+        message === "show cart"
+      ) {
+        handleViewCart();
+      } else if (
+        message.startsWith("track ") ||
+        (message.includes("order") && message.includes("track"))
+      ) {
+        // Extract order ID from message
+        const orderIdMatch = message.match(/(?:track\s+|order\s+#?)([\w\d]+)/);
+        if (orderIdMatch) {
+          handleTrackOrder(orderIdMatch[1]);
+        } else {
+          sendMessage(inputValue);
+        }
+      } else {
+        sendMessage(inputValue);
+      }
+
       setInputValue("");
     }
   };
 
   const handleQuickAction = (action) => {
-    sendMessage(action);
+    if (action === "🛒 View my cart") {
+      handleViewCart();
+    } else {
+      sendMessage(action);
+    }
   };
 
   return (
@@ -231,88 +431,64 @@ What would you like to know?`,
           outline: none !important;
           box-shadow: none !important;
         }
+
+        /* Simple AI Chat Button */
+        .ai-chat-button {
+          border-radius: 50% !important;
+          transition: all 0.2s ease !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          background: white !important;
+          background-color: white !important;
+        }
+
+        .ai-chat-button:hover {
+          background: #28a745 !important;
+          color: white !important;
+          border-color: #28a745 !important;
+        }
+
+        .ai-chat-button:focus {
+          box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25) !important;
+          outline: none !important;
+        }
+
+        .ai-chat-icon {
+          font-size: 28px;
+          line-height: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+        }
+
+        @media (max-width: 768px) {
+          .ai-chat-icon {
+            font-size: 24px;
+          }
+        }
       `}</style>
       {/* Floating Chat Button */}
       <Button
-        className="position-fixed d-flex align-items-center justify-content-center"
+        variant="outline-success"
+        className="ai-chat-button position-fixed d-flex align-items-center justify-content-center"
         style={{
-          bottom: "20px",
-          right: "20px",
+          bottom: isMobile ? "20px" : "24px",
+          right: isMobile ? "20px" : "24px",
           zIndex: 1000,
+          width: isMobile ? "64px" : "72px",
+          height: isMobile ? "64px" : "72px",
           borderRadius: "50%",
-          width: "72px",
-          height: "72px",
-          background: "rgba(255, 255, 255, 0.95)",
-          border: "3px solid #28a745",
-          boxShadow:
-            "0 8px 32px rgba(40, 167, 69, 0.25), 0 4px 16px rgba(0,0,0,0.1)",
-          fontSize: "32px",
-          transition: "all 0.3s ease",
-          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-          backdropFilter: "blur(10px)",
-          outline: "none",
-        }}
-        onFocus={(e) => {
-          // Custom focus style - add a subtle glow instead of default outline
-          e.target.style.boxShadow =
-            "0 8px 32px rgba(40, 167, 69, 0.4), 0 4px 16px rgba(0,0,0,0.15), 0 0 0 4px rgba(40, 167, 69, 0.2)";
-        }}
-        onBlur={(e) => {
-          // Remove focus glow when not focused
-          e.target.style.boxShadow =
-            "0 8px 32px rgba(40, 167, 69, 0.25), 0 4px 16px rgba(0,0,0,0.1)";
+          border: "2px solid #28a745",
+          background: "white",
+          backgroundColor: "white",
+          color: "#28a745",
         }}
         onClick={() => setIsOpen(!isOpen)}
-        onMouseEnter={(e) => {
-          e.target.style.transform = "scale(1.1)";
-          e.target.style.background = "#28a745";
-          e.target.style.borderColor = "#28a745";
-          e.target.style.boxShadow =
-            "0 12px 40px rgba(40, 167, 69, 0.4), 0 6px 20px rgba(0,0,0,0.15)";
-          // Change icon color to white on hover (both states)
-          const icon = e.target.querySelector("span");
-          if (icon) icon.style.color = "#ffffff";
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.transform = "scale(1)";
-          e.target.style.background = "rgba(255, 255, 255, 0.95)";
-          e.target.style.borderColor = "#28a745";
-
-          // Check if button is focused to maintain focus glow
-          const hasFocus = document.activeElement === e.target;
-          e.target.style.boxShadow = hasFocus
-            ? "0 8px 32px rgba(40, 167, 69, 0.4), 0 4px 16px rgba(0,0,0,0.15), 0 0 0 4px rgba(40, 167, 69, 0.2)"
-            : "0 8px 32px rgba(40, 167, 69, 0.25), 0 4px 16px rgba(0,0,0,0.1)";
-
-          // Restore original icon colors (both states use green by default)
-          const icon = e.target.querySelector("span");
-          if (icon) {
-            icon.style.color = "#28a745";
-          }
-        }}
+        aria-label={isOpen ? "Close chat" : "Open chat"}
       >
-        {isOpen ? (
-          <span
-            style={{
-              color: "#28a745",
-              fontWeight: "bold",
-              lineHeight: 1,
-              fontSize: "28px",
-            }}
-          >
-            ✕
-          </span>
-        ) : (
-          <span
-            style={{
-              color: "#28a745",
-              lineHeight: 1,
-              textShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            }}
-          >
-            ✨
-          </span>
-        )}
+        <span className="ai-chat-icon">{isOpen ? "✕" : "✨"}</span>
       </Button>
 
       {/* Chat Interface */}
@@ -644,7 +820,11 @@ What would you like to know?`,
                             ),
                             ul: ({ children }) => (
                               <ul
-                                style={{ margin: "8px 0", paddingLeft: "20px" }}
+                                style={{
+                                  margin: "8px 0",
+                                  paddingLeft: "0px",
+                                  listStyle: "none",
+                                }}
                               >
                                 {children}
                               </ul>
@@ -725,6 +905,32 @@ What would you like to know?`,
                                 {children}
                               </h3>
                             ),
+                            a: ({ href, children }) => (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  color: "#007bff",
+                                  textDecoration: "underline",
+                                  fontWeight: "500",
+                                  cursor: "pointer",
+                                }}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (
+                                    href &&
+                                    href.startsWith(
+                                      "http://localhost:3000/orders/"
+                                    )
+                                  ) {
+                                    window.open(href, "_blank");
+                                  }
+                                }}
+                              >
+                                {children}
+                              </a>
+                            ),
                           }}
                         >
                           {message.content}
@@ -754,6 +960,75 @@ What would you like to know?`,
               ))}
 
               <div ref={messagesEndRef} />
+
+              {/* Interactive Product Results */}
+              {productResults.length > 0 && (
+                <div className="mb-3">
+                  {productResults.map((product) => (
+                    <InteractiveProductCard
+                      key={product.id}
+                      product={product}
+                      onAddToCart={handleAddToCart}
+                      onBuyNow={handleBuyNow}
+                      onViewDetails={(product) => {
+                        const detailMessage = {
+                          id: Date.now().toString(),
+                          role: "assistant",
+                          content: `**${product.name}** Details:\n\n📍 Seller: ${product.seller?.name}\n💰 Price: ${product.price}/kg\n📦 Available: ${product.quantity}kg\n📝 ${product.description}\n\nWould you like to add this to cart or buy now?`,
+                          type: "text",
+                        };
+                        setMessages((prev) => [...prev, detailMessage]);
+                      }}
+                    />
+                  ))}
+                  <div className="text-center">
+                    <Button
+                      variant="outline-secondary"
+                      size="sm"
+                      onClick={() => setProductResults([])}
+                      style={{ fontSize: "12px", padding: "4px 12px" }}
+                    >
+                      Hide Products
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Order Tracking */}
+              {orderTracking && (
+                <ChatOrderTracker
+                  order={orderTracking}
+                  onContactSeller={(seller) => {
+                    window.open(
+                      `https://wa.me/${seller.whatsapp?.replace(/\D/g, "")}`,
+                      "_blank"
+                    );
+                  }}
+                  onTrackAnother={() => {
+                    setOrderTracking(null);
+                    const trackMessage = {
+                      id: Date.now().toString(),
+                      role: "assistant",
+                      content: "Please provide another order ID to track:",
+                      type: "text",
+                    };
+                    setMessages((prev) => [...prev, trackMessage]);
+                  }}
+                  onViewPayment={(order) => {
+                    const paymentMessage = {
+                      id: Date.now().toString(),
+                      role: "assistant",
+                      content: `💳 **Payment for Order ${order.id.slice(
+                        -8
+                      )}**\n\nTotal: ₹${
+                        order.total_amount
+                      }\n\nUPI QR code will be generated after order confirmation.\n\nPayment methods:\n✅ GPay, PhonePe, Paytm\n✅ Any UPI app\n✅ Scan QR and pay`,
+                      type: "text",
+                    };
+                    setMessages((prev) => [...prev, paymentMessage]);
+                  }}
+                />
+              )}
 
               {isLoading && (
                 <div className="d-flex justify-content-start mb-2">

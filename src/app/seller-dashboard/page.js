@@ -216,7 +216,33 @@ function SellerDashboardContent() {
     filters,
     updateFilters,
     updateOrderStatus,
+    refreshOrders,
   } = useSellerOrders();
+
+  // Listen for order creation events to refresh seller orders list
+  useEffect(() => {
+    const handleOrderCreated = () => {
+      console.log("🔄 New order created, refreshing seller orders list...");
+      refreshOrders();
+    };
+
+    const handleOrderCompleted = () => {
+      console.log("🔄 Order completed, refreshing seller orders list...");
+      refreshOrders();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("order-created", handleOrderCreated);
+      window.addEventListener("order-completed", handleOrderCompleted);
+      window.addEventListener("ai-order-created", handleOrderCreated);
+
+      return () => {
+        window.removeEventListener("order-created", handleOrderCreated);
+        window.removeEventListener("order-completed", handleOrderCompleted);
+        window.removeEventListener("ai-order-created", handleOrderCreated);
+      };
+    }
+  }, [refreshOrders]);
 
   const [searchValue, setSearchValue] = useState("");
   const debouncedSearch = useDebounce(searchValue, 300);

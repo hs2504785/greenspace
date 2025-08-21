@@ -85,6 +85,12 @@ export default function CheckoutForm({
       toastService.success(
         "Order placed successfully! Redirecting to order details..."
       );
+
+      // Dispatch event to refresh orders lists
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("order-created"));
+      }
+
       onSuccess(order);
       onHide();
     } catch (error) {
@@ -181,6 +187,12 @@ export default function CheckoutForm({
       toastService.success(
         "Order placed successfully! You can pay anytime from order details."
       );
+
+      // Dispatch event to refresh orders lists
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("order-created"));
+      }
+
       onSuccess(order);
       onHide();
       resetState();

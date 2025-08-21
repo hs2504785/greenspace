@@ -1,13 +1,46 @@
 "use client";
 
+import { useEffect } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import OrderList from "@/components/features/orders/OrderList";
 import OrderFilters from "@/components/features/orders/OrderFilters";
 import { useOrders } from "@/hooks/useOrders";
 
 export default function OrdersPage() {
-  const { orders, loading, error, filters, updateFilters, totalCount } =
-    useOrders();
+  const {
+    orders,
+    loading,
+    error,
+    filters,
+    updateFilters,
+    totalCount,
+    refresh,
+  } = useOrders();
+
+  // Listen for order creation events to refresh orders list
+  useEffect(() => {
+    const handleOrderCreated = () => {
+      console.log("🔄 New order created, refreshing orders list...");
+      refresh();
+    };
+
+    const handleOrderCompleted = () => {
+      console.log("🔄 Order completed, refreshing orders list...");
+      refresh();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("order-created", handleOrderCreated);
+      window.addEventListener("order-completed", handleOrderCompleted);
+      window.addEventListener("ai-order-created", handleOrderCreated);
+
+      return () => {
+        window.removeEventListener("order-created", handleOrderCreated);
+        window.removeEventListener("order-completed", handleOrderCompleted);
+        window.removeEventListener("ai-order-created", handleOrderCreated);
+      };
+    }
+  }, [refresh]);
 
   return (
     <Container className="pb-4">
