@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button, Card, Form, Alert, Badge } from "react-bootstrap";
+import ReactMarkdown from "react-markdown";
 
 export default function AIChatAssistant({ user }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,12 +13,14 @@ export default function AIChatAssistant({ user }) {
       content: `🌱 Hello! I'm your GreenSpace AI assistant!
 
 I can help you with:
-🥬 Finding fresh vegetables & seasonal produce
+🥬 Finding fresh vegetables & checking prices
 💳 Payment help (UPI, GPay, PhonePe, Paytm)
-📦 Order tracking and information
+📦 Order tracking and status updates
 🌱 Farming tips and gardening advice
 📍 Local produce availability
+🛒 Shopping assistance and recommendations
 
+I have access to real product data and can help you find, buy, and track orders!
 What would you like to know?`,
     },
   ]);
@@ -71,10 +74,12 @@ What would you like to know?`,
   }, [showQuickActions]);
 
   const quickActions = [
+    "🥬 Show me fresh tomatoes under ₹50",
     "💳 How to pay with UPI?",
-    "🥬 What vegetables are in season?",
-    "📦 How to track my order?",
-    "🌱 Farming tips for beginners",
+    "📦 Track my order status",
+    "🌱 What vegetables are in season now?",
+    "🛒 Find organic vegetables near me",
+    "💰 Compare prices for onions",
   ];
 
   const handleInputChange = (e) => {
@@ -95,8 +100,8 @@ What would you like to know?`,
     setError(null);
 
     try {
-      console.log("📨 Sending AI request...");
-      const response = await fetch("/api/ai/free-chat", {
+      console.log("📨 Sending Smart AI request...");
+      const response = await fetch("/api/ai/smart-chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -106,6 +111,7 @@ What would you like to know?`,
             role: m.role,
             content: m.content,
           })),
+          user: user || {},
         }),
       });
 
@@ -624,14 +630,110 @@ What would you like to know?`,
 
                     <div
                       style={{
-                        whiteSpace: "pre-wrap",
                         fontSize: "15px",
                         lineHeight: "1.5",
                         color: message.role === "user" ? "#ffffff" : "#1a1a1a",
                         fontWeight: message.role === "user" ? "500" : "400",
                       }}
                     >
-                      {message.content}
+                      {message.role === "assistant" ? (
+                        <ReactMarkdown
+                          components={{
+                            p: ({ children }) => (
+                              <p style={{ margin: "0 0 8px 0" }}>{children}</p>
+                            ),
+                            ul: ({ children }) => (
+                              <ul
+                                style={{ margin: "8px 0", paddingLeft: "20px" }}
+                              >
+                                {children}
+                              </ul>
+                            ),
+                            ol: ({ children }) => (
+                              <ol
+                                style={{ margin: "8px 0", paddingLeft: "20px" }}
+                              >
+                                {children}
+                              </ol>
+                            ),
+                            li: ({ children }) => (
+                              <li style={{ margin: "2px 0" }}>{children}</li>
+                            ),
+                            strong: ({ children }) => (
+                              <strong
+                                style={{ fontWeight: "600", color: "#2d5a3d" }}
+                              >
+                                {children}
+                              </strong>
+                            ),
+                            em: ({ children }) => (
+                              <em
+                                style={{
+                                  fontStyle: "italic",
+                                  color: "#5a6c57",
+                                }}
+                              >
+                                {children}
+                              </em>
+                            ),
+                            code: ({ children }) => (
+                              <code
+                                style={{
+                                  backgroundColor: "#f8f9fa",
+                                  padding: "2px 4px",
+                                  borderRadius: "4px",
+                                  fontSize: "13px",
+                                  border: "1px solid #e9ecef",
+                                }}
+                              >
+                                {children}
+                              </code>
+                            ),
+                            h1: ({ children }) => (
+                              <h1
+                                style={{
+                                  fontSize: "18px",
+                                  fontWeight: "600",
+                                  margin: "12px 0 8px 0",
+                                  color: "#2d5a3d",
+                                }}
+                              >
+                                {children}
+                              </h1>
+                            ),
+                            h2: ({ children }) => (
+                              <h2
+                                style={{
+                                  fontSize: "16px",
+                                  fontWeight: "600",
+                                  margin: "10px 0 6px 0",
+                                  color: "#2d5a3d",
+                                }}
+                              >
+                                {children}
+                              </h2>
+                            ),
+                            h3: ({ children }) => (
+                              <h3
+                                style={{
+                                  fontSize: "15px",
+                                  fontWeight: "600",
+                                  margin: "8px 0 4px 0",
+                                  color: "#2d5a3d",
+                                }}
+                              >
+                                {children}
+                              </h3>
+                            ),
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      ) : (
+                        <div style={{ whiteSpace: "pre-wrap" }}>
+                          {message.content}
+                        </div>
+                      )}
                     </div>
                     <div
                       className={`text-end mt-2 ${
