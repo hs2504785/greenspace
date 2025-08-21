@@ -11,7 +11,15 @@ export async function GET(request) {
     const minPrice = searchParams.get("minPrice");
     const maxPrice = searchParams.get("maxPrice");
 
+    // Enhanced debugging for production
     console.log("🔍 AI Product Search:", { query, category, location, limit });
+    console.log("🌍 Request URL:", request.url);
+    console.log("🔧 Environment:", {
+      NODE_ENV: process.env.NODE_ENV,
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      supabaseUrlPrefix:
+        process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + "...",
+    });
 
     if (!supabase) {
       throw new Error("Database not available");
@@ -73,6 +81,19 @@ export async function GET(request) {
     if (error) {
       console.error("Database error:", error);
       throw new Error(error.message);
+    }
+
+    // Debug: Show which products we found
+    console.log("📋 Products found:", products?.length || 0);
+    if (products && products.length > 0) {
+      console.log(
+        "🏷️ First few product names:",
+        products.slice(0, 3).map((p) => p.name)
+      );
+      console.log(
+        "💰 First few prices:",
+        products.slice(0, 3).map((p) => `₹${p.price}`)
+      );
     }
 
     // Format products for AI consumption

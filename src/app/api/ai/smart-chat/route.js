@@ -136,13 +136,16 @@ Remember: Always use your tools when customers ask about products, orders, or ne
             if (query) searchParams.append("q", query);
             searchParams.append("limit", "10");
 
-            const response = await fetch(
-              `${getApiUrl("/api/ai/products", req)}?${searchParams}`,
-              {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-              }
-            );
+            const apiUrl = `${getApiUrl(
+              "/api/ai/products",
+              req
+            )}?${searchParams}`;
+            console.log("🔗 AI Chat calling products API:", apiUrl);
+
+            const response = await fetch(apiUrl, {
+              method: "GET",
+              headers: { "Content-Type": "application/json" },
+            });
 
             if (!response.ok) {
               throw new Error(`API Error: ${response.status}`);
