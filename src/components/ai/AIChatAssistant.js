@@ -445,6 +445,9 @@ I have access to real product data and can help you find, buy, and track orders!
           z-index: 9999 !important;
           -webkit-transform: translateZ(0) !important;
           transform: translateZ(0) !important;
+          /* Ensure it never gets pushed to the left */
+          margin-left: 0 !important;
+          margin-right: 0 !important;
         }
 
         .ai-chat-button:hover {
@@ -473,12 +476,25 @@ I have access to real product data and can help you find, buy, and track orders!
           }
 
           .ai-chat-button {
-            bottom: 80px !important;
-            right: 16px !important;
-            width: 56px !important;
-            height: 56px !important;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15),
-              0 0 0 1px rgba(40, 167, 69, 0.1) !important;
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            left: auto !important;
+            top: auto !important;
+            width: 60px !important;
+            height: 60px !important;
+            z-index: 99999 !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25),
+              0 0 0 1px rgba(40, 167, 69, 0.2) !important;
+            transform: translateZ(0) !important;
+            -webkit-transform: translateZ(0) !important;
+            /* Force viewport-relative positioning */
+            margin: 0 !important;
+            float: none !important;
+            display: flex !important;
+            /* Ensure it stays in viewport regardless of content */
+            -webkit-backface-visibility: hidden !important;
+            backface-visibility: hidden !important;
           }
         }
       `}</style>
@@ -487,20 +503,21 @@ I have access to real product data and can help you find, buy, and track orders!
         variant="outline-success"
         className="ai-chat-button position-fixed d-flex align-items-center justify-content-center"
         style={{
-          bottom: isMobile ? "80px" : "24px", // Higher on mobile to avoid nav bars
-          right: isMobile ? "16px" : "24px",
-          zIndex: 9999, // Much higher z-index to ensure visibility
-          width: isMobile ? "56px" : "72px", // Slightly smaller on mobile
-          height: isMobile ? "56px" : "72px",
+          // Desktop styles (mobile overridden by CSS media query)
+          bottom: isMobile ? undefined : "24px",
+          right: isMobile ? undefined : "24px",
+          zIndex: 9999,
+          width: isMobile ? undefined : "72px",
+          height: isMobile ? undefined : "72px",
           borderRadius: "50%",
           border: "2px solid #28a745",
           background: "white",
           backgroundColor: "white",
           color: "#28a745",
           boxShadow: isMobile
-            ? "0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px rgba(40,167,69,0.1)"
+            ? undefined // Let CSS handle mobile
             : "0 4px 12px rgba(40, 167, 69, 0.4)",
-          transform: "translateZ(0)", // Force hardware acceleration
+          transform: "translateZ(0)",
         }}
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? "Close chat" : "Open chat"}
