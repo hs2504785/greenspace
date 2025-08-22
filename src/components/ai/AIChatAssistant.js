@@ -10,11 +10,28 @@ import toastService from "@/utils/toastService";
 
 export default function AIChatAssistant({ user }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      id: "welcome",
-      role: "assistant",
-      content: `🌱 **Hello! I'm your GreenSpace AI assistant!**
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [inputValue, setInputValue] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(false);
+
+  // Function to get welcome message based on device type
+  const getWelcomeMessage = (mobile) => ({
+    id: "welcome",
+    role: "assistant",
+    content: mobile
+      ? `🌱 **Hello! I'm your GreenSpace AI assistant!**
+
+I can help you with:
+- 🥬 Finding vegetables & prices
+- 💳 Payment help (UPI, GPay, etc)  
+- 📦 Order tracking
+- 🌱 Farming tips
+- 🛒 Shopping assistance
+
+**What would you like to know?**`
+      : `🌱 **Hello! I'm your GreenSpace AI assistant!**
 
 I can help you with:
 
@@ -28,13 +45,9 @@ I can help you with:
 I have access to real product data and can help you find, buy, and track orders!
 
 **What would you like to know?**`,
-    },
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [inputValue, setInputValue] = useState("");
-  const [isMobile, setIsMobile] = useState(false);
-  const [showQuickActions, setShowQuickActions] = useState(false);
+  });
+
+  const [messages, setMessages] = useState([getWelcomeMessage(false)]);
 
   // Shopping functionality state
   const [productResults, setProductResults] = useState([]);
@@ -53,6 +66,17 @@ I have access to real product data and can help you find, buy, and track orders!
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Update welcome message when mobile state changes
+  useEffect(() => {
+    setMessages((prevMessages) => {
+      const newMessages = [...prevMessages];
+      if (newMessages[0]?.id === "welcome") {
+        newMessages[0] = getWelcomeMessage(isMobile);
+      }
+      return newMessages;
+    });
+  }, [isMobile]);
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -524,10 +548,10 @@ I have access to real product data and can help you find, buy, and track orders!
       <style jsx>{`
         .ai-chat-button {
           position: fixed !important;
-          bottom: 24px !important;
-          right: 24px !important;
-          width: 72px !important;
-          height: 72px !important;
+          bottom: ${isMobile ? "100px" : "24px"} !important;
+          right: ${isMobile ? "16px" : "24px"} !important;
+          width: ${isMobile ? "60px" : "72px"} !important;
+          height: ${isMobile ? "60px" : "72px"} !important;
           border-radius: 50% !important;
           display: flex !important;
           align-items: center !important;
@@ -542,13 +566,13 @@ I have access to real product data and can help you find, buy, and track orders!
         }
 
         .ai-chat-button:hover {
-          transform: scale(1.05) !important;
+          transform: ${isMobile ? "none" : "scale(1.05)"} !important;
           background: #28a745 !important;
           color: white !important;
         }
 
         .ai-chat-icon {
-          font-size: 28px;
+          font-size: ${isMobile ? "24px" : "28px"};
           line-height: 1;
           transition: transform 0.3s ease;
           display: inline-block;
@@ -578,15 +602,17 @@ I have access to real product data and can help you find, buy, and track orders!
         <Card
           className="position-fixed d-flex flex-column"
           style={{
-            bottom: isMobile ? "10px" : "90px",
+            bottom: isMobile ? "70px" : "90px", // More space from bottom on mobile
             right: isMobile ? "10px" : "20px",
             left: isMobile ? "10px" : "auto",
-            width: isMobile ? "auto" : "min(550px, 40vw)", // Even wider on desktop
-            maxWidth: isMobile ? "none" : "550px", // Increased max width
-            height: isMobile ? "calc(100vh - 20px)" : "600px", // Taller for more conversation space
-            zIndex: 1050, // Higher z-index
+            top: isMobile ? "80px" : "auto", // Set top position on mobile for better control
+            width: isMobile ? "auto" : "min(550px, 40vw)",
+            maxWidth: isMobile ? "none" : "550px",
+            height: isMobile ? "auto" : "600px", // Auto height on mobile, constrained by top/bottom
+            maxHeight: isMobile ? "calc(100vh - 160px)" : "600px", // Prevent overflow on mobile
+            zIndex: 1050,
             boxShadow:
-              "0 25px 80px rgba(0,0,0,0.25), 0 10px 40px rgba(0,0,0,0.15)", // Much stronger shadow
+              "0 25px 80px rgba(0,0,0,0.25), 0 10px 40px rgba(0,0,0,0.15)",
             border: "1px solid #d1d5db",
             borderRadius: isMobile ? "16px" : "20px",
             overflow: "hidden",
@@ -643,7 +669,11 @@ I have access to real product data and can help you find, buy, and track orders!
                 </div>
               </div>
 
-              <div className="d-flex align-items-center gap-2">
+              <div
+                className={`d-flex align-items-center ${
+                  isMobile ? "gap-1" : "gap-2"
+                }`}
+              >
                 {/* Help/Quick Actions Button */}
                 <Button
                   variant="link"
@@ -652,25 +682,30 @@ I have access to real product data and can help you find, buy, and track orders!
                   onClick={() => setShowQuickActions(!showQuickActions)}
                   style={{
                     color: showQuickActions ? "#28a745" : "#6c757d",
-                    fontSize: "18px",
+                    fontSize: isMobile ? "16px" : "18px",
                     textDecoration: "none",
                     transition: "all 0.2s ease",
-                    width: "32px",
-                    height: "32px",
+                    width: isMobile ? "28px" : "32px",
+                    height: isMobile ? "28px" : "32px",
                     borderRadius: "50%",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    minWidth: isMobile ? "28px" : "32px", // Prevent shrinking
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#e9ecef";
-                    e.target.style.color = "#495057";
+                    if (!isMobile) {
+                      e.target.style.backgroundColor = "#e9ecef";
+                      e.target.style.color = "#495057";
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "transparent";
-                    e.target.style.color = showQuickActions
-                      ? "#28a745"
-                      : "#6c757d";
+                    if (!isMobile) {
+                      e.target.style.backgroundColor = "transparent";
+                      e.target.style.color = showQuickActions
+                        ? "#28a745"
+                        : "#6c757d";
+                    }
                   }}
                 >
                   💡
@@ -684,23 +719,28 @@ I have access to real product data and can help you find, buy, and track orders!
                   onClick={() => setIsOpen(false)}
                   style={{
                     color: "#6c757d",
-                    fontSize: "20px",
+                    fontSize: isMobile ? "18px" : "20px",
                     textDecoration: "none",
                     transition: "all 0.2s ease",
-                    width: "32px",
-                    height: "32px",
+                    width: isMobile ? "28px" : "32px",
+                    height: isMobile ? "28px" : "32px",
                     borderRadius: "50%",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    minWidth: isMobile ? "28px" : "32px", // Prevent shrinking
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#e9ecef";
-                    e.target.style.color = "#495057";
+                    if (!isMobile) {
+                      e.target.style.backgroundColor = "#e9ecef";
+                      e.target.style.color = "#495057";
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "transparent";
-                    e.target.style.color = "#6c757d";
+                    if (!isMobile) {
+                      e.target.style.backgroundColor = "transparent";
+                      e.target.style.color = "#6c757d";
+                    }
                   }}
                 >
                   ✕
@@ -1166,25 +1206,33 @@ I have access to real product data and can help you find, buy, and track orders!
               style={{
                 background: "linear-gradient(to top, #f8f9fa, #ffffff)",
                 borderTop: "2px solid #e9ecef",
-                padding: "16px 20px 20px 20px",
+                padding: isMobile
+                  ? "12px 16px 16px 16px"
+                  : "16px 20px 20px 20px",
                 boxShadow: "0 -4px 12px rgba(0,0,0,0.05)",
+                position: "relative",
+                zIndex: 10, // Ensure input stays above other elements
               }}
             >
               <Form onSubmit={handleSubmitMessage}>
                 <div
-                  className="d-flex align-items-end gap-3"
+                  className="d-flex align-items-end"
                   style={{
                     background: "#ffffff",
-                    borderRadius: "24px",
-                    padding: "6px",
+                    borderRadius: isMobile ? "20px" : "24px",
+                    padding: isMobile ? "4px" : "6px",
                     border: "2px solid #e9ecef",
                     transition: "all 0.2s ease",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                    gap: isMobile ? "8px" : "12px",
+                    minHeight: isMobile ? "48px" : "52px", // Ensure minimum height
                   }}
                 >
                   <Form.Control
                     as="textarea"
-                    placeholder="Type your message here..."
+                    placeholder={
+                      isMobile ? "Type message..." : "Type your message here..."
+                    }
                     value={inputValue}
                     onChange={handleInputChange}
                     disabled={isLoading}
@@ -1194,17 +1242,27 @@ I have access to real product data and can help you find, buy, and track orders!
                       border: "none",
                       background: "transparent",
                       resize: "none",
-                      fontSize: "15px",
+                      fontSize: isMobile ? "14px" : "15px",
                       lineHeight: "1.4",
-                      padding: "12px 16px",
-                      maxHeight: "100px",
+                      padding: isMobile ? "10px 12px" : "12px 16px",
+                      maxHeight: isMobile ? "80px" : "100px",
                       minHeight: "20px",
                       outline: "none",
                       boxShadow: "none",
+                      flex: "1", // Take available space
                     }}
                     onFocus={(e) => {
                       e.target.style.outline = "none";
                       e.target.style.boxShadow = "none";
+                      // Scroll input into view on mobile
+                      if (isMobile) {
+                        setTimeout(() => {
+                          e.target.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                          });
+                        }, 300);
+                      }
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
@@ -1218,15 +1276,17 @@ I have access to real product data and can help you find, buy, and track orders!
                       // Auto-resize textarea
                       e.target.style.height = "auto";
                       e.target.style.height =
-                        Math.min(e.target.scrollHeight, 100) + "px";
+                        Math.min(e.target.scrollHeight, isMobile ? 80 : 100) +
+                        "px";
                     }}
                   />
                   <Button
                     type="submit"
                     disabled={isLoading || !inputValue.trim()}
                     style={{
-                      minWidth: "44px",
-                      height: "44px",
+                      minWidth: isMobile ? "40px" : "44px",
+                      width: isMobile ? "40px" : "44px",
+                      height: isMobile ? "40px" : "44px",
                       borderRadius: "50%",
                       background:
                         isLoading || !inputValue.trim()
@@ -1241,16 +1301,17 @@ I have access to real product data and can help you find, buy, and track orders!
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: "16px",
+                      fontSize: isMobile ? "14px" : "16px",
                       margin: "2px",
+                      flexShrink: 0, // Prevent shrinking
                     }}
                     onMouseEnter={(e) => {
-                      if (!isLoading && inputValue.trim()) {
+                      if (!isLoading && inputValue.trim() && !isMobile) {
                         e.target.style.transform = "scale(1.05)";
                       }
                     }}
                     onMouseLeave={(e) => {
-                      if (!isLoading && inputValue.trim()) {
+                      if (!isLoading && inputValue.trim() && !isMobile) {
                         e.target.style.transform = "scale(1)";
                       }
                     }}
@@ -1258,7 +1319,10 @@ I have access to real product data and can help you find, buy, and track orders!
                     {isLoading ? (
                       <div
                         className="spinner-border spinner-border-sm text-white"
-                        style={{ width: "16px", height: "16px" }}
+                        style={{
+                          width: isMobile ? "14px" : "16px",
+                          height: isMobile ? "14px" : "16px",
+                        }}
                       ></div>
                     ) : (
                       "🚀"
