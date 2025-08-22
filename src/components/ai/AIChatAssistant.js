@@ -475,6 +475,14 @@ I have access to real product data and can help you find, buy, and track orders!
           background: rgba(40, 167, 69, 0.5);
         }
 
+        /* Mobile safe area styles */
+        @media (max-width: 768px) {
+          .ai-chat-container {
+            max-height: calc(100vh - 200px);
+            max-width: calc(100vw - 24px);
+          }
+        }
+
         /* Remove focus outlines for better UX */
         .form-control:focus {
           outline: none !important;
@@ -548,8 +556,8 @@ I have access to real product data and can help you find, buy, and track orders!
       <style jsx>{`
         .ai-chat-button {
           position: fixed !important;
-          bottom: ${isMobile ? "100px" : "24px"} !important;
-          right: ${isMobile ? "16px" : "24px"} !important;
+          bottom: ${isMobile ? "30px" : "24px"} !important;
+          right: ${isMobile ? "20px" : "24px"} !important;
           width: ${isMobile ? "60px" : "72px"} !important;
           height: ${isMobile ? "60px" : "72px"} !important;
           border-radius: 50% !important;
@@ -600,16 +608,18 @@ I have access to real product data and can help you find, buy, and track orders!
       {/* Chat Interface */}
       {isOpen && (
         <Card
-          className="position-fixed d-flex flex-column"
+          className={`position-fixed d-flex flex-column ${
+            isMobile ? "ai-chat-container" : ""
+          }`}
           style={{
-            bottom: isMobile ? "70px" : "90px", // More space from bottom on mobile
-            right: isMobile ? "10px" : "20px",
-            left: isMobile ? "10px" : "auto",
-            top: isMobile ? "80px" : "auto", // Set top position on mobile for better control
+            bottom: isMobile ? "120px" : "90px", // More space from bottom on mobile
+            right: isMobile ? "12px" : "20px",
+            left: isMobile ? "12px" : "auto",
+            top: isMobile ? "120px" : "auto", // More space from top on mobile
             width: isMobile ? "auto" : "min(550px, 40vw)",
             maxWidth: isMobile ? "none" : "550px",
             height: isMobile ? "auto" : "600px", // Auto height on mobile, constrained by top/bottom
-            maxHeight: isMobile ? "calc(100vh - 160px)" : "600px", // Prevent overflow on mobile
+            maxHeight: isMobile ? "calc(100vh - 250px)" : "600px", // More conservative height on mobile
             zIndex: 1050,
             boxShadow:
               "0 25px 80px rgba(0,0,0,0.25), 0 10px 40px rgba(0,0,0,0.15)",
@@ -625,7 +635,8 @@ I have access to real product data and can help you find, buy, and track orders!
             style={{
               background: "linear-gradient(135deg, #f8f9fa, #ffffff)",
               borderBottom: "2px solid #e9ecef",
-              padding: "14px 20px",
+              padding: isMobile ? "12px 16px" : "14px 20px",
+              zIndex: 20, // Ensure header stays above content
             }}
           >
             {/* Header Row */}
@@ -864,6 +875,8 @@ I have access to real product data and can help you find, buy, and track orders!
                 background: "#ffffff",
                 minHeight: 0, // Critical for flex shrinking
                 maxHeight: "100%", // Ensure it uses all available space
+                zIndex: 15, // Below header and input, above content
+                position: "relative",
               }}
             >
               {messages.map((message, index) => (
@@ -1207,11 +1220,11 @@ I have access to real product data and can help you find, buy, and track orders!
                 background: "linear-gradient(to top, #f8f9fa, #ffffff)",
                 borderTop: "2px solid #e9ecef",
                 padding: isMobile
-                  ? "12px 16px 16px 16px"
+                  ? "12px 16px 20px 16px"
                   : "16px 20px 20px 20px",
                 boxShadow: "0 -4px 12px rgba(0,0,0,0.05)",
                 position: "relative",
-                zIndex: 10, // Ensure input stays above other elements
+                zIndex: 30, // Higher z-index to prevent overlapping with header
               }}
             >
               <Form onSubmit={handleSubmitMessage}>
@@ -1220,12 +1233,14 @@ I have access to real product data and can help you find, buy, and track orders!
                   style={{
                     background: "#ffffff",
                     borderRadius: isMobile ? "20px" : "24px",
-                    padding: isMobile ? "4px" : "6px",
+                    padding: isMobile ? "6px" : "6px",
                     border: "2px solid #e9ecef",
                     transition: "all 0.2s ease",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                     gap: isMobile ? "8px" : "12px",
-                    minHeight: isMobile ? "48px" : "52px", // Ensure minimum height
+                    minHeight: isMobile ? "50px" : "52px", // Ensure minimum height
+                    position: "relative",
+                    zIndex: 5, // Ensure it stays above other content
                   }}
                 >
                   <Form.Control
@@ -1284,9 +1299,9 @@ I have access to real product data and can help you find, buy, and track orders!
                     type="submit"
                     disabled={isLoading || !inputValue.trim()}
                     style={{
-                      minWidth: isMobile ? "40px" : "44px",
-                      width: isMobile ? "40px" : "44px",
-                      height: isMobile ? "40px" : "44px",
+                      minWidth: isMobile ? "42px" : "44px",
+                      width: isMobile ? "42px" : "44px",
+                      height: isMobile ? "42px" : "44px",
                       borderRadius: "50%",
                       background:
                         isLoading || !inputValue.trim()
@@ -1302,8 +1317,9 @@ I have access to real product data and can help you find, buy, and track orders!
                       alignItems: "center",
                       justifyContent: "center",
                       fontSize: isMobile ? "14px" : "16px",
-                      margin: "2px",
+                      margin: isMobile ? "1px" : "2px",
                       flexShrink: 0, // Prevent shrinking
+                      alignSelf: "center", // Center vertically within container
                     }}
                     onMouseEnter={(e) => {
                       if (!isLoading && inputValue.trim() && !isMobile) {
