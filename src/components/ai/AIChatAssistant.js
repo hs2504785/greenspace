@@ -55,6 +55,7 @@ I have access to real product data and can help you find, buy, and track orders!
 
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
+  const inputRef = useRef(null);
 
   // Check for mobile screen size
   useEffect(() => {
@@ -77,6 +78,33 @@ I have access to real product data and can help you find, buy, and track orders!
       return newMessages;
     });
   }, [isMobile]);
+
+  // Focus input when chat opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      // Delay focus slightly to ensure the chat is fully rendered
+      const timer = setTimeout(() => {
+        inputRef.current.focus();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  // Additional focus management for maintaining focus during conversation
+  useEffect(() => {
+    if (isOpen && !isLoading && inputRef.current) {
+      // Ensure focus is maintained when not loading
+      const timer = setTimeout(() => {
+        if (
+          document.activeElement !== inputRef.current &&
+          !document.activeElement.classList?.contains("btn")
+        ) {
+          inputRef.current.focus();
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, isLoading, messages.length]);
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -389,6 +417,16 @@ I have access to real product data and can help you find, buy, and track orders!
       ]);
     } finally {
       setIsLoading(false);
+
+      // Refocus input after AI response is complete
+      setTimeout(() => {
+        if (
+          inputRef.current &&
+          !document.activeElement.classList?.contains("form-control")
+        ) {
+          inputRef.current.focus();
+        }
+      }, 300);
     }
   };
 
@@ -420,6 +458,23 @@ I have access to real product data and can help you find, buy, and track orders!
       }
 
       setInputValue("");
+
+      // Refocus the input after sending message - multiple attempts for reliability
+      const refocusInput = () => {
+        if (
+          inputRef.current &&
+          !document.activeElement.classList?.contains("form-control")
+        ) {
+          inputRef.current.focus();
+        }
+      };
+
+      // Initial refocus
+      setTimeout(refocusInput, 200);
+      // Secondary refocus in case DOM updates interfere
+      setTimeout(refocusInput, 800);
+      // Final refocus after potential streaming updates
+      setTimeout(refocusInput, 2000);
     }
   };
 
@@ -429,6 +484,19 @@ I have access to real product data and can help you find, buy, and track orders!
     } else {
       sendMessage(action);
     }
+
+    // Refocus the input after quick action - multiple attempts for reliability
+    const refocusInput = () => {
+      if (
+        inputRef.current &&
+        !document.activeElement.classList?.contains("form-control")
+      ) {
+        inputRef.current.focus();
+      }
+    };
+
+    setTimeout(refocusInput, 200);
+    setTimeout(refocusInput, 800);
   };
 
   return (
@@ -1245,6 +1313,7 @@ I have access to real product data and can help you find, buy, and track orders!
                 >
                   <Form.Control
                     as="textarea"
+                    ref={inputRef}
                     placeholder={
                       isMobile ? "Type message..." : "Type your message here..."
                     }
@@ -1269,14 +1338,14 @@ I have access to real product data and can help you find, buy, and track orders!
                     onFocus={(e) => {
                       e.target.style.outline = "none";
                       e.target.style.boxShadow = "none";
-                      // Scroll input into view on mobile
-                      if (isMobile) {
+                      // Scroll input into view on mobile only if manually focused
+                      if (isMobile && document.activeElement === e.target) {
                         setTimeout(() => {
                           e.target.scrollIntoView({
                             behavior: "smooth",
-                            block: "center",
+                            block: "nearest",
                           });
-                        }, 300);
+                        }, 200);
                       }
                     }}
                     onKeyDown={(e) => {

@@ -307,6 +307,24 @@ Remember: Always use your tools when customers ask about products, orders, or ne
 
             const product = searchData.products[0];
 
+            // Check if product is in stock
+            const availableQuantity =
+              product.quantity || product.availableQuantity || 0;
+
+            if (availableQuantity <= 0) {
+              return {
+                success: false,
+                error: `❌ Sorry, ${product.name} is currently out of stock! (0 kg available)`,
+              };
+            }
+
+            if (availableQuantity < quantity) {
+              return {
+                success: false,
+                error: `⚠️ Limited stock for ${product.name}! Only ${availableQuantity} kg available, but you requested ${quantity} kg.`,
+              };
+            }
+
             // Calculate total amount
             const totalAmount = (parseFloat(product.price) * quantity).toFixed(
               2
@@ -534,6 +552,28 @@ Your order is confirmed and will be processed shortly!`,
             );
 
             if (product) {
+              // Check if product is in stock
+              const availableQuantity =
+                product.quantity || product.availableQuantity || 0;
+
+              if (availableQuantity <= 0) {
+                return new Response(
+                  `❌ **Sorry, ${product.name} is currently out of stock!**\n\n🔍 **Available quantity**: 0 kg\n📦 **Your request**: ${quantity} kg\n\n💡 **Suggestion**: Try checking our other fresh vegetables or come back later when we restock!`,
+                  {
+                    headers: { "Content-Type": "text/plain" },
+                  }
+                );
+              }
+
+              if (availableQuantity < quantity) {
+                return new Response(
+                  `⚠️ **Limited stock available for ${product.name}!**\n\n📦 **Available quantity**: ${availableQuantity} kg\n📦 **Your request**: ${quantity} kg\n\n💡 **Options**:\n- Order ${availableQuantity} kg instead\n- Try a different product\n- Come back when we restock!`,
+                  {
+                    headers: { "Content-Type": "text/plain" },
+                  }
+                );
+              }
+
               const totalAmount = (
                 parseFloat(product.price.replace("₹", "")) * quantity
               ).toFixed(2);
