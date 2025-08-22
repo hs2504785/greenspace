@@ -28,16 +28,32 @@ export default function Home() {
     }
   }, [showFreeOnly, filters.showFreeOnly, updateFilters]);
 
-  // Listen for order completion events to refresh product listings
+  // Listen for ANY order events to refresh product listings (AI + Manual)
   useEffect(() => {
-    const handleOrderCompleted = () => {
-      console.log("🔄 Order completed, refreshing vegetable listings...");
+    const handleOrderEvent = (eventType) => {
+      console.log(
+        `🔄 ${eventType} event received - refreshing vegetable listings...`
+      );
       refresh();
     };
 
+    const handleOrderCreated = () => handleOrderEvent("Order created");
+    const handleAIOrderCreated = () => handleOrderEvent("AI order created");
+    const handleOrderCompleted = () => handleOrderEvent("Order completed");
+
     if (typeof window !== "undefined") {
-      window.addEventListener("order-completed", handleOrderCompleted);
+      console.log(
+        "🎧 Setting up ALL order event listeners for vegetable refresh..."
+      );
+
+      // Listen for all possible order events
+      window.addEventListener("order-created", handleOrderCreated); // Manual & AI orders
+      window.addEventListener("ai-order-created", handleAIOrderCreated); // AI orders
+      window.addEventListener("order-completed", handleOrderCompleted); // Fallback
+
       return () => {
+        window.removeEventListener("order-created", handleOrderCreated);
+        window.removeEventListener("ai-order-created", handleAIOrderCreated);
         window.removeEventListener("order-completed", handleOrderCompleted);
       };
     }

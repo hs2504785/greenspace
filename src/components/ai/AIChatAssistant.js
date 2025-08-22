@@ -279,19 +279,44 @@ I have access to real product data and can help you find, buy, and track orders!
 
       console.log("✅ AI response complete:", aiResponse);
 
-      // Check if response contains order confirmation (from instant_order tool)
+      // Check if response contains order confirmation (multiple formats)
       if (
-        aiResponse.includes("Order Confirmed!") &&
-        aiResponse.includes("Track Your Order")
+        (aiResponse.includes("Order Confirmed!") ||
+          aiResponse.includes("Order Placed Successfully!") ||
+          aiResponse.includes("🎉 Order Placed Successfully!")) &&
+        (aiResponse.includes("Track Your Order") ||
+          aiResponse.includes("Order Details:") ||
+          aiResponse.includes("Order ID:"))
       ) {
+        console.log("🎉 ORDER CONFIRMATION DETECTED in AI response!");
+        console.log("📝 Response contains:", {
+          hasOrderConfirmed: aiResponse.includes("Order Confirmed!"),
+          hasOrderPlaced: aiResponse.includes("Order Placed Successfully!"),
+          hasEmojiOrder: aiResponse.includes("🎉 Order Placed Successfully!"),
+          hasTrackOrder: aiResponse.includes("Track Your Order"),
+          hasOrderDetails: aiResponse.includes("Order Details:"),
+          hasOrderId: aiResponse.includes("Order ID:"),
+        });
+
         // Show success toast
         toastService.success("Order placed successfully via AI!");
 
-        // Dispatch event to refresh orders lists
+        // Dispatch events to refresh orders lists AND vegetables list
         if (typeof window !== "undefined") {
+          console.log(
+            "🔄 Dispatching AI order events for inventory refresh..."
+          );
           window.dispatchEvent(new CustomEvent("ai-order-created"));
           window.dispatchEvent(new CustomEvent("order-created"));
+          console.log("✅ Events dispatched: ai-order-created, order-created");
         }
+      } else {
+        // Debug: Log if no order confirmation detected
+        console.log("ℹ️ No order confirmation detected in response");
+        console.log(
+          "📝 Response preview:",
+          aiResponse.substring(0, 200) + "..."
+        );
       }
 
       // Check if response mentions products and trigger product search
