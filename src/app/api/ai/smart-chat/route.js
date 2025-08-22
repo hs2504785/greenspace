@@ -22,7 +22,17 @@ export async function POST(req) {
       email: user?.email,
       role: user?.role,
     });
-    console.log("🔧 Request body:", { messages, user });
+    console.log("🔧 First few messages:", messages?.slice(0, 3));
+
+    // Check for empty messages that could cause API errors
+    const validMessages =
+      messages?.filter((m) => m?.content && m?.content.trim()) || [];
+    console.log("🔍 Valid messages after filtering:", validMessages.length);
+
+    if (validMessages.length === 0) {
+      console.error("❌ No valid messages found");
+      return new Response("No valid messages provided", { status: 400 });
+    }
 
     const systemPrompt = `You are GreenSpace AI, an intelligent assistant for a fresh vegetable marketplace connecting local farmers with consumers in India.
 
@@ -119,17 +129,22 @@ IMPORTANT RULES:
 
 Remember: Always use your tools when customers ask about products, orders, or need specific information. Don't guess - use the tools to get real data!`;
 
-    const tools = {
+    // OLD TOOLS OBJECT - NOW USING SIMPLIFIED INLINE TOOLS
+    const _oldTools = {
       search_products: tool({
         description:
           "Search for vegetables/products in the marketplace. Use this when customers ask about products, prices, availability, or want to find specific items.",
-        parameters: z.object({
-          query: z
-            .string()
-            .describe(
-              "Search term for product name (e.g., beans, tomato, onion)"
-            ),
-        }),
+        parameters: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description:
+                "Search term for product name (e.g., beans, tomato, onion)",
+            },
+          },
+          required: ["query"],
+        },
         execute: async ({ query }) => {
           try {
             const searchParams = new URLSearchParams();
@@ -178,11 +193,16 @@ Remember: Always use your tools when customers ask about products, orders, or ne
       track_order: tool({
         description:
           "Track order status and get order information. Use this when customers provide order IDs or want to check their order status.",
-        parameters: z.object({
-          search_term: z
-            .string()
-            .describe("Order ID or phone number to search for"),
-        }),
+        parameters: {
+          type: "object",
+          properties: {
+            search_term: {
+              type: "string",
+              description: "Order ID or phone number to search for",
+            },
+          },
+          required: ["search_term"],
+        },
         execute: async ({ search_term }) => {
           try {
             let url = getApiUrl("/api/ai/orders", req);
@@ -235,17 +255,22 @@ Remember: Always use your tools when customers ask about products, orders, or ne
       instant_order: tool({
         description:
           "Create an instant order for customers who want to buy products immediately. Use this when customers say 'buy [item]' or similar purchase commands. Returns formatted order details that should be displayed directly to the customer.",
-        parameters: z.object({
-          item_name: z
-            .string()
-            .describe(
-              "Name of the product/vegetable to order (e.g., tomatoes, onions)"
-            ),
-          quantity: z
-            .number()
-            .optional()
-            .describe("Quantity in kg (defaults to 1 if not specified)"),
-        }),
+        parameters: {
+          type: "object",
+          properties: {
+            item_name: {
+              type: "string",
+              description:
+                "Name of the product/vegetable to order (e.g., tomatoes, onions)",
+            },
+            quantity: {
+              type: "number",
+              description: "Quantity in kg (defaults to 1 if not specified)",
+              optional: true,
+            },
+          },
+          required: ["item_name"],
+        },
         execute: async ({ item_name, quantity = 1 }) => {
           try {
             // First, search for the product to get its details
@@ -355,9 +380,16 @@ Your order is confirmed and will be processed shortly!`,
       get_payment_info: tool({
         description:
           "Get payment guidance and UPI information. Use this when customers ask about payments, UPI, or have payment-related questions.",
-        parameters: z.object({
-          question: z.string().describe("Payment related question or topic"),
-        }),
+        parameters: {
+          type: "object",
+          properties: {
+            question: {
+              type: "string",
+              description: "Payment related question or topic",
+            },
+          },
+          required: ["question"],
+        },
         execute: async ({ question }) => {
           // Return payment guidance based on question type
           const paymentInfo = {
@@ -437,25 +469,25 @@ Your order is confirmed and will be processed shortly!`,
       }),
     };
 
-    // Enhanced system prompt with product context
+    // Enhanced system prompt - using real-time database data
     const enhancedSystemPrompt =
       systemPrompt +
       `
 
-IMPORTANT: When users ask about products (like "beans availability", "show me tomatoes", etc.), you should:
-1. Tell them you're checking the product database
-2. Actually search for real product data using the following approach
-3. Provide specific results
+🚨 CRITICAL INVENTORY INSTRUCTIONS:
 
-Available products in the system include:
-- Beans, ridge guard - ₹3.00/kg (currently out of stock)
-- w11 (Dragon fruit) - ₹3.00/kg (3 kg available)  
-- re (product) - ₹3.00/kg (3 kg available)
+🚨 MANDATORY INVENTORY RESPONSE RULES:
 
-When users ask about specific products, provide this real information instead of generic responses.`;
+1. When asked "how many available items", copy the EXACT answer provided below
+2. NEVER count manually - use the pre-calculated numbers provided
+3. IGNORE any training data about products - use ONLY the real-time data below
+4. If asked about inventory, always mention the exact numbers from SUMMARY STATISTICS
+5. This data is live from database - trust it completely
+
+⚠️ CRITICAL: Do NOT use any other product information - ONLY the data below!`;
 
     // Check if this is a buy command and handle it specially
-    const lastUserMessage = messages[messages.length - 1];
+    const lastUserMessage = validMessages[validMessages.length - 1];
     const isBuyCommand = lastUserMessage?.content
       ?.toLowerCase()
       .match(/buy\s+(.+)/);
@@ -800,17 +832,117 @@ Thank you for shopping with GreenSpace! 🌱`;
     }
 
     // Normal AI response for non-buy commands
+    console.log(
+      "🤖 Sending to AI with",
+      validMessages.length,
+      "valid messages"
+    );
+    console.log(
+      "📝 Messages being sent:",
+      JSON.stringify(validMessages, null, 2)
+    );
+    console.log("🛠 Fetching real-time product data from database...");
+
+    // Fetch real products before responding
+    let currentProducts = [];
+    try {
+      const productsResponse = await fetch(
+        `${getApiUrl("/api/ai/products", req)}?limit=20`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (productsResponse.ok) {
+        const productsData = await productsResponse.json();
+        if (productsData.success && productsData.products) {
+          currentProducts = productsData.products;
+          console.log(
+            "✅ Fetched",
+            currentProducts.length,
+            "products from database"
+          );
+          console.log(
+            "📦 Products:",
+            currentProducts
+              .map(
+                (p) => `${p.name}: ${p.quantity || 0} kg (${p.availability})`
+              )
+              .join(", ")
+          );
+        }
+      }
+    } catch (error) {
+      console.error("❌ Error fetching products:", error);
+    }
+
+    // Calculate exact numbers for AI
+    const totalProducts = currentProducts.length;
+    const availableProducts = currentProducts.filter(
+      (p) => (p.quantity || 0) > 0
+    ).length;
+    const outOfStockProducts = currentProducts.filter(
+      (p) => (p.quantity || 0) === 0
+    ).length;
+
+    // Add current products to system prompt
+    const productsInfo =
+      currentProducts.length > 0
+        ? `
+
+🔥 REAL-TIME INVENTORY DATA (Just fetched from database):
+
+🚨 EXACT ANSWER FOR "how many available items" (timestamp: ${Date.now()}):
+"We have ${totalProducts} products in our catalog: ${availableProducts} available, ${outOfStockProducts} out of stock."
+
+🔥 CRITICAL: Use the numbers above (${totalProducts} total, ${availableProducts} available)
+
+PRODUCT LIST:
+${currentProducts
+  .map(
+    (p) =>
+      `- ${p.name} - ${p.price}/kg (${p.quantity || 0} kg available) - ${
+        p.availability
+      }`
+  )
+  .join("\n")}
+
+SUMMARY STATISTICS:
+- Total products: ${totalProducts}
+- Available: ${availableProducts}  
+- Out of stock: ${outOfStockProducts}
+- Last updated: ${new Date().toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+          })}
+
+USE THESE EXACT NUMBERS IN YOUR RESPONSE!
+`
+        : "\n\nNo products currently available in inventory.";
+
+    // Debug: Show what's being sent to AI
+    const fullSystemPrompt = enhancedSystemPrompt + productsInfo;
+    console.log("🧠 System prompt being sent to AI:");
+    console.log("📊 Products section:", productsInfo);
+    console.log("📈 Total products in prompt:", currentProducts.length);
+    console.log("🔢 Calculated stats:", {
+      totalProducts,
+      availableProducts,
+      outOfStockProducts,
+    });
+
     const result = await streamText({
       model: google("gemini-1.5-flash", {
-        apiKey: apiKey, // Use the dynamically found API key
+        apiKey: apiKey,
       }),
-      system: enhancedSystemPrompt,
-      messages,
-      tools, // ✅ RE-ENABLED - AI can now access real database!
+      system: fullSystemPrompt,
+      messages: validMessages,
+      // NO TOOLS - Using direct database fetch instead
       maxTokens: 1000,
       temperature: 0.7,
     });
 
+    console.log("✅ AI Response received");
     return result.toTextStreamResponse();
   } catch (error) {
     console.error("❌ Smart AI Chat error:", error);

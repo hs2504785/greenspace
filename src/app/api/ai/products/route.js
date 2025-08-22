@@ -70,8 +70,8 @@ export async function GET(request) {
       dbQuery = dbQuery.lte("price", parseFloat(maxPrice));
     }
 
-    // Only show products with quantity > 0
-    dbQuery = dbQuery.gt("quantity", 0);
+    // Show ALL products (including out of stock) for AI inventory visibility
+    // dbQuery = dbQuery.gt("quantity", 0); // Removed filter
 
     // Order by created_at desc and limit
     dbQuery = dbQuery.order("created_at", { ascending: false }).limit(limit);

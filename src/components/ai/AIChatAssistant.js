@@ -235,6 +235,11 @@ I have access to real product data and can help you find, buy, and track orders!
             role: m.role,
             content: m.content,
           })),
+          parts: [
+            {
+              text: userMessage.content,
+            },
+          ],
           user: user || {},
         }),
       });
@@ -432,28 +437,19 @@ I have access to real product data and can help you find, buy, and track orders!
           box-shadow: none !important;
         }
 
-        /* Simple AI Chat Button - Desktop */
+        /* AI Chat Button Base Styles */
         .ai-chat-button {
-          border-radius: 50% !important;
-          transition: all 0.2s ease !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          background: white !important;
-          background-color: white !important;
           position: fixed !important;
-          z-index: 9999 !important;
           bottom: 24px !important;
           right: 24px !important;
           width: 72px !important;
           height: 72px !important;
-          /* Prevent distortion */
-          min-width: 72px !important;
-          min-height: 72px !important;
-          max-width: 72px !important;
-          max-height: 72px !important;
-          flex-shrink: 0 !important;
-          aspect-ratio: 1 !important;
+          border-radius: 50% !important;
+          z-index: 9999 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          transition: all 0.2s ease !important;
         }
 
         .ai-chat-button:hover {
@@ -476,96 +472,81 @@ I have access to real product data and can help you find, buy, and track orders!
           text-align: center;
         }
 
+        /* Mobile-specific styles */
         @media (max-width: 768px) {
           .ai-chat-icon {
-            font-size: 24px;
+            font-size: 20px !important;
           }
 
           .ai-chat-button {
-            /* CRITICAL: Force exact positioning */
-            position: fixed !important;
             bottom: 20px !important;
             right: 20px !important;
-            left: auto !important;
-            top: auto !important;
-
-            /* CRITICAL: Exact size to prevent ellipse distortion */
             width: 56px !important;
             height: 56px !important;
-            min-width: 56px !important;
-            min-height: 56px !important;
-            max-width: 56px !important;
-            max-height: 56px !important;
-
-            /* CRITICAL: Prevent any layout interference */
-            margin: 0 !important;
-            padding: 0 !important;
-            border-radius: 50% !important;
-
-            /* CRITICAL: Maximum visibility */
-            z-index: 999999 !important;
-
-            /* CRITICAL: NO transforms that cause ellipse */
-            transform: none !important;
-            -webkit-transform: none !important;
-
-            /* CRITICAL: Maintain perfect circle */
-            aspect-ratio: 1 / 1 !important;
-            flex-shrink: 0 !important;
-            flex-grow: 0 !important;
-
-            /* Visual improvements */
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15),
-              0 0 0 1px rgba(40, 167, 69, 0.1) !important;
-            display: flex !important;
-          }
-        }
-
-        /* Additional safeguards against layout issues */
-        .ai-chat-button * {
-          pointer-events: none !important;
-        }
-
-        .ai-chat-button {
-          pointer-events: auto !important;
-          overflow: hidden !important;
-        }
-
-        /* Ensure button always stays circular on mobile */
-        @media (max-width: 768px) {
-          .ai-chat-button,
-          .ai-chat-button:hover,
-          .ai-chat-button:focus,
-          .ai-chat-button:active {
-            border-radius: 50% !important;
-            width: 56px !important;
-            height: 56px !important;
-            transform: none !important;
-            -webkit-transform: none !important;
           }
         }
       `}</style>
       {/* Floating Chat Button */}
-      <Button
-        variant="outline-success"
-        className="ai-chat-button position-fixed d-flex align-items-center justify-content-center"
-        style={{
-          // Minimal inline styles - let CSS handle everything
-          border: "2px solid #28a745",
-          background: "white",
-          backgroundColor: "white",
-          color: "#28a745",
-          ...(isMobile
-            ? {}
-            : {
-                boxShadow: "0 4px 12px rgba(40, 167, 69, 0.4)",
-              }),
-        }}
+      <button
+        type="button"
+        className="btn btn-outline-success ai-chat-button"
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? "Close chat" : "Open chat"}
       >
         <span className="ai-chat-icon">{isOpen ? "✕" : "✨"}</span>
-      </Button>
+      </button>
+
+      <style jsx>{`
+        .ai-chat-button {
+          position: fixed !important;
+          bottom: 24px !important;
+          right: 24px !important;
+          width: 72px !important;
+          height: 72px !important;
+          border-radius: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          z-index: 9999 !important;
+          border: 2px solid #28a745 !important;
+          background: white !important;
+          color: #28a745 !important;
+          box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4) !important;
+          transition: all 0.3s ease !important;
+          transform-origin: center !important;
+        }
+
+        .ai-chat-button:hover {
+          transform: scale(1.05) !important;
+          background: #28a745 !important;
+          color: white !important;
+        }
+
+        .ai-chat-icon {
+          font-size: 28px;
+          line-height: 1;
+          transition: transform 0.3s ease;
+          display: inline-block;
+        }
+
+        /* Rotate X icon when chat is open */
+        .ai-chat-button[aria-label="Close chat"] .ai-chat-icon {
+          transform: rotate(180deg);
+        }
+
+        @media (max-width: 768px) {
+          .ai-chat-button {
+            width: 56px !important;
+            height: 56px !important;
+            bottom: 20px !important;
+            right: 20px !important;
+          }
+
+          .ai-chat-icon {
+            font-size: 24px;
+          }
+        }
+      `}</style>
 
       {/* Chat Interface */}
       {isOpen && (

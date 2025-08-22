@@ -39,10 +39,8 @@ const MainLayout = ({ children }) => {
       <main className="main-content mt-4">{children}</main>
       <Cart />
 
-      {/* AI Chat Assistant - Only show if enabled */}
-      {process.env.NEXT_PUBLIC_AI_CHAT_ENABLED === "true" && (
-        <AIChatAssistant user={session?.user} />
-      )}
+      {/* AI Chat Assistant - Always enabled */}
+      <AIChatAssistant user={session?.user} />
     </div>
   );
 };
