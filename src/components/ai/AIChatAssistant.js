@@ -21,17 +21,10 @@ export default function AIChatAssistant({ user }) {
     id: "welcome",
     role: "assistant",
     content: mobile
-      ? `🌱 **Hello! I'm your GreenSpace AI assistant!**
-
-I can help you with:
-- 🥬 Finding vegetables & prices
-- 💳 Payment help (UPI, GPay, etc)  
-- 📦 Order tracking
-- 🌱 Farming tips
-- 🛒 Shopping assistance
+      ? `🌱 **Hello! I'm your AI assistant!**
 
 **What would you like to know?**`
-      : `🌱 **Hello! I'm your GreenSpace AI assistant!**
+      : `🌱 **Hello! I'm your AI assistant!**
 
 I can help you with:
 
