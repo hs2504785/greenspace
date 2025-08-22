@@ -52,6 +52,10 @@ export default function ProfileDropdown({ user }) {
           <i className="ti ti-bell me-2"></i>
           Notifications
         </Dropdown.Item>
+        <Dropdown.Item as={Link} href="/my-prebookings">
+          <i className="ti ti-calendar-plus me-2"></i>
+          My Pre-Bookings
+        </Dropdown.Item>
         {!loading && (isSeller || isAdmin) && (
           <>
             <Dropdown.Item as={Link} href="/products-management">
@@ -65,6 +69,10 @@ export default function ProfileDropdown({ user }) {
             <Dropdown.Item as={Link} href="/payment-verification">
               <i className="ti ti-credit-card me-2"></i>
               Payment Verification
+            </Dropdown.Item>
+            <Dropdown.Item as={Link} href="/prebooking-dashboard">
+              <i className="ti ti-calendar-clock me-2"></i>
+              Pre-Booking Dashboard
             </Dropdown.Item>
           </>
         )}

@@ -107,6 +107,7 @@ export default function VegetableCard({
   location,
   quantity,
   unit = "kg", // default unit is kg
+  category = "Vegetable",
 }) {
   const [imageError, setImageError] = useState(false);
   const { addToCart, items, updateQuantity, removeFromCart } = useCart();
@@ -313,6 +314,7 @@ export default function VegetableCard({
         <div>
           {isOutOfStock ? (
             <Button variant="outline-danger" disabled className="w-100">
+              <i className="ti-package-off me-2"></i>
               Out of Stock
             </Button>
           ) : cartItem ? (

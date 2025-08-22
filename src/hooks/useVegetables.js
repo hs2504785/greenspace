@@ -26,12 +26,27 @@ export function useVegetables(initialFilters = {}) {
 
       let data = await VegetableService.getAllVegetables();
 
-      // Apply filters to data
+      // IMPORTANT: Always exclude prebooking products from main vegetables listing
+      // Only show regular products unless specifically filtering for prebooking
+      if (!filters.productType || filters.productType === "all") {
+        data = data.filter((v) => {
+          const productType = v.product_type || "regular";
+          return productType === "regular";
+        });
+      } else if (filters.productType && filters.productType !== "all") {
+        data = data.filter((v) => {
+          const productType = v.product_type || "regular";
+          return productType === filters.productType;
+        });
+      }
+
+      // Apply other filters to data
       if (filters.category && filters.category !== "All") {
         data = data.filter(
           (v) => v.category.toLowerCase() === filters.category.toLowerCase()
         );
       }
+
       if (filters.location) {
         data = data.filter((v) =>
           v.location.toLowerCase().includes(filters.location.toLowerCase())
@@ -44,7 +59,11 @@ export function useVegetables(initialFilters = {}) {
             v.name.toLowerCase().includes(query) ||
             v.description.toLowerCase().includes(query) ||
             v.category.toLowerCase().includes(query) ||
-            v.location.toLowerCase().includes(query)
+            v.location.toLowerCase().includes(query) ||
+            (v.harvest_season &&
+              v.harvest_season.toLowerCase().includes(query)) ||
+            (v.prebooking_notes &&
+              v.prebooking_notes.toLowerCase().includes(query))
         );
       }
       if (filters.showFreeOnly) {

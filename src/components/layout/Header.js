@@ -95,32 +95,54 @@ export default function Header() {
 
           {/* Filter and Cart buttons - always visible, appears before profile on desktop */}
           <div className="d-flex align-items-center ms-auto order-lg-3">
-            {/* Filter button - only show on vegetables listing pages */}
-            {(pathname === "/" || pathname.startsWith("/?")) && (
-              <OverlayTrigger
-                placement="bottom"
-                overlay={
-                  <Tooltip id="filter-tooltip">
-                    Filter & Sort vegetables
-                  </Tooltip>
+            {/* Filter button - context-aware for different pages */}
+            {/* To add filter support for new pages: 
+                1. Add pathname condition below
+                2. Add tooltip text and event name in getFilterConfig()
+                3. Add event listener in the target page component */}
+            {(() => {
+              const getFilterConfig = () => {
+                if (pathname === "/prebooking-marketplace") {
+                  return {
+                    tooltip: "Filter pre-booking products",
+                    event: "toggle-prebooking-filters",
+                  };
+                } else if (pathname === "/" || pathname.startsWith("/?")) {
+                  return {
+                    tooltip: "Filter & Sort vegetables",
+                    event: "toggle-vegetable-filters",
+                  };
                 }
-              >
-                <div
-                  className="text-decoration-none me-3 d-flex align-items-center cursor-pointer"
-                  onClick={() =>
-                    window.dispatchEvent(
-                      new CustomEvent("toggle-vegetable-filters")
-                    )
+                return null;
+              };
+
+              const filterConfig = getFilterConfig();
+              if (!filterConfig) return null;
+
+              return (
+                <OverlayTrigger
+                  placement="bottom"
+                  overlay={
+                    <Tooltip id="filter-tooltip">
+                      {filterConfig.tooltip}
+                    </Tooltip>
                   }
-                  style={{ cursor: "pointer" }}
                 >
-                  <i
-                    className="ti-filter text-success"
-                    style={{ fontSize: "1.4rem" }}
-                  ></i>
-                </div>
-              </OverlayTrigger>
-            )}
+                  <div
+                    className="text-decoration-none me-3 d-flex align-items-center cursor-pointer"
+                    onClick={() =>
+                      window.dispatchEvent(new CustomEvent(filterConfig.event))
+                    }
+                    style={{ cursor: "pointer" }}
+                  >
+                    <i
+                      className="ti-filter text-success"
+                      style={{ fontSize: "1.4rem" }}
+                    ></i>
+                  </div>
+                </OverlayTrigger>
+              );
+            })()}
 
             {/* Cart button */}
             <OverlayTrigger
@@ -230,6 +252,15 @@ export default function Header() {
               >
                 Fresh Vegetables
               </Nav.Link>
+              <Nav.Link
+                as={Link}
+                href="/prebooking-marketplace"
+                className={`prebooking-link ${
+                  isActive("/prebooking-marketplace") ? "active-nav-item" : ""
+                }`}
+              >
+                🌱 Pre-Booking
+              </Nav.Link>
               {session && (
                 <>
                   <Nav.Link
@@ -303,6 +334,17 @@ export default function Header() {
             >
               <i className="ti-shopping-cart me-2"></i>
               Fresh Vegetables
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              href="/prebooking-marketplace"
+              className={`mobile-nav-link ${
+                isActive("/prebooking-marketplace") ? "active-nav-item" : ""
+              }`}
+              onClick={handleLinkClick}
+            >
+              <i className="ti-calendar-plus me-2"></i>
+              Pre-Booking
             </Nav.Link>
             {session && (
               <>

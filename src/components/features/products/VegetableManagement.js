@@ -18,11 +18,13 @@ import SearchInput from "@/components/common/SearchInput";
 import ClearFiltersButton from "@/components/common/ClearFiltersButton";
 import VegetableForm from "./VegetableForm";
 import DeleteConfirmationModal from "@/components/common/DeleteConfirmationModal";
+import { useRouter } from "next/navigation";
 
 // Helper function removed - using direct logic for better debugging
 
 export default function VegetableManagement() {
   const { data: session } = useSession();
+  const router = useRouter();
   const [vegetables, setVegetables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -187,7 +189,17 @@ export default function VegetableManagement() {
             </div>
           </Col>
           <Col xs={12} lg={4}>
-            <div className="d-grid d-lg-flex justify-content-lg-end">
+            <div className="d-grid d-lg-flex justify-content-lg-end gap-2">
+              <Button
+                variant="outline-success"
+                onClick={() => router.push("/add-prebooking-product")}
+                className="px-3 py-2 fw-semibold shadow-sm"
+                title="Create advance order products"
+              >
+                <i className="ti ti-calendar-plus me-2"></i>
+                <span className="d-none d-md-inline">🌱 Pre-booking</span>
+                <span className="d-md-none">🌱 Pre-book</span>
+              </Button>
               <Button
                 variant="success"
                 onClick={() => setShowForm(true)}

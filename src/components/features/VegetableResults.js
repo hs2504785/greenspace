@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { Row, Col } from "react-bootstrap";
-import VegetableCard from "./VegetableCard";
+import VegetableProductCard from "./VegetableProductCard";
 import VegetableResultsLoader from "./VegetableResultsLoader";
 import EmptyState from "@/components/common/EmptyState";
 
@@ -53,7 +53,7 @@ const VegetableResults = memo(function VegetableResults({
     <Row className="g-4 pb-4">
       {vegetables.map((vegetable) => (
         <Col key={vegetable.id} sm={6} lg={4} xl={3}>
-          <VegetableCard {...vegetable} />
+          <VegetableProductCard {...vegetable} />
         </Col>
       ))}
     </Row>

@@ -212,17 +212,27 @@ class VegetableService extends ApiBaseService {
       }
       console.log("✅ Step 2: Supabase client available");
 
-      // Validate required fields
+      // Validate required fields - different for regular vs prebooking products
       console.log("🔍 Step 3: Validating required fields...");
-      const requiredFields = [
+      const isPreBookingProduct = vegetableData.product_type === "prebooking";
+
+      let requiredFields = [
         "name",
         "price",
-        "quantity",
         "category",
         "location",
         "source_type",
         "owner_id",
       ];
+
+      if (isPreBookingProduct) {
+        // For prebooking products, quantity can be 0 and we need estimated_available_date
+        requiredFields.push("estimated_available_date");
+        // Remove quantity from required for prebooking products
+      } else {
+        // For regular products, quantity is required
+        requiredFields.push("quantity");
+      }
 
       console.log("📋 Required fields:", requiredFields);
       console.log("📋 Received data keys:", Object.keys(vegetableData));
@@ -256,20 +266,29 @@ class VegetableService extends ApiBaseService {
         throw new Error("Price must be a number and cannot be negative");
       }
 
-      console.log("Quantity validation:", {
-        quantity: vegetableData.quantity,
-        type: typeof vegetableData.quantity,
-        isNumber: typeof vegetableData.quantity === "number",
-        isPositive: vegetableData.quantity > 0,
-      });
+      // Quantity validation - different for prebooking vs regular products
+      if (!isPreBookingProduct) {
+        console.log("Quantity validation:", {
+          quantity: vegetableData.quantity,
+          type: typeof vegetableData.quantity,
+          isNumber: typeof vegetableData.quantity === "number",
+          isPositive: vegetableData.quantity > 0,
+        });
 
-      if (
-        typeof vegetableData.quantity !== "number" ||
-        vegetableData.quantity <= 0
-      ) {
-        console.error("❌ Invalid quantity:", vegetableData.quantity);
-        throw new Error("Quantity must be a positive number");
+        if (
+          typeof vegetableData.quantity !== "number" ||
+          vegetableData.quantity <= 0
+        ) {
+          console.error("❌ Invalid quantity:", vegetableData.quantity);
+          throw new Error("Quantity must be a positive number");
+        }
+      } else {
+        // For prebooking products, set quantity to 0 if not provided
+        if (!vegetableData.quantity) {
+          vegetableData.quantity = 0;
+        }
       }
+
       console.log("✅ Step 6: Data type validation passed");
 
       // Log the request
