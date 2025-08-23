@@ -10,6 +10,7 @@ import toastService from "@/utils/toastService";
 
 export default function AIChatAssistant({ user }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [inputValue, setInputValue] = useState("");
@@ -604,15 +605,17 @@ I have access to real product data and can help you find, buy, and track orders!
           }
         }
       `}</style>
-      {/* Floating Chat Button */}
-      <button
-        type="button"
-        className="btn btn-outline-success ai-chat-button"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label={isOpen ? "Close chat" : "Open chat"}
-      >
-        <span className="ai-chat-icon">{isOpen ? "✕" : "✨"}</span>
-      </button>
+      {/* Floating Chat Button - Hide on mobile when chat is open */}
+      {!(isMobile && isOpen) && (
+        <button
+          type="button"
+          className="btn btn-outline-success ai-chat-button"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? "Close chat" : "Open chat"}
+        >
+          <span className="ai-chat-icon">{isOpen ? "✕" : "✨"}</span>
+        </button>
+      )}
 
       <style jsx>{`
         .ai-chat-button {
@@ -679,8 +682,12 @@ I have access to real product data and can help you find, buy, and track orders!
             top: isMobile ? "120px" : "auto", // More space from top on mobile
             width: isMobile ? "auto" : "min(550px, 40vw)",
             maxWidth: isMobile ? "none" : "550px",
-            height: isMobile ? "auto" : "600px", // Auto height on mobile, constrained by top/bottom
-            maxHeight: isMobile ? "calc(100vh - 250px)" : "600px", // More conservative height on mobile
+            height: isMinimized ? "auto" : isMobile ? "auto" : "600px", // Auto height when minimized or on mobile, constrained by top/bottom
+            maxHeight: isMinimized
+              ? "120px"
+              : isMobile
+              ? "calc(100vh - 250px)"
+              : "600px", // Smaller max height when minimized
             zIndex: 1050,
             boxShadow:
               "0 25px 80px rgba(0,0,0,0.25), 0 10px 40px rgba(0,0,0,0.15)",
@@ -781,6 +788,41 @@ I have access to real product data and can help you find, buy, and track orders!
                   }}
                 >
                   💡
+                </Button>
+
+                {/* Minimize Button */}
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="p-0"
+                  onClick={() => setIsMinimized(!isMinimized)}
+                  style={{
+                    color: "#6c757d",
+                    fontSize: isMobile ? "16px" : "18px",
+                    textDecoration: "none",
+                    transition: "all 0.2s ease",
+                    width: isMobile ? "28px" : "32px",
+                    height: isMobile ? "28px" : "32px",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minWidth: isMobile ? "28px" : "32px", // Prevent shrinking
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isMobile) {
+                      e.target.style.backgroundColor = "#e9ecef";
+                      e.target.style.color = "#495057";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isMobile) {
+                      e.target.style.backgroundColor = "transparent";
+                      e.target.style.color = "#6c757d";
+                    }
+                  }}
+                >
+                  {isMinimized ? "📤" : "📥"}
                 </Button>
 
                 {/* Close Button */}
@@ -899,86 +941,377 @@ I have access to real product data and can help you find, buy, and track orders!
             )}
           </div>
 
-          <div
-            className="d-flex flex-column"
-            style={{
-              flex: 1,
-              minHeight: 0,
-              height: "100%",
-            }}
-          >
-            {/* Error Messages */}
-            {error && (
-              <Alert
-                variant="danger"
-                className="m-3 mb-0 flex-shrink-0"
-                style={{
-                  backgroundColor: "#fff2f0",
-                  borderColor: "#ffb3b3",
-                  color: "#d9534f",
-                  borderRadius: "12px",
-                  fontSize: "14px",
-                }}
-              >
-                <div className="d-flex align-items-center">
-                  <i className="ti-alert-triangle me-2"></i>
-                  <span>AI temporarily unavailable: {error}</span>
-                </div>
-              </Alert>
-            )}
-
-            {/* Messages */}
+          {/* Minimized state - only show when minimized */}
+          {isMinimized ? (
             <div
-              ref={messagesContainerRef}
-              className="flex-grow-1 overflow-auto px-3 py-3 messages-container"
+              className="d-flex align-items-center justify-content-center"
               style={{
-                scrollBehavior: "smooth",
-                background: "#ffffff",
-                minHeight: 0, // Critical for flex shrinking
-                maxHeight: "100%", // Ensure it uses all available space
-                zIndex: 15, // Below header and input, above content
-                position: "relative",
+                padding: isMobile ? "8px 16px" : "12px 20px",
+                background: "linear-gradient(135deg, #f8f9fa, #ffffff)",
+                borderTop: "2px solid #e9ecef",
               }}
             >
-              {messages.map((message, index) => (
-                <div
-                  key={message.id}
-                  className={`mb-2 d-flex ${
-                    message.role === "user"
-                      ? "justify-content-end"
-                      : "justify-content-start"
-                  }`}
+              <span
+                className="text-muted"
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "500",
+                }}
+              >
+                Chat minimized - Click 📤 to expand
+              </span>
+            </div>
+          ) : (
+            <div
+              className="d-flex flex-column"
+              style={{
+                flex: 1,
+                minHeight: 0,
+                height: "100%",
+              }}
+            >
+              {/* Error Messages */}
+              {error && (
+                <Alert
+                  variant="danger"
+                  className="m-3 mb-0 flex-shrink-0"
                   style={{
-                    animation: `fadeIn 0.3s ease-out ${index * 0.1}s both`,
+                    backgroundColor: "#fff2f0",
+                    borderColor: "#ffb3b3",
+                    color: "#d9534f",
+                    borderRadius: "12px",
+                    fontSize: "14px",
                   }}
                 >
+                  <div className="d-flex align-items-center">
+                    <i className="ti-alert-triangle me-2"></i>
+                    <span>AI temporarily unavailable: {error}</span>
+                  </div>
+                </Alert>
+              )}
+
+              {/* Messages */}
+              <div
+                ref={messagesContainerRef}
+                className="flex-grow-1 overflow-auto px-3 py-3 messages-container"
+                style={{
+                  scrollBehavior: "smooth",
+                  background: "#ffffff",
+                  minHeight: 0, // Critical for flex shrinking
+                  maxHeight: "100%", // Ensure it uses all available space
+                  zIndex: 15, // Below header and input, above content
+                  position: "relative",
+                }}
+              >
+                {messages.map((message, index) => (
                   <div
-                    className={`position-relative ${
-                      message.role === "user" ? "text-white" : ""
+                    key={message.id}
+                    className={`mb-2 d-flex ${
+                      message.role === "user"
+                        ? "justify-content-end"
+                        : "justify-content-start"
                     }`}
                     style={{
-                      maxWidth: "96%", // Increased even more to use maximum space
-                      background:
-                        message.role === "user"
-                          ? "linear-gradient(135deg, #28a745, #20c997)"
-                          : "#ffffff",
-                      borderRadius:
-                        message.role === "user"
-                          ? "18px 18px 4px 18px"
-                          : "4px 18px 18px 18px",
-                      boxShadow:
-                        message.role === "user"
-                          ? "0 1px 4px rgba(40, 167, 69, 0.15)" // Much lighter shadow
-                          : "0 1px 3px rgba(0, 0, 0, 0.05)", // Very light shadow
-                      border:
-                        message.role === "assistant"
-                          ? "1px solid #f0f0f0"
-                          : "none",
-                      padding: "14px 18px", // Slightly reduced padding for more content space
+                      animation: `fadeIn 0.3s ease-out ${index * 0.1}s both`,
                     }}
                   >
-                    {/* Small AI indicator for assistant messages */}
-                    {message.role === "assistant" && (
+                    <div
+                      className={`position-relative ${
+                        message.role === "user" ? "text-white" : ""
+                      }`}
+                      style={{
+                        maxWidth: "96%", // Increased even more to use maximum space
+                        background:
+                          message.role === "user"
+                            ? "linear-gradient(135deg, #28a745, #20c997)"
+                            : "#ffffff",
+                        borderRadius:
+                          message.role === "user"
+                            ? "18px 18px 4px 18px"
+                            : "4px 18px 18px 18px",
+                        boxShadow:
+                          message.role === "user"
+                            ? "0 1px 4px rgba(40, 167, 69, 0.15)" // Much lighter shadow
+                            : "0 1px 3px rgba(0, 0, 0, 0.05)", // Very light shadow
+                        border:
+                          message.role === "assistant"
+                            ? "1px solid #f0f0f0"
+                            : "none",
+                        padding: "14px 18px", // Slightly reduced padding for more content space
+                      }}
+                    >
+                      {/* Small AI indicator for assistant messages */}
+                      {message.role === "assistant" && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "-6px",
+                            left: "-6px",
+                            width: "18px",
+                            height: "18px",
+                            backgroundColor: "#28a745",
+                            borderRadius: "50%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "10px",
+                            boxShadow: "0 2px 4px rgba(40, 167, 69, 0.3)",
+                            color: "#ffffff",
+                          }}
+                        >
+                          ✨
+                        </div>
+                      )}
+
+                      <div
+                        style={{
+                          fontSize: "15px",
+                          lineHeight: "1.5",
+                          color:
+                            message.role === "user" ? "#ffffff" : "#1a1a1a",
+                          fontWeight: message.role === "user" ? "500" : "400",
+                        }}
+                      >
+                        {message.role === "assistant" ? (
+                          <ReactMarkdown
+                            components={{
+                              p: ({ children }) => (
+                                <p style={{ margin: "0 0 8px 0" }}>
+                                  {children}
+                                </p>
+                              ),
+                              ul: ({ children }) => (
+                                <ul
+                                  style={{
+                                    margin: "8px 0",
+                                    paddingLeft: "0px",
+                                    listStyle: "none",
+                                  }}
+                                >
+                                  {children}
+                                </ul>
+                              ),
+                              ol: ({ children }) => (
+                                <ol
+                                  style={{
+                                    margin: "8px 0",
+                                    paddingLeft: "20px",
+                                  }}
+                                >
+                                  {children}
+                                </ol>
+                              ),
+                              li: ({ children }) => (
+                                <li style={{ margin: "2px 0" }}>{children}</li>
+                              ),
+                              strong: ({ children }) => (
+                                <strong
+                                  style={{
+                                    fontWeight: "600",
+                                    color: "#2d5a3d",
+                                  }}
+                                >
+                                  {children}
+                                </strong>
+                              ),
+                              em: ({ children }) => (
+                                <em
+                                  style={{
+                                    fontStyle: "italic",
+                                    color: "#5a6c57",
+                                  }}
+                                >
+                                  {children}
+                                </em>
+                              ),
+                              code: ({ children }) => (
+                                <code
+                                  style={{
+                                    backgroundColor: "#f8f9fa",
+                                    padding: "2px 4px",
+                                    borderRadius: "4px",
+                                    fontSize: "13px",
+                                    border: "1px solid #e9ecef",
+                                  }}
+                                >
+                                  {children}
+                                </code>
+                              ),
+                              h1: ({ children }) => (
+                                <h1
+                                  style={{
+                                    fontSize: "18px",
+                                    fontWeight: "600",
+                                    margin: "12px 0 8px 0",
+                                    color: "#2d5a3d",
+                                  }}
+                                >
+                                  {children}
+                                </h1>
+                              ),
+                              h2: ({ children }) => (
+                                <h2
+                                  style={{
+                                    fontSize: "16px",
+                                    fontWeight: "600",
+                                    margin: "10px 0 6px 0",
+                                    color: "#2d5a3d",
+                                  }}
+                                >
+                                  {children}
+                                </h2>
+                              ),
+                              h3: ({ children }) => (
+                                <h3
+                                  style={{
+                                    fontSize: "15px",
+                                    fontWeight: "600",
+                                    margin: "8px 0 4px 0",
+                                    color: "#2d5a3d",
+                                  }}
+                                >
+                                  {children}
+                                </h3>
+                              ),
+                              a: ({ href, children }) => (
+                                <a
+                                  href={href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    color: "#007bff",
+                                    textDecoration: "underline",
+                                    fontWeight: "500",
+                                    cursor: "pointer",
+                                  }}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    if (
+                                      href &&
+                                      href.startsWith(
+                                        "http://localhost:3000/orders/"
+                                      )
+                                    ) {
+                                      window.open(href, "_blank");
+                                    }
+                                  }}
+                                >
+                                  {children}
+                                </a>
+                              ),
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        ) : (
+                          <div style={{ whiteSpace: "pre-wrap" }}>
+                            {message.content}
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        className={`text-end mt-2 ${
+                          message.role === "user" ? "text-white" : "text-muted"
+                        }`}
+                        style={{
+                          opacity: 0.7,
+                          fontSize: "11px",
+                        }}
+                      >
+                        {new Date().toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <div ref={messagesEndRef} />
+
+                {/* Interactive Product Results */}
+                {productResults.length > 0 && (
+                  <div className="mb-3">
+                    {productResults.map((product) => (
+                      <InteractiveProductCard
+                        key={product.id}
+                        product={product}
+                        onAddToCart={handleAddToCart}
+                        onBuyNow={handleBuyNow}
+                        onViewDetails={(product) => {
+                          const detailMessage = {
+                            id: Date.now().toString(),
+                            role: "assistant",
+                            content: `**${product.name}** Details:\n\n📍 Seller: ${product.seller?.name}\n💰 Price: ${product.price}/kg\n📦 Available: ${product.quantity}kg\n📝 ${product.description}\n\nWould you like to add this to cart or buy now?`,
+                            type: "text",
+                          };
+                          setMessages((prev) => [...prev, detailMessage]);
+                        }}
+                      />
+                    ))}
+                    <div className="text-center">
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={() => setProductResults([])}
+                        style={{ fontSize: "12px", padding: "4px 12px" }}
+                      >
+                        Hide Products
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Order Tracking */}
+                {orderTracking && (
+                  <ChatOrderTracker
+                    order={orderTracking}
+                    onContactSeller={(seller) => {
+                      window.open(
+                        `https://wa.me/${seller.whatsapp?.replace(/\D/g, "")}`,
+                        "_blank"
+                      );
+                    }}
+                    onTrackAnother={() => {
+                      setOrderTracking(null);
+                      const trackMessage = {
+                        id: Date.now().toString(),
+                        role: "assistant",
+                        content: "Please provide another order ID to track:",
+                        type: "text",
+                      };
+                      setMessages((prev) => [...prev, trackMessage]);
+                    }}
+                    onViewPayment={(order) => {
+                      const paymentMessage = {
+                        id: Date.now().toString(),
+                        role: "assistant",
+                        content: `💳 **Payment for Order ${order.id.slice(
+                          -8
+                        )}**\n\nTotal: ₹${
+                          order.total_amount
+                        }\n\nUPI QR code will be generated after order confirmation.\n\nPayment methods:\n✅ GPay, PhonePe, Paytm\n✅ Any UPI app\n✅ Scan QR and pay`,
+                        type: "text",
+                      };
+                      setMessages((prev) => [...prev, paymentMessage]);
+                    }}
+                  />
+                )}
+
+                {isLoading && (
+                  <div className="d-flex justify-content-start mb-2">
+                    <div
+                      className="position-relative"
+                      style={{
+                        maxWidth: "96%",
+                        background: "#ffffff",
+                        borderRadius: "4px 18px 18px 18px",
+                        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+                        border: "1px solid #f0f0f0",
+                        padding: "14px 18px",
+                      }}
+                    >
+                      {/* Small AI indicator */}
                       <div
                         style={{
                           position: "absolute",
@@ -998,418 +1331,160 @@ I have access to real product data and can help you find, buy, and track orders!
                       >
                         ✨
                       </div>
-                    )}
 
-                    <div
-                      style={{
-                        fontSize: "15px",
-                        lineHeight: "1.5",
-                        color: message.role === "user" ? "#ffffff" : "#1a1a1a",
-                        fontWeight: message.role === "user" ? "500" : "400",
-                      }}
-                    >
-                      {message.role === "assistant" ? (
-                        <ReactMarkdown
-                          components={{
-                            p: ({ children }) => (
-                              <p style={{ margin: "0 0 8px 0" }}>{children}</p>
-                            ),
-                            ul: ({ children }) => (
-                              <ul
-                                style={{
-                                  margin: "8px 0",
-                                  paddingLeft: "0px",
-                                  listStyle: "none",
-                                }}
-                              >
-                                {children}
-                              </ul>
-                            ),
-                            ol: ({ children }) => (
-                              <ol
-                                style={{ margin: "8px 0", paddingLeft: "20px" }}
-                              >
-                                {children}
-                              </ol>
-                            ),
-                            li: ({ children }) => (
-                              <li style={{ margin: "2px 0" }}>{children}</li>
-                            ),
-                            strong: ({ children }) => (
-                              <strong
-                                style={{ fontWeight: "600", color: "#2d5a3d" }}
-                              >
-                                {children}
-                              </strong>
-                            ),
-                            em: ({ children }) => (
-                              <em
-                                style={{
-                                  fontStyle: "italic",
-                                  color: "#5a6c57",
-                                }}
-                              >
-                                {children}
-                              </em>
-                            ),
-                            code: ({ children }) => (
-                              <code
-                                style={{
-                                  backgroundColor: "#f8f9fa",
-                                  padding: "2px 4px",
-                                  borderRadius: "4px",
-                                  fontSize: "13px",
-                                  border: "1px solid #e9ecef",
-                                }}
-                              >
-                                {children}
-                              </code>
-                            ),
-                            h1: ({ children }) => (
-                              <h1
-                                style={{
-                                  fontSize: "18px",
-                                  fontWeight: "600",
-                                  margin: "12px 0 8px 0",
-                                  color: "#2d5a3d",
-                                }}
-                              >
-                                {children}
-                              </h1>
-                            ),
-                            h2: ({ children }) => (
-                              <h2
-                                style={{
-                                  fontSize: "16px",
-                                  fontWeight: "600",
-                                  margin: "10px 0 6px 0",
-                                  color: "#2d5a3d",
-                                }}
-                              >
-                                {children}
-                              </h2>
-                            ),
-                            h3: ({ children }) => (
-                              <h3
-                                style={{
-                                  fontSize: "15px",
-                                  fontWeight: "600",
-                                  margin: "8px 0 4px 0",
-                                  color: "#2d5a3d",
-                                }}
-                              >
-                                {children}
-                              </h3>
-                            ),
-                            a: ({ href, children }) => (
-                              <a
-                                href={href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{
-                                  color: "#007bff",
-                                  textDecoration: "underline",
-                                  fontWeight: "500",
-                                  cursor: "pointer",
-                                }}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  if (
-                                    href &&
-                                    href.startsWith(
-                                      "http://localhost:3000/orders/"
-                                    )
-                                  ) {
-                                    window.open(href, "_blank");
-                                  }
-                                }}
-                              >
-                                {children}
-                              </a>
-                            ),
-                          }}
-                        >
-                          {message.content}
-                        </ReactMarkdown>
-                      ) : (
-                        <div style={{ whiteSpace: "pre-wrap" }}>
-                          {message.content}
-                        </div>
-                      )}
-                    </div>
-                    <div
-                      className={`text-end mt-2 ${
-                        message.role === "user" ? "text-white" : "text-muted"
-                      }`}
-                      style={{
-                        opacity: 0.7,
-                        fontSize: "11px",
-                      }}
-                    >
-                      {new Date().toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      <div className="d-flex align-items-center">
+                        <div
+                          className="spinner-border spinner-border-sm text-success me-2"
+                          style={{ width: "14px", height: "14px" }}
+                        ></div>
+                        <span style={{ fontSize: "15px", color: "#666" }}>
+                          AI is thinking...
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )}
+              </div>
 
-              <div ref={messagesEndRef} />
-
-              {/* Interactive Product Results */}
-              {productResults.length > 0 && (
-                <div className="mb-3">
-                  {productResults.map((product) => (
-                    <InteractiveProductCard
-                      key={product.id}
-                      product={product}
-                      onAddToCart={handleAddToCart}
-                      onBuyNow={handleBuyNow}
-                      onViewDetails={(product) => {
-                        const detailMessage = {
-                          id: Date.now().toString(),
-                          role: "assistant",
-                          content: `**${product.name}** Details:\n\n📍 Seller: ${product.seller?.name}\n💰 Price: ${product.price}/kg\n📦 Available: ${product.quantity}kg\n📝 ${product.description}\n\nWould you like to add this to cart or buy now?`,
-                          type: "text",
-                        };
-                        setMessages((prev) => [...prev, detailMessage]);
-                      }}
-                    />
-                  ))}
-                  <div className="text-center">
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      onClick={() => setProductResults([])}
-                      style={{ fontSize: "12px", padding: "4px 12px" }}
-                    >
-                      Hide Products
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Order Tracking */}
-              {orderTracking && (
-                <ChatOrderTracker
-                  order={orderTracking}
-                  onContactSeller={(seller) => {
-                    window.open(
-                      `https://wa.me/${seller.whatsapp?.replace(/\D/g, "")}`,
-                      "_blank"
-                    );
-                  }}
-                  onTrackAnother={() => {
-                    setOrderTracking(null);
-                    const trackMessage = {
-                      id: Date.now().toString(),
-                      role: "assistant",
-                      content: "Please provide another order ID to track:",
-                      type: "text",
-                    };
-                    setMessages((prev) => [...prev, trackMessage]);
-                  }}
-                  onViewPayment={(order) => {
-                    const paymentMessage = {
-                      id: Date.now().toString(),
-                      role: "assistant",
-                      content: `💳 **Payment for Order ${order.id.slice(
-                        -8
-                      )}**\n\nTotal: ₹${
-                        order.total_amount
-                      }\n\nUPI QR code will be generated after order confirmation.\n\nPayment methods:\n✅ GPay, PhonePe, Paytm\n✅ Any UPI app\n✅ Scan QR and pay`,
-                      type: "text",
-                    };
-                    setMessages((prev) => [...prev, paymentMessage]);
-                  }}
-                />
-              )}
-
-              {isLoading && (
-                <div className="d-flex justify-content-start mb-2">
+              {/* Input Form */}
+              <div
+                className="flex-shrink-0"
+                style={{
+                  background: "linear-gradient(to top, #f8f9fa, #ffffff)",
+                  borderTop: "2px solid #e9ecef",
+                  padding: isMobile
+                    ? "12px 16px 20px 16px"
+                    : "16px 20px 20px 20px",
+                  boxShadow: "0 -4px 12px rgba(0,0,0,0.05)",
+                  position: "relative",
+                  zIndex: 30, // Higher z-index to prevent overlapping with header
+                }}
+              >
+                <Form onSubmit={handleSubmitMessage}>
                   <div
-                    className="position-relative"
+                    className="d-flex align-items-end"
                     style={{
-                      maxWidth: "96%",
                       background: "#ffffff",
-                      borderRadius: "4px 18px 18px 18px",
-                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-                      border: "1px solid #f0f0f0",
-                      padding: "14px 18px",
+                      borderRadius: isMobile ? "20px" : "24px",
+                      padding: isMobile ? "6px" : "6px",
+                      border: "2px solid #e9ecef",
+                      transition: "all 0.2s ease",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                      gap: isMobile ? "8px" : "12px",
+                      minHeight: isMobile ? "50px" : "52px", // Ensure minimum height
+                      position: "relative",
+                      zIndex: 5, // Ensure it stays above other content
                     }}
                   >
-                    {/* Small AI indicator */}
-                    <div
+                    <Form.Control
+                      as="textarea"
+                      ref={inputRef}
+                      placeholder={
+                        isMobile
+                          ? "Type message..."
+                          : "Type your message here..."
+                      }
+                      value={inputValue}
+                      onChange={handleInputChange}
+                      disabled={isLoading}
+                      name="message"
+                      rows="1"
                       style={{
-                        position: "absolute",
-                        top: "-6px",
-                        left: "-6px",
-                        width: "18px",
-                        height: "18px",
-                        backgroundColor: "#28a745",
+                        border: "none",
+                        background: "transparent",
+                        resize: "none",
+                        fontSize: isMobile ? "14px" : "15px",
+                        lineHeight: "1.4",
+                        padding: isMobile ? "10px 12px" : "12px 16px",
+                        maxHeight: isMobile ? "80px" : "100px",
+                        minHeight: "20px",
+                        outline: "none",
+                        boxShadow: "none",
+                        flex: "1", // Take available space
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.outline = "none";
+                        e.target.style.boxShadow = "none";
+                        // Scroll input into view on mobile only if manually focused
+                        if (isMobile && document.activeElement === e.target) {
+                          setTimeout(() => {
+                            e.target.scrollIntoView({
+                              behavior: "smooth",
+                              block: "nearest",
+                            });
+                          }, 200);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          if (inputValue.trim()) {
+                            handleSubmitMessage(e);
+                          }
+                        }
+                      }}
+                      onInput={(e) => {
+                        // Auto-resize textarea
+                        e.target.style.height = "auto";
+                        e.target.style.height =
+                          Math.min(e.target.scrollHeight, isMobile ? 80 : 100) +
+                          "px";
+                      }}
+                    />
+                    <Button
+                      type="submit"
+                      disabled={isLoading || !inputValue.trim()}
+                      style={{
+                        minWidth: isMobile ? "42px" : "44px",
+                        width: isMobile ? "42px" : "44px",
+                        height: isMobile ? "42px" : "44px",
                         borderRadius: "50%",
+                        background:
+                          isLoading || !inputValue.trim()
+                            ? "#e9ecef"
+                            : "linear-gradient(135deg, #28a745, #20c997)",
+                        border: "none",
+                        boxShadow:
+                          isLoading || !inputValue.trim()
+                            ? "none"
+                            : "0 4px 12px rgba(40, 167, 69, 0.4)",
+                        transition: "all 0.2s ease",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: "10px",
-                        boxShadow: "0 2px 4px rgba(40, 167, 69, 0.3)",
-                        color: "#ffffff",
+                        fontSize: isMobile ? "14px" : "16px",
+                        margin: isMobile ? "1px" : "2px",
+                        flexShrink: 0, // Prevent shrinking
+                        alignSelf: "center", // Center vertically within container
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isLoading && inputValue.trim() && !isMobile) {
+                          e.target.style.transform = "scale(1.05)";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isLoading && inputValue.trim() && !isMobile) {
+                          e.target.style.transform = "scale(1)";
+                        }
                       }}
                     >
-                      ✨
-                    </div>
-
-                    <div className="d-flex align-items-center">
-                      <div
-                        className="spinner-border spinner-border-sm text-success me-2"
-                        style={{ width: "14px", height: "14px" }}
-                      ></div>
-                      <span style={{ fontSize: "15px", color: "#666" }}>
-                        AI is thinking...
-                      </span>
-                    </div>
+                      {isLoading ? (
+                        <div
+                          className="spinner-border spinner-border-sm text-white"
+                          style={{
+                            width: isMobile ? "14px" : "16px",
+                            height: isMobile ? "14px" : "16px",
+                          }}
+                        ></div>
+                      ) : (
+                        "🚀"
+                      )}
+                    </Button>
                   </div>
-                </div>
-              )}
+                </Form>
+              </div>
             </div>
-
-            {/* Input Form */}
-            <div
-              className="flex-shrink-0"
-              style={{
-                background: "linear-gradient(to top, #f8f9fa, #ffffff)",
-                borderTop: "2px solid #e9ecef",
-                padding: isMobile
-                  ? "12px 16px 20px 16px"
-                  : "16px 20px 20px 20px",
-                boxShadow: "0 -4px 12px rgba(0,0,0,0.05)",
-                position: "relative",
-                zIndex: 30, // Higher z-index to prevent overlapping with header
-              }}
-            >
-              <Form onSubmit={handleSubmitMessage}>
-                <div
-                  className="d-flex align-items-end"
-                  style={{
-                    background: "#ffffff",
-                    borderRadius: isMobile ? "20px" : "24px",
-                    padding: isMobile ? "6px" : "6px",
-                    border: "2px solid #e9ecef",
-                    transition: "all 0.2s ease",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                    gap: isMobile ? "8px" : "12px",
-                    minHeight: isMobile ? "50px" : "52px", // Ensure minimum height
-                    position: "relative",
-                    zIndex: 5, // Ensure it stays above other content
-                  }}
-                >
-                  <Form.Control
-                    as="textarea"
-                    ref={inputRef}
-                    placeholder={
-                      isMobile ? "Type message..." : "Type your message here..."
-                    }
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    disabled={isLoading}
-                    name="message"
-                    rows="1"
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      resize: "none",
-                      fontSize: isMobile ? "14px" : "15px",
-                      lineHeight: "1.4",
-                      padding: isMobile ? "10px 12px" : "12px 16px",
-                      maxHeight: isMobile ? "80px" : "100px",
-                      minHeight: "20px",
-                      outline: "none",
-                      boxShadow: "none",
-                      flex: "1", // Take available space
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.outline = "none";
-                      e.target.style.boxShadow = "none";
-                      // Scroll input into view on mobile only if manually focused
-                      if (isMobile && document.activeElement === e.target) {
-                        setTimeout(() => {
-                          e.target.scrollIntoView({
-                            behavior: "smooth",
-                            block: "nearest",
-                          });
-                        }, 200);
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        if (inputValue.trim()) {
-                          handleSubmitMessage(e);
-                        }
-                      }
-                    }}
-                    onInput={(e) => {
-                      // Auto-resize textarea
-                      e.target.style.height = "auto";
-                      e.target.style.height =
-                        Math.min(e.target.scrollHeight, isMobile ? 80 : 100) +
-                        "px";
-                    }}
-                  />
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !inputValue.trim()}
-                    style={{
-                      minWidth: isMobile ? "42px" : "44px",
-                      width: isMobile ? "42px" : "44px",
-                      height: isMobile ? "42px" : "44px",
-                      borderRadius: "50%",
-                      background:
-                        isLoading || !inputValue.trim()
-                          ? "#e9ecef"
-                          : "linear-gradient(135deg, #28a745, #20c997)",
-                      border: "none",
-                      boxShadow:
-                        isLoading || !inputValue.trim()
-                          ? "none"
-                          : "0 4px 12px rgba(40, 167, 69, 0.4)",
-                      transition: "all 0.2s ease",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: isMobile ? "14px" : "16px",
-                      margin: isMobile ? "1px" : "2px",
-                      flexShrink: 0, // Prevent shrinking
-                      alignSelf: "center", // Center vertically within container
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isLoading && inputValue.trim() && !isMobile) {
-                        e.target.style.transform = "scale(1.05)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isLoading && inputValue.trim() && !isMobile) {
-                        e.target.style.transform = "scale(1)";
-                      }
-                    }}
-                  >
-                    {isLoading ? (
-                      <div
-                        className="spinner-border spinner-border-sm text-white"
-                        style={{
-                          width: isMobile ? "14px" : "16px",
-                          height: isMobile ? "14px" : "16px",
-                        }}
-                      ></div>
-                    ) : (
-                      "🚀"
-                    )}
-                  </Button>
-                </div>
-              </Form>
-            </div>
-          </div>
+          )}
         </Card>
       )}
     </>
