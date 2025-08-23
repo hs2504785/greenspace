@@ -47,14 +47,13 @@
     letter-spacing: -0.5px;
     white-space: nowrap; // Prevent wrapping
 
-    // Keep consistent font size across all screen sizes for consistent header height
+    // Responsive font size for better mobile display
+    @media (max-width: 575.98px) {
+      font-size: 1.2rem; // Slightly smaller on very small screens
+    }
 
-    // Custom styling for acronym (ANF) on small screens
-    &.brand-name-acronym {
-      // Keep same font size for consistent header height
-      font-size: 1.5rem; // Same as default brand name
-      letter-spacing: 1px; // Add spacing between letters for acronym
-      font-weight: 800; // Slightly bolder for acronym
+    @media (max-width: 480px) {
+      font-size: 1.1rem; // Even smaller on very small screens
     }
   }
 
@@ -67,13 +66,13 @@
     letter-spacing: 0.5px;
     text-transform: uppercase;
 
-    // Keep consistent font size across all screen sizes for consistent header height
+    // Responsive font size for better mobile display
+    @media (max-width: 575.98px) {
+      font-size: 0.65rem; // Slightly smaller on very small screens
+    }
 
-    // Small tagline styling for "Fresh" (mobile only)
-    &.brand-tagline-small {
-      font-size: 0.75rem; // Same as default tagline
-      letter-spacing: 0.5px; // Same as default tagline
-      font-weight: 600; // Slightly bolder for single word
+    @media (max-width: 480px) {
+      font-size: 0.6rem; // Even smaller on very small screens
     }
   }
 
@@ -84,121 +83,194 @@
     }
   }
 
-  // Mobile-specific improvements for hamburger next to logo
-  @media (max-width: 991.98px) {
-    // Force hamburger visibility on mobile
-    .navbar-toggler.d-lg-none {
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      min-width: 44px !important;
-      min-height: 44px !important;
+  // Search section styles
+  .search-section {
+    background-color: rgba(255, 255, 255, 0.98);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(4px);
+
+    // Mobile search section
+    @media (max-width: 991.98px) {
+      position: sticky;
+      top: 74px; // Adjusted for slightly taller modern desktop search
+      z-index: 1020; // Below header but above content
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
+    // Make search input height consistent with buttons on mobile
+    .form-control {
+      height: 38px; // Match Bootstrap button height
+
+      @media (max-width: 991.98px) {
+        min-height: 38px; // Ensure consistent height on mobile
+      }
+    }
+
+    // Ensure input group elements align properly
+    .input-group {
+      .input-group-text {
+        height: 38px; // Match input height
+        display: flex;
+        align-items: center;
+      }
+    }
+
+    // Desktop search - modern borderless design
+    @media (min-width: 992px) {
+      .form-control {
+        height: 36px; // Slightly taller for better modern feel
+        font-size: 0.9rem; // Readable font size
+        padding: 0.5rem 1rem; // More generous padding
+        background-color: rgba(248, 249, 250, 0.8); // Subtle light background
+        border: none; // Remove borders for modern look
+        border-radius: 20px; // Rounded corners for modern appearance
+        color: #495057;
+        backdrop-filter: blur(10px);
+        transition: all 0.2s ease;
+
+        &:focus {
+          background-color: rgba(255, 255, 255, 0.9);
+          box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+          border: none; // Ensure no border on focus
+          outline: none;
+        }
+
+        &::placeholder {
+          color: #6c757d;
+          font-weight: 400;
+        }
+      }
+
+      .input-group {
+        border-radius: 20px;
+        overflow: hidden;
+        background-color: rgba(248, 249, 250, 0.8);
+        backdrop-filter: blur(10px);
+        transition: all 0.2s ease;
+
+        &:focus-within {
+          background-color: rgba(255, 255, 255, 0.9);
+          box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        }
+
+        .input-group-text {
+          height: 36px; // Match input height
+          padding: 0.5rem 1rem;
+          font-size: 0.9rem;
+          background-color: transparent; // Transparent to blend with input group
+          border: none; // Remove borders
+          color: #6c757d;
+
+          &:first-child {
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+          }
+
+          &:last-child {
+            border-top-right-radius: 20px;
+            border-bottom-right-radius: 20px;
+          }
+        }
+      }
+    }
+  }
+
+  // Hamburger menu - always visible on all screen sizes
+  .navbar-toggler {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex-shrink: 0;
+    margin-right: 1rem;
+    border: none !important;
+    padding: 0.375rem !important;
+    background: transparent !important;
+    border-radius: 4px !important;
+    min-width: 40px;
+    min-height: 40px;
+
+    &:focus {
+      box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+      outline: none !important;
+    }
+
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2845, 80, 22, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2.5' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+      width: 1.5em;
+      height: 1.5em;
+    }
+
+    &:hover .navbar-toggler-icon,
+    &:focus .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2845, 80, 22, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='3' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+  }
+
+  // Mobile and tablet specific layout adjustments
+  @media (max-width: 991.98px) {
     .container {
-      display: flex;
+      padding: 0.5rem 1rem; // Reduced top/bottom padding for compact header
+    }
+
+    // Main mobile container
+    .container > .d-flex {
+      width: 100%;
       align-items: center;
       justify-content: space-between;
       flex-wrap: nowrap;
     }
 
-    // Logo and hamburger container
-    .container > .d-flex:first-child {
-      flex-shrink: 0;
-      max-width: 60%; // Allow space for brand + hamburger
+    // Mobile-specific adjustments for hamburger positioning
+    .navbar-toggler {
+      order: -1; // Ensure it comes first on mobile
     }
 
+    // Brand container - takes available space
     .navbar-brand {
-      flex-shrink: 0;
-      min-width: 120px;
-      margin-right: 0;
+      flex-grow: 1;
+      margin-right: 1rem;
+      min-width: 0; // Allow text truncation if needed
+
+      &.brand-container {
+        max-width: calc(100% - 120px); // Reserve space for user section
+      }
     }
 
+    // Mobile-specific brand adjustments
     .brand-logo {
       width: 50px; // Keep same size as desktop
       height: 50px; // Keep same size as desktop
     }
 
-    .navbar-toggler {
-      flex-shrink: 0;
-      position: relative;
-      z-index: 10002; // Ensure it's above the mobile menu
-      margin-left: 0.5rem; // Small gap after brand
-      border: none !important;
-      padding: 0 !important; // Remove all padding
-      background: transparent !important;
-      border-radius: 0 !important;
-      box-shadow: none !important;
-      display: block !important;
-      transition: none; // Remove transitions to prevent interference
-      min-width: auto !important; // Let icon determine size
-      min-height: auto !important;
-
-      &:focus {
-        box-shadow: none !important;
-        outline: none !important; // Remove outline completely
-        background-color: transparent !important;
-
-        .navbar-toggler-icon {
-          // Make icon bold on focus as well for accessibility
-          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2845, 80, 22, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='3' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-        }
-      }
-
-      &:hover {
-        background-color: transparent !important; // No background change
-        transform: none !important; // No scaling
-
-        .navbar-toggler-icon {
-          // Make icon bold on hover by using thicker stroke
-          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2845, 80, 22, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='3' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-        }
-      }
-
-      &:active {
-        transform: none !important;
-        background-color: transparent !important;
-      }
-
-      .navbar-toggler-icon {
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2845, 80, 22, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2.5' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-        width: 1.6em !important;
-        height: 1.6em !important;
-        display: block !important;
-        transition: background-image 0.2s ease; // Smooth transition for bold effect
-      }
-    }
-
-    // Ensure cart and user sections stay compact on mobile
-    .order-lg-3,
-    .order-lg-4 {
-      flex-shrink: 0;
-      display: flex !important;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    // On mobile, hide the desktop-only profile section
-    .order-lg-4 {
+    // On mobile, hide the desktop cart/filter buttons since they moved to search section
+    .d-none.d-lg-flex {
       display: none !important;
     }
   }
 
   // Desktop-specific layout improvements
   @media (min-width: 992px) {
-    .order-lg-3 {
-      margin-right: 1rem; // Add space between cart and profile on desktop
+    // Optimize space for desktop layout with hamburger menu
+    .container {
+      padding: 0.65rem 1rem; // Reduced top/bottom padding for compact header
+    }
+
+    // Better spacing for desktop elements
+    .d-none.d-lg-flex {
+      gap: 0.75rem;
     }
   }
 
-  // Bootstrap Offcanvas mobile menu styling
-  .offcanvas {
-    &.d-lg-none {
-      // Only apply on mobile
-      @media (max-width: 991.98px) {
-        width: 300px;
-        max-width: 85vw;
-      }
+  // Bootstrap Offcanvas navigation menu styling - works on all screen sizes
+  // More specific selector to override Bootstrap defaults
+  .offcanvas.offcanvas-start {
+    width: 200px !important; // Much more compact width
+    max-width: 55vw !important; // Leave even more space for backdrop
+
+    // Responsive adjustments
+    @media (max-width: 575.98px) {
+      width: 180px !important;
+      max-width: 50vw !important;
     }
 
     .offcanvas-header {
@@ -208,8 +280,8 @@
       .offcanvas-title {
         color: #2d5016;
         font-weight: 700;
-        font-size: 1.1rem;
-        letter-spacing: 0.5px;
+        font-size: 0.9rem; // More compact for much narrower menu
+        letter-spacing: 0.3px;
         text-transform: uppercase;
       }
 
@@ -224,13 +296,13 @@
     }
 
     .offcanvas-body {
-      padding: 1rem 0;
+      padding: 0.5rem 0; // Minimal padding for compact menu
     }
   }
 
   .mobile-nav-link {
-    padding: 1rem 1.5rem !important;
-    font-size: 1.1rem;
+    padding: 0.75rem 1rem !important; // Further reduced padding for much narrower menu
+    font-size: 0.95rem; // Compact font for better fit
     font-weight: 500;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     transition: all 0.2s ease;

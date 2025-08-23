@@ -76,6 +76,21 @@ export default function Home() {
     }
   }, []);
 
+  // Listen for search events from header
+  useEffect(() => {
+    const handleVegetableSearch = (event) => {
+      const query = event.detail?.query || "";
+      updateFilters({ searchQuery: query });
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("vegetable-search", handleVegetableSearch);
+      return () => {
+        window.removeEventListener("vegetable-search", handleVegetableSearch);
+      };
+    }
+  }, [updateFilters]);
+
   return (
     <>
       <div className="container">

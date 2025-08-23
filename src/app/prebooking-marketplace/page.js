@@ -45,6 +45,21 @@ export default function PreBookingMarketplacePage() {
     };
   }, []);
 
+  // Listen for search events from header
+  useEffect(() => {
+    const handlePrebookingSearch = (event) => {
+      const query = event.detail?.query || "";
+      updateFilters({ search: query });
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("prebooking-search", handlePrebookingSearch);
+      return () => {
+        window.removeEventListener("prebooking-search", handlePrebookingSearch);
+      };
+    }
+  }, [updateFilters]);
+
   return (
     <>
       {/* Compact Styling */}

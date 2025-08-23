@@ -15,7 +15,6 @@ export default function PreBookingFilters({
 
   const clearAllFilters = () => {
     onFilterChange({
-      search: "",
       category: "all",
       harvest_season: "all",
       sort: "estimated_available_date",
@@ -51,21 +50,6 @@ export default function PreBookingFilters({
 
       <Offcanvas.Body>
         <div className="d-flex flex-column gap-4">
-          {/* Search */}
-          <div>
-            <Form.Label className="fw-medium mb-2">
-              <i className="ti-search me-2"></i>
-              Search Products
-            </Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Search by name, location, season..."
-              value={filters.search || ""}
-              onChange={(e) => handleFilterChange("search", e.target.value)}
-              className="border-success-subtle"
-            />
-          </div>
-
           {/* Category */}
           <div>
             <Form.Label className="fw-medium mb-2">

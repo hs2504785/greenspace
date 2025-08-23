@@ -2,9 +2,7 @@
 
 import { Offcanvas, Form, Button, Row, Col } from "react-bootstrap";
 import { useCallback, useEffect, useState, useMemo, memo } from "react";
-import { useDebounce } from "@/hooks/useDebounce";
 import VegetableService from "@/services/VegetableService";
-import SearchInput from "@/components/common/SearchInput";
 import "@/styles/vegetable-filter-offcanvas.css";
 
 const defaultCategories = [
@@ -35,9 +33,7 @@ const VegetableFilterOffcanvas = memo(function VegetableFilterOffcanvas({
 
   const [categories, setCategories] = useState(defaultCategories);
   const [locations, setLocations] = useState([]);
-  const [searchValue, setSearchValue] = useState(filters.searchQuery || "");
   const [tempFilters, setTempFilters] = useState(filters);
-  const debouncedSearch = useDebounce(searchValue, 300);
 
   // Load filter options
   useEffect(() => {
@@ -65,24 +61,7 @@ const VegetableFilterOffcanvas = memo(function VegetableFilterOffcanvas({
       ...filters,
       category: filters.category || "All", // Ensure All is always default
     });
-    setSearchValue(filters.searchQuery || "");
   }, [filters]);
-
-  // Handle search with debounce
-  useEffect(() => {
-    if (debouncedSearch !== filters.searchQuery) {
-      setTempFilters((prev) => ({ ...prev, searchQuery: debouncedSearch }));
-    }
-  }, [debouncedSearch, filters.searchQuery]);
-
-  const handleSearchChange = useCallback((e) => {
-    setSearchValue(e.target.value);
-  }, []);
-
-  const handleSearchClear = useCallback(() => {
-    setSearchValue("");
-    setTempFilters((prev) => ({ ...prev, searchQuery: "" }));
-  }, []);
 
   const handleCategoryChange = useCallback((categoryValue) => {
     setTempFilters((prev) => ({ ...prev, category: categoryValue }));
@@ -107,18 +86,15 @@ const VegetableFilterOffcanvas = memo(function VegetableFilterOffcanvas({
       category: "All",
       sortBy: "created_at",
       sortDirection: "desc",
-      searchQuery: "",
       showFreeOnly: false,
       page: 1,
     };
     setTempFilters(clearedFilters);
-    setSearchValue("");
   }, []);
 
   const hasActiveFilters = useMemo(() => {
     return (
       tempFilters.category !== "All" ||
-      tempFilters.searchQuery ||
       tempFilters.showFreeOnly ||
       tempFilters.sortBy !== "created_at" ||
       tempFilters.sortDirection !== "desc"
@@ -152,18 +128,6 @@ const VegetableFilterOffcanvas = memo(function VegetableFilterOffcanvas({
       </Offcanvas.Header>
 
       <Offcanvas.Body>
-        {/* Search Section */}
-        <div className="mb-4">
-          <h6 className="mb-3 fw-semibold text-muted">Search</h6>
-          <SearchInput
-            value={searchValue}
-            onChange={handleSearchChange}
-            onClear={handleSearchClear}
-            placeholder="Search vegetables..."
-            className="w-100"
-          />
-        </div>
-
         {/* Category Section */}
         <div className="mb-4">
           <h6 className="mb-3 fw-semibold text-muted">Category</h6>

@@ -16,9 +16,11 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import ProfileDropdown from "@/components/common/ProfileDropdown";
 import { useCart } from "@/context/CartContext";
+import SearchInput from "@/components/common/SearchInput";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   const { data: session, status } = useSession();
   const { items } = useCart();
   const pathname = usePathname();
@@ -41,48 +43,47 @@ export default function Header() {
     setIsMenuOpen(false);
   };
 
+  // Handle search functionality
+  const handleSearchChange = (e) => {
+    setSearchValue(e.target.value);
+  };
+
+  const handleSearchSubmit = (query) => {
+    // Trigger search event based on current page
+    if (pathname === "/prebooking-marketplace") {
+      window.dispatchEvent(
+        new CustomEvent("prebooking-search", { detail: { query } })
+      );
+    } else if (pathname === "/" || pathname.startsWith("/?")) {
+      window.dispatchEvent(
+        new CustomEvent("vegetable-search", { detail: { query } })
+      );
+    }
+  };
+
+  const handleSearchClear = () => {
+    setSearchValue("");
+    // Trigger clear search
+    if (pathname === "/prebooking-marketplace") {
+      window.dispatchEvent(
+        new CustomEvent("prebooking-search", { detail: { query: "" } })
+      );
+    } else if (pathname === "/" || pathname.startsWith("/?")) {
+      window.dispatchEvent(
+        new CustomEvent("vegetable-search", { detail: { query: "" } })
+      );
+    }
+  };
+
   return (
     <>
       <Navbar className="navbar-sticky">
         <Container>
-          {/* Logo and Hamburger grouped together */}
-          <div className="d-flex align-items-center">
-            <Navbar.Brand as={Link} href="/" className="brand-container">
-              <img
-                src="/images/logo.svg"
-                width="50"
-                height="50"
-                className="d-inline-block align-top me-2 brand-logo"
-                alt="Arya Natural Farms Logo"
-              />
-              <div className="brand-text d-flex flex-column">
-                {/* Full name for larger screens */}
-                <span className="brand-name d-none d-md-inline">
-                  Arya Natural Farms
-                </span>
-                {/* Shortened name for medium mobile screens */}
-                <span className="brand-name d-none d-sm-inline d-md-none">
-                  Arya Farms
-                </span>
-                {/* Acronym for small mobile screens */}
-                <span className="brand-name d-inline d-sm-none brand-name-acronym">
-                  ANF
-                </span>
-
-                {/* Full tagline for desktop and tablet screens */}
-                <span className="brand-tagline d-none d-sm-block">
-                  Fresh • Natural • Local
-                </span>
-                {/* Short tagline for mobile screens only */}
-                <span className="brand-tagline d-block d-sm-none brand-tagline-small">
-                  Fresh
-                </span>
-              </div>
-            </Navbar.Brand>
-
-            {/* Hamburger toggle - positioned next to logo, mobile only */}
+          {/* Mobile Layout: Hamburger, Logo, User Section */}
+          <div className="d-flex align-items-center w-100">
+            {/* Hamburger - always visible on all screen sizes, positioned first */}
             <button
-              className="navbar-toggler d-lg-none"
+              className="navbar-toggler me-3"
               type="button"
               onClick={toggleMenu}
               aria-controls="mobile-menu"
@@ -91,10 +92,77 @@ export default function Header() {
             >
               <span className="navbar-toggler-icon"></span>
             </button>
+
+            <Navbar.Brand
+              as={Link}
+              href="/"
+              className="brand-container flex-grow-1"
+            >
+              <img
+                src="/images/logo.svg"
+                width="50"
+                height="50"
+                className="d-inline-block align-top me-2 brand-logo"
+                alt="Arya Natural Farms Logo"
+              />
+              <div className="brand-text d-flex flex-column">
+                {/* Full name for all screen sizes */}
+                <span className="brand-name">Arya Natural Farms</span>
+                {/* Full tagline for all screen sizes */}
+                <span className="brand-tagline">Fresh • Natural • Local</span>
+              </div>
+            </Navbar.Brand>
+
+            {/* Search Input - desktop and large tablets */}
+            <div
+              className="d-none d-lg-flex me-3 flex-grow-1"
+              style={{ maxWidth: "500px" }}
+            >
+              {(pathname === "/" ||
+                pathname.startsWith("/?") ||
+                pathname === "/prebooking-marketplace") && (
+                <SearchInput
+                  value={searchValue}
+                  onChange={handleSearchChange}
+                  onSubmit={handleSearchSubmit}
+                  onClear={handleSearchClear}
+                  placeholder={
+                    pathname === "/prebooking-marketplace"
+                      ? "Search pre-booking products..."
+                      : "Search vegetables..."
+                  }
+                  className="w-100"
+                  size="sm"
+                />
+              )}
+            </div>
+
+            {/* Mobile User Section - positioned at the end */}
+            <div className="d-lg-none">
+              {status === "loading" ? (
+                <div
+                  className="spinner-border spinner-border-sm text-success"
+                  role="status"
+                >
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              ) : session ? (
+                <ProfileDropdown user={session.user} />
+              ) : (
+                <Button
+                  as={Link}
+                  href="/login"
+                  variant="outline-success"
+                  size="sm"
+                >
+                  Sign in
+                </Button>
+              )}
+            </div>
           </div>
 
-          {/* Filter and Cart buttons - always visible, appears before profile on desktop */}
-          <div className="d-flex align-items-center ms-auto order-lg-3">
+          {/* Filter and Cart buttons - always visible on desktop */}
+          <div className="d-none d-lg-flex align-items-center ms-auto">
             {/* Filter button - context-aware for different pages */}
             {/* To add filter support for new pages: 
                 1. Add pathname condition below
@@ -184,33 +252,10 @@ export default function Header() {
                 </div>
               </div>
             </OverlayTrigger>
-
-            {/* User Authentication - visible on mobile only */}
-            <div className="d-lg-none">
-              {status === "loading" ? (
-                <div
-                  className="spinner-border spinner-border-sm text-success"
-                  role="status"
-                >
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              ) : session ? (
-                <ProfileDropdown user={session.user} />
-              ) : (
-                <Button
-                  as={Link}
-                  href="/login"
-                  variant="outline-success"
-                  size="sm"
-                >
-                  Sign in
-                </Button>
-              )}
-            </div>
           </div>
 
-          {/* User Authentication - desktop only, appears after cart */}
-          <div className="d-none d-lg-flex align-items-center order-lg-4">
+          {/* Desktop User Authentication - appears after cart */}
+          <div className="d-none d-lg-flex align-items-center ms-3">
             {status === "loading" ? (
               <div
                 className="spinner-border spinner-border-sm text-success"
@@ -226,85 +271,141 @@ export default function Header() {
               </Button>
             )}
           </div>
-
-          {/* Desktop navigation - always visible on large screens */}
-          <div className="d-none d-lg-flex order-lg-2 flex-grow-1">
-            <Nav className="me-auto">
-              <Nav.Link
-                as={Link}
-                href="/?showFreeOnly=true"
-                className={`fair-share-link ${
-                  pathname.includes("showFreeOnly=true")
-                    ? "active-nav-item"
-                    : ""
-                }`}
-              >
-                🎁 Fair Share
-              </Nav.Link>
-              <Nav.Link
-                as={Link}
-                href="/"
-                className={
-                  isActive("/") && !pathname.includes("showFreeOnly")
-                    ? "active-nav-item"
-                    : ""
-                }
-              >
-                Fresh Vegetables
-              </Nav.Link>
-              <Nav.Link
-                as={Link}
-                href="/prebooking-marketplace"
-                className={`prebooking-link ${
-                  isActive("/prebooking-marketplace") ? "active-nav-item" : ""
-                }`}
-              >
-                🌱 Pre-Booking
-              </Nav.Link>
-              {session && (
-                <>
-                  <Nav.Link
-                    as={Link}
-                    href="/orders"
-                    className={isActive("/orders") ? "active-nav-item" : ""}
-                  >
-                    Orders & Deliveries
-                  </Nav.Link>
-                  {/* <Nav.Link 
-                  as={Link} 
-                  href="/discussions"
-                  className={
-                    isActive("/discussions")
-                      ? "active-nav-item"
-                      : ""
-                  }
-                >
-                  Discussions
-                </Nav.Link>
-                <Nav.Link 
-                  as={Link} 
-                  href="/community"
-                  className={
-                    isActive("/community")
-                      ? "active-nav-item"
-                      : ""
-                  }
-                >
-                  Community
-                </Nav.Link> */}
-                </>
-              )}
-            </Nav>
-          </div>
         </Container>
       </Navbar>
 
-      {/* Mobile Menu using Bootstrap Offcanvas */}
+      {/* Mobile Search section - shown below header on smaller screens */}
+      <div className="search-section d-lg-none">
+        <Container>
+          <div className="py-3">
+            {/* Mobile Search Section - shown below header on mobile */}
+            <div className="w-100">
+              {(pathname === "/" ||
+                pathname.startsWith("/?") ||
+                pathname === "/prebooking-marketplace") && (
+                <div className="d-flex align-items-center gap-2">
+                  {/* Search input takes most space */}
+                  <div className="flex-grow-1">
+                    <SearchInput
+                      value={searchValue}
+                      onChange={handleSearchChange}
+                      onSubmit={handleSearchSubmit}
+                      onClear={handleSearchClear}
+                      placeholder={
+                        pathname === "/prebooking-marketplace"
+                          ? "Search pre-booking products..."
+                          : "Search vegetables..."
+                      }
+                      className="w-100"
+                    />
+                  </div>
+
+                  {/* Filter and Cart buttons moved to search section on mobile */}
+                  <div className="d-flex align-items-center gap-2">
+                    {/* Filter button */}
+                    {(() => {
+                      const getFilterConfig = () => {
+                        if (pathname === "/prebooking-marketplace") {
+                          return {
+                            tooltip: "Filter pre-booking products",
+                            event: "toggle-prebooking-filters",
+                          };
+                        } else if (
+                          pathname === "/" ||
+                          pathname.startsWith("/?")
+                        ) {
+                          return {
+                            tooltip: "Filter & Sort vegetables",
+                            event: "toggle-vegetable-filters",
+                          };
+                        }
+                        return null;
+                      };
+
+                      const filterConfig = getFilterConfig();
+                      if (!filterConfig) return null;
+
+                      return (
+                        <OverlayTrigger
+                          placement="bottom"
+                          overlay={
+                            <Tooltip id="filter-tooltip-mobile">
+                              {filterConfig.tooltip}
+                            </Tooltip>
+                          }
+                        >
+                          <Button
+                            variant="outline-success"
+                            size="sm"
+                            onClick={() =>
+                              window.dispatchEvent(
+                                new CustomEvent(filterConfig.event)
+                              )
+                            }
+                            className="p-2"
+                          >
+                            <i
+                              className="ti-filter"
+                              style={{ fontSize: "1rem" }}
+                            ></i>
+                          </Button>
+                        </OverlayTrigger>
+                      );
+                    })()}
+
+                    {/* Cart button */}
+                    <OverlayTrigger
+                      placement="bottom"
+                      overlay={
+                        <Tooltip id="cart-tooltip-mobile">
+                          Shopping Cart
+                          {items.length > 0 ? ` (${items.length} items)` : ""}
+                        </Tooltip>
+                      }
+                    >
+                      <Button
+                        variant="outline-success"
+                        size="sm"
+                        onClick={() =>
+                          window.dispatchEvent(new CustomEvent("toggle-cart"))
+                        }
+                        className="p-2 position-relative"
+                      >
+                        <i
+                          className="ti-shopping-cart"
+                          style={{ fontSize: "1rem" }}
+                        ></i>
+                        {items.length > 0 && (
+                          <div
+                            className="position-absolute bg-success text-white rounded-circle d-flex align-items-center justify-content-center"
+                            style={{
+                              top: "-8px",
+                              right: "-8px",
+                              width: "16px",
+                              height: "16px",
+                              fontSize: "0.6rem",
+                              fontWeight: "600",
+                            }}
+                          >
+                            {items.length}
+                          </div>
+                        )}
+                      </Button>
+                    </OverlayTrigger>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </Container>
+      </div>
+
+      {/* Navigation Menu using Bootstrap Offcanvas - available on all screens */}
       <Offcanvas
         show={isMenuOpen}
         onHide={() => setIsMenuOpen(false)}
-        placement="end"
-        className="d-lg-none"
+        placement="start"
+        style={{ width: "220px", maxWidth: "60vw" }}
       >
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Navigation</Offcanvas.Title>
@@ -319,7 +420,6 @@ export default function Header() {
               }`}
               onClick={handleLinkClick}
             >
-              <i className="ti-gift me-2"></i>
               Fair Share
             </Nav.Link>
             <Nav.Link
@@ -332,7 +432,6 @@ export default function Header() {
               }`}
               onClick={handleLinkClick}
             >
-              <i className="ti-shopping-cart me-2"></i>
               Fresh Vegetables
             </Nav.Link>
             <Nav.Link
@@ -343,7 +442,6 @@ export default function Header() {
               }`}
               onClick={handleLinkClick}
             >
-              <i className="ti-calendar-plus me-2"></i>
               Pre-Booking
             </Nav.Link>
             {session && (
@@ -356,7 +454,6 @@ export default function Header() {
                   }`}
                   onClick={handleLinkClick}
                 >
-                  <i className="ti-package me-2"></i>
                   Orders & Deliveries
                 </Nav.Link>
               </>
