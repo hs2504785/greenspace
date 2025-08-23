@@ -60,6 +60,61 @@ export default function PreBookingMarketplacePage() {
     }
   }, [updateFilters]);
 
+  // Handle empty state styling - add class to body to hide header search
+  useEffect(() => {
+    if (!loading && products.length === 0) {
+      document.body.classList.add("prebooking-empty-state");
+    } else {
+      document.body.classList.remove("prebooking-empty-state");
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove("prebooking-empty-state");
+    };
+  }, [loading, products.length]);
+
+  // If no products and not loading, show full-screen empty state
+  if (!loading && products.length === 0) {
+    return (
+      <>
+        <style jsx global>{`
+          .empty-state-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(
+              135deg,
+              #f8fffe 0%,
+              #f0f9f4 50%,
+              #ecfdf5 100%
+            );
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          /* Hide search sections when in empty state, keep main header navigation */
+          body.prebooking-empty-state .search-section,
+          body.prebooking-empty-state .navbar .d-lg-flex.me-3.flex-grow-1 {
+            display: none !important;
+          }
+        `}</style>
+
+        <div className="empty-state-container">
+          <PreBookingResults
+            products={products}
+            loading={loading}
+            error={error}
+          />
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       {/* Compact Styling */}
@@ -77,7 +132,7 @@ export default function PreBookingMarketplacePage() {
       `}</style>
 
       <div className="page-background">
-        {/* Hero Section */}
+        {/* Hero Section - Only show when products exist or loading */}
         <div
           className="bg-light border-bottom"
           style={{

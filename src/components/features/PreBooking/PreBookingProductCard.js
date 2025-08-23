@@ -263,11 +263,16 @@ export default function PreBookingProductCard({
         <div className="mt-auto">
           <div className="d-flex gap-2 align-items-center mb-2">
             <span className="small text-muted">Quantity:</span>
-            <div className="d-flex border rounded">
+            <div className="d-flex border rounded overflow-hidden">
               <Button
-                variant="outline-light"
+                variant="light"
                 size="sm"
-                className="border-0 px-2"
+                className="border-0 px-2 text-dark fw-bold"
+                style={{
+                  backgroundColor: "#f8f9fa",
+                  color: "#495057",
+                  minWidth: "32px",
+                }}
                 disabled={quantity <= min_order_quantity}
                 onClick={(e) => {
                   e.preventDefault();
@@ -276,13 +281,18 @@ export default function PreBookingProductCard({
               >
                 −
               </Button>
-              <div className="px-2 py-1 d-flex align-items-center border-start border-end bg-white small">
+              <div className="px-2 py-1 d-flex align-items-center border-start border-end bg-white small fw-medium">
                 {quantity}kg
               </div>
               <Button
-                variant="outline-light"
+                variant="light"
                 size="sm"
-                className="border-0 px-2"
+                className="border-0 px-2 text-dark fw-bold"
+                style={{
+                  backgroundColor: "#f8f9fa",
+                  color: "#495057",
+                  minWidth: "32px",
+                }}
                 disabled={quantity >= 50}
                 onClick={(e) => {
                   e.preventDefault();

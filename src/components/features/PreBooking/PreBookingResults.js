@@ -42,45 +42,49 @@ const PreBookingResults = memo(function PreBookingResults({
 
   if (products.length === 0) {
     return (
-      <EmptyState
-        icon="ti-calendar-plus"
-        title="No Pre-Booking Products Available"
-        description="🌱 Our farmers are planning their next harvests.<br/>Check back soon to discover upcoming organic produce opportunities."
-        size="lg"
-        className="bg-light rounded-4 shadow-sm border-0 py-4"
-        iconColor="text-success"
-        action={
-          <div className="d-flex flex-column align-items-center gap-2">
-            <div className="text-success">
-              <small>Want to create pre-booking products?</small>
-            </div>
-            <a
-              href="/add-prebooking-product"
-              className="btn btn-outline-success btn-sm"
-            >
-              <i className="ti-calendar-plus me-2"></i>
-              Create Pre-Booking Product
-            </a>
+      <div className="text-center">
+        <div className="mb-4">
+          <i
+            className="ti-calendar-plus display-1"
+            style={{
+              background: "linear-gradient(135deg, #22c55e, #16a34a, #15803d)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              filter: "drop-shadow(0 2px 4px rgba(34, 197, 94, 0.2))",
+            }}
+          ></i>
+        </div>
+
+        <h3 className="h2 mb-3" style={{ color: "#166534" }}>
+          No Pre-Booking Products Available
+        </h3>
+
+        <div className="mb-4" style={{ color: "#65a30d" }}>
+          🌱 Our farmers are planning their next harvests.
+          <br />
+          Check back soon to discover upcoming organic produce opportunities.
+        </div>
+
+        <div className="d-flex flex-column align-items-center gap-2">
+          <div className="text-success">
+            <small>Want to create pre-booking products?</small>
           </div>
-        }
-      />
+          <a
+            href="/add-prebooking-product"
+            className="btn btn-outline-success btn-sm"
+          >
+            <i className="ti-calendar-plus me-2"></i>
+            Create Pre-Booking Product
+          </a>
+        </div>
+      </div>
     );
   }
 
   return (
     <div className="pb-4">
-      {/* Results Summary */}
-      <div className="d-flex align-items-center justify-content-between mb-4">
-        <div>
-          <h6 className="mb-1 fw-semibold">Available Pre-Bookings</h6>
-          <p className="small text-muted mb-0">
-            {products.length} product{products.length !== 1 ? "s" : ""}{" "}
-            available for advance booking
-          </p>
-        </div>
-      </div>
-
-      {/* Products Grid */}
+      {/* Products Grid - No header needed as hero section already explains */}
       <Row className="g-4">
         {products.map((product) => (
           <Col key={product.id} xs={12} sm={6} lg={4} xl={3}>

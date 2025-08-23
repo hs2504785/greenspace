@@ -12,9 +12,6 @@ import {
   Form,
   Alert,
   Spinner,
-  ProgressBar,
-  Tabs,
-  Tab,
 } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
@@ -23,9 +20,8 @@ import toastService from "@/utils/toastService";
 import UserAvatar from "../../common/UserAvatar";
 
 export default function PreBookingDashboard() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeView, setActiveView] = useState("pending");
   const [prebookings, setPrebookings] = useState([]);
-  const [demandAnalytics, setDemandAnalytics] = useState([]);
   const [stats, setStats] = useState({
     totalPrebookings: 0,
     pendingPrebookings: 0,
@@ -56,14 +52,12 @@ export default function PreBookingDashboard() {
     try {
       setLoading(true);
 
-      const [prebookingsData, analyticsData, statsData] = await Promise.all([
+      const [prebookingsData, statsData] = await Promise.all([
         PreBookingService.getPreBookingsBySeller(session.user.id),
-        PreBookingService.getDemandAnalytics({ sellerId: session.user.id }),
         PreBookingService.getSellerPrebookingStats(session.user.id),
       ]);
 
       setPrebookings(prebookingsData);
-      setDemandAnalytics(analyticsData);
       setStats(statsData);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
@@ -135,14 +129,172 @@ export default function PreBookingDashboard() {
     return <Badge bg={badgeInfo.bg}>{badgeInfo.text}</Badge>;
   };
 
-  const getDemandBadge = (level, count) => {
-    if (level === "high" || count >= 20)
-      return { bg: "danger", text: "🔥 High", count };
-    if (level === "medium" || count >= 5)
-      return { bg: "warning", text: "⭐ Popular", count };
-    if (level === "low" || count >= 1)
-      return { bg: "info", text: "🌱 Requested", count };
-    return { bg: "outline-secondary", text: "✨ New", count: 0 };
+  const filterPrebookings = (status) => {
+    switch (status) {
+      case "pending":
+        return prebookings.filter((p) => p.status === "pending");
+      case "active":
+        return prebookings.filter((p) =>
+          ["accepted", "in_progress", "ready"].includes(p.status)
+        );
+      case "completed":
+        return prebookings.filter((p) => p.status === "delivered");
+      case "rejected":
+        return prebookings.filter((p) =>
+          ["cancelled", "rejected"].includes(p.status)
+        );
+      default:
+        return prebookings;
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Invalid Date";
+    return date.toLocaleDateString();
+  };
+
+  const getTimeRemaining = (targetDate) => {
+    if (!targetDate) return "N/A";
+
+    const now = new Date();
+    const target = new Date(targetDate);
+
+    if (isNaN(target.getTime())) return "Invalid Date";
+
+    const diffTime = target - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return "Overdue";
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Tomorrow";
+    return `${diffDays} days`;
+  };
+
+  const renderContent = () => {
+    const filteredData = filterPrebookings(activeView);
+
+    return (
+      <Card className="border-0 shadow-sm">
+        <Card.Body>
+          {filteredData.length === 0 ? (
+            <div className="text-center text-muted py-5">
+              {activeView === "pending" && (
+                <>
+                  <i className="ti-time text-warning fs-1 d-block mb-3"></i>
+                  <h5>No pending prebookings</h5>
+                  <p>
+                    New customer prebookings requiring review will appear here.
+                  </p>
+                </>
+              )}
+              {activeView === "active" && (
+                <>
+                  <i className="ti-pulse text-success fs-1 d-block mb-3"></i>
+                  <h5>No active orders</h5>
+                  <p>Accepted and in-progress prebookings will show here.</p>
+                </>
+              )}
+              {activeView === "completed" && (
+                <>
+                  <i className="ti-check text-success fs-1 d-block mb-3"></i>
+                  <h5>No completed orders</h5>
+                  <p>Successfully delivered prebookings will appear here.</p>
+                </>
+              )}
+              {activeView === "rejected" && (
+                <>
+                  <i className="ti-close text-danger fs-1 d-block mb-3"></i>
+                  <h5>No rejected orders</h5>
+                  <p>Cancelled or rejected prebookings will appear here.</p>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <Table hover className="align-middle">
+                <thead className="bg-light">
+                  <tr>
+                    <th>Customer</th>
+                    <th>Vegetable</th>
+                    <th>Quantity</th>
+                    <th>Target Date</th>
+                    <th>Status</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredData.map((prebooking) => (
+                    <tr key={prebooking.id}>
+                      <td>
+                        <div className="d-flex align-items-center">
+                          <UserAvatar
+                            user={prebooking.user}
+                            size={32}
+                            className="me-2"
+                          />
+                          <div>
+                            <div className="fw-medium">
+                              {prebooking.user?.name || "Unknown"}
+                            </div>
+                            <small className="text-muted">
+                              {prebooking.user?.phone}
+                            </small>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div>
+                          <div className="fw-medium">
+                            {prebooking.vegetable_name}
+                          </div>
+                          <small className="text-muted">
+                            {prebooking.category}
+                          </small>
+                        </div>
+                      </td>
+                      <td>
+                        {prebooking.quantity}
+                        {prebooking.unit}
+                      </td>
+                      <td>
+                        <div>{formatDate(prebooking.target_date)}</div>
+                        <small className="text-muted">
+                          {getTimeRemaining(prebooking.target_date)}
+                        </small>
+                      </td>
+                      <td>{getStatusBadge(prebooking.status)}</td>
+                      <td>
+                        <div>
+                          ₹
+                          {(
+                            prebooking.final_price ||
+                            prebooking.estimated_price ||
+                            0
+                          ).toFixed(2)}
+                        </div>
+                        <small className="text-muted">per kg</small>
+                      </td>
+                      <td>
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          onClick={() => openUpdateModal(prebooking)}
+                        >
+                          Update
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          )}
+        </Card.Body>
+      </Card>
+    );
   };
 
   if (loading) {
@@ -159,403 +311,115 @@ export default function PreBookingDashboard() {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h1 className="h3 mb-1">🌱 Prebooking Dashboard</h1>
-          <p className="text-muted mb-0">
-            Manage advance orders and track demand
-          </p>
+          <p className="text-muted mb-0">Manage customer advance orders</p>
         </div>
         <Button variant="outline-primary" onClick={loadDashboardData}>
-          <i className="ti-refresh me-2"></i>
+          <i className="ti-reload me-2"></i>
           Refresh
         </Button>
       </div>
 
-      {/* Stats Cards */}
+      {/* Summary Tiles - Clickable */}
       <Row className="g-4 mb-4">
-        <Col xl={3} md={6}>
-          <Card className="border-0 shadow-sm">
-            <Card.Body>
-              <div className="d-flex align-items-center">
-                <div className="flex-shrink-0 me-3">
-                  <div className="bg-primary bg-opacity-10 rounded p-3">
-                    <i className="ti-shopping-cart text-primary"></i>
-                  </div>
-                </div>
-                <div>
-                  <h5 className="mb-1">{stats.totalPrebookings}</h5>
-                  <p className="text-muted mb-0 small">Total Prebookings</p>
-                </div>
+        <Col md={3}>
+          <Card
+            className="border shadow-sm rounded-3 h-100"
+            style={{ borderColor: "#e3e6f0", transition: "all 0.2s ease" }}
+          >
+            <Card.Body className="text-center">
+              <div
+                className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                style={{ width: "60px", height: "60px" }}
+              >
+                <i className="ti-shopping-cart text-primary fs-4"></i>
               </div>
+              <h5 className="mb-1">{stats.totalPrebookings}</h5>
+              <p className="text-muted mb-0 small">Total Prebookings</p>
             </Card.Body>
           </Card>
         </Col>
 
-        <Col xl={3} md={6}>
-          <Card className="border-0 shadow-sm">
-            <Card.Body>
-              <div className="d-flex align-items-center">
-                <div className="flex-shrink-0 me-3">
-                  <div className="bg-warning bg-opacity-10 rounded p-3">
-                    <i className="ti-clock text-warning"></i>
-                  </div>
-                </div>
-                <div>
-                  <h5 className="mb-1">{stats.pendingPrebookings}</h5>
-                  <p className="text-muted mb-0 small">Pending Review</p>
-                </div>
+        <Col md={3}>
+          <Card
+            className={`border shadow-sm rounded-3 h-100 ${
+              activeView === "pending" ? "border-warning" : ""
+            }`}
+            style={{
+              borderColor: activeView === "pending" ? "#ffc107" : "#e3e6f0",
+              transition: "all 0.2s ease",
+              cursor: "pointer",
+              borderWidth: activeView === "pending" ? "2px" : "1px",
+            }}
+            onClick={() => setActiveView("pending")}
+          >
+            <Card.Body className="text-center">
+              <div
+                className="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                style={{ width: "60px", height: "60px" }}
+              >
+                <i className="ti-time text-warning fs-4"></i>
               </div>
+              <h5 className="mb-1">{filterPrebookings("pending").length}</h5>
+              <p className="text-muted mb-0 small">Pending Review</p>
             </Card.Body>
           </Card>
         </Col>
 
-        <Col xl={3} md={6}>
-          <Card className="border-0 shadow-sm">
-            <Card.Body>
-              <div className="d-flex align-items-center">
-                <div className="flex-shrink-0 me-3">
-                  <div className="bg-success bg-opacity-10 rounded p-3">
-                    <i className="ti-package text-success"></i>
-                  </div>
-                </div>
-                <div>
-                  <h5 className="mb-1">{stats.totalQuantity.toFixed(1)}kg</h5>
-                  <p className="text-muted mb-0 small">Total Quantity</p>
-                </div>
+        <Col md={3}>
+          <Card
+            className={`border shadow-sm rounded-3 h-100 ${
+              activeView === "active" ? "border-success" : ""
+            }`}
+            style={{
+              borderColor: activeView === "active" ? "#198754" : "#e3e6f0",
+              transition: "all 0.2s ease",
+              cursor: "pointer",
+              borderWidth: activeView === "active" ? "2px" : "1px",
+            }}
+            onClick={() => setActiveView("active")}
+          >
+            <Card.Body className="text-center">
+              <div
+                className="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                style={{ width: "60px", height: "60px" }}
+              >
+                <i className="ti-pulse text-success fs-4"></i>
               </div>
+              <h5 className="mb-1">{filterPrebookings("active").length}</h5>
+              <p className="text-muted mb-0 small">Active Orders</p>
             </Card.Body>
           </Card>
         </Col>
 
-        <Col xl={3} md={6}>
-          <Card className="border-0 shadow-sm">
-            <Card.Body>
-              <div className="d-flex align-items-center">
-                <div className="flex-shrink-0 me-3">
-                  <div className="bg-info bg-opacity-10 rounded p-3">
-                    <i className="ti-trending-up text-info"></i>
-                  </div>
-                </div>
-                <div>
-                  <h5 className="mb-1">{stats.fulfillmentRate}%</h5>
-                  <p className="text-muted mb-0 small">Fulfillment Rate</p>
-                </div>
+        <Col md={3}>
+          <Card
+            className={`border shadow-sm rounded-3 h-100 ${
+              activeView === "completed" ? "border-info" : ""
+            }`}
+            style={{
+              borderColor: activeView === "completed" ? "#0dcaf0" : "#e3e6f0",
+              transition: "all 0.2s ease",
+              cursor: "pointer",
+              borderWidth: activeView === "completed" ? "2px" : "1px",
+            }}
+            onClick={() => setActiveView("completed")}
+          >
+            <Card.Body className="text-center">
+              <div
+                className="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                style={{ width: "60px", height: "60px" }}
+              >
+                <i className="ti-check text-info fs-4"></i>
               </div>
+              <h5 className="mb-1">{filterPrebookings("completed").length}</h5>
+              <p className="text-muted mb-0 small">Completed</p>
             </Card.Body>
           </Card>
         </Col>
       </Row>
 
-      {/* Tabs Navigation */}
-      <Tabs activeKey={activeTab} onSelect={setActiveTab} className="mb-4">
-        {/* Overview Tab */}
-        <Tab eventKey="overview" title="📊 Overview">
-          <Row className="g-4">
-            {/* High Demand Vegetables */}
-            <Col lg={6}>
-              <Card className="border-0 shadow-sm h-100">
-                <Card.Header className="bg-white border-0 pb-0">
-                  <h6 className="mb-0">🔥 High Demand Vegetables</h6>
-                  <small className="text-muted">
-                    Items with 5+ prebookings
-                  </small>
-                </Card.Header>
-                <Card.Body className="pt-3">
-                  {demandAnalytics.filter((item) => item.total_prebookings >= 5)
-                    .length === 0 ? (
-                    <div className="text-center text-muted py-4">
-                      <i className="ti-info-circle fs-1 d-block mb-2"></i>
-                      <p>No high-demand items yet</p>
-                      <small>Items with 5+ prebookings will appear here</small>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {demandAnalytics
-                        .filter((item) => item.total_prebookings >= 5)
-                        .slice(0, 5)
-                        .map((item, index) => {
-                          const demand = getDemandBadge(
-                            item.demand_level,
-                            item.total_prebookings
-                          );
-                          return (
-                            <div
-                              key={index}
-                              className="d-flex justify-content-between align-items-center py-2 border-bottom"
-                            >
-                              <div>
-                                <div className="fw-medium">
-                                  {item.vegetable_name}
-                                </div>
-                                <small className="text-muted">
-                                  {item.category}
-                                </small>
-                              </div>
-                              <div className="text-end">
-                                <Badge bg={demand.bg} className="mb-1">
-                                  {demand.text}
-                                </Badge>
-                                <div className="small text-muted">
-                                  {item.total_prebookings} orders
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  )}
-                </Card.Body>
-              </Card>
-            </Col>
-
-            {/* Recent Prebookings */}
-            <Col lg={6}>
-              <Card className="border-0 shadow-sm h-100">
-                <Card.Header className="bg-white border-0 pb-0">
-                  <h6 className="mb-0">📋 Recent Prebookings</h6>
-                  <small className="text-muted">
-                    Latest orders requiring attention
-                  </small>
-                </Card.Header>
-                <Card.Body className="pt-3">
-                  {prebookings.filter((p) => p.status === "pending").length ===
-                  0 ? (
-                    <div className="text-center text-muted py-4">
-                      <i className="ti-check-circle fs-1 d-block mb-2"></i>
-                      <p>All caught up!</p>
-                      <small>No pending prebookings to review</small>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {prebookings
-                        .filter((p) => p.status === "pending")
-                        .slice(0, 5)
-                        .map((prebooking) => (
-                          <div
-                            key={prebooking.id}
-                            className="d-flex justify-content-between align-items-center py-2 border-bottom"
-                          >
-                            <div className="flex-grow-1">
-                              <div className="fw-medium">
-                                {prebooking.vegetable_name}
-                              </div>
-                              <div className="small text-muted d-flex align-items-center">
-                                <UserAvatar
-                                  user={prebooking.user}
-                                  size={16}
-                                  className="me-1"
-                                />
-                                {prebooking.user?.name} • {prebooking.quantity}
-                                kg
-                              </div>
-                            </div>
-                            <div className="text-end">
-                              <div className="small text-muted mb-1">
-                                {new Date(
-                                  prebooking.target_date
-                                ).toLocaleDateString()}
-                              </div>
-                              <Button
-                                size="sm"
-                                variant="outline-primary"
-                                onClick={() => openUpdateModal(prebooking)}
-                              >
-                                Review
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        </Tab>
-
-        {/* Prebookings Tab */}
-        <Tab eventKey="prebookings" title="📝 All Prebookings">
-          <Card className="border-0 shadow-sm">
-            <Card.Body>
-              {prebookings.length === 0 ? (
-                <div className="text-center text-muted py-5">
-                  <i className="ti-shopping-cart fs-1 d-block mb-3"></i>
-                  <h5>No prebookings yet</h5>
-                  <p>
-                    Customer prebookings will appear here when they start
-                    ordering from you.
-                  </p>
-                </div>
-              ) : (
-                <div className="table-responsive">
-                  <Table hover className="align-middle">
-                    <thead className="bg-light">
-                      <tr>
-                        <th>Customer</th>
-                        <th>Vegetable</th>
-                        <th>Quantity</th>
-                        <th>Target Date</th>
-                        <th>Status</th>
-                        <th>Price</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {prebookings.map((prebooking) => (
-                        <tr key={prebooking.id}>
-                          <td>
-                            <div className="d-flex align-items-center">
-                              <UserAvatar
-                                user={prebooking.user}
-                                size={32}
-                                className="me-2"
-                              />
-                              <div>
-                                <div className="fw-medium">
-                                  {prebooking.user?.name || "Unknown"}
-                                </div>
-                                <small className="text-muted">
-                                  {prebooking.user?.phone}
-                                </small>
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <div>
-                              <div className="fw-medium">
-                                {prebooking.vegetable_name}
-                              </div>
-                              <small className="text-muted">
-                                {prebooking.category}
-                              </small>
-                            </div>
-                          </td>
-                          <td>
-                            {prebooking.quantity}
-                            {prebooking.unit}
-                          </td>
-                          <td>
-                            <div>
-                              {new Date(
-                                prebooking.target_date
-                              ).toLocaleDateString()}
-                            </div>
-                            <small className="text-muted">
-                              {Math.ceil(
-                                (new Date(prebooking.target_date) -
-                                  new Date()) /
-                                  (1000 * 60 * 60 * 24)
-                              )}{" "}
-                              days
-                            </small>
-                          </td>
-                          <td>{getStatusBadge(prebooking.status)}</td>
-                          <td>
-                            <div>
-                              ₹
-                              {(
-                                prebooking.final_price ||
-                                prebooking.estimated_price ||
-                                0
-                              ).toFixed(2)}
-                            </div>
-                            <small className="text-muted">per kg</small>
-                          </td>
-                          <td>
-                            <Button
-                              size="sm"
-                              variant="outline-primary"
-                              onClick={() => openUpdateModal(prebooking)}
-                            >
-                              Update
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </div>
-              )}
-            </Card.Body>
-          </Card>
-        </Tab>
-
-        {/* Demand Analytics Tab */}
-        <Tab eventKey="analytics" title="📈 Demand Analytics">
-          <Card className="border-0 shadow-sm">
-            <Card.Header className="bg-white border-0">
-              <h6 className="mb-0">Vegetable Demand Analytics</h6>
-              <small className="text-muted">
-                Track what customers are requesting
-              </small>
-            </Card.Header>
-            <Card.Body>
-              {demandAnalytics.length === 0 ? (
-                <div className="text-center text-muted py-5">
-                  <i className="ti-chart-line fs-1 d-block mb-3"></i>
-                  <h5>No demand data yet</h5>
-                  <p>
-                    Analytics will appear when customers start making
-                    prebookings.
-                  </p>
-                </div>
-              ) : (
-                <div className="table-responsive">
-                  <Table hover className="align-middle">
-                    <thead className="bg-light">
-                      <tr>
-                        <th>Vegetable</th>
-                        <th>Category</th>
-                        <th>Total Demand</th>
-                        <th>Unique Customers</th>
-                        <th>Avg. Price</th>
-                        <th>Earliest Needed</th>
-                        <th>Demand Level</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {demandAnalytics.map((item, index) => {
-                        const demand = getDemandBadge(
-                          item.demand_level,
-                          item.total_prebookings
-                        );
-                        return (
-                          <tr key={index}>
-                            <td className="fw-medium">{item.vegetable_name}</td>
-                            <td>
-                              <Badge bg="outline-secondary" className="small">
-                                {item.category}
-                              </Badge>
-                            </td>
-                            <td>
-                              <div>{item.total_quantity_demanded || 0}kg</div>
-                              <small className="text-muted">
-                                {item.total_prebookings} orders
-                              </small>
-                            </td>
-                            <td>{item.unique_customers || 0}</td>
-                            <td>
-                              ₹{(item.avg_estimated_price || 0).toFixed(2)}
-                            </td>
-                            <td>
-                              {item.earliest_needed_date
-                                ? new Date(
-                                    item.earliest_needed_date
-                                  ).toLocaleDateString()
-                                : "No date set"}
-                            </td>
-                            <td>
-                              <Badge bg={demand.bg}>{demand.text}</Badge>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </Table>
-                </div>
-              )}
-            </Card.Body>
-          </Card>
-        </Tab>
-      </Tabs>
+      {/* Content based on selected tile */}
+      {renderContent()}
 
       {/* Update Prebooking Modal */}
       <Modal
