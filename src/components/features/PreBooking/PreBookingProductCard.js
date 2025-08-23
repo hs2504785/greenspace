@@ -166,134 +166,166 @@ export default function PreBookingProductCard({
   const daysUntilAvailable = getDaysUntilAvailable();
 
   return (
-    <Card className="border-0 bg-white">
-      {/* Prebooking Badge */}
-      <div className="position-absolute top-0 start-0 z-1">
-        <Badge bg="primary" className="m-2 px-2 py-1">
-          🌱 Pre-Order
-        </Badge>
+    <Card
+      className="border shadow rounded-3 h-100"
+      style={{
+        borderColor: "#e3e6f0",
+        transition: "all 0.2s ease",
+        "--bs-card-border-width": "1px",
+      }}
+    >
+      <div className="position-relative">
+        {/* Prebooking Badge */}
+        <div className="position-absolute top-0 start-0 z-1">
+          <Badge bg="primary" className="m-2 px-2 py-1 small">
+            🌱 Pre-Order
+          </Badge>
+        </div>
+
+        {/* Availability Badge */}
+        {daysUntilAvailable && (
+          <OverlayTrigger
+            placement="top"
+            overlay={
+              <Tooltip>
+                Target Date:{" "}
+                {estimated_available_date
+                  ? new Date(estimated_available_date).toLocaleDateString()
+                  : "TBD"}
+              </Tooltip>
+            }
+          >
+            <div className="position-absolute top-0 end-0 z-1">
+              <Badge bg="success" className="m-2 px-2 py-1 small">
+                {daysUntilAvailable}
+              </Badge>
+            </div>
+          </OverlayTrigger>
+        )}
+
+        <Link href={`/vegetables/${id}`} className="text-decoration-none">
+          <div
+            style={{ position: "relative", height: "180px" }}
+            className="rounded-top overflow-hidden"
+          >
+            {renderImage()}
+          </div>
+        </Link>
       </div>
 
-      <Link href={`/vegetables/${id}`} className="text-decoration-none">
-        <div
-          style={{ position: "relative", height: "160px" }}
-          className="rounded-3 overflow-hidden"
-        >
-          {renderImage()}
-
-          {/* Availability Timeline - Moved to tooltip */}
-          {daysUntilAvailable && (
-            <OverlayTrigger
-              placement="top"
-              overlay={
-                <Tooltip>
-                  Available in {daysUntilAvailable}
-                  {estimated_available_date && (
-                    <div>
-                      Target:{" "}
-                      {new Date(estimated_available_date).toLocaleDateString()}
-                    </div>
-                  )}
-                </Tooltip>
-              }
-            >
-              <div
-                className="position-absolute bottom-0 end-0 m-2 rounded-circle bg-white bg-opacity-90 d-flex align-items-center justify-content-center"
-                style={{ width: "36px", height: "36px", cursor: "pointer" }}
-              >
-                <i className="ti-calendar text-success"></i>
-              </div>
-            </OverlayTrigger>
-          )}
+      <Card.Body className="p-3 d-flex flex-column">
+        {/* Header with name and category */}
+        <div className="mb-2">
+          <div className="d-flex align-items-center justify-content-between mb-1">
+            <h5 className="mb-0 text-truncate fw-semibold">{name}</h5>
+            <Badge bg="outline-secondary" className="small">
+              {category}
+            </Badge>
+          </div>
+          <div className="small text-muted">{harvest_season}</div>
         </div>
-      </Link>
 
-      <div className="px-3 pb-3 pt-2">
-        {/* Header with name and price */}
-        <div className="d-flex align-items-start justify-content-between mb-2">
-          <div className="flex-grow-1 me-2 min-w-0">
-            <h3 className="h6 mb-1 text-truncate">{name}</h3>
-            <div className="d-flex align-items-center text-muted small">
-              <UserAvatar
-                user={owner}
-                size={16}
-                className="me-1 flex-shrink-0"
-              />
-              <span className="text-truncate" style={{ maxWidth: "120px" }}>
-                {owner?.name || "Seller"}
-              </span>
+        {/* Seller info */}
+        <div className="d-flex align-items-center mb-3">
+          <UserAvatar user={owner} size={20} className="me-2 flex-shrink-0" />
+          <div className="flex-grow-1 min-w-0">
+            <div className="small fw-medium text-truncate">
+              {owner?.name || "Local Farmer"}
+            </div>
+            {location && (
+              <div className="text-muted small text-truncate">
+                <i className="ti-location-pin me-1"></i>
+                {location}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Price and metrics */}
+        <div className="row g-2 mb-3">
+          <div className="col-6">
+            <div className="text-center p-2 bg-light rounded">
+              <div className="small text-muted">Price</div>
+              <div className="fw-bold text-success">
+                ₹{Number(price).toFixed(2)}/kg
+              </div>
             </div>
           </div>
-          <div className="text-end flex-shrink-0">
-            <div
-              className="fw-bold text-success"
-              style={{ fontSize: "0.9rem" }}
-            >
-              ₹{Number(price).toFixed(2)}/kg
+          <div className="col-6">
+            <div className="text-center p-2 bg-light rounded">
+              <div className="small text-muted">Min Order</div>
+              <div className="fw-medium">{min_order_quantity}kg</div>
             </div>
-            <div className="small text-muted">{harvest_season}</div>
           </div>
         </div>
 
         {/* Quantity Selector and Pre-book Button */}
-        <div className="d-flex gap-2 align-items-center">
-          <div className="d-flex border rounded flex-shrink-0">
-            <Button
-              variant="white"
-              size="sm"
-              className="border-0 px-2"
-              disabled={quantity <= min_order_quantity}
-              onClick={(e) => {
-                e.preventDefault();
-                setQuantity(Math.max(min_order_quantity, quantity - 1));
-              }}
-            >
-              −
-            </Button>
-            <div className="px-2 py-1 d-flex align-items-center border-start border-end bg-white small">
-              {quantity}kg
+        <div className="mt-auto">
+          <div className="d-flex gap-2 align-items-center mb-2">
+            <span className="small text-muted">Quantity:</span>
+            <div className="d-flex border rounded">
+              <Button
+                variant="outline-light"
+                size="sm"
+                className="border-0 px-2"
+                disabled={quantity <= min_order_quantity}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setQuantity(Math.max(min_order_quantity, quantity - 1));
+                }}
+              >
+                −
+              </Button>
+              <div className="px-2 py-1 d-flex align-items-center border-start border-end bg-white small">
+                {quantity}kg
+              </div>
+              <Button
+                variant="outline-light"
+                size="sm"
+                className="border-0 px-2"
+                disabled={quantity >= 50}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setQuantity(Math.min(50, quantity + 1));
+                }}
+              >
+                +
+              </Button>
             </div>
+          </div>
+
+          <div className="d-grid">
             <Button
-              variant="white"
+              variant="success"
               size="sm"
-              className="border-0 px-2"
-              disabled={quantity >= 50}
-              onClick={(e) => {
-                e.preventDefault();
-                setQuantity(Math.min(50, quantity + 1));
-              }}
+              className="fw-medium"
+              disabled={!session || loading}
+              onClick={handlePreBook}
             >
-              +
+              {loading ? (
+                <>
+                  <Spinner size="sm" className="me-1" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <i className="ti-shopping-cart me-1"></i>
+                  Pre-Book for ₹{(price * quantity).toFixed(2)}
+                </>
+              )}
             </Button>
           </div>
 
-          <Button
-            variant="success"
-            size="sm"
-            className="flex-grow-1 rounded-pill"
-            disabled={!session || loading}
-            onClick={handlePreBook}
-          >
-            {loading ? (
-              <>
-                <Spinner size="sm" className="me-1" />
-                Booking...
-              </>
-            ) : (
-              <>Pre-Book ₹{(price * quantity).toFixed(2)}</>
-            )}
-          </Button>
+          {!session && (
+            <div className="text-center mt-2">
+              <small className="text-muted">
+                <i className="ti-info-circle me-1"></i>
+                Please login to pre-book
+              </small>
+            </div>
+          )}
         </div>
-
-        {!session && (
-          <div className="text-center mt-2">
-            <small className="text-muted">
-              <i className="ti-info-circle me-1"></i>
-              Please login to pre-book
-            </small>
-          </div>
-        )}
-      </div>
+      </Card.Body>
     </Card>
   );
 }

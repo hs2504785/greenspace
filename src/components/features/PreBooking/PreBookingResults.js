@@ -68,13 +68,27 @@ const PreBookingResults = memo(function PreBookingResults({
   }
 
   return (
-    <Row className="g-4 pb-4">
-      {products.map((product) => (
-        <Col key={product.id} sm={6} lg={4} xl={3}>
-          <PreBookingProductCard {...product} />
-        </Col>
-      ))}
-    </Row>
+    <div className="pb-4">
+      {/* Results Summary */}
+      <div className="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <h6 className="mb-1 fw-semibold">Available Pre-Bookings</h6>
+          <p className="small text-muted mb-0">
+            {products.length} product{products.length !== 1 ? "s" : ""}{" "}
+            available for advance booking
+          </p>
+        </div>
+      </div>
+
+      {/* Products Grid */}
+      <Row className="g-4">
+        {products.map((product) => (
+          <Col key={product.id} xs={12} sm={6} lg={4} xl={3}>
+            <PreBookingProductCard {...product} />
+          </Col>
+        ))}
+      </Row>
+    </div>
   );
 });
 
