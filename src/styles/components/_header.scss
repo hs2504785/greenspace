@@ -353,30 +353,35 @@
   // Bootstrap Offcanvas navigation menu styling - works on all screen sizes
   // More specific selector to override Bootstrap defaults
   .offcanvas.offcanvas-start {
-    width: 200px !important; // Much more compact width
-    max-width: 55vw !important; // Leave even more space for backdrop
+    width: 260px !important; // Wider to prevent text wrapping
+    max-width: 65vw !important;
 
     // Responsive adjustments
     @media (max-width: 575.98px) {
-      width: 180px !important;
-      max-width: 50vw !important;
+      width: 240px !important;
+      max-width: 60vw !important;
     }
 
     .offcanvas-header {
       background: linear-gradient(135deg, #f8fffe 0%, #f0f8f0 100%);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      border-bottom: 2px solid rgba(76, 175, 80, 0.2);
+      padding: 1.1rem 1.25rem;
 
       .offcanvas-title {
         color: #2d5016;
         font-weight: 700;
-        font-size: 0.9rem; // More compact for much narrower menu
-        letter-spacing: 0.3px;
-        text-transform: uppercase;
+        font-size: 1.1rem;
+        letter-spacing: 0.2px;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .btn-close {
         color: #2d5016;
         opacity: 0.7;
+        font-size: 0.9rem;
 
         &:hover {
           opacity: 1;
@@ -390,22 +395,47 @@
   }
 
   .mobile-nav-link {
-    padding: 0.75rem 1rem !important; // Further reduced padding for much narrower menu
-    font-size: 0.95rem; // Compact font for better fit
+    padding: 0.9rem 1.25rem !important;
+    font-size: 1rem;
     font-weight: 500;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     transition: all 0.2s ease;
+    display: flex !important;
+    align-items: center;
+    color: #495057 !important;
+    text-decoration: none;
+    white-space: nowrap;
+
+    i {
+      width: 24px;
+      font-size: 1.1rem;
+      opacity: 0.7;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.05);
-      transform: translateX(5px);
+      background-color: rgba(76, 175, 80, 0.08);
+      transform: translateX(3px);
+      color: #2d5016 !important;
+      text-decoration: none;
+
+      i {
+        opacity: 1;
+        transform: scale(1.1);
+      }
     }
 
     &.active-nav-item {
       color: $dark-green !important;
-      font-weight: 700;
-      background-color: rgba(76, 175, 80, 0.1);
+      font-weight: 600;
+      background-color: rgba(76, 175, 80, 0.15);
       border-left: 4px solid $dark-green;
+
+      i {
+        opacity: 1;
+        transform: scale(1.05);
+      }
     }
 
     &.fair-share-link.active-nav-item {
@@ -415,6 +445,19 @@
 
     &:last-child {
       border-bottom: none;
+    }
+  }
+
+  // Mobile navigation section divider
+  .mobile-nav-divider {
+    padding: 0.5rem 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+
+    small {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      opacity: 0.7;
     }
   }
 

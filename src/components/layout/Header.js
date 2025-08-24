@@ -409,10 +409,10 @@ export default function Header() {
         show={isMenuOpen}
         onHide={() => setIsMenuOpen(false)}
         placement="start"
-        style={{ width: "220px", maxWidth: "60vw" }}
+        style={{ width: "260px", maxWidth: "65vw" }}
       >
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Navigation</Offcanvas.Title>
+        <Offcanvas.Header closeButton className="border-bottom">
+          <Offcanvas.Title>Arya Natural Farms</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
           <Nav className="flex-column">
@@ -424,6 +424,7 @@ export default function Header() {
               }`}
               onClick={handleLinkClick}
             >
+              <i className="ti-heart me-2 text-success"></i>
               Fair Share
             </Nav.Link>
             <Nav.Link
@@ -436,6 +437,7 @@ export default function Header() {
               }`}
               onClick={handleLinkClick}
             >
+              <i className="ti-apple me-2 text-success"></i>
               Fresh Vegetables
             </Nav.Link>
             <Nav.Link
@@ -446,6 +448,7 @@ export default function Header() {
               }`}
               onClick={handleLinkClick}
             >
+              <i className="ti-calendar me-2 text-info"></i>
               Pre-Booking
             </Nav.Link>
             <Nav.Link
@@ -456,11 +459,14 @@ export default function Header() {
               }`}
               onClick={handleLinkClick}
             >
-              <i className="ti ti-users me-1"></i>
+              <i className="ti-user me-2 text-primary"></i>
               Community
             </Nav.Link>
             {session && (
               <>
+                <div className="mobile-nav-divider mt-2 mb-1">
+                  <small className="text-muted px-3">MY ACCOUNT</small>
+                </div>
                 <Nav.Link
                   as={Link}
                   href="/orders"
@@ -469,7 +475,8 @@ export default function Header() {
                   }`}
                   onClick={handleLinkClick}
                 >
-                  Orders & Deliveries
+                  <i className="ti-package me-2 text-warning"></i>
+                  My Orders
                 </Nav.Link>
               </>
             )}
