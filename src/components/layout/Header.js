@@ -444,6 +444,17 @@ export default function Header() {
             >
               Pre-Booking
             </Nav.Link>
+            <Nav.Link
+              as={Link}
+              href="/users"
+              className={`mobile-nav-link ${
+                isActive("/users") ? "active-nav-item" : ""
+              }`}
+              onClick={handleLinkClick}
+            >
+              <i className="ti ti-users me-1"></i>
+              Community
+            </Nav.Link>
             {session && (
               <>
                 <Nav.Link

@@ -73,7 +73,9 @@ export async function GET(request) {
 
     const { data: user, error } = await supabase
       .from("users")
-      .select("id, whatsapp_number, updated_at")
+      .select(
+        "id, whatsapp_number, location, show_email_publicly, show_phone_publicly, show_whatsapp_publicly, profile_public, updated_at"
+      )
       .eq("id", userId)
       .single();
 
@@ -172,38 +174,72 @@ export async function PATCH(request) {
     const data = await request.json();
     console.log("Received request data:", data);
 
-    const whatsapp_number = data.whatsapp_number;
-    if (!whatsapp_number) {
-      return new Response(
-        JSON.stringify({
-          message: "WhatsApp number is required",
-          details: "whatsapp_number field is missing in request",
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+    // Prepare update data object
+    const updateData = {
+      updated_at: new Date().toISOString(),
+    };
+
+    // Handle WhatsApp number update if provided
+    if (data.whatsapp_number !== undefined) {
+      const whatsapp_number = data.whatsapp_number;
+
+      if (whatsapp_number && !/^[0-9]{10}$/.test(whatsapp_number)) {
+        return new Response(
+          JSON.stringify({
+            message: "Please enter a valid 10-digit phone number",
+            details: "WhatsApp number must be exactly 10 digits",
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      updateData.whatsapp_number = whatsapp_number;
     }
 
-    // Validate whatsapp number format
-    if (!/^[0-9]{10}$/.test(whatsapp_number)) {
-      return new Response(
-        JSON.stringify({
-          message: "Please enter a valid 10-digit phone number",
-          details: "WhatsApp number must be exactly 10 digits",
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+    // Handle location update if provided
+    if (data.location !== undefined) {
+      const location = data.location?.trim();
+
+      if (location && location.length > 200) {
+        return new Response(
+          JSON.stringify({
+            message: "Location is too long",
+            details: "Location must be 200 characters or less",
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      updateData.location = location || null;
+    }
+
+    // Handle privacy settings if provided
+    if (data.show_email_publicly !== undefined) {
+      updateData.show_email_publicly = Boolean(data.show_email_publicly);
+    }
+
+    if (data.show_phone_publicly !== undefined) {
+      updateData.show_phone_publicly = Boolean(data.show_phone_publicly);
+    }
+
+    if (data.show_whatsapp_publicly !== undefined) {
+      updateData.show_whatsapp_publicly = Boolean(data.show_whatsapp_publicly);
+    }
+
+    if (data.profile_public !== undefined) {
+      updateData.profile_public = Boolean(data.profile_public);
     }
 
     // Update the user
     console.log("Attempting to update user:", {
       userId,
-      whatsapp_number,
+      updateData,
       timestamp: new Date().toISOString(),
     });
 
@@ -211,19 +247,13 @@ export async function PATCH(request) {
     console.log("Executing update query:", {
       table: "users",
       id: userId,
-      data: {
-        whatsapp_number,
-        updated_at: new Date().toISOString(),
-      },
+      data: updateData,
     });
 
     // Do the update with auth context
     const { data: updatedData, error: updateError } = await supabase
       .from("users")
-      .update({
-        whatsapp_number,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", userId)
       .select()
       .limit(1);
@@ -232,7 +262,7 @@ export async function PATCH(request) {
       data: updatedData,
       error: updateError,
       userId,
-      whatsapp_number,
+      updateData,
     });
 
     // Get the first result since update returns an array
@@ -243,14 +273,16 @@ export async function PATCH(request) {
     // Verify the update immediately
     const { data: verifyData, error: verifyError } = await supabase
       .from("users")
-      .select("id, whatsapp_number, updated_at")
+      .select(
+        "id, whatsapp_number, location, show_email_publicly, show_phone_publicly, show_whatsapp_publicly, profile_public, updated_at"
+      )
       .eq("id", userId)
       .single();
 
     console.log("Immediate verification:", {
       verifyData,
       verifyError,
-      expectedNumber: whatsapp_number,
+      updateData,
     });
 
     if (updateError) {

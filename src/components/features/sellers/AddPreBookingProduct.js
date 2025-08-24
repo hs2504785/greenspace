@@ -11,7 +11,7 @@ import {
   Badge,
   Spinner,
 } from "react-bootstrap";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import toastService from "@/utils/toastService";
@@ -39,6 +39,37 @@ export default function AddPreBookingProduct() {
   const [errors, setErrors] = useState({});
   const { data: session } = useSession();
   const router = useRouter();
+
+  // Fetch user's default location when component mounts
+  useEffect(() => {
+    const fetchUserDefaultLocation = async () => {
+      if (session?.user?.email) {
+        try {
+          const response = await fetch("/api/users/profile");
+          const data = await response.json();
+
+          if (data.user?.location && data.user.location.trim()) {
+            setFormData((prev) => ({
+              ...prev,
+              location: data.user.location,
+            }));
+            console.log(
+              "Pre-filled prebooking location from user profile:",
+              data.user.location
+            );
+          }
+        } catch (error) {
+          console.error(
+            "Failed to fetch user default location for prebooking:",
+            error
+          );
+          // Don't show error to user, just continue without pre-filling
+        }
+      }
+    };
+
+    fetchUserDefaultLocation();
+  }, [session]);
 
   // Calculate minimum date (tomorrow)
   const tomorrow = new Date();

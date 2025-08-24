@@ -67,6 +67,7 @@ export default function VegetableForm({
       setImagePreviews(vegetable.images || []);
       setImageFiles([]);
     } else {
+      // Reset form for new product
       setFormData({
         name: "",
         description: "",
@@ -80,8 +81,34 @@ export default function VegetableForm({
       });
       setImagePreviews([]);
       setImageFiles([]);
+
+      // Fetch user's default location for new products
+      if (session?.user?.email && !vegetable) {
+        fetchUserDefaultLocation();
+      }
     }
-  }, [vegetable]);
+  }, [vegetable, session]);
+
+  const fetchUserDefaultLocation = async () => {
+    try {
+      const response = await fetch("/api/users/profile");
+      const data = await response.json();
+
+      if (data.user?.location && data.user.location.trim()) {
+        setFormData((prev) => ({
+          ...prev,
+          location: data.user.location,
+        }));
+        console.log(
+          "Pre-filled location from user profile:",
+          data.user.location
+        );
+      }
+    } catch (error) {
+      console.error("Failed to fetch user default location:", error);
+      // Don't show error to user, just continue without pre-filling
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

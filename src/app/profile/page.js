@@ -4,11 +4,17 @@ import { useState, useEffect } from "react";
 import { Container, Card, Form, Button } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import UserAvatar from "@/components/common/UserAvatar";
+import LocationAutoDetect from "@/components/common/LocationAutoDetect";
 import toastService from "@/utils/toastService";
 
 export default function ProfilePage() {
   const { data: session, update: updateSession } = useSession();
   const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [location, setLocation] = useState("");
+  const [showEmailPublicly, setShowEmailPublicly] = useState(false);
+  const [showPhonePublicly, setShowPhonePublicly] = useState(false);
+  const [showWhatsappPublicly, setShowWhatsappPublicly] = useState(false);
+  const [profilePublic, setProfilePublic] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   // Initialize and update whatsappNumber when session changes
@@ -33,6 +39,27 @@ export default function ProfilePage() {
             console.log("No WhatsApp number found in profile data");
             setWhatsappNumber(""); // ✅ Ensure field is empty if no data
           }
+
+          if (data.user?.location) {
+            console.log("Setting location from profile:", data.user.location);
+            setLocation(data.user.location);
+          } else {
+            console.log("No location found in profile data");
+            setLocation(""); // ✅ Ensure field is empty if no data
+          }
+
+          // Set privacy preferences from API response
+          console.log("Setting privacy preferences from profile:", {
+            show_email_publicly: data.user?.show_email_publicly,
+            show_phone_publicly: data.user?.show_phone_publicly,
+            show_whatsapp_publicly: data.user?.show_whatsapp_publicly,
+            profile_public: data.user?.profile_public,
+          });
+
+          setShowEmailPublicly(Boolean(data.user?.show_email_publicly));
+          setShowPhonePublicly(Boolean(data.user?.show_phone_publicly));
+          setShowWhatsappPublicly(Boolean(data.user?.show_whatsapp_publicly));
+          setProfilePublic(data.user?.profile_public !== false); // Default to true
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
         }
@@ -50,6 +77,11 @@ export default function ProfilePage() {
 
     console.log("Submitting profile update:", {
       whatsappNumber,
+      location,
+      showEmailPublicly,
+      showPhonePublicly,
+      showWhatsappPublicly,
+      profilePublic,
       sessionUser: session?.user,
     });
 
@@ -61,6 +93,11 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({
           whatsapp_number: whatsappNumber,
+          location: location,
+          show_email_publicly: showEmailPublicly,
+          show_phone_publicly: showPhonePublicly,
+          show_whatsapp_publicly: showWhatsappPublicly,
+          profile_public: profilePublic,
         }),
       });
 
@@ -89,6 +126,7 @@ export default function ProfilePage() {
             user: {
               ...session.user,
               whatsapp_number: whatsappNumber,
+              location: location,
             },
           };
           console.log("Updating session with:", updatedSession);
@@ -185,10 +223,106 @@ export default function ProfilePage() {
                   </Form.Text>
                 </Form.Group>
 
+                <LocationAutoDetect
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  name="location"
+                  placeholder="e.g., Bangalore, Karnataka or My Farm, Village Name"
+                  label={
+                    <>
+                      <i className="ti ti-map-pin me-2"></i>
+                      Default Location
+                    </>
+                  }
+                  helpText="Your default farm/garden location. This will be pre-filled when you add products, helping buyers find sellers nearby."
+                  className="mb-3"
+                  disabled={isLoading}
+                />
+
+                {/* Privacy Settings Section */}
+                <Card className="mt-4">
+                  <Card.Header className="bg-light">
+                    <h6 className="mb-0">
+                      <i className="ti ti-shield-lock me-2"></i>
+                      Privacy Settings
+                    </h6>
+                  </Card.Header>
+                  <Card.Body>
+                    <div className="mb-3">
+                      <Form.Check
+                        type="switch"
+                        id="profile-public"
+                        label="Show my profile in community listings"
+                        checked={profilePublic}
+                        onChange={(e) => setProfilePublic(e.target.checked)}
+                        disabled={isLoading}
+                      />
+                      <Form.Text className="text-muted">
+                        Control whether your profile appears in the public
+                        community page
+                      </Form.Text>
+                    </div>
+
+                    <div className="mb-3">
+                      <h6 className="text-muted mb-2">
+                        Contact Information Visibility
+                      </h6>
+                      <p className="small text-muted mb-2">
+                        Choose what contact information to show when people
+                        click on your profile in community listings:
+                      </p>
+
+                      <Form.Check
+                        type="switch"
+                        id="show-email"
+                        label="Show my email address"
+                        checked={showEmailPublicly}
+                        onChange={(e) => setShowEmailPublicly(e.target.checked)}
+                        disabled={isLoading}
+                        className="mb-2"
+                      />
+
+                      <Form.Check
+                        type="switch"
+                        id="show-whatsapp"
+                        label="Show my WhatsApp number"
+                        checked={showWhatsappPublicly}
+                        onChange={(e) =>
+                          setShowWhatsappPublicly(e.target.checked)
+                        }
+                        disabled={isLoading}
+                        className="mb-2"
+                      />
+
+                      <Form.Check
+                        type="switch"
+                        id="show-phone"
+                        label="Show my phone number"
+                        checked={showPhonePublicly}
+                        onChange={(e) => setShowPhonePublicly(e.target.checked)}
+                        disabled={isLoading}
+                      />
+                    </div>
+
+                    <div className="alert alert-info d-flex align-items-start">
+                      <i className="ti ti-info-circle me-2 flex-shrink-0 mt-1"></i>
+                      <div>
+                        <small>
+                          <strong>Privacy Note:</strong> Your contact
+                          information will only be visible when someone clicks
+                          on your profile in community listings. This helps
+                          buyers connect with local sellers while maintaining
+                          your privacy control.
+                        </small>
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+
                 <Button
                   type="submit"
                   variant="success"
-                  className="w-100"
+                  className="w-100 mt-3"
                   disabled={isLoading}
                 >
                   {isLoading ? "Updating..." : "Update Profile"}
