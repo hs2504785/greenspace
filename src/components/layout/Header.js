@@ -275,7 +275,11 @@ export default function Header() {
       </Navbar>
 
       {/* Mobile Search section - shown below header on smaller screens */}
-      <div className="search-section d-lg-none">
+      <div
+        className={`search-section d-lg-none ${
+          pathname.startsWith("/orders/") ? "d-none" : ""
+        }`}
+      >
         <Container>
           <div className="py-3">
             {/* Mobile Search Section - shown below header on mobile */}

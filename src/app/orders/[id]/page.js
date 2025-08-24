@@ -33,10 +33,10 @@ export default function OrderDetailsPage() {
   }
 
   return (
-    <Container className="pb-4">
+    <Container className="pb-4 pt-2">
       <Row className="mb-4">
         <Col>
-          <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
             <h1 className="mb-0">
               <i className="ti-package me-2"></i>
               Order #{order.id}
