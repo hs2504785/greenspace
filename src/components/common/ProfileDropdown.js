@@ -42,61 +42,74 @@ export default function ProfileDropdown({ user }) {
         </div>
       </Dropdown.Toggle>
 
-      <Dropdown.Menu className="shadow-sm">
+      <Dropdown.Menu className="shadow-sm" style={{ minWidth: "220px" }}>
+        {/* Personal Section */}
+        <div className="px-3 py-2 border-bottom bg-light">
+          <small className="text-muted fw-semibold">PERSONAL</small>
+        </div>
         <Dropdown.Item as={Link} href="/profile">
-          <i className="ti ti-user me-2"></i>
+          <i className="ti ti-user me-2 text-primary"></i>
           Profile
         </Dropdown.Item>
-        {/* Notifications for all users */}
         <Dropdown.Item as={Link} href="/notifications">
-          <i className="ti ti-bell me-2"></i>
+          <i className="ti ti-bell me-2 text-info"></i>
           Notifications
         </Dropdown.Item>
         <Dropdown.Item as={Link} href="/my-prebookings">
-          <i className="ti ti-calendar-plus me-2"></i>
+          <i className="ti-bookmark me-2 text-success"></i>
           My Pre-Bookings
         </Dropdown.Item>
+
+        {/* Business Section - for Sellers/Admins */}
         {!loading && (isSeller || isAdmin) && (
           <>
+            <div className="px-3 py-2 border-bottom bg-light mt-2">
+              <small className="text-muted fw-semibold">BUSINESS</small>
+            </div>
             <Dropdown.Item as={Link} href="/products-management">
-              <i className="ti ti-package me-2"></i>
+              <i className="ti-package me-2 text-warning"></i>
               My Products
             </Dropdown.Item>
             <Dropdown.Item as={Link} href="/seller-dashboard">
-              <i className="ti ti-shopping-cart me-2"></i>
+              <i className="ti-dashboard me-2 text-success"></i>
               Orders Dashboard
             </Dropdown.Item>
-            <Dropdown.Item as={Link} href="/payment-verification">
-              <i className="ti ti-credit-card me-2"></i>
-              Payment Verification
-            </Dropdown.Item>
             <Dropdown.Item as={Link} href="/prebooking-dashboard">
-              <i className="ti ti-calendar-clock me-2"></i>
+              <i className="ti-calendar me-2 text-info"></i>
               Pre-Booking Dashboard
             </Dropdown.Item>
-          </>
-        )}
-        {isAdmin && (
-          <>
-            <Dropdown.Divider />
-            <Dropdown.Item as={Link} href="/admin/seller-requests">
-              <i className="ti ti-user me-2"></i>
-              Seller Requests
+            <Dropdown.Item as={Link} href="/payment-verification">
+              <i className="ti-credit-card me-2 text-primary"></i>
+              Payment Verification
             </Dropdown.Item>
           </>
         )}
-        {isSuperAdmin && (
+
+        {/* Admin Section */}
+        {(isAdmin || isSuperAdmin) && (
           <>
-            <Dropdown.Divider />
-            <Dropdown.Item as={Link} href="/admin/users">
-              <i className="ti ti-users me-2"></i>
-              Manage Users
-            </Dropdown.Item>
+            <div className="px-3 py-2 border-bottom bg-light mt-2">
+              <small className="text-muted fw-semibold">ADMINISTRATION</small>
+            </div>
+            {isAdmin && (
+              <Dropdown.Item as={Link} href="/admin/seller-requests">
+                <i className="ti-check me-2 text-warning"></i>
+                Seller Requests
+              </Dropdown.Item>
+            )}
+            {isSuperAdmin && (
+              <Dropdown.Item as={Link} href="/admin/users">
+                <i className="ti-settings me-2 text-danger"></i>
+                Manage Users
+              </Dropdown.Item>
+            )}
           </>
         )}
+
+        {/* Account Section */}
         <Dropdown.Divider />
         <Dropdown.Item onClick={() => signOut()} className="text-danger">
-          <i className="ti ti-power-off me-2"></i>
+          <i className="ti-power-off me-2"></i>
           Sign out
         </Dropdown.Item>
       </Dropdown.Menu>
