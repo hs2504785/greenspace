@@ -110,6 +110,7 @@ export default function DashboardPage() {
               </Card>
             </Col>
 
+            {/* Featured Become a Seller Card - Hidden as requested
             <Col md={6} className="mb-4">
               <Card className="h-100 border-success shadow-sm">
                 <Card.Body className="text-center">
@@ -137,6 +138,7 @@ export default function DashboardPage() {
                 </Card.Body>
               </Card>
             </Col>
+            */}
           </>
         )}
 
@@ -208,12 +210,13 @@ export default function DashboardPage() {
               <Alert variant="info">
                 <Alert.Heading>👨‍💼 Admin Access</Alert.Heading>
                 <p className="mb-0">
-                  You have administrative privileges. Access admin tools from
-                  your profile dropdown.
+                  You have administrative privileges. Admin tools access via
+                  direct URLs.
                 </p>
               </Alert>
             </div>
 
+            {/* Seller Verification Card - Hidden as requested
             <Col md={6} className="mb-4">
               <Card className="h-100 border-0 shadow-sm">
                 <Card.Body className="text-center">
@@ -234,6 +237,7 @@ export default function DashboardPage() {
                 </Card.Body>
               </Card>
             </Col>
+            */}
 
             {isSuperAdmin && (
               <Col md={6} className="mb-4">
@@ -286,6 +290,7 @@ export default function DashboardPage() {
                   <i className="ti-users me-1"></i>
                   Community
                 </Link>
+                {/* Become a Seller button - Hidden as requested
                 {!isSeller && !isAdmin && (
                   <Link
                     href="/become-seller"
@@ -295,6 +300,7 @@ export default function DashboardPage() {
                     Become a Seller
                   </Link>
                 )}
+                */}
               </div>
             </Card.Body>
           </Card>

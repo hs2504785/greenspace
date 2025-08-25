@@ -112,12 +112,14 @@ export default function ProfileDropdown({ user }) {
             <div className="px-3 py-2 border-bottom bg-light mt-2">
               <small className="text-muted fw-semibold">ADMINISTRATION</small>
             </div>
+            {/* Seller Requests - Hidden as requested
             {isAdmin && (
               <Dropdown.Item as={Link} href="/admin/seller-requests">
                 <i className="ti-check me-2 text-warning"></i>
                 Seller Requests
               </Dropdown.Item>
             )}
+            */}
             {isSuperAdmin && (
               <Dropdown.Item as={Link} href="/admin/users">
                 <i className="ti-settings me-2 text-danger"></i>

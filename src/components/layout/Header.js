@@ -463,6 +463,7 @@ export default function Header() {
                 <div className="mobile-nav-divider mt-2 mb-1">
                   <small className="text-muted px-3">MY ACCOUNT</small>
                 </div>
+                {/* Become a Seller - Hidden as requested 
                 <Nav.Link
                   as={Link}
                   href="/become-seller"
@@ -474,6 +475,7 @@ export default function Header() {
                   <i className="ti-store me-2 text-success"></i>
                   Become a Seller
                 </Nav.Link>
+                */}
                 <Nav.Link
                   as={Link}
                   href="/orders"
