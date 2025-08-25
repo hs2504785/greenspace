@@ -123,6 +123,9 @@ export default function OrderTimeline({ order }) {
       });
     }
 
+    // Check if this is a free order
+    const isFreeOrder = !order.total_amount || order.total_amount === 0;
+
     // Normal flow: show all statuses with proper visual states
     const allStatuses = [
       "pending",
@@ -132,7 +135,12 @@ export default function OrderTimeline({ order }) {
       "shipped",
       "delivered",
     ];
-    const currentWeight = getStatusWeight(currentStatus);
+    let currentWeight = getStatusWeight(currentStatus);
+
+    // For free orders, if status is still pending, treat payment as automatically received
+    if (isFreeOrder && currentStatus === "pending") {
+      currentWeight = Math.max(currentWeight, 0.5); // At least payment_received level
+    }
 
     return allStatuses.map((status) => {
       const statusConfig = STATUS_FLOW[status];
@@ -147,6 +155,15 @@ export default function OrderTimeline({ order }) {
         state = "active";
       } else {
         state = "future";
+      }
+
+      // Special handling for payment_received - show as completed for paid orders or free orders
+      if (
+        status === "payment_received" &&
+        (currentWeight >= 0.5 || isFreeOrder)
+      ) {
+        state = "past"; // Show as completed
+        additionalClasses = "completed-payment";
       }
 
       return (
@@ -165,7 +182,8 @@ export default function OrderTimeline({ order }) {
               {getTimelineDescription(
                 status,
                 currentStatus,
-                statusConfig.description
+                statusConfig.description,
+                isFreeOrder
               )}
             </p>
             {state === "active" && canUpdateStatus && (
@@ -227,7 +245,12 @@ function getStatusWeight(status) {
   return weights[status] || 0;
 }
 
-function getTimelineDescription(status, currentStatus, defaultDescription) {
+function getTimelineDescription(
+  status,
+  currentStatus,
+  defaultDescription,
+  isFreeOrder
+) {
   // Special handling for "pending" status based on current order status
   if (status === "pending") {
     const currentWeight = getStatusWeight(currentStatus);
@@ -235,6 +258,11 @@ function getTimelineDescription(status, currentStatus, defaultDescription) {
     if (currentWeight >= 0.5) {
       return "Order placed successfully";
     }
+  }
+
+  // Special handling for payment_received status for free orders
+  if (status === "payment_received" && isFreeOrder) {
+    return "No payment required - complimentary order";
   }
 
   return defaultDescription;

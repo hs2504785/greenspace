@@ -41,7 +41,7 @@ export default function OrderDetailsPage() {
               <i className="ti-package me-2"></i>
               Order #{order.id}
             </h1>
-            <OrderStatusBadge status={order.status} />
+            <OrderStatusBadge status={order.status} order={order} />
           </div>
         </Col>
       </Row>
@@ -58,9 +58,15 @@ export default function OrderDetailsPage() {
   );
 }
 
-function OrderStatusBadge({ status }) {
+function OrderStatusBadge({ status, order }) {
+  const isFreeOrder = !order?.total_amount || order?.total_amount === 0;
+
   const styles = {
-    pending: { bg: "warning", icon: "ti-timer", text: "Pending Payment" },
+    pending: {
+      bg: isFreeOrder ? "success" : "warning",
+      icon: isFreeOrder ? "ti-check" : "ti-timer",
+      text: isFreeOrder ? "Payment Received" : "Pending Payment",
+    },
     pending_payment: {
       bg: "warning",
       icon: "ti-credit-card",

@@ -110,5 +110,20 @@
         filter: grayscale(1);
       }
     }
+
+    // Special styling for completed payment status
+    &.completed-payment {
+      .timeline-content {
+        opacity: 1;
+        font-weight: 600;
+      }
+
+      .timeline-icon {
+        opacity: 1;
+        filter: none;
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 1),
+          0 0 0 4px var(--bs-success);
+      }
+    }
   }
 }

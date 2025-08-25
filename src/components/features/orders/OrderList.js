@@ -5,23 +5,39 @@ import Link from "next/link";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import UserAvatar from "@/components/common/UserAvatar";
 
-const ORDER_STATUS_STYLES = {
-  pending: { bg: "warning", icon: "ti-timer", text: "Pending Payment" },
-  pending_payment: {
-    bg: "warning",
-    icon: "ti-credit-card",
-    text: "Payment Pending",
-  },
-  payment_received: {
-    bg: "success",
-    icon: "ti-check",
-    text: "Payment Received",
-  },
-  confirmed: { bg: "info", icon: "ti-check", text: "Confirmed" },
-  processing: { bg: "primary", icon: "ti-reload", text: "Processing" },
-  shipped: { bg: "secondary", icon: "ti-truck", text: "Shipped" },
-  delivered: { bg: "success", icon: "ti-package", text: "Delivered" },
-  cancelled: { bg: "danger", icon: "ti-close", text: "Cancelled" },
+const getOrderStatusStyle = (status, order) => {
+  const isFreeOrder = !order?.total_amount || order?.total_amount === 0;
+
+  const ORDER_STATUS_STYLES = {
+    pending: {
+      bg: isFreeOrder ? "success" : "warning",
+      icon: isFreeOrder ? "ti-check" : "ti-timer",
+      text: isFreeOrder ? "Payment Received" : "Pending Payment",
+    },
+    pending_payment: {
+      bg: "warning",
+      icon: "ti-credit-card",
+      text: "Payment Pending",
+    },
+    payment_received: {
+      bg: "success",
+      icon: "ti-check",
+      text: "Payment Received",
+    },
+    confirmed: { bg: "info", icon: "ti-check", text: "Confirmed" },
+    processing: { bg: "primary", icon: "ti-reload", text: "Processing" },
+    shipped: { bg: "secondary", icon: "ti-truck", text: "Shipped" },
+    delivered: { bg: "success", icon: "ti-package", text: "Delivered" },
+    cancelled: { bg: "danger", icon: "ti-close", text: "Cancelled" },
+  };
+
+  return (
+    ORDER_STATUS_STYLES[status] || {
+      bg: "secondary",
+      icon: "ti-help",
+      text: status.charAt(0).toUpperCase() + status.slice(1),
+    }
+  );
 };
 
 export default function OrderList({ orders = [], loading, error }) {
@@ -59,16 +75,15 @@ export default function OrderList({ orders = [], loading, error }) {
               <strong>{order.id}</strong>
             </div>
             <Badge
-              bg={ORDER_STATUS_STYLES[order.status]?.bg || "secondary"}
+              bg={getOrderStatusStyle(order.status, order).bg}
               className="d-flex align-items-center"
             >
               <i
                 className={`${
-                  ORDER_STATUS_STYLES[order.status]?.icon || "ti-help"
+                  getOrderStatusStyle(order.status, order).icon
                 } me-1`}
               ></i>
-              {ORDER_STATUS_STYLES[order.status]?.text ||
-                order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+              {getOrderStatusStyle(order.status, order).text}
             </Badge>
           </Card.Header>
           <Card.Body>

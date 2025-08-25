@@ -40,7 +40,11 @@ export default function OrderPaymentSection({ order }) {
 
   const paymentStatus = getPaymentStatus();
   const isPaid = paymentStatus === "paid" || paymentStatus === "completed";
-  const canPay = paymentStatus === "pending" && order.status !== "cancelled";
+  const hasValidAmount = order.total_amount && order.total_amount > 0;
+  const canPay =
+    paymentStatus === "pending" &&
+    order.status !== "cancelled" &&
+    hasValidAmount;
 
   // Debug logging
   console.log("🔍 OrderPaymentSection Debug:", {
@@ -49,6 +53,8 @@ export default function OrderPaymentSection({ order }) {
     calculatedPaymentStatus: paymentStatus,
     isPaid,
     canPay,
+    hasValidAmount,
+    totalAmount: order.total_amount,
   });
 
   const handleUpiPayment = () => {
@@ -119,6 +125,8 @@ export default function OrderPaymentSection({ order }) {
   };
 
   const getPaymentStatusBadge = () => {
+    const isFreeOrder = !order.total_amount || order.total_amount === 0;
+
     // If order status is payment_received, show that instead of using payment status
     if (order.status === "payment_received") {
       return (
@@ -130,7 +138,11 @@ export default function OrderPaymentSection({ order }) {
     }
 
     const badges = {
-      pending: { bg: "warning", text: "Payment Pending", icon: "ti-timer" },
+      pending: {
+        bg: isFreeOrder ? "success" : "warning",
+        text: isFreeOrder ? "Payment Received" : "Payment Pending",
+        icon: isFreeOrder ? "ti-check" : "ti-timer",
+      },
       paid: { bg: "success", text: "Payment Completed", icon: "ti-check" },
       completed: { bg: "success", text: "Payment Completed", icon: "ti-check" },
       failed: { bg: "danger", text: "Payment Failed", icon: "ti-close" },
@@ -170,6 +182,19 @@ export default function OrderPaymentSection({ order }) {
                     Your payment of{" "}
                     <strong>₹{order.total_amount?.toFixed(2)}</strong> has been
                     received. Your order is being processed.
+                  </p>
+                </div>
+              ) : !hasValidAmount && paymentStatus === "pending" ? (
+                <div>
+                  <h6 className="text-success mb-2">
+                    <i className="ti-gift me-2"></i>
+                    Free Order
+                  </h6>
+                  <p className="text-muted mb-0">
+                    This is a complimentary order. No payment required.
+                  </p>
+                  <p className="small text-muted mb-0">
+                    Your order will be confirmed shortly.
                   </p>
                 </div>
               ) : canPay ? (
