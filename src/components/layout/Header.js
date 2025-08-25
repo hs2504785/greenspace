@@ -83,7 +83,7 @@ export default function Header() {
           <div className="d-flex align-items-center w-100">
             {/* Hamburger - always visible on all screen sizes, positioned first */}
             <button
-              className="navbar-toggler me-3"
+              className="navbar-toggler me-2"
               type="button"
               onClick={toggleMenu}
               aria-controls="mobile-menu"

@@ -58,8 +58,14 @@ export default function UserAvatar({ user, size = 32, className = "" }) {
         alt={user.name || "User"}
         width={size}
         height={size}
-        className={`rounded-circle ${className}`}
-        style={{ objectFit: "cover" }}
+        className={`rounded-circle flex-shrink-0 ${className}`}
+        style={{
+          objectFit: "cover",
+          minWidth: size,
+          minHeight: size,
+          maxWidth: size,
+          maxHeight: size,
+        }}
         onError={() => setImageError(true)}
       />
     );
@@ -71,10 +77,14 @@ export default function UserAvatar({ user, size = 32, className = "" }) {
 
   return (
     <div
-      className={`rounded-circle d-flex align-items-center justify-content-center ${className}`}
+      className={`rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 ${className}`}
       style={{
         width: size,
         height: size,
+        minWidth: size,
+        minHeight: size,
+        maxWidth: size,
+        maxHeight: size,
         backgroundColor,
         color: "white",
         fontSize: `${fontSize}px`,

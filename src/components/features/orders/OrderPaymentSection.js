@@ -40,39 +40,13 @@ export default function OrderPaymentSection({ order }) {
 
   const paymentStatus = getPaymentStatus();
   const isPaid = paymentStatus === "paid" || paymentStatus === "completed";
-  const hasValidAmount = order.total_amount && order.total_amount > 0;
+  const hasValidAmount = !!(order.total_amount && order.total_amount > 0);
   const canPay =
     paymentStatus === "pending" &&
     order.status !== "cancelled" &&
     hasValidAmount;
 
-  // Debug logging
-  console.log("🔍 OrderPaymentSection Debug:", {
-    orderStatus: order.status,
-    orderPaymentStatus: order.payment_status,
-    calculatedPaymentStatus: paymentStatus,
-    isPaid,
-    canPay,
-    hasValidAmount,
-    totalAmount: order.total_amount,
-  });
-
   const handleUpiPayment = () => {
-    console.log(
-      "🚀 OrderPaymentSection - Starting payment from order details:",
-      {
-        orderId: order.id,
-        amount: order.total_amount,
-        total: order.total,
-        sellerId: order.seller_id,
-        fullOrder: order,
-        orderDataForUpi: {
-          ...order,
-          total_amount: order.total_amount || order.total,
-          seller_id: order.seller_id,
-        },
-      }
-    );
     setShowUpiPayment(true);
   };
 
@@ -82,43 +56,18 @@ export default function OrderPaymentSection({ order }) {
   };
 
   const handlePaymentSuccess = (result) => {
-    console.log("🚀🚀🚀 FIXED VERSION v2.0 - handlePaymentSuccess called");
-    console.log(
-      "🚨 ORDER PAYMENT SECTION - handlePaymentSuccess called with:",
-      result
-    );
-    console.log("🚨 Result type:", typeof result);
-    console.log("🚨 Result is undefined:", result === undefined);
-    console.log("🚨 Result is null:", result === null);
-    console.log("🚨 About to check result && result.success");
-
     try {
-      if (
-        result &&
-        typeof result === "object" &&
-        "success" in result &&
-        result.success
-      ) {
-        console.log("✅ Success condition met, proceeding with success flow");
+      if (result && result.success) {
         toastService.success("Payment completed successfully!");
         setShowUpiPayment(false);
-        // Optionally refresh the page or update order status
         setTimeout(() => {
           window.location.reload();
         }, 1000);
       } else {
-        console.error("🚨 Payment result missing or invalid:", result);
-        console.error("🚨 Detailed analysis:", {
-          resultExists: !!result,
-          resultType: typeof result,
-          hasSuccess: result && "success" in result,
-          successValue: result && result.success,
-        });
         toastService.error("Payment verification failed");
         setShowUpiPayment(false);
       }
     } catch (error) {
-      console.error("🚨 Error in handlePaymentSuccess:", error);
       toastService.error("Payment processing error");
       setShowUpiPayment(false);
     }
@@ -192,8 +141,7 @@ export default function OrderPaymentSection({ order }) {
                   </h6>
                   <p className="text-muted mb-0">
                     This is a complimentary order. No payment required.
-                  </p>
-                  <p className="small text-muted mb-0">
+                    <br />
                     Your order will be confirmed shortly.
                   </p>
                 </div>
@@ -267,6 +215,35 @@ export default function OrderPaymentSection({ order }) {
               Cash on Delivery with the seller.
             </Alert>
           )}
+
+          {/* Amount Summary Section */}
+          <div className="mt-3 p-3 bg-light rounded">
+            <div className="d-flex justify-content-between align-items-center">
+              <span className="text-muted">Order Total:</span>
+              <div className="d-flex align-items-center">
+                {!hasValidAmount ? (
+                  <>
+                    <span className="text-success fw-bold me-2">₹0.00</span>
+                    <Badge bg="success" pill>
+                      FREE
+                    </Badge>
+                  </>
+                ) : (
+                  <span className="text-primary fw-bold">
+                    ₹{order.total_amount?.toFixed(2)}
+                  </span>
+                )}
+              </div>
+            </div>
+            {!hasValidAmount && (
+              <div className="text-center mt-2">
+                <small className="text-muted">
+                  <i className="ti-info-circle me-1"></i>
+                  This order is complimentary - no payment required
+                </small>
+              </div>
+            )}
+          </div>
         </Card.Body>
       </Card>
 
@@ -275,44 +252,11 @@ export default function OrderPaymentSection({ order }) {
         <UpiQrPayment
           show={showUpiPayment}
           onHide={() => setShowUpiPayment(false)}
-          orderData={(() => {
-            console.log(
-              "🚨🚨🚨 ORDERPAY SUPER DEBUG v4.0 - Building orderData for UPI component:",
-              {
-                originalOrder: order,
-                total_amount: order.total_amount,
-                total: order.total,
-                fallbackAmount: order.total_amount || order.total,
-                seller_id: order.seller_id,
-              }
-            );
-
-            // SUPER VISIBLE ALERT FOR DEBUGGING
-            if (typeof window !== "undefined") {
-              console.log(
-                "🔥🔥🔥 ORDERPAY ALERT: Building UPI data with amount:",
-                order.total_amount
-              );
-            }
-
-            // Ensure we preserve the original total_amount if it exists
-            const preservedAmount =
-              order.total_amount !== null && order.total_amount !== undefined
-                ? order.total_amount
-                : order.total || 0;
-
-            const finalOrderData = {
-              ...order,
-              total_amount: preservedAmount,
-              seller_id: order.seller_id,
-            };
-
-            console.log(
-              "🔍 ORDERPAY - Final orderData being passed:",
-              finalOrderData
-            );
-            return finalOrderData;
-          })()}
+          orderData={{
+            ...order,
+            total_amount: order.total_amount || order.total || 0,
+            seller_id: order.seller_id,
+          }}
           orderType="regular"
           onPaymentComplete={handlePaymentSuccess}
         />
