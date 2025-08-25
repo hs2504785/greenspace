@@ -33,6 +33,7 @@ export default function SellerRequestsPage() {
         .select(
           `
           id,
+          user_id,
           business_name,
           business_description,
           location,
@@ -53,6 +54,13 @@ export default function SellerRequestsPage() {
         .limit(50); // Limit for performance
 
       if (error) throw error;
+
+      console.log("📋 Debug - Fetched seller requests:", {
+        count: data?.length || 0,
+        sampleRequest: data?.[0],
+        sampleUserInfo: data?.[0]?.user,
+      });
+
       setRequests(data || []);
     } catch (error) {
       console.error("Error fetching requests:", error);
@@ -66,38 +74,171 @@ export default function SellerRequestsPage() {
     try {
       const supabase = createSupabaseClient();
 
+      // Find the request to get user information
+      const request = requests.find((r) => r.id === requestId);
+      if (!request) {
+        throw new Error("Request not found");
+      }
+
+      console.log("🔍 Debug - Full request object:", {
+        requestId,
+        status,
+        request: request,
+        hasUser: !!request.user,
+        userKeys: request.user ? Object.keys(request.user) : "no user object",
+        userId: request.user?.id,
+        userEmail: request.user?.email,
+      });
+
+      if (!request.user?.id) {
+        console.error("❌ Missing user information in request:", {
+          requestId,
+          hasUser: !!request.user,
+          user: request.user,
+          requestKeys: Object.keys(request),
+        });
+
+        // Fallback: Try to get user info directly from user_id field
+        let userId = request.user_id; // Check if user_id exists as direct field
+
+        if (!userId) {
+          console.error(
+            "❌ ORPHANED REQUEST: No user_id field found. Request data:",
+            request
+          );
+
+          // Handle orphaned request - update status but mark as orphaned
+          const { error: requestError } = await supabase
+            .from("seller_requests")
+            .update({
+              status: status,
+              verification_level: status,
+              review_notes: `${status.toUpperCase()} - Orphaned request (no user account found)`,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", requestId);
+
+          if (requestError) {
+            console.error("Orphaned request update error:", requestError);
+            throw requestError;
+          }
+
+          toastService.warning(
+            `Request ${status} - ORPHANED (no user account found)`
+          );
+          fetchRequests();
+          return;
+        }
+
+        console.log("🔄 Fallback: Using direct user_id field:", userId);
+
+        // Update request status without user role changes (safer for broken references)
+        const { error: requestError } = await supabase
+          .from("seller_requests")
+          .update({
+            status,
+            verification_level: status,
+            review_notes: `${status.toUpperCase()} - User data missing during processing`,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", requestId);
+
+        if (requestError) {
+          console.error("Request update error:", requestError);
+          throw requestError;
+        }
+
+        toastService.success(`Request ${status} (user data unavailable)`);
+        fetchRequests();
+        return; // Exit early since we can't do user role updates
+      }
+
+      console.log("✅ Processing request:", {
+        requestId,
+        status,
+        userId: request.user.id,
+        userEmail: request.user.email,
+      });
+
       // Update request status
       const { error: requestError } = await supabase
         .from("seller_requests")
         .update({
           status,
+          verification_level: status === "approved" ? "basic_verified" : status,
           updated_at: new Date().toISOString(),
         })
         .eq("id", requestId);
 
-      if (requestError) throw requestError;
+      if (requestError) {
+        console.error("Request update error:", requestError);
+        throw requestError;
+      }
 
       // If approved, update user role to seller
       if (status === "approved") {
-        const request = requests.find((r) => r.id === requestId);
-        if (!request?.user_id) throw new Error("User not found");
-
         const { error: userError } = await supabase
           .from("users")
           .update({
             role: "seller",
             updated_at: new Date().toISOString(),
           })
-          .eq("id", request.user_id);
+          .eq("id", request.user.id);
 
-        if (userError) throw userError;
+        if (userError) {
+          console.error("User role update error:", userError);
+          throw userError;
+        }
+
+        // Award initial verification badge
+        const { error: badgeError } = await supabase
+          .from("seller_verification_badges")
+          .insert({
+            seller_id: request.user.id,
+            badge_type: "verified_natural",
+            badge_name: "Verified Natural Farmer",
+            badge_description: "Awarded upon basic verification approval",
+            verified_by: null, // Will be set by RLS policy to current user
+            verification_notes: "Automatically awarded upon approval",
+            active: true,
+            earned_date: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+          });
+
+        if (badgeError) {
+          console.warn("Badge creation warning (non-critical):", badgeError);
+          // Don't throw error for badge creation failure
+        }
+
+        // Update farm profile if exists
+        const { error: profileError } = await supabase
+          .from("seller_farm_profiles")
+          .update({
+            profile_verified: true,
+            last_verification_date: new Date().toISOString(),
+            verification_notes: "Approved via admin panel",
+          })
+          .eq("seller_id", request.user.id);
+
+        if (profileError) {
+          console.warn(
+            "Farm profile update warning (non-critical):",
+            profileError
+          );
+          // Don't throw error for profile update failure
+        }
+
+        toastService.success(
+          `Seller application approved! User ${request.user.email} is now a seller.`
+        );
+      } else {
+        toastService.success(`Request ${status}`);
       }
 
-      toastService.success(`Request ${status}`);
       fetchRequests();
     } catch (error) {
       console.error("Error updating request:", error);
-      toastService.error("Failed to update request");
+      toastService.error(`Failed to update request: ${error.message}`);
     }
   };
 

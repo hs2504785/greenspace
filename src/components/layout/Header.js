@@ -114,13 +114,13 @@ export default function Header() {
             </Navbar.Brand>
 
             {/* Search Input - desktop and large tablets */}
-            <div
-              className="d-none d-lg-flex me-3 flex-grow-1"
-              style={{ maxWidth: "500px" }}
-            >
-              {(pathname === "/" ||
-                pathname.startsWith("/?") ||
-                pathname === "/prebooking-marketplace") && (
+            {(pathname === "/" ||
+              pathname.startsWith("/?") ||
+              pathname === "/prebooking-marketplace") && (
+              <div
+                className="d-none d-lg-flex me-3 flex-grow-1"
+                style={{ maxWidth: "500px" }}
+              >
                 <SearchInput
                   value={searchValue}
                   onChange={handleSearchChange}
@@ -134,8 +134,8 @@ export default function Header() {
                   className="w-100"
                   size="sm"
                 />
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Mobile User Section - positioned at the end */}
             <div className="d-lg-none">
@@ -275,18 +275,14 @@ export default function Header() {
       </Navbar>
 
       {/* Mobile Search section - shown below header on smaller screens */}
-      <div
-        className={`search-section d-lg-none ${
-          pathname.startsWith("/orders/") ? "d-none" : ""
-        }`}
-      >
-        <Container>
-          <div className="py-3">
-            {/* Mobile Search Section - shown below header on mobile */}
-            <div className="w-100">
-              {(pathname === "/" ||
-                pathname.startsWith("/?") ||
-                pathname === "/prebooking-marketplace") && (
+      {(pathname === "/" ||
+        pathname.startsWith("/?") ||
+        pathname === "/prebooking-marketplace") && (
+        <div className="search-section d-lg-none">
+          <Container>
+            <div className="py-3">
+              {/* Mobile Search Section - shown below header on mobile */}
+              <div className="w-100">
                 <div className="d-flex align-items-center gap-2">
                   {/* Search input takes most space */}
                   <div className="flex-grow-1">
@@ -398,11 +394,11 @@ export default function Header() {
                     </OverlayTrigger>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        </Container>
-      </div>
+          </Container>
+        </div>
+      )}
 
       {/* Navigation Menu using Bootstrap Offcanvas - available on all screens */}
       <Offcanvas
@@ -467,6 +463,17 @@ export default function Header() {
                 <div className="mobile-nav-divider mt-2 mb-1">
                   <small className="text-muted px-3">MY ACCOUNT</small>
                 </div>
+                <Nav.Link
+                  as={Link}
+                  href="/become-seller"
+                  className={`mobile-nav-link ${
+                    isActive("/become-seller") ? "active-nav-item" : ""
+                  }`}
+                  onClick={handleLinkClick}
+                >
+                  <i className="ti-store me-2 text-success"></i>
+                  Become a Seller
+                </Nav.Link>
                 <Nav.Link
                   as={Link}
                   href="/orders"

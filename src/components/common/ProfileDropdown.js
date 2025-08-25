@@ -60,6 +60,27 @@ export default function ProfileDropdown({ user }) {
           My Pre-Bookings
         </Dropdown.Item>
 
+        {/* Become Seller Option - HIDDEN for now */}
+        {false && !loading && !isSeller && !isAdmin && (
+          <>
+            <div className="px-3 py-2 border-bottom bg-light mt-2">
+              <small className="text-muted fw-semibold">
+                BUSINESS OPPORTUNITY
+              </small>
+            </div>
+            <Dropdown.Item as={Link} href="/become-seller">
+              <i className="ti-store me-2 text-success"></i>
+              Become a Seller
+              <small
+                className="d-block text-muted"
+                style={{ fontSize: "0.75rem", marginTop: "2px" }}
+              >
+                Join our natural farming community
+              </small>
+            </Dropdown.Item>
+          </>
+        )}
+
         {/* Business Section - for Sellers/Admins */}
         {!loading && (isSeller || isAdmin) && (
           <>
