@@ -473,89 +473,155 @@ const CSSGridFarm = ({
 
       <Card.Body>
         <div className="position-relative">
-          {/* Expansion Buttons */}
+          {/* External Expansion Buttons - Outside the grid */}
           {showExpandButtons && (
             <>
+              {/* Top Add Button */}
               <div
                 style={{
-                  position: "absolute",
-                  top: "-45px",
+                  position: "fixed",
+                  top: "10px",
                   left: "50%",
                   transform: "translateX(-50%)",
-                  zIndex: 20,
+                  zIndex: 1000,
                 }}
               >
                 <Button
-                  size="sm"
                   variant="success"
+                  size="sm"
                   onClick={() => expandGrid("top")}
-                  className="shadow"
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    padding: "0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    boxShadow: "0 2px 8px rgba(40, 167, 69, 0.3)",
+                    border: "2px solid #ffffff",
+                  }}
+                  title="Add Row Above"
                 >
-                  ⬆️ Add Row Above
+                  +
                 </Button>
               </div>
 
+              {/* Right Add Button */}
               <div
                 style={{
-                  position: "absolute",
-                  right: "-140px",
+                  position: "fixed",
+                  right: "10px",
                   top: "50%",
                   transform: "translateY(-50%)",
-                  zIndex: 20,
+                  zIndex: 1000,
                 }}
               >
                 <Button
-                  size="sm"
                   variant="success"
+                  size="sm"
                   onClick={() => expandGrid("right")}
-                  className="shadow"
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    padding: "0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    boxShadow: "0 2px 8px rgba(40, 167, 69, 0.3)",
+                    border: "2px solid #ffffff",
+                  }}
+                  title="Add Column Right"
                 >
-                  ➡️ Add Column
+                  +
                 </Button>
               </div>
 
+              {/* Bottom Add Button */}
               <div
                 style={{
-                  position: "absolute",
-                  bottom: "-45px",
+                  position: "fixed",
+                  bottom: "10px",
                   left: "50%",
                   transform: "translateX(-50%)",
-                  zIndex: 20,
+                  zIndex: 1000,
                 }}
               >
                 <Button
-                  size="sm"
                   variant="success"
+                  size="sm"
                   onClick={() => expandGrid("bottom")}
-                  className="shadow"
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    padding: "0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    boxShadow: "0 2px 8px rgba(40, 167, 69, 0.3)",
+                    border: "2px solid #ffffff",
+                  }}
+                  title="Add Row Below"
                 >
-                  ⬇️ Add Row Below
+                  +
                 </Button>
               </div>
 
+              {/* Left Add Button */}
               <div
                 style={{
-                  position: "absolute",
-                  left: "-140px",
+                  position: "fixed",
+                  left: "10px",
                   top: "50%",
                   transform: "translateY(-50%)",
-                  zIndex: 20,
+                  zIndex: 1000,
                 }}
               >
                 <Button
-                  size="sm"
                   variant="success"
+                  size="sm"
                   onClick={() => expandGrid("left")}
-                  className="shadow"
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    padding: "0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    boxShadow: "0 2px 8px rgba(40, 167, 69, 0.3)",
+                    border: "2px solid #ffffff",
+                  }}
+                  title="Add Column Left"
                 >
-                  ⬅️ Add Column
+                  +
                 </Button>
               </div>
             </>
           )}
 
           <div className={styles.farmContainer}>
-            <div className={styles.farmLayout}>
+            <div
+              className={styles.farmLayout}
+              style={{
+                width: `${Math.max(...blocks.map((b) => b.x + b.width)) * 2}px`,
+                height: `${
+                  Math.max(...blocks.map((b) => b.y + b.height)) * 2
+                }px`,
+                minWidth: "1000px",
+                minHeight: "600px",
+              }}
+            >
               {blocks.map((block, index) => renderBlock(block, index))}
             </div>
           </div>

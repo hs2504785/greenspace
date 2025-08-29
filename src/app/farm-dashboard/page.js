@@ -18,7 +18,7 @@ import { toast } from "react-hot-toast";
 import PureCSSGridFarm from "@/components/farm/PureCSSGridFarm";
 
 export default function FarmDashboardPage() {
-  const [activeTab, setActiveTab] = useState("grid");
+  const [activeTab, setActiveTab] = useState("analytics");
   const [trees, setTrees] = useState([]);
   const [layouts, setLayouts] = useState([]);
   const [selectedLayout, setSelectedLayout] = useState(null);
@@ -290,7 +290,15 @@ export default function FarmDashboardPage() {
               </p>
             </div>
             <div className="d-flex gap-2">
-              <Button variant="success" href="/trees">
+              <Button
+                variant="success"
+                href="/farm-layout-fullscreen"
+                className="text-decoration-none"
+              >
+                <i className="bi bi-arrows-fullscreen me-2"></i>
+                Full Screen Layout
+              </Button>
+              <Button variant="outline-secondary" href="/trees">
                 Manage Trees
               </Button>
               <Button variant="outline-primary" onClick={fetchData}>
@@ -339,8 +347,8 @@ export default function FarmDashboardPage() {
           <Tab.Container activeKey={activeTab} onSelect={setActiveTab}>
             <Nav variant="tabs" className="mb-3">
               <Nav.Item>
-                <Nav.Link eventKey="grid">
-                  <i className="bi bi-grid-3x3"></i> Farm Grid Layout
+                <Nav.Link eventKey="analytics">
+                  <i className="bi bi-bar-chart-line"></i> Farm Analytics
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
@@ -351,13 +359,273 @@ export default function FarmDashboardPage() {
             </Nav>
 
             <Tab.Content>
-              <Tab.Pane eventKey="grid">
-                <PureCSSGridFarm
-                  farmId={farmId}
-                  selectedLayoutId={selectedLayout?.id}
-                  onTreeClick={handleTreeClick}
-                  showExpandButtons={true}
-                />
+              <Tab.Pane eventKey="analytics">
+                <Row>
+                  {/* Farm Layout Preview Card */}
+                  <Col lg={8}>
+                    <Card className="h-100">
+                      <Card.Header className="d-flex justify-content-between align-items-center">
+                        <div>
+                          <h5 className="mb-0">
+                            <i className="bi bi-grid-3x3-gap text-success me-2"></i>
+                            Farm Layout Overview
+                          </h5>
+                          <small className="text-muted">
+                            {selectedLayout?.name || "Default Layout"}
+                          </small>
+                        </div>
+                        <div className="d-flex gap-2">
+                          <Button
+                            variant="success"
+                            size="sm"
+                            href="/farm-layout-fullscreen"
+                            className="text-decoration-none"
+                          >
+                            <i className="bi bi-arrows-fullscreen me-1"></i>
+                            Full Screen View
+                          </Button>
+                          <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={fetchData}
+                          >
+                            <i className="bi bi-arrow-clockwise me-1"></i>
+                            Refresh
+                          </Button>
+                        </div>
+                      </Card.Header>
+                      <Card.Body className="p-2">
+                        <div style={{ maxHeight: "400px", overflow: "hidden" }}>
+                          <PureCSSGridFarm
+                            farmId={farmId}
+                            selectedLayoutId={selectedLayout?.id}
+                            onTreeClick={handleTreeClick}
+                            showExpandButtons={false}
+                          />
+                        </div>
+                        <div className="text-center mt-2">
+                          <small className="text-muted">
+                            <i className="bi bi-info-circle me-1"></i>
+                            Click "Full Screen View" for detailed farm
+                            management
+                          </small>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  {/* Analytics Sidebar */}
+                  <Col lg={4}>
+                    <Row>
+                      {/* Tree Health Analysis */}
+                      <Col>
+                        <Card className="mb-3">
+                          <Card.Header className="bg-success text-white">
+                            <h6 className="mb-0">
+                              <i className="bi bi-tree me-2"></i>
+                              Tree Health Analysis
+                            </h6>
+                          </Card.Header>
+                          <Card.Body>
+                            <div className="d-flex justify-content-between align-items-center mb-2">
+                              <span className="text-success">
+                                Healthy Trees
+                              </span>
+                              <Badge bg="success">{stats.healthyTrees}</Badge>
+                            </div>
+                            <div
+                              className="progress mb-3"
+                              style={{ height: "8px" }}
+                            >
+                              <div
+                                className="progress-bar bg-success"
+                                style={{
+                                  width: `${
+                                    (stats.healthyTrees / stats.totalTrees) *
+                                    100
+                                  }%`,
+                                }}
+                              ></div>
+                            </div>
+
+                            {stats.fruitingTrees > 0 && (
+                              <>
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                  <span className="text-warning">
+                                    Fruiting Trees
+                                  </span>
+                                  <Badge bg="warning">
+                                    {stats.fruitingTrees}
+                                  </Badge>
+                                </div>
+                                <div
+                                  className="progress mb-3"
+                                  style={{ height: "8px" }}
+                                >
+                                  <div
+                                    className="progress-bar bg-warning"
+                                    style={{
+                                      width: `${
+                                        (stats.fruitingTrees /
+                                          stats.totalTrees) *
+                                        100
+                                      }%`,
+                                    }}
+                                  ></div>
+                                </div>
+                              </>
+                            )}
+
+                            {stats.diseasedTrees > 0 && (
+                              <>
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                  <span className="text-danger">
+                                    Issues Detected
+                                  </span>
+                                  <Badge bg="danger">
+                                    {stats.diseasedTrees}
+                                  </Badge>
+                                </div>
+                                <div
+                                  className="progress mb-3"
+                                  style={{ height: "8px" }}
+                                >
+                                  <div
+                                    className="progress-bar bg-danger"
+                                    style={{
+                                      width: `${
+                                        (stats.diseasedTrees /
+                                          stats.totalTrees) *
+                                        100
+                                      }%`,
+                                    }}
+                                  ></div>
+                                </div>
+                              </>
+                            )}
+
+                            <small className="text-muted">
+                              Health Score:{" "}
+                              {stats.totalTrees > 0
+                                ? Math.round(
+                                    (stats.healthyTrees / stats.totalTrees) *
+                                      100
+                                  )
+                                : 0}
+                              %
+                            </small>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      {/* Quick Actions */}
+                      <Col>
+                        <Card className="mb-3">
+                          <Card.Header className="bg-primary text-white">
+                            <h6 className="mb-0">
+                              <i className="bi bi-lightning-charge me-2"></i>
+                              Quick Actions
+                            </h6>
+                          </Card.Header>
+                          <Card.Body>
+                            <div className="d-grid gap-2">
+                              <Button
+                                variant="outline-success"
+                                size="sm"
+                                href="/farm-layout-fullscreen"
+                              >
+                                <i className="bi bi-arrows-fullscreen me-2"></i>
+                                Full Screen Layout
+                              </Button>
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                href="/trees"
+                              >
+                                <i className="bi bi-plus-circle me-2"></i>
+                                Add New Trees
+                              </Button>
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={fetchData}
+                              >
+                                <i className="bi bi-arrow-clockwise me-2"></i>
+                                Refresh Data
+                              </Button>
+                              <Button
+                                variant="outline-info"
+                                size="sm"
+                                href="/layouts"
+                              >
+                                <i className="bi bi-grid-1x2 me-2"></i>
+                                Layout Manager
+                              </Button>
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      {/* Farm Statistics */}
+                      <Col>
+                        <Card>
+                          <Card.Header className="bg-info text-white">
+                            <h6 className="mb-0">
+                              <i className="bi bi-graph-up me-2"></i>
+                              Farm Statistics
+                            </h6>
+                          </Card.Header>
+                          <Card.Body>
+                            <div className="row g-2">
+                              <div className="col-6">
+                                <div className="text-center p-2 bg-light rounded">
+                                  <div className="h6 text-success mb-0">
+                                    {stats.totalTrees}
+                                  </div>
+                                  <small className="text-muted">
+                                    Total Trees
+                                  </small>
+                                </div>
+                              </div>
+                              <div className="col-6">
+                                <div className="text-center p-2 bg-light rounded">
+                                  <div className="h6 text-primary mb-0">
+                                    {layouts.length}
+                                  </div>
+                                  <small className="text-muted">Layouts</small>
+                                </div>
+                              </div>
+                              <div className="col-12 mt-2">
+                                <div className="text-center p-2 bg-light rounded">
+                                  <div className="h6 text-warning mb-0">
+                                    {selectedLayout?.grid_config?.blocks
+                                      ?.length || 0}
+                                  </div>
+                                  <small className="text-muted">
+                                    Active Blocks
+                                  </small>
+                                </div>
+                              </div>
+                            </div>
+
+                            {stats.totalTrees > 0 && (
+                              <div className="mt-3 p-2 bg-success bg-opacity-10 rounded">
+                                <small className="text-success fw-semibold">
+                                  <i className="bi bi-check-circle me-1"></i>
+                                  Farm Operational Status: Active
+                                </small>
+                              </div>
+                            )}
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    </Row>
+                  </Col>
+                </Row>
               </Tab.Pane>
 
               <Tab.Pane eventKey="list">

@@ -6,6 +6,7 @@
 
 // Include any default variable overrides here (though functions won't be available)
 $enable-shadows: true;
+$enable-negative-margins: true;
 $prefix: "bs-";
 
 // Import Bootstrap
@@ -27,10 +28,89 @@ $prefix: "bs-";
 @import "./components/upi-payment-modal";
 
 // Global styles
+html,
 body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  max-width: 100vw; /* Prevent content from exceeding viewport width */
+}
+
+body {
+  position: relative; /* For better positioning context */
+}
+
+// Prevent Bootstrap containers from causing horizontal overflow
+.container-fluid {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+// Ensure responsive images and content don't overflow
+img,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  max-width: 100%;
+  height: auto;
+}
+
+// Farm layout specific responsive fixes
+.farm-layout-fullscreen {
+  overflow-x: hidden;
+  max-width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  .navbar {
+    max-width: 100vw;
+    overflow-x: hidden;
+    flex-shrink: 0;
+  }
+
+  .farm-grid-container {
+    flex: 1;
+    overflow: hidden;
+    background-color: #f8f9fa;
+    position: relative;
+    min-height: calc(100vh - 76px); // Account for navbar height
+
+    .farm-grid-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: auto;
+      padding: 1rem;
+
+      // Smooth scrolling for better UX
+      scroll-behavior: smooth;
+
+      @media (max-width: 768px) {
+        padding: 0.5rem;
+      }
+
+      // Ensure grid component has proper sizing
+      .card {
+        min-height: calc(100vh - 120px);
+
+        .card-body {
+          overflow: visible;
+          padding: 1rem;
+
+          @media (max-width: 768px) {
+            padding: 0.5rem;
+          }
+        }
+      }
+    }
+  }
 }
 
 // Icon styles

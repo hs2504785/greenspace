@@ -2,16 +2,19 @@
 
 .farmLayout {
   position: relative;
-  background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%),
-    linear-gradient(-45deg, #f8f9fa 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #f8f9fa 75%),
-    linear-gradient(-45deg, transparent 75%, #f8f9fa 75%);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-  border: 2px solid #dee2e6;
-  border-radius: 8px;
-  overflow: hidden;
-  margin: 40px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: auto;
+  padding: 20px;
+  height: calc(100vh - 160px); /* Fill most of viewport */
+  max-height: none; /* Remove height restrictions */
+  /* Enable smooth scrolling for better UX */
+  scroll-behavior: smooth;
+  will-change: scroll-position;
+  /* Ensure consistent minimum size */
+  min-width: 1000px;
+  min-height: calc(100vh - 160px);
 }
 
 .gridBlock {
@@ -232,4 +235,3 @@
 .hasTree::before {
   display: none;
 }
-

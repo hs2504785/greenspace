@@ -1,11 +1,134 @@
 /* **PURE CSS GRID - MAXIMUM PERFORMANCE** */
 
+/* Layout Container - holds grid and external expansion buttons */
+.layoutContainer {
+  position: relative;
+  margin: 20px; /* Minimal margin - let grid fill most of the space */
+  padding: 15px; /* Reduced padding to maximize grid area */
+  height: calc(100vh - 120px); /* Fill most of viewport height */
+}
+
+/* External Expansion Buttons - positioned outside grid */
+.expandButtonExternal {
+  position: absolute;
+  z-index: 30;
+}
+
+/* Small Add Buttons - clean + style */
+.addButton {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3) !important;
+  border: 2px solid #ffffff !important;
+  transition: all 0.2s ease !important;
+}
+
+.addButton:hover {
+  transform: scale(1.1) !important;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.5) !important;
+}
+
+/* Grid Container - clean without button padding */
+.gridContainer {
+  position: relative;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: hidden;
+  min-height: 500px;
+  /* Clean container without button spacing */
+}
+
+/* Grid Wrapper - handles scrolling with clean background */
+.gridWrapper {
+  position: relative;
+  overflow: auto;
+  height: 100%; /* Fill the entire container height */
+  max-height: none; /* Remove height restrictions */
+  padding: 20px; /* Minimal padding - maximize grid space */
+  margin: -10px; /* Small negative margin for background extension */
+  /* Clean background - don't override grid background */
+  background: transparent;
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
+  will-change: scroll-position;
+}
+
+/* Custom scrollbar for better UX */
+.gridWrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.gridWrapper::-webkit-scrollbar-track {
+  background: #f1f3f4;
+  border-radius: 4px;
+}
+
+.gridWrapper::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.gridWrapper::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
 .pureGrid {
   position: relative;
   overflow: visible;
   /* Smooth scrolling for better UX */
   scroll-behavior: smooth;
   will-change: scroll-position;
+
+  /* **VISIBLE GRID LINES - SPANS ENTIRE FARM LAYOUT** */
+  /* 
+    GRID SYSTEM OVERVIEW:
+    
+    ┌─────┬─────┬─────┐ ← Block boundaries (green, 24ft intervals)
+    │  ·  │  ·  │  ·  │ ← Planting guides (3ft intervals)
+    ├─────┼─────┼─────┤ ← Grid lines connect across blocks
+    │  ·  │  ·  │  ·  │ ← All circles positioned at intersections
+    ├─────┼─────┼─────┤ ← 1ft precision grid (light gray)
+    │  ·  │  ·  │  ·  │ ← Edge circles connected by outer lines
+    └─────┴─────┴─────┘
+    
+    This CSS creates clearly visible grid lines that span the entire farm layout.
+  */
+
+  /* Clean white background for optimal color visibility */
+  background-color: #ffffff;
+  background-image: 
+    /* 1ft grid lines - clearly visible light gray */ linear-gradient(
+      to right,
+      #ddd 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, #ddd 1px, transparent 1px),
+    /* 3ft grid lines - medium gray for structure */
+      linear-gradient(to right, #bbb 1.5px, transparent 1.5px),
+    linear-gradient(to bottom, #bbb 1.5px, transparent 1.5px),
+    /* Block boundary lines - bold green every 24ft */
+      linear-gradient(to right, #28a745 2.5px, transparent 2.5px),
+    linear-gradient(to bottom, #28a745 2.5px, transparent 2.5px);
+
+  background-size: 
+    /* 1ft precision grid */ 24px 24px, 24px 24px,
+    /* 3ft visual grouping grid */ 72px 72px, 72px 72px,
+    /* 24ft block boundary grid */ 576px 576px, 576px 576px;
+
+  /* Perfect alignment ensures grid lines pass exactly through circle centers */
+  background-position: 0 0;
+
+  /* Ensure grid extends to edges and connects outer circles */
+  background-repeat: repeat;
 }
 
 /* Block labels - minimal and clean */
@@ -41,14 +164,17 @@
 }
 
 .edgeGuide {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff; /* Solid white background to appear above grid lines */
   border: 2px solid #28a745;
   box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
-  opacity: 0.8;
+  opacity: 0.9;
   transition: all 0.2s ease;
+  /* Ensure edge guides are above grid lines */
+  position: relative;
+  z-index: 10;
 }
 
 .edgeGuide:hover {
@@ -59,13 +185,16 @@
 }
 
 .interiorGuide {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
+  background: #ffffff; /* Solid white background to appear above grid lines */
   border: 1px solid #28a745;
-  opacity: 0.6;
+  opacity: 0.7;
   transition: all 0.2s ease;
+  /* Ensure interior guides are above grid lines */
+  position: relative;
+  z-index: 8;
 }
 
 .interiorGuide:hover {
@@ -76,19 +205,22 @@
 }
 
 .treeCircle {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #28a745;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
-  border: 2px solid #ffffff;
-  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.4);
+  border: 3px solid #ffffff;
+  box-shadow: 0 3px 10px rgba(40, 167, 69, 0.5);
   user-select: none;
+  /* Ensure tree circles are above everything including grid lines */
+  position: relative;
+  z-index: 15;
 }
 
 .treeCircle:hover {
@@ -102,28 +234,97 @@
 }
 
 .pureGrid {
-  /* Hardware acceleration */
+  /* Hardware acceleration for smooth grid rendering */
   transform: translateZ(0);
   backface-visibility: hidden;
   /* Smooth interactions */
   pointer-events: auto;
+  /* Optimized compositing for grid background patterns */
+  will-change: transform;
+  /* Prevent subpixel rendering issues with grid lines */
+  image-rendering: crisp-edges;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
+  .layoutContainer {
+    margin: 15px; /* Minimal margin for mobile */
+    padding: 10px;
+    height: calc(100vh - 140px); /* Slightly smaller on mobile */
+  }
+
+  .gridWrapper {
+    height: 100%;
+    padding: 20px;
+    margin: -10px;
+  }
+
+  .treeCircle {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+
   .pureGrid {
-    transform: scale(0.7);
+    transform: scale(0.85);
     transform-origin: top left;
   }
 
   .blockLabel {
-    font-size: 10px !important;
+    font-size: 9px !important;
+    padding: 1px 4px !important;
+  }
+
+  .treeCircle {
+    width: 18px;
+    height: 18px;
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .layoutContainer {
+    margin: 10px; /* Minimal margin for small mobile */
+    padding: 5px;
+    height: calc(100vh - 120px); /* Even smaller on small mobile */
+  }
+
+  .gridWrapper {
+    height: 100%;
+    padding: 15px;
+    margin: -10px;
   }
 
   .treeCircle {
     width: 20px;
     height: 20px;
     font-size: 8px;
+  }
+
+  .pureGrid {
+    transform: scale(0.75);
+    transform-origin: top left;
+  }
+
+  .blockLabel {
+    font-size: 8px !important;
+    padding: 1px 3px !important;
+  }
+
+  .treeCircle {
+    width: 16px;
+    height: 16px;
+    font-size: 7px;
+  }
+
+  .edgeGuide {
+    width: 14px;
+    height: 14px;
+  }
+
+  .interiorGuide {
+    width: 10px;
+    height: 10px;
   }
 }
 

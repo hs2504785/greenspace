@@ -104,9 +104,18 @@ export default function DashboardPage() {
                     Manage your farm layout, plant trees, and track growth with
                     our interactive grid system.
                   </Card.Text>
-                  <Link href="/farm-dashboard" className="btn btn-success">
-                    Manage Farm
-                  </Link>
+                  <div className="d-flex gap-2">
+                    <Link href="/farm-dashboard" className="btn btn-success">
+                      Farm Dashboard
+                    </Link>
+                    <Link
+                      href="/farm-layout-fullscreen"
+                      className="btn btn-outline-success"
+                    >
+                      <i className="bi bi-arrows-fullscreen me-1"></i>
+                      Full Screen
+                    </Link>
+                  </div>
                 </Card.Body>
               </Card>
             </Col>

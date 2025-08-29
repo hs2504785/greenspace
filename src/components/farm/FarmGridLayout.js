@@ -320,78 +320,137 @@ const FarmGridLayout = ({
         </div>
       </Card.Header>
 
-      <Card.Body>
-        <div className="position-relative">
-          {/* Expansion Buttons */}
+      <Card.Body style={{ padding: "10px", height: "calc(100vh - 160px)" }}>
+        <div
+          className="position-relative"
+          style={{ margin: "10px", height: "100%" }}
+        >
+          {/* External Expansion Buttons - Outside the grid */}
           {showExpandButtons && (
             <>
-              {/* Top */}
+              {/* Top Add Button */}
               <div
                 className={styles.expandButton}
                 style={{
-                  top: "-30px",
+                  position: "fixed",
+                  top: "10px",
                   left: "50%",
                   transform: "translateX(-50%)",
+                  zIndex: 1000,
                 }}
               >
                 <Button
                   size="sm"
                   variant="success"
                   onClick={() => expandGrid("top")}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    padding: "0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                  }}
+                  title="Add Row Above"
                 >
                   +
                 </Button>
               </div>
 
-              {/* Right */}
+              {/* Right Add Button */}
               <div
                 className={styles.expandButton}
                 style={{
-                  right: "-30px",
+                  position: "fixed",
+                  right: "10px",
                   top: "50%",
                   transform: "translateY(-50%)",
+                  zIndex: 1000,
                 }}
               >
                 <Button
                   size="sm"
                   variant="success"
                   onClick={() => expandGrid("right")}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    padding: "0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                  }}
+                  title="Add Column Right"
                 >
                   +
                 </Button>
               </div>
 
-              {/* Bottom */}
+              {/* Bottom Add Button */}
               <div
                 className={styles.expandButton}
                 style={{
-                  bottom: "-30px",
+                  position: "fixed",
+                  bottom: "10px",
                   left: "50%",
                   transform: "translateX(-50%)",
+                  zIndex: 1000,
                 }}
               >
                 <Button
                   size="sm"
                   variant="success"
                   onClick={() => expandGrid("bottom")}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    padding: "0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                  }}
+                  title="Add Row Below"
                 >
                   +
                 </Button>
               </div>
 
-              {/* Left */}
+              {/* Left Add Button */}
               <div
                 className={styles.expandButton}
                 style={{
-                  left: "-30px",
+                  position: "fixed",
+                  left: "10px",
                   top: "50%",
                   transform: "translateY(-50%)",
+                  zIndex: 1000,
                 }}
               >
                 <Button
                   size="sm"
                   variant="success"
                   onClick={() => expandGrid("left")}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    padding: "0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                  }}
+                  title="Add Column Left"
                 >
                   +
                 </Button>
