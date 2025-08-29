@@ -602,6 +602,25 @@ const PureCSSGridFarm = memo(
                     </div>
                   ))}
 
+                  {/* Right border lines for rightmost blocks - centered on edge circles */}
+                  {blocks
+                    .filter((block) => block.x + block.width === maxX) // Find rightmost blocks
+                    .map((block, index) => (
+                      <div
+                        key={`right-border-${index}`}
+                        style={{
+                          position: "absolute",
+                          left: `${(block.x + block.width) * 24 - 1.25}px`, // Center on rightmost circle positions
+                          top: `${block.y * 24}px`, // Top of block
+                          width: "2.5px", // Same thickness as other block borders
+                          height: `${block.height * 24}px`, // Full height of block
+                          background: "#28a745", // Same green color as other borders
+                          pointerEvents: "none",
+                          zIndex: 1,
+                        }}
+                      />
+                    ))}
+
                   {/* **Only render actual planted trees + smart planting guides!** */}
                   {plantedTrees}
                   {plantingGuides}
