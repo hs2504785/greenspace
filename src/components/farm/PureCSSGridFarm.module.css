@@ -51,7 +51,7 @@
   position: relative;
   overflow: auto;
   /* Remove height constraints to allow background expansion */
-  padding: 20px; /* Minimal padding - maximize grid space */
+  padding: 40px; /* Extra padding to prevent circle cutoff */
   margin: -10px; /* Small negative margin for background extension */
   /* Clean background - don't override grid background */
   background: transparent;
@@ -167,8 +167,8 @@
   height: 18px;
   border-radius: 50%;
   background: #ffffff; /* Solid white background to appear above grid lines */
-  border: 2px solid #28a745;
-  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+  border: 2px solid #00bcd4; /* Bright Cyan border for SMALL trees */
+  box-shadow: 0 2px 6px rgba(0, 188, 212, 0.3);
   opacity: 0.9;
   transition: all 0.2s ease;
   /* Ensure edge guides are above grid lines */
@@ -178,9 +178,9 @@
 
 .edgeGuide:hover {
   opacity: 1;
-  background: rgba(40, 167, 69, 0.1);
-  border-color: #155724;
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.5);
+  background: rgba(0, 188, 212, 0.1);
+  border-color: #0097a7;
+  box-shadow: 0 4px 12px rgba(0, 188, 212, 0.5);
 }
 
 .interiorGuide {
@@ -188,7 +188,7 @@
   height: 14px;
   border-radius: 50%;
   background: #ffffff; /* Solid white background to appear above grid lines */
-  border: 1px solid #28a745;
+  border: 1px solid #00bcd4; /* Bright Cyan border for SMALL trees */
   opacity: 0.7;
   transition: all 0.2s ease;
   /* Ensure interior guides are above grid lines */
@@ -198,8 +198,166 @@
 
 .interiorGuide:hover {
   opacity: 1;
-  background: rgba(40, 167, 69, 0.1);
-  border-color: #155724;
+  background: rgba(0, 188, 212, 0.1);
+  border-color: #0097a7;
+  transform: scale(1.3);
+}
+
+/* Planting guide sizes based on tree types */
+.edgeGuideBig {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #e91e63; /* Hot Pink border for BIG trees */
+  box-shadow: 0 3px 8px rgba(233, 30, 99, 0.4);
+  opacity: 0.9;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 10;
+}
+
+.edgeGuideBig:hover {
+  opacity: 1;
+  background: rgba(233, 30, 99, 0.1);
+  border-color: #c2185b;
+  box-shadow: 0 5px 15px rgba(233, 30, 99, 0.6);
+}
+
+.edgeGuideCenterBig {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #00ff7f; /* Spring Green border for CENTER BIG trees */
+  box-shadow: 0 2px 7px rgba(0, 255, 127, 0.35);
+  opacity: 0.9;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 10;
+}
+
+.edgeGuideCenterBig:hover {
+  opacity: 1;
+  background: rgba(0, 255, 127, 0.1);
+  border-color: #00cc66;
+  box-shadow: 0 4px 13px rgba(0, 255, 127, 0.5);
+}
+
+.edgeGuideMedium {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #9c27b0; /* Purple border for MEDIUM trees */
+  box-shadow: 0 2px 7px rgba(156, 39, 176, 0.35);
+  opacity: 0.9;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 10;
+}
+
+.edgeGuideMedium:hover {
+  opacity: 1;
+  background: rgba(156, 39, 176, 0.1);
+  border-color: #7b1fa2;
+  box-shadow: 0 4px 13px rgba(156, 39, 176, 0.5);
+}
+
+.interiorGuideBig {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #e91e63; /* Hot Pink border for BIG trees */
+  opacity: 0.8;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 8;
+}
+
+.interiorGuideBig:hover {
+  opacity: 1;
+  background: rgba(233, 30, 99, 0.1);
+  border-color: #c2185b;
+  transform: scale(1.3);
+}
+
+.interiorGuideCenterBig {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #00ff7f; /* Spring Green border for CENTER BIG trees */
+  opacity: 0.8;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 8;
+}
+
+.interiorGuideCenterBig:hover {
+  opacity: 1;
+  background: rgba(0, 255, 127, 0.1);
+  border-color: #00cc66;
+  transform: scale(1.3);
+}
+
+.interiorGuideMedium {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #9c27b0; /* Purple border for MEDIUM trees */
+  opacity: 0.75;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 8;
+}
+
+.interiorGuideMedium:hover {
+  opacity: 1;
+  background: rgba(156, 39, 176, 0.1);
+  border-color: #7b1fa2;
+  transform: scale(1.3);
+}
+
+/* Tiny planting guides - smallest size */
+.edgeGuideTiny {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #ffc107; /* Golden Yellow border for TINY trees */
+  box-shadow: 0 1px 3px rgba(255, 193, 7, 0.3);
+  opacity: 0.8;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 10;
+}
+
+.edgeGuideTiny:hover {
+  opacity: 1;
+  background: rgba(255, 193, 7, 0.1);
+  border-color: #e0a800;
+  box-shadow: 0 2px 6px rgba(255, 193, 7, 0.4);
+}
+
+.interiorGuideTiny {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #ffc107; /* Golden Yellow border for TINY trees */
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 8;
+}
+
+.interiorGuideTiny:hover {
+  opacity: 1;
+  background: rgba(255, 193, 7, 0.1);
+  border-color: #e0a800;
   transform: scale(1.3);
 }
 
@@ -207,7 +365,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #28a745;
+  background: #00bcd4; /* Bright Cyan background for SMALL trees */
   color: white;
   display: flex;
   align-items: center;
@@ -215,7 +373,7 @@
   font-size: 12px;
   font-weight: 700;
   border: 3px solid #ffffff;
-  box-shadow: 0 3px 10px rgba(40, 167, 69, 0.5);
+  box-shadow: 0 3px 10px rgba(0, 188, 212, 0.5);
   user-select: none;
   /* Ensure tree circles are above everything including grid lines */
   position: relative;
@@ -223,7 +381,105 @@
 }
 
 .treeCircle:hover {
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.6);
+  box-shadow: 0 4px 12px rgba(0, 188, 212, 0.6);
+  border-color: #fff3cd;
+}
+
+/* Big tree circles - larger size for corner trees */
+.treeCircleBig {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e91e63; /* Hot Pink background for BIG trees */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  border: 4px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.6);
+  user-select: none;
+  position: relative;
+  z-index: 15;
+}
+
+.treeCircleBig:hover {
+  box-shadow: 0 5px 15px rgba(233, 30, 99, 0.7);
+  border-color: #fff3cd;
+}
+
+/* Center Big tree circles - Spring Green for center positions */
+.treeCircleCenterBig {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #00ff7f; /* Spring Green background for CENTER BIG trees */
+  color: #2c3e50; /* Dark text for better contrast on bright green */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+  border: 2px solid rgba(44, 62, 80, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 255, 127, 0.4);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  z-index: 15;
+}
+
+.treeCircleCenterBig:hover {
+  box-shadow: 0 5px 15px rgba(0, 255, 127, 0.7);
+  border-color: #1e293b;
+}
+
+/* Medium tree circles - slightly larger size for mid-point trees */
+.treeCircleMedium {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #9c27b0; /* Purple background for MEDIUM trees */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  border: 3px solid #ffffff;
+  box-shadow: 0 3px 11px rgba(156, 39, 176, 0.55);
+  user-select: none;
+  position: relative;
+  z-index: 15;
+}
+
+.treeCircleMedium:hover {
+  box-shadow: 0 4px 13px rgba(156, 39, 176, 0.65);
+  border-color: #fff3cd;
+}
+
+/* Tiny tree circles - smallest size for most positions */
+.treeCircleTiny {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffc107; /* Golden Yellow background for TINY trees */
+  color: #212529; /* Dark text for better contrast on yellow */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(255, 193, 7, 0.4);
+  user-select: none;
+  position: relative;
+  z-index: 15;
+}
+
+.treeCircleTiny:hover {
+  box-shadow: 0 3px 8px rgba(255, 193, 7, 0.5);
   border-color: #fff3cd;
 }
 
@@ -254,13 +510,31 @@
 
   .gridWrapper {
     height: 100%;
-    padding: 20px;
+    padding: 30px; /* Reduced but still enough for mobile circles */
     margin: -10px;
   }
 
   .treeCircle {
     width: 24px;
     height: 24px;
+    font-size: 10px;
+  }
+
+  .treeCircleBig {
+    width: 30px;
+    height: 30px;
+    font-size: 11px;
+  }
+
+  .treeCircleCenterBig {
+    width: 30px;
+    height: 30px;
+    font-size: 11px;
+  }
+
+  .treeCircleMedium {
+    width: 27px;
+    height: 27px;
     font-size: 10px;
   }
 
@@ -279,6 +553,60 @@
     height: 18px;
     font-size: 8px;
   }
+
+  .treeCircleBig {
+    width: 22px;
+    height: 22px;
+    font-size: 9px;
+  }
+
+  .treeCircleCenterBig {
+    width: 22px;
+    height: 22px;
+    font-size: 9px;
+  }
+
+  .treeCircleMedium {
+    width: 20px;
+    height: 20px;
+    font-size: 8px;
+  }
+
+  .edgeGuideBig {
+    width: 24px;
+    height: 24px;
+  }
+
+  .edgeGuideMedium {
+    width: 20px;
+    height: 20px;
+  }
+
+  .interiorGuideBig {
+    width: 20px;
+    height: 20px;
+  }
+
+  .interiorGuideMedium {
+    width: 15px;
+    height: 15px;
+  }
+
+  .treeCircleTiny {
+    width: 16px;
+    height: 16px;
+    font-size: 8px;
+  }
+
+  .edgeGuideTiny {
+    width: 10px;
+    height: 10px;
+  }
+
+  .interiorGuideTiny {
+    width: 8px;
+    height: 8px;
+  }
 }
 
 @media (max-width: 576px) {
@@ -290,13 +618,31 @@
 
   .gridWrapper {
     height: 100%;
-    padding: 15px;
+    padding: 25px; /* Minimum for small mobile to prevent cutoff */
     margin: -10px;
   }
 
   .treeCircle {
     width: 20px;
     height: 20px;
+    font-size: 8px;
+  }
+
+  .treeCircleBig {
+    width: 24px;
+    height: 24px;
+    font-size: 9px;
+  }
+
+  .treeCircleCenterBig {
+    width: 24px;
+    height: 24px;
+    font-size: 9px;
+  }
+
+  .treeCircleMedium {
+    width: 22px;
+    height: 22px;
     font-size: 8px;
   }
 
@@ -316,14 +662,68 @@
     font-size: 7px;
   }
 
+  .treeCircleBig {
+    width: 20px;
+    height: 20px;
+    font-size: 8px;
+  }
+
+  .treeCircleCenterBig {
+    width: 20px;
+    height: 20px;
+    font-size: 8px;
+  }
+
+  .treeCircleMedium {
+    width: 18px;
+    height: 18px;
+    font-size: 7px;
+  }
+
   .edgeGuide {
     width: 14px;
     height: 14px;
   }
 
+  .edgeGuideBig {
+    width: 20px;
+    height: 20px;
+  }
+
+  .edgeGuideMedium {
+    width: 17px;
+    height: 17px;
+  }
+
   .interiorGuide {
     width: 10px;
     height: 10px;
+  }
+
+  .interiorGuideBig {
+    width: 18px;
+    height: 18px;
+  }
+
+  .interiorGuideMedium {
+    width: 12px;
+    height: 12px;
+  }
+
+  .treeCircleTiny {
+    width: 14px;
+    height: 14px;
+    font-size: 7px;
+  }
+
+  .edgeGuideTiny {
+    width: 8px;
+    height: 8px;
+  }
+
+  .interiorGuideTiny {
+    width: 6px;
+    height: 6px;
   }
 }
 

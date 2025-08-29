@@ -6,7 +6,7 @@
   border: none;
   border-radius: 0;
   overflow: auto;
-  padding: 20px;
+  padding: 40px; /* Extra padding to prevent circle cutoff */
   height: calc(100vh - 160px); /* Fill most of viewport */
   max-height: none; /* Remove height restrictions */
   /* Enable smooth scrolling for better UX */
@@ -81,7 +81,7 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #28a745, #20c997);
+  background: linear-gradient(135deg, #00bcd4, #26c6da);
   color: white;
   display: flex;
   align-items: center;
@@ -89,7 +89,7 @@
   font-size: 10px;
   font-weight: 700;
   border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 188, 212, 0.3);
   transition: all 0.3s ease;
   cursor: pointer;
 }
@@ -97,6 +97,107 @@
 .treeCircle:hover {
   transform: scale(1.2);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+/* Big tree circles - larger size for corner trees */
+.treeCircleBig {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e91e63, #f06292);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  border: 3px solid white;
+  box-shadow: 0 3px 6px rgba(233, 30, 99, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.treeCircleBig:hover {
+  transform: scale(1.2);
+  box-shadow: 0 5px 10px rgba(233, 30, 99, 0.5);
+  z-index: 10;
+}
+
+/* Center Big tree circles - Spring Green for center positions */
+.treeCircleCenterBig {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    #00ff7f 0%,
+    #00cc66 100%
+  ); /* Spring Green gradient for CENTER BIG trees */
+  color: #2c3e50; /* Dark text for better contrast on bright green */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 255, 127, 0.3);
+  border: 2px solid rgba(44, 62, 80, 0.2);
+  opacity: 0.95;
+}
+
+.treeCircleCenterBig:hover {
+  transform: scale(1.2);
+  box-shadow: 0 5px 10px rgba(0, 255, 127, 0.5);
+  z-index: 10;
+}
+
+/* Medium tree circles - slightly larger size for mid-point trees */
+.treeCircleMedium {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #9c27b0, #ba68c8);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  border: 2px solid white;
+  box-shadow: 0 2px 5px rgba(156, 39, 176, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.treeCircleMedium:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 9px rgba(156, 39, 176, 0.5);
+  z-index: 10;
+}
+
+/* Tiny tree circles - smallest size for most positions */
+.treeCircleTiny {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffc107, #ffca28);
+  color: #212529; /* Dark text for better contrast on yellow */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.treeCircleTiny:hover {
+  transform: scale(1.2);
+  box-shadow: 0 3px 7px rgba(255, 193, 7, 0.5);
   z-index: 10;
 }
 
@@ -135,12 +236,37 @@
 @media (max-width: 768px) {
   .farmLayout {
     margin: 20px;
+    padding: 30px; /* Enough padding to prevent mobile circle cutoff */
   }
 
   .treeCircle {
     width: 16px;
     height: 16px;
     font-size: 8px;
+  }
+
+  .treeCircleBig {
+    width: 20px;
+    height: 20px;
+    font-size: 9px;
+  }
+
+  .treeCircleCenterBig {
+    width: 20px;
+    height: 20px;
+    font-size: 9px;
+  }
+
+  .treeCircleMedium {
+    width: 18px;
+    height: 18px;
+    font-size: 8px;
+  }
+
+  .treeCircleTiny {
+    width: 14px;
+    height: 14px;
+    font-size: 7px;
   }
 
   .blockLabel {
@@ -158,12 +284,37 @@
 @media (max-width: 576px) {
   .farmLayout {
     margin: 10px;
+    padding: 25px; /* Minimum padding for small mobile */
   }
 
   .treeCircle {
     width: 14px;
     height: 14px;
     font-size: 7px;
+  }
+
+  .treeCircleBig {
+    width: 18px;
+    height: 18px;
+    font-size: 8px;
+  }
+
+  .treeCircleCenterBig {
+    width: 18px;
+    height: 18px;
+    font-size: 8px;
+  }
+
+  .treeCircleMedium {
+    width: 16px;
+    height: 16px;
+    font-size: 7px;
+  }
+
+  .treeCircleTiny {
+    width: 12px;
+    height: 12px;
+    font-size: 6px;
   }
 
   .gridCell {

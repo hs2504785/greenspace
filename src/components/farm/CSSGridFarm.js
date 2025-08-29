@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, Button, Row, Col, Badge, Modal, Form } from "react-bootstrap";
 import { toast } from "react-hot-toast";
 import styles from "./CSSGridFarm.module.css";
+import { getTreeClassFromPosition } from "../../utils/treeTypeClassifier";
 
 const CSSGridFarm = ({
   farmId,
@@ -291,7 +292,16 @@ const CSSGridFarm = ({
             }
           >
             <div
-              className={styles.treeCircle}
+              className={
+                styles[
+                  getTreeClassFromPosition(
+                    position.grid_x,
+                    position.grid_y,
+                    block.width,
+                    block.height
+                  )
+                ]
+              }
               style={{ backgroundColor: getTreeStatusColor(tree.status) }}
               title={`${tree.name} (${tree.code}) - ${tree.status}`}
               data-status={tree.status}

@@ -4,6 +4,10 @@ import { useState, useEffect, memo } from "react";
 import { Card, Button, Row, Col } from "react-bootstrap";
 import { toast } from "react-hot-toast";
 import styles from "./PureCSSGridFarm.module.css";
+import {
+  getTreeClassFromPosition,
+  getPlantingGuideClass,
+} from "../../utils/treeTypeClassifier";
 
 const PureCSSGridFarm = memo(
   ({
@@ -243,7 +247,16 @@ const PureCSSGridFarm = memo(
                 }}
               >
                 <div
-                  className={styles.treeCircle}
+                  className={
+                    styles[
+                      getTreeClassFromPosition(
+                        pos.grid_x,
+                        pos.grid_y,
+                        block.width,
+                        block.height
+                      )
+                    ]
+                  }
                   title={`${tree.code} - ${tree.name}`}
                 >
                   {tree.code}
@@ -307,7 +320,15 @@ const PureCSSGridFarm = memo(
                   >
                     <div
                       className={
-                        isEdge ? styles.edgeGuide : styles.interiorGuide
+                        styles[
+                          getPlantingGuideClass(
+                            x,
+                            y,
+                            block.width,
+                            block.height,
+                            isEdge
+                          )
+                        ]
                       }
                       title={`Plant tree at ${x}ft, ${y}ft ${
                         isEdge ? "(Edge - Shared)" : "(3ft Grid)"

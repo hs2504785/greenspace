@@ -12,6 +12,7 @@ import {
 } from "react-bootstrap";
 import { toast } from "react-hot-toast";
 import styles from "./FarmGridLayout.module.css";
+import { getTreeClassFromPosition } from "../../utils/treeTypeClassifier";
 
 const FarmGridLayout = ({
   farmId,
@@ -252,7 +253,11 @@ const FarmGridLayout = ({
           >
             {tree && (
               <div
-                className={styles.treeCircle}
+                className={
+                  styles[
+                    getTreeClassFromPosition(x, y, block.width, block.height)
+                  ]
+                }
                 title={`${tree.name} (${tree.code})`}
               >
                 {tree.code}
