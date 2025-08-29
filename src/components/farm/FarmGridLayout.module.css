@@ -1,0 +1,235 @@
+/* Farm Grid Layout Styles */
+
+.farmLayout {
+  position: relative;
+  background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%),
+    linear-gradient(-45deg, #f8f9fa 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f8f9fa 75%),
+    linear-gradient(-45deg, transparent 75%, #f8f9fa 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 40px;
+}
+
+.gridBlock {
+  position: absolute;
+  border: 2px solid #28a745;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.blockLabel {
+  position: absolute;
+  top: -25px;
+  left: 0;
+  background: #28a745;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.gridContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.gridCell {
+  position: absolute;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gridCell:hover {
+  background-color: rgba(40, 167, 69, 0.1);
+  border-color: #28a745;
+  z-index: 5;
+}
+
+.emptyCell {
+  background-color: rgba(248, 249, 250, 0.8);
+}
+
+.emptyCell:hover {
+  background-color: rgba(40, 167, 69, 0.2);
+}
+
+.hasTree {
+  background-color: rgba(40, 167, 69, 0.1);
+}
+
+.hasTree:hover {
+  background-color: rgba(40, 167, 69, 0.3);
+}
+
+.treeCircle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.treeCircle:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.expandButton {
+  position: absolute;
+  z-index: 20;
+}
+
+.expandButton button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.expandButton button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.legendCircle {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .farmLayout {
+    margin: 20px;
+  }
+
+  .treeCircle {
+    width: 16px;
+    height: 16px;
+    font-size: 8px;
+  }
+
+  .blockLabel {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+
+  .expandButton button {
+    width: 25px;
+    height: 25px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 576px) {
+  .farmLayout {
+    margin: 10px;
+  }
+
+  .treeCircle {
+    width: 14px;
+    height: 14px;
+    font-size: 7px;
+  }
+
+  .gridCell {
+    border-width: 0.5px;
+  }
+}
+
+/* Animation for new blocks */
+@keyframes blockAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.gridBlock:last-child {
+  animation: blockAppear 0.5s ease-out;
+}
+
+/* Tree status colors */
+.treeCircle.healthy {
+  background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.treeCircle.growing {
+  background: linear-gradient(135deg, #17a2b8, #20c997);
+}
+
+.treeCircle.flowering {
+  background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+.treeCircle.fruiting {
+  background: linear-gradient(135deg, #007bff, #6610f2);
+}
+
+.treeCircle.diseased {
+  background: linear-gradient(135deg, #dc3545, #fd7e14);
+}
+
+.treeCircle.dormant {
+  background: linear-gradient(135deg, #6c757d, #adb5bd);
+}
+
+/* Grid intersection dots for visual aid */
+.gridCell::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.2s ease;
+}
+
+.gridCell:hover::before {
+  width: 4px;
+  height: 4px;
+  background: #28a745;
+}
+
+.hasTree::before {
+  display: none;
+}
+

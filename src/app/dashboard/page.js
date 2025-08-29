@@ -95,6 +95,27 @@ export default function DashboardPage() {
                 <Card.Body className="text-center">
                   <div className="mb-3">
                     <i
+                      className="ti-layout-grid3 text-success"
+                      style={{ fontSize: "3rem" }}
+                    ></i>
+                  </div>
+                  <Card.Title>🌳 Farm Management</Card.Title>
+                  <Card.Text>
+                    Manage your farm layout, plant trees, and track growth with
+                    our interactive grid system.
+                  </Card.Text>
+                  <Link href="/farm-dashboard" className="btn btn-success">
+                    Manage Farm
+                  </Link>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col md={6} className="mb-4">
+              <Card className="h-100 border-0 shadow-sm">
+                <Card.Body className="text-center">
+                  <div className="mb-3">
+                    <i
                       className="ti-package text-warning"
                       style={{ fontSize: "3rem" }}
                     ></i>

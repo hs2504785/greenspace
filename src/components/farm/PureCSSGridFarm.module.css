@@ -1,0 +1,149 @@
+/* **PURE CSS GRID - MAXIMUM PERFORMANCE** */
+
+.pureGrid {
+  position: relative;
+  overflow: visible;
+  /* Smooth scrolling for better UX */
+  scroll-behavior: smooth;
+  will-change: scroll-position;
+}
+
+/* Block labels - minimal and clean */
+.blockLabel {
+  user-select: none;
+  z-index: 5;
+  transition: opacity 0.2s ease;
+  opacity: 0.8;
+}
+
+.blockLabel:hover {
+  opacity: 1;
+}
+
+/* **Planted trees - only elements we render!** */
+.plantedTree {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.plantedTree:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* **Smart Planting Guides - 3ft intervals only** */
+.plantingGuide {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.plantingGuide:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+.edgeGuide {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #28a745;
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+
+.edgeGuide:hover {
+  opacity: 1;
+  background: rgba(40, 167, 69, 0.1);
+  border-color: #155724;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.5);
+}
+
+.interiorGuide {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #28a745;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+}
+
+.interiorGuide:hover {
+  opacity: 1;
+  background: rgba(40, 167, 69, 0.1);
+  border-color: #155724;
+  transform: scale(1.3);
+}
+
+.treeCircle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #28a745;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.4);
+  user-select: none;
+}
+
+.treeCircle:hover {
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.6);
+  border-color: #fff3cd;
+}
+
+/* **Performance optimizations** */
+.pureGrid * {
+  box-sizing: border-box;
+}
+
+.pureGrid {
+  /* Hardware acceleration */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  /* Smooth interactions */
+  pointer-events: auto;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .pureGrid {
+    transform: scale(0.7);
+    transform-origin: top left;
+  }
+
+  .blockLabel {
+    font-size: 10px !important;
+  }
+
+  .treeCircle {
+    width: 20px;
+    height: 20px;
+    font-size: 8px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .treeCircle {
+    border-width: 3px;
+    box-shadow: 0 0 0 2px #000000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .plantedTree,
+  .blockLabel,
+  .treeCircle {
+    transition: none !important;
+  }
+
+  .pureGrid {
+    scroll-behavior: auto;
+  }
+}

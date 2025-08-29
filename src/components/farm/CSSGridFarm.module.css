@@ -1,0 +1,351 @@
+/* Optimized CSS Grid Farm Layout Styles */
+
+.farmContainer {
+  position: relative;
+  padding: 40px;
+  background-color: #fdfdfd;
+  border: 2px solid #dee2e6;
+  border-radius: 12px;
+  min-height: 500px;
+  overflow: auto;
+  max-height: 70vh;
+  /* Enable smooth scrolling for better UX */
+  scroll-behavior: smooth;
+  /* Hardware acceleration for better performance */
+  will-change: scroll-position;
+}
+
+/* Optimized layout container */
+.farmLayout {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 1000px;
+  min-height: 600px;
+}
+
+.block {
+  position: absolute;
+  background: transparent; /* No background to avoid interference */
+  border: none; /* Remove border completely */
+  overflow: visible; /* Allow edge circles to extend beyond boundaries */
+  /* Remove transitions for better performance */
+}
+
+.blockHeader {
+  position: absolute;
+  top: -15px;
+  left: 0px;
+  background: #f8f9fa;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 15;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.grid {
+  position: relative;
+  /* Subtle background zones */
+  background: linear-gradient(
+    45deg,
+    rgba(173, 216, 230, 0.05) 0%,
+    rgba(255, 182, 193, 0.05) 25%,
+    rgba(255, 255, 224, 0.05) 50%,
+    rgba(144, 238, 144, 0.05) 75%,
+    rgba(221, 160, 221, 0.05) 100%
+  );
+  /* No border to avoid positioning issues */
+  /* Thin grid lines perfectly aligned */
+  background-image: linear-gradient(to right, #f0f0f0 0.5px, transparent 0.5px),
+    linear-gradient(to bottom, #f0f0f0 0.5px, transparent 0.5px);
+  background-size: 20px 20px;
+  /* Perfect alignment with grid intersections */
+}
+
+.intersection {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 10;
+  /* Positioned exactly on grid lines for edge intersections */
+}
+
+.emptyIntersection {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff; /* Solid white background to hide grid lines */
+  border: 1px solid #28a745;
+  transition: all 0.2s ease;
+  position: relative;
+  opacity: 0.8;
+  /* Ensure circle is above grid lines */
+  z-index: 5;
+}
+
+.emptyIntersection:hover {
+  background: #28a745;
+  border-color: #20c997;
+  border-width: 2px;
+  transform: scale(1.3);
+  opacity: 1;
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.4);
+}
+
+.emptyIntersection::before {
+  content: "+";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #28a745;
+  font-size: 8px;
+  font-weight: bold;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.emptyIntersection:hover::before {
+  opacity: 1;
+  color: #fff;
+  font-weight: 900;
+}
+
+/* Edge intersection styling - circles positioned on grid lines where blocks connect */
+.edgeIntersection {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #28a745;
+  background: #ffffff; /* Solid white background to hide grid lines */
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+  opacity: 1;
+  /* Ensure edge circles are above grid lines */
+  z-index: 6;
+}
+
+.edgeIntersection:hover {
+  background: #28a745;
+  border-color: #20c997;
+  border-width: 3px;
+  transform: scale(1.4);
+  box-shadow: 0 3px 10px rgba(40, 167, 69, 0.5);
+}
+
+.edgeIntersection::before {
+  color: #28a745;
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0.9;
+}
+
+.edgeIntersection:hover::before {
+  color: #ffffff;
+  opacity: 1;
+}
+
+/* Invisible intersection styles removed - now using single overlay */
+
+.treeCircle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff; /* Solid background to hide grid lines */
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  border: 2px solid #28a745;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  /* Ensure tree circles are above everything */
+  z-index: 10;
+}
+
+.treeCircle:hover {
+  transform: scale(1.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 20;
+}
+
+.treeCircle:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  z-index: 30;
+}
+
+/* Tree status specific colors - like reference image */
+.treeCircle[data-status="healthy"] {
+  background: #ffffff;
+  border-color: #28a745;
+  color: #28a745;
+}
+
+.treeCircle[data-status="growing"] {
+  background: #e3f2fd;
+  border-color: #2196f3;
+  color: #1976d2;
+}
+
+.treeCircle[data-status="flowering"] {
+  background: #fff3e0;
+  border-color: #ff9800;
+  color: #f57c00;
+}
+
+.treeCircle[data-status="fruiting"] {
+  background: #e8f5e8;
+  border-color: #4caf50;
+  color: #2e7d32;
+}
+
+.treeCircle[data-status="diseased"] {
+  background: #ffebee;
+  border-color: #f44336;
+  color: #c62828;
+  animation: pulse 2s infinite;
+}
+
+.treeCircle[data-status="dormant"] {
+  background: #f5f5f5;
+  border-color: #9e9e9e;
+  color: #616161;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 3px 8px rgba(220, 53, 69, 0.5);
+  }
+  100% {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Grid lines are now handled directly in .grid background */
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .farmContainer {
+    gap: 20px;
+    padding: 15px;
+    max-height: 60vh;
+  }
+
+  .block {
+    padding: 20px 10px 10px 10px;
+  }
+
+  .blockHeader {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .treeCircle {
+    width: 16px;
+    height: 16px;
+    font-size: 8px;
+  }
+
+  .emptyIntersection {
+    width: 12px;
+    height: 12px;
+  }
+
+  .gridCell {
+    min-height: 18px;
+    min-width: 18px;
+  }
+}
+
+@media (max-width: 576px) {
+  .farmContainer {
+    gap: 15px;
+    padding: 10px;
+    max-height: 50vh;
+  }
+
+  .grid {
+    transform: scale(0.8);
+    transform-origin: top left;
+  }
+
+  .treeCircle {
+    width: 14px;
+    height: 14px;
+    font-size: 7px;
+  }
+
+  .emptyIntersection {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+/* Smooth animations for new blocks */
+@keyframes blockAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.block:last-child {
+  animation: blockAppear 0.5s ease-out;
+}
+
+/* Enhanced visual feedback */
+.intersection:active .treeCircle {
+  transform: scale(0.9);
+}
+
+.intersection:active .emptyIntersection {
+  transform: scale(0.9);
+}
+
+/* Grid container scrolling */
+.farmContainer::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.farmContainer::-webkit-scrollbar-track {
+  background: #f1f3f4;
+  border-radius: 4px;
+}
+
+.farmContainer::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.farmContainer::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

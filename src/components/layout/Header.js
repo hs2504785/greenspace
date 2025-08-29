@@ -458,6 +458,34 @@ export default function Header() {
               <i className="ti-user me-2 text-primary"></i>
               Community
             </Nav.Link>
+
+            {/* Tree Management Section */}
+            <div className="mobile-nav-divider mt-2 mb-1">
+              <small className="text-muted px-3">FARM MANAGEMENT</small>
+            </div>
+            <Nav.Link
+              as={Link}
+              href="/farm-dashboard"
+              className={`mobile-nav-link ${
+                isActive("/farm-dashboard") ? "active-nav-item" : ""
+              }`}
+              onClick={handleLinkClick}
+            >
+              <i className="ti-layout-grid3 me-2 text-success"></i>
+              Farm Dashboard
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              href="/trees"
+              className={`mobile-nav-link ${
+                isActive("/trees") ? "active-nav-item" : ""
+              }`}
+              onClick={handleLinkClick}
+            >
+              <i className="ti-palette me-2 text-warning"></i>
+              Tree Management
+            </Nav.Link>
+
             {session && (
               <>
                 <div className="mobile-nav-divider mt-2 mb-1">
