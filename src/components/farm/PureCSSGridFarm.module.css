@@ -5,7 +5,7 @@
   position: relative;
   margin: 20px; /* Minimal margin - let grid fill most of the space */
   padding: 15px; /* Reduced padding to maximize grid area */
-  height: calc(100vh - 120px); /* Fill most of viewport height */
+  /* Remove fixed height to allow background expansion */
 }
 
 /* External Expansion Buttons - positioned outside grid */
@@ -50,8 +50,7 @@
 .gridWrapper {
   position: relative;
   overflow: auto;
-  height: 100%; /* Fill the entire container height */
-  max-height: none; /* Remove height restrictions */
+  /* Remove height constraints to allow background expansion */
   padding: 20px; /* Minimal padding - maximize grid space */
   margin: -10px; /* Small negative margin for background extension */
   /* Clean background - don't override grid background */

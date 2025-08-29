@@ -367,7 +367,7 @@ const PureCSSGridFarm = memo(
           </Card.Header>
         )}
 
-        <Card.Body style={{ padding: "10px", height: "calc(100vh - 160px)" }}>
+        <Card.Body style={{ padding: "10px" }}>
           {/* Container for grid and external expansion buttons */}
           <div className={styles.layoutContainer}>
             {/* External Expansion Buttons - Outside the grid */}
