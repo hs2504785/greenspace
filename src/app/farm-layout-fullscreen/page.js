@@ -19,6 +19,7 @@ import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import PureCSSGridFarm from "@/components/farm/PureCSSGridFarm";
 import PlantTreeModal from "@/components/farm/PlantTreeModal";
+import { getTreeType } from "@/utils/treeTypeClassifier";
 
 export default function FarmLayoutFullscreenPage() {
   const router = useRouter();
@@ -88,78 +89,185 @@ export default function FarmLayoutFullscreenPage() {
       setSelectedTree(tree);
       setShowTreeModal(true);
     } else {
-      // Empty position clicked - show plant modal
+      // Empty position clicked - show plant modal with empty fields
       setSelectedTree(null);
-      generateUniquTreeCode();
+      generateUniquTreeCode(); // This will generate suggestions but not auto-fill
       setShowPlantModal(true);
     }
   }, []); // No dependencies - functions are stable
 
   const generateUniquTreeCode = useCallback(() => {
+    // Systematic tree code generation based on your existing trees
     const treeCodes = [
-      "M",
-      "L",
-      "AS",
-      "A",
-      "CA",
-      "G",
-      "AN",
-      "P",
-      "MB",
-      "JA",
-      "MU",
-      "O",
-      "B",
-      "AV",
-      "SF",
-      "C",
-      "AM",
-      "PR",
-      "MR",
-      "SL",
-      "KR",
-      "BA",
-      "PA",
-      "GRP",
+      "M", // Mango
+      "L", // Lemon
+      "AS", // All Spices
+      "A", // Apple
+      "CA", // Custard Apple
+      "G", // Guava
+      "AN", // Anjeer (Fig)
+      "P", // Pomegranate
+      "MB", // Mulberry
+      "JA", // Jackfruit
+      "BC", // Barbados Cherry
+      "AV", // Avocado
+      "SF", // Starfruit
+      "C", // Cashew
+      "PR", // Pear
+      "PH", // Peach (changed from PC to avoid confusion with PR)
+      "SP", // Sapota
+      "MR", // Moringa
+      "BB", // Blackberry
+      "LC", // Lychee
+      "MF", // Miracle Fruit
+      "KR", // Karonda
+      "AB", // Apple Ber
+      "BA", // Banana
+      "PA", // Papaya
+      "GR", // Grape
+      "OR", // Orange
+      "CO", // Coconut
+      "AM", // Amla
+      "NE", // Neem
     ];
-    const baseCode = treeCodes[Math.floor(Math.random() * treeCodes.length)];
 
-    const existingCodes = trees
-      .map((t) => t.code)
-      .filter((code) => code.startsWith(baseCode))
-      .map((code) => {
-        const num = code.replace(baseCode, "");
-        return num === "" ? 1 : parseInt(num) || 1;
-      })
-      .sort((a, b) => a - b);
+    // Try to be more systematic - use position-based suggestions first
+    let preferredCodes = [];
 
-    let nextNumber = 1;
-    for (const num of existingCodes) {
-      if (num === nextNumber) {
-        nextNumber++;
-      } else {
-        break;
+    // Suggest based on visual classification system
+    if (selectedPosition) {
+      const { x, y, blockIndex } = selectedPosition;
+
+      // Use the same classification system as the visual circles
+      const treeType = getTreeType(x, y, 24, 24);
+
+      switch (treeType) {
+        case "big":
+        case "centerBig":
+          // Big trees for corners and center
+          preferredCodes = ["M", "JA", "CA", "A", "AV", "CO"];
+          break;
+        case "medium":
+          // Medium trees for mid-edge positions
+          preferredCodes = ["G", "L", "P", "C", "MR", "NE"];
+          break;
+        case "small":
+          // Small trees for quarter positions
+          preferredCodes = ["AN", "SF", "BC", "LC", "MF", "AM", "OR"];
+          break;
+        case "tiny":
+        default:
+          // Tiny trees for all other positions
+          preferredCodes = ["AM", "OR", "BB", "LC", "MF", "BC", "SF"];
+          break;
       }
     }
 
-    const uniqueCode = nextNumber === 1 ? baseCode : `${baseCode}${nextNumber}`;
+    // Combine preferred codes with all codes as fallback
+    const codesToTry = [
+      ...preferredCodes,
+      ...treeCodes.filter((c) => !preferredCodes.includes(c)),
+    ];
+
+    let uniqueCode = "";
+
+    // Find the first available code with lowest number
+    for (const baseCode of codesToTry) {
+      const existingCodes = trees
+        .map((t) => t.code)
+        .filter((code) => code.startsWith(baseCode))
+        .map((code) => {
+          const num = code.replace(baseCode, "");
+          return num === "" ? 1 : parseInt(num) || 1;
+        })
+        .sort((a, b) => a - b);
+
+      let nextNumber = 1;
+      for (const num of existingCodes) {
+        if (num === nextNumber) {
+          nextNumber++;
+        } else {
+          break;
+        }
+      }
+
+      uniqueCode = nextNumber === 1 ? baseCode : `${baseCode}${nextNumber}`;
+
+      // Check if this code truly doesn't exist (double-check)
+      const codeExists = trees.some((t) => t.code === uniqueCode);
+      if (!codeExists) {
+        break; // Found a unique code
+      }
+    }
+
+    // Generate a descriptive name based on the code
+    const getTreeNameFromCode = (code) => {
+      const baseName = code.replace(/\d+$/, ""); // Remove numbers
+      const nameMap = {
+        M: "Mango",
+        L: "Lemon",
+        AS: "All Spices",
+        A: "Apple",
+        CA: "Custard Apple",
+        G: "Guava",
+        AN: "Anjeer",
+        P: "Pomegranate",
+        MB: "Mulberry",
+        JA: "Jackfruit",
+        BC: "Barbados Cherry",
+        AV: "Avocado",
+        SF: "Starfruit",
+        C: "Cashew",
+        PR: "Pear",
+        PH: "Peach",
+        SP: "Sapota",
+        MR: "Moringa",
+        BB: "Blackberry",
+        LC: "Lychee",
+        MF: "Miracle Fruit",
+        KR: "Karonda",
+        AB: "Apple Ber",
+        BA: "Banana",
+        PA: "Papaya",
+        GR: "Grape",
+        OR: "Orange",
+        CO: "Coconut",
+        AM: "Amla",
+        NE: "Neem",
+      };
+      return nameMap[baseName] || `${code} Tree`;
+    };
 
     setInitialPlantFormData({
       tree_id: "",
       new_tree: {
-        code: uniqueCode,
-        name: `${uniqueCode} Tree`,
+        code: "",
+        name: "",
         scientific_name: "",
         variety: "",
         status: "healthy",
       },
+      // Store suggestions for optional use
+      suggestions: {
+        code: uniqueCode,
+        name: getTreeNameFromCode(uniqueCode),
+      },
     });
-  }, [trees]); // Depends on trees to generate unique codes
+  }, [trees, selectedPosition]); // Added selectedPosition dependency for position-based suggestions
 
   // Callback for when tree is successfully planted
-  const handleTreePlanted = useCallback(async () => {
-    await fetchTrees();
-  }, [fetchTrees]);
+  const handleTreePlanted = useCallback(
+    async (newTree) => {
+      // Immediately update the trees state for instant UI feedback
+      if (newTree) {
+        setTrees((prevTrees) => [...prevTrees, newTree]);
+      }
+
+      // Also fetch from server to ensure consistency
+      await fetchTrees();
+    },
+    [fetchTrees]
+  );
 
   const toggleFullscreen = async () => {
     try {
