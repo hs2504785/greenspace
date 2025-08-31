@@ -8,6 +8,14 @@
   /* Remove fixed height to allow background expansion */
 }
 
+/* Maximized Layout Container - when expand buttons are hidden */
+.layoutContainerMaximized {
+  position: relative;
+  margin: 5px; /* Minimal margin for maximum space */
+  padding: 5px; /* Minimal padding for maximum space */
+  transition: all 0.3s ease;
+}
+
 /* External Expansion Buttons - positioned outside grid */
 .expandButtonExternal {
   position: absolute;

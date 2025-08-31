@@ -340,7 +340,15 @@ const PureCSSGridFarm = memo(
       : [];
 
     return (
-      <Card>
+      <Card
+        className={showExpandButtons ? "" : "border-0"}
+        style={{
+          margin: showExpandButtons ? "0" : "0",
+          boxShadow: showExpandButtons ? undefined : "none",
+          backgroundColor: showExpandButtons ? undefined : "transparent",
+          transition: "all 0.3s ease",
+        }}
+      >
         {showHeader && (
           <Card.Header className="d-flex justify-content-between align-items-center">
             <div>
@@ -388,9 +396,20 @@ const PureCSSGridFarm = memo(
           </Card.Header>
         )}
 
-        <Card.Body style={{ padding: "10px" }}>
+        <Card.Body
+          style={{
+            padding: showExpandButtons ? "10px" : "2px",
+            transition: "padding 0.3s ease",
+          }}
+        >
           {/* Container for grid and external expansion buttons */}
-          <div className={styles.layoutContainer}>
+          <div
+            className={
+              showExpandButtons
+                ? styles.layoutContainer
+                : styles.layoutContainerMaximized
+            }
+          >
             {/* External Expansion Buttons - Outside the grid */}
             {showExpandButtons && (
               <>

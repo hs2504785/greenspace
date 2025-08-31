@@ -182,6 +182,14 @@ export default function Header() {
                     tooltip: "Filter & Sort vegetables",
                     event: "toggle-vegetable-filters",
                   };
+                } else if (
+                  pathname === "/farm-dashboard" ||
+                  pathname === "/farm-layout-fullscreen"
+                ) {
+                  return {
+                    tooltip: "Farm layout options",
+                    event: "toggle-farm-filters",
+                  };
                 }
                 return null;
               };
@@ -319,6 +327,14 @@ export default function Header() {
                           return {
                             tooltip: "Filter & Sort vegetables",
                             event: "toggle-vegetable-filters",
+                          };
+                        } else if (
+                          pathname === "/farm-dashboard" ||
+                          pathname === "/farm-layout-fullscreen"
+                        ) {
+                          return {
+                            tooltip: "Farm layout options",
+                            event: "toggle-farm-filters",
                           };
                         }
                         return null;

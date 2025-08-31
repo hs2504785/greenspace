@@ -1,210 +1,181 @@
-/* Custom Toggle Switch Styles */
+/* Modern Toggle Switch Styles - Inspired by vegetables filter */
 
-.custom-toggle-switch {
+.modern-toggle-switch {
   display: flex;
   align-items: center;
-  max-width: 100%;
-  overflow: hidden;
-}
-
-.custom-toggle-switch .toggle-input {
   margin-bottom: 0;
+  max-width: 100%;
 }
 
-/* Override Bootstrap switch styling issues */
-.custom-toggle-switch .form-check-input[type="checkbox"] {
-  width: 2rem;
-  height: 1rem;
-  border-radius: 1rem;
-  background-color: #e9ecef;
-  border: 1px solid #ced4da;
-  transition: all 0.2s ease-in-out;
-  cursor: pointer;
-  position: relative;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
+.modern-toggle-switch .toggle-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 0.75rem;
+}
+
+.modern-toggle-switch .toggle-text {
+  flex: 1;
+  min-width: 0; /* Allow text to shrink */
+}
+
+.modern-toggle-switch .toggle-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #495057;
+  line-height: 1.4;
+  margin: 0;
+  display: block;
+}
+
+.modern-toggle-switch .toggle-description {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 0.2rem;
+  line-height: 1.3;
+}
+
+.modern-toggle-switch .toggle-input {
+  margin-bottom: 0;
   flex-shrink: 0;
-  background-image: none !important;
-  margin-right: 0.5rem;
 }
 
-/* Switch track (background) */
-.custom-toggle-switch .form-check-input[type="checkbox"]:not(:checked) {
-  background-color: #e9ecef;
-  border-color: #ced4da;
-}
-
-/* Switch thumb (circle) */
-.custom-toggle-switch .form-check-input[type="checkbox"]::before {
-  content: "";
-  position: absolute;
-  top: 1px;
-  left: 1px;
-  width: 0.75rem;
-  height: 0.75rem;
-  background-color: #fff;
-  border-radius: 50%;
+/* Override Bootstrap switch styling */
+.modern-toggle-switch .form-check-input {
+  width: 2.5rem !important;
+  height: 1.25rem !important;
+  border-radius: 1.25rem !important;
+  background-color: #dee2e6;
+  border: 1px solid #ced4da;
+  cursor: pointer;
   transition: all 0.2s ease-in-out;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  margin: 0 !important;
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%2833, 37, 41, 0.75%29'/%3e%3c/svg%3e") !important;
 }
 
 /* Checked state */
-.custom-toggle-switch .form-check-input[type="checkbox"]:checked {
-  background-color: #28a745;
-  border-color: #28a745;
+.modern-toggle-switch .form-check-input:checked {
+  background-color: #28a745 !important;
+  border-color: #28a745 !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e") !important;
 }
 
-.custom-toggle-switch .form-check-input[type="checkbox"]:checked::before {
-  transform: translateX(1rem);
+/* Focus state */
+.modern-toggle-switch .form-check-input:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
 }
 
 /* Hover effects */
-.custom-toggle-switch .form-check-input[type="checkbox"]:hover:not(:disabled) {
+.modern-toggle-switch:hover .form-check-input:not(:disabled) {
   border-color: #86b7fe;
   box-shadow: 0 0 0 0.1rem rgba(13, 110, 253, 0.1);
 }
 
-/* Focus state */
-.custom-toggle-switch .form-check-input[type="checkbox"]:focus {
-  border-color: #86b7fe;
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
 /* Disabled state */
-.custom-toggle-switch.toggle-disabled .form-check-input[type="checkbox"] {
+.modern-toggle-switch.toggle-disabled .form-check-input {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.custom-toggle-switch.toggle-disabled .form-check-label {
+.modern-toggle-switch.toggle-disabled .toggle-label {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modern-toggle-switch.toggle-disabled .toggle-description {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
 /* Size variants */
-.custom-toggle-switch.toggle-sm .form-check-input[type="checkbox"] {
-  width: 1.75rem;
-  height: 0.875rem;
-  border-radius: 0.875rem;
+.modern-toggle-switch.toggle-sm .form-check-input {
+  width: 2rem !important;
+  height: 1rem !important;
+  border-radius: 1rem !important;
 }
 
-.custom-toggle-switch.toggle-sm .form-check-input[type="checkbox"]::before {
-  width: 0.625rem;
-  height: 0.625rem;
-  top: 1px;
-  left: 1px;
+.modern-toggle-switch.toggle-sm .toggle-label {
+  font-size: 0.8rem;
 }
 
-.custom-toggle-switch.toggle-sm
-  .form-check-input[type="checkbox"]:checked::before {
-  transform: translateX(0.875rem);
+.modern-toggle-switch.toggle-sm .toggle-description {
+  font-size: 0.75rem;
 }
 
-.custom-toggle-switch.toggle-lg .form-check-input[type="checkbox"] {
-  width: 2.5rem;
-  height: 1.25rem;
-  border-radius: 1.25rem;
+.modern-toggle-switch.toggle-lg .form-check-input {
+  width: 3rem !important;
+  height: 1.5rem !important;
+  border-radius: 1.5rem !important;
 }
 
-.custom-toggle-switch.toggle-lg .form-check-input[type="checkbox"]::before {
-  width: 1rem;
-  height: 1rem;
-  top: 1px;
-  left: 1px;
+.modern-toggle-switch.toggle-lg .toggle-label {
+  font-size: 1rem;
 }
 
-.custom-toggle-switch.toggle-lg
-  .form-check-input[type="checkbox"]:checked::before {
-  transform: translateX(1.25rem);
+.modern-toggle-switch.toggle-lg .toggle-description {
+  font-size: 0.85rem;
 }
 
 /* Color variants */
-.custom-toggle-switch.toggle-primary
-  .form-check-input[type="checkbox"]:checked {
-  background-color: #0d6efd;
-  border-color: #0d6efd;
+.modern-toggle-switch.toggle-primary .form-check-input:checked {
+  background-color: #0d6efd !important;
+  border-color: #0d6efd !important;
 }
 
-.custom-toggle-switch.toggle-success
-  .form-check-input[type="checkbox"]:checked {
-  background-color: #28a745;
-  border-color: #28a745;
+.modern-toggle-switch.toggle-primary .form-check-input:focus {
+  border-color: #0d6efd !important;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
 }
 
-.custom-toggle-switch.toggle-danger .form-check-input[type="checkbox"]:checked {
-  background-color: #dc3545;
-  border-color: #dc3545;
+.modern-toggle-switch.toggle-success .form-check-input:checked {
+  background-color: #28a745 !important;
+  border-color: #28a745 !important;
 }
 
-.custom-toggle-switch.toggle-warning
-  .form-check-input[type="checkbox"]:checked {
-  background-color: #ffc107;
-  border-color: #ffc107;
+.modern-toggle-switch.toggle-success .form-check-input:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
 }
 
-.custom-toggle-switch.toggle-info .form-check-input[type="checkbox"]:checked {
-  background-color: #17a2b8;
-  border-color: #17a2b8;
+.modern-toggle-switch.toggle-danger .form-check-input:checked {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
 }
 
-/* Label styling */
-.custom-toggle-switch .form-check-label {
-  margin-left: 0.5rem;
-  cursor: pointer;
-  font-weight: 500;
-  color: #495057;
-  flex: 1;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+.modern-toggle-switch.toggle-danger .form-check-input:focus {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
 }
 
-/* Animation for smooth transitions */
-@keyframes toggleSlide {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(1.25rem);
-  }
+.modern-toggle-switch.toggle-warning .form-check-input:checked {
+  background-color: #ffc107 !important;
+  border-color: #ffc107 !important;
 }
 
-/* Ensure proper positioning and visibility */
-.custom-toggle-switch .form-check {
-  display: flex;
-  align-items: center;
-  min-height: auto;
-  padding-left: 0;
-  margin-bottom: 0;
-}
-
-.custom-toggle-switch .form-check-input {
-  float: none;
-  margin-left: 0;
-  margin-right: 0.5rem;
-}
-
-/* Debug visibility - make sure switch is visible */
-.custom-toggle-switch .form-check-input[type="checkbox"] {
-  opacity: 1 !important;
-  visibility: visible !important;
-  display: block !important;
-  z-index: 1;
+.modern-toggle-switch.toggle-info .form-check-input:checked {
+  background-color: #17a2b8 !important;
+  border-color: #17a2b8 !important;
 }
 
 /* Mobile optimizations */
 @media (max-width: 575.98px) {
-  .custom-toggle-switch .form-check-input[type="checkbox"] {
-    width: 2.25rem;
-    height: 1.125rem;
+  .modern-toggle-switch .form-check-input {
+    width: 2.25rem !important;
+    height: 1.125rem !important;
   }
 
-  .custom-toggle-switch .form-check-input[type="checkbox"]::before {
-    width: 0.875rem;
-    height: 0.875rem;
+  .modern-toggle-switch .toggle-content {
+    gap: 0.5rem;
   }
 
-  .custom-toggle-switch .form-check-input[type="checkbox"]:checked::before {
-    transform: translateX(1.125rem);
+  .modern-toggle-switch .toggle-label {
+    font-size: 0.85rem;
+  }
+
+  .modern-toggle-switch .toggle-description {
+    font-size: 0.75rem;
   }
 }

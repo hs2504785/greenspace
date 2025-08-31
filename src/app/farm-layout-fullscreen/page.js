@@ -1,20 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Button,
-  Modal,
-  Badge,
-  Navbar,
-  Nav,
-  Dropdown,
-  ButtonGroup,
-  Offcanvas,
-} from "react-bootstrap";
+import { Container, Badge, Button, Offcanvas } from "react-bootstrap";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import PureCSSGridFarm from "@/components/farm/PureCSSGridFarm";
@@ -22,24 +9,38 @@ import PlantTreeModal from "@/components/farm/PlantTreeModal";
 import { getTreeType } from "@/utils/treeTypeClassifier";
 import AdminGuard from "@/components/common/AdminGuard";
 import EnhancedTreeDetailsModal from "@/components/modals/EnhancedTreeDetailsModal";
+import FarmLayoutFilters from "@/components/features/farm/FarmLayoutFilters";
 
 // Note: Tree types are now loaded from database dynamically
 
 export default function FarmLayoutFullscreenPage() {
-  const router = useRouter();
   const [trees, setTrees] = useState([]);
   const [layouts, setLayouts] = useState([]);
   const [selectedLayout, setSelectedLayout] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPlantModal, setShowPlantModal] = useState(false);
   const [showTreeModal, setShowTreeModal] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [selectedTree, setSelectedTree] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [initialPlantFormData, setInitialPlantFormData] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
+  const [farmFilters, setFarmFilters] = useState({
+    selectedLayout: null,
+    showExpandButtons: (() => {
+      // Load from localStorage, default to false for cleaner layout
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("farm-showExpandButtons");
+        return saved ? JSON.parse(saved) : false;
+      }
+      return false;
+    })(),
+    showPlantingGuides: true,
+    zoom: 1,
+    isFullscreen: false,
+  });
 
   // Use your existing user ID - in real app, get from authentication
   const farmId = "0e13a58b-a5e2-4ed3-9c69-9634c7413550";
@@ -48,6 +49,32 @@ export default function FarmLayoutFullscreenPage() {
     // Set document title for client component
     document.title = "Farm Layout - Full View | Arya Natural Farms";
     fetchData();
+
+    // Cleanup function to restore body scroll when leaving
+    return () => {
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+      }
+    };
+  }, []);
+
+  // Listen for global filter toggle from header
+  useEffect(() => {
+    const handleFilterToggle = () => {
+      setShowFilters(true);
+    };
+
+    const handleRefreshFarmData = () => {
+      fetchData();
+    };
+
+    window.addEventListener("toggle-farm-filters", handleFilterToggle);
+    window.addEventListener("refresh-farm-data", handleRefreshFarmData);
+
+    return () => {
+      window.removeEventListener("toggle-farm-filters", handleFilterToggle);
+      window.removeEventListener("refresh-farm-data", handleRefreshFarmData);
+    };
   }, []);
 
   const fetchData = async () => {
@@ -82,6 +109,11 @@ export default function FarmLayoutFullscreenPage() {
         setLayouts(data);
         const activeLayout = data.find((l) => l.is_active) || data[0];
         setSelectedLayout(activeLayout);
+        // Update filters with the active layout
+        setFarmFilters((prev) => ({
+          ...prev,
+          selectedLayout: activeLayout,
+        }));
       }
     } catch (error) {
       console.error("Error fetching layouts:", error);
@@ -243,6 +275,41 @@ export default function FarmLayoutFullscreenPage() {
     }
   };
 
+  const updateFarmFilters = (newFilters) => {
+    setFarmFilters((prev) => {
+      const updated = { ...prev, ...newFilters };
+
+      // Handle localStorage for showExpandButtons
+      if ("showExpandButtons" in newFilters) {
+        localStorage.setItem(
+          "farm-showExpandButtons",
+          JSON.stringify(newFilters.showExpandButtons)
+        );
+      }
+
+      // Handle layout changes
+      if ("selectedLayout" in newFilters && newFilters.selectedLayout) {
+        setSelectedLayout(newFilters.selectedLayout);
+      }
+
+      // Handle zoom changes
+      if ("zoom" in newFilters) {
+        setZoom(newFilters.zoom);
+      }
+
+      // Handle fullscreen toggle
+      if ("isFullscreen" in newFilters) {
+        if (newFilters.isFullscreen && !isFullscreen) {
+          toggleFullscreen();
+        } else if (!newFilters.isFullscreen && isFullscreen) {
+          toggleFullscreen();
+        }
+      }
+
+      return updated;
+    });
+  };
+
   // Listen for fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -283,411 +350,57 @@ export default function FarmLayoutFullscreenPage() {
 
   return (
     <AdminGuard requiredRole="admin">
-      <div className="farm-layout-fullscreen mt-n4">
-        {/* Compact Top Navigation Bar */}
-        <Navbar
-          bg="white"
-          expand="lg"
-          className="border-bottom shadow-sm sticky-top py-2"
-          style={{ zIndex: 1040 }}
-        >
-          <Container fluid className="px-2 px-lg-3">
-            {/* Left side - Minimal branding */}
-            <Navbar.Brand className="fw-bold text-success me-3 d-flex align-items-center">
-              <i className="ti-layout-grid3 me-1"></i>
-              <span className="d-none d-sm-inline">Farm Layout</span>
-            </Navbar.Brand>
-
-            {/* Mobile Toggle */}
-            <Navbar.Toggle
-              aria-controls="farm-navbar-nav"
-              className="border-0 ms-auto d-lg-none"
-            />
-
-            {/* Center - Quick Stats (Desktop only) */}
-            <div className="d-none d-lg-flex gap-2 me-auto">
-              <Badge bg="primary" className="py-1 px-2">
-                <i className="ti-stats-up me-1"></i>
-                {stats.totalTrees}
-              </Badge>
-              <Badge bg="success" className="py-1 px-2">
-                <i className="ti-check me-1"></i>
-                {stats.healthyTrees}
-              </Badge>
-              {stats.fruitingTrees > 0 && (
-                <Badge bg="warning" className="py-1 px-2">
-                  <i className="ti-gift me-1"></i>
-                  {stats.fruitingTrees}
-                </Badge>
-              )}
-              {stats.diseasedTrees > 0 && (
-                <Badge bg="danger" className="py-1 px-2">
-                  <i className="ti-alert me-1"></i>
-                  {stats.diseasedTrees}
-                </Badge>
-              )}
-            </div>
-
-            {/* Right side - Action buttons */}
-            <Navbar.Collapse
-              id="farm-navbar-nav"
-              className="justify-content-end"
-            >
-              <Nav className="align-items-center">
-                {/* Zoom Controls - Desktop */}
-                <div className="d-none d-md-flex me-2">
-                  <ButtonGroup size="sm">
-                    <Button
-                      variant="outline-secondary"
-                      onClick={() =>
-                        setZoom((prev) => Math.max(0.5, prev - 0.1))
-                      }
-                      title="Zoom Out"
-                    >
-                      <i className="ti-zoom-out"></i>
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
-                      onClick={() => setZoom(1)}
-                      title={`Reset (${(zoom * 100).toFixed(0)}%)`}
-                    >
-                      <i className="ti-target"></i>
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
-                      onClick={() => setZoom((prev) => Math.min(2, prev + 0.1))}
-                      title="Zoom In"
-                    >
-                      <i className="ti-zoom-in"></i>
-                    </Button>
-                  </ButtonGroup>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="d-flex gap-1">
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={() => setShowSidebar(true)}
-                    title="Info Panel"
-                  >
-                    <i className="ti-info-alt"></i>
-                    <span className="d-none d-lg-inline ms-1">Info</span>
-                  </Button>
-
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={toggleFullscreen}
-                    title={
-                      isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"
-                    }
-                  >
-                    <i
-                      className={`ti-${
-                        isFullscreen ? "zoom-out" : "fullscreen"
-                      }`}
-                    ></i>
-                    <span className="d-none d-lg-inline ms-1">
-                      {isFullscreen ? "Exit" : "Full"}
-                    </span>
-                  </Button>
-
-                  {layouts.length > 1 && (
-                    <Dropdown>
-                      <Dropdown.Toggle
-                        variant="success"
-                        size="sm"
-                        title="Layout Selector"
-                      >
-                        <i className="ti-layers-alt"></i>
-                        <span className="d-none d-lg-inline ms-1">Layout</span>
-                      </Dropdown.Toggle>
-                      <Dropdown.Menu align="end">
-                        {layouts.map((layout) => (
-                          <Dropdown.Item
-                            key={layout.id}
-                            active={layout.id === selectedLayout?.id}
-                            onClick={() => setSelectedLayout(layout)}
-                          >
-                            <i className="ti-check me-2 text-success"></i>
-                            {layout.name}
-                          </Dropdown.Item>
-                        ))}
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  )}
-
-                  <Button
-                    variant="outline-dark"
-                    size="sm"
-                    onClick={() => router.push("/farm-dashboard")}
-                    title="Back to Dashboard"
-                  >
-                    <i className="ti-arrow-left"></i>
-                    <span className="d-none d-lg-inline ms-1">Back</span>
-                  </Button>
-                </div>
-              </Nav>
-            </Navbar.Collapse>
-          </Container>
-        </Navbar>
+      <div className="farm-layout-fullscreen">
+        {/* Disable body scroll and add proper spacing */}
+        <style jsx global>{`
+          body {
+            overflow: hidden;
+          }
+          .farm-layout-fullscreen {
+            height: 100vh;
+            overflow: hidden;
+          }
+        `}</style>
 
         {/* Main Farm Grid - Full Screen */}
-        <div className="farm-grid-container">
-          <div className="farm-grid-wrapper">
+        <div
+          className="farm-grid-container"
+          style={{
+            position: "fixed",
+            top: "80px", // Account for header height + some padding
+            left: farmFilters.showExpandButtons ? "20px" : "0px",
+            right: farmFilters.showExpandButtons ? "20px" : "0px",
+            bottom: "0px",
+            overflow: "auto",
+            backgroundColor: farmFilters.showExpandButtons
+              ? "#f8f9fa"
+              : "#ffffff",
+            transition: "all 0.3s ease",
+          }}
+        >
+          <div
+            className="farm-grid-wrapper"
+            style={{
+              width: "100%",
+              height: "100%",
+              padding: farmFilters.showExpandButtons ? "20px" : "10px",
+              transition: "padding 0.3s ease",
+            }}
+          >
             <PureCSSGridFarm
               farmId={farmId}
-              selectedLayoutId={selectedLayout?.id}
+              selectedLayoutId={
+                farmFilters.selectedLayout?.id || selectedLayout?.id
+              }
               onTreeClick={handleTreeClick}
-              showExpandButtons={true}
+              showExpandButtons={farmFilters.showExpandButtons}
               showHeader={false}
-              zoom={zoom}
+              zoom={farmFilters.zoom || zoom}
               refreshKey={refreshKey}
               trees={trees}
             />
           </div>
         </div>
-
-        {/* Info Sidebar */}
-        <Offcanvas
-          show={showSidebar}
-          onHide={() => setShowSidebar(false)}
-          placement="end"
-        >
-          <Offcanvas.Header closeButton>
-            <Offcanvas.Title>
-              <i className="ti-info-alt text-primary me-2"></i>
-              Farm Information
-            </Offcanvas.Title>
-          </Offcanvas.Header>
-          <Offcanvas.Body>
-            {/* Quick Stats - Mobile View */}
-            <Card className="mb-3 border-0 bg-light d-lg-none">
-              <Card.Body>
-                <h6 className="card-title text-primary">
-                  <i className="ti-dashboard me-2"></i>
-                  Quick Stats
-                </h6>
-                <div className="d-flex flex-wrap gap-2">
-                  <Badge bg="primary" className="fs-6 py-2 px-3">
-                    <i className="ti-stats-up me-1"></i>
-                    {stats.totalTrees} Trees
-                  </Badge>
-                  <Badge bg="success" className="fs-6 py-2 px-3">
-                    <i className="ti-check me-1"></i>
-                    {stats.healthyTrees} Healthy
-                  </Badge>
-                  {stats.fruitingTrees > 0 && (
-                    <Badge bg="warning" className="fs-6 py-2 px-3">
-                      <i className="ti-gift me-1"></i>
-                      {stats.fruitingTrees} Fruiting
-                    </Badge>
-                  )}
-                  {stats.diseasedTrees > 0 && (
-                    <Badge bg="danger" className="fs-6 py-2 px-3">
-                      <i className="ti-alert me-1"></i>
-                      {stats.diseasedTrees} Issues
-                    </Badge>
-                  )}
-                </div>
-              </Card.Body>
-            </Card>
-
-            {/* Layout Info */}
-            <Card className="mb-3 border-0 bg-light">
-              <Card.Body>
-                <h6 className="card-title text-success">
-                  <i className="ti-layout-grid3 me-2"></i>
-                  Current Layout
-                </h6>
-                <p className="card-text">
-                  <strong>{selectedLayout?.name}</strong>
-                  <br />
-                  <small className="text-muted">
-                    {selectedLayout?.description}
-                  </small>
-                </p>
-              </Card.Body>
-            </Card>
-
-            {/* Zoom Controls - Mobile View */}
-            <Card className="mb-3 border-0 bg-light d-md-none">
-              <Card.Body>
-                <h6 className="card-title text-secondary">
-                  <i className="ti-zoom-in me-2"></i>
-                  Zoom Controls
-                </h6>
-                <div className="d-flex gap-2 align-items-center">
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={() => setZoom((prev) => Math.max(0.5, prev - 0.1))}
-                    className="flex-fill"
-                  >
-                    <i className="ti-zoom-out me-1"></i>
-                    Out
-                  </Button>
-                  <Badge
-                    bg="secondary"
-                    className="px-2 py-2"
-                    style={{ minWidth: "50px" }}
-                  >
-                    {(zoom * 100).toFixed(0)}%
-                  </Badge>
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={() => setZoom(1)}
-                    className="flex-fill"
-                  >
-                    <i className="ti-target me-1"></i>
-                    Reset
-                  </Button>
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={() => setZoom((prev) => Math.min(2, prev + 0.1))}
-                    className="flex-fill"
-                  >
-                    <i className="ti-zoom-in me-1"></i>
-                    In
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card className="mb-3 border-0 bg-light">
-              <Card.Body>
-                <h6 className="card-title text-primary">
-                  <i className="ti-bolt me-2"></i>
-                  Quick Actions
-                </h6>
-                <div className="d-grid gap-2">
-                  <Button variant="success" size="sm" href="/trees">
-                    <i className="ti-plus me-2"></i>
-                    Manage Trees
-                  </Button>
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={fetchData}
-                  >
-                    <i className="ti-reload me-2"></i>
-                    Refresh Data
-                  </Button>
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    href="/farm-dashboard"
-                  >
-                    <i className="ti-layout me-2"></i>
-                    Dashboard View
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
-
-            {/* Tree Statistics */}
-            <Card className="mb-3 border-0 bg-light">
-              <Card.Body>
-                <h6 className="card-title text-warning">
-                  <i className="ti-bar-chart me-2"></i>
-                  Tree Statistics
-                </h6>
-                <div className="row g-2">
-                  <div className="col-6">
-                    <div className="text-center p-2 bg-white rounded">
-                      <div className="h5 text-primary mb-0">
-                        {stats.totalTrees}
-                      </div>
-                      <small className="text-muted">Total</small>
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <div className="text-center p-2 bg-white rounded">
-                      <div className="h5 text-success mb-0">
-                        {stats.healthyTrees}
-                      </div>
-                      <small className="text-muted">Healthy</small>
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <div className="text-center p-2 bg-white rounded">
-                      <div className="h5 text-warning mb-0">
-                        {stats.fruitingTrees}
-                      </div>
-                      <small className="text-muted">Fruiting</small>
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <div className="text-center p-2 bg-white rounded">
-                      <div className="h5 text-danger mb-0">
-                        {stats.diseasedTrees}
-                      </div>
-                      <small className="text-muted">Issues</small>
-                    </div>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-
-            {/* Legend */}
-            <Card className="border-0 bg-light">
-              <Card.Body>
-                <h6 className="card-title text-info">
-                  <i className="ti-palette me-2"></i>
-                  Legend
-                </h6>
-                <div className="d-flex flex-column gap-2">
-                  <div className="d-flex align-items-center">
-                    <div
-                      className="rounded-circle me-2 border"
-                      style={{
-                        width: "20px",
-                        height: "20px",
-                        backgroundColor: "#28a745",
-                        color: "white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "10px",
-                        fontWeight: "700",
-                      }}
-                    >
-                      T
-                    </div>
-                    <small>Planted Trees</small>
-                  </div>
-                  <div className="d-flex align-items-center">
-                    <div
-                      className="rounded-circle border me-2"
-                      style={{
-                        width: "16px",
-                        height: "16px",
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        border: "2px solid #28a745",
-                      }}
-                    ></div>
-                    <small>Planting Guides</small>
-                  </div>
-                  <div className="d-flex align-items-center">
-                    <div
-                      className="me-2"
-                      style={{
-                        width: "20px",
-                        height: "2px",
-                        backgroundColor: "rgba(40, 167, 69, 0.3)",
-                      }}
-                    ></div>
-                    <small>Grid Lines (1ft)</small>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Offcanvas.Body>
-        </Offcanvas>
 
         {/* Plant Tree Modal */}
         <PlantTreeModal
@@ -719,6 +432,16 @@ export default function FarmLayoutFullscreenPage() {
           }}
           farmId={farmId}
           layoutId={selectedLayout?.id}
+        />
+
+        {/* Farm Layout Filters */}
+        <FarmLayoutFilters
+          show={showFilters}
+          onHide={() => setShowFilters(false)}
+          filters={farmFilters}
+          onFilterChange={updateFarmFilters}
+          layouts={layouts}
+          stats={stats}
         />
       </div>
     </AdminGuard>

@@ -18,6 +18,7 @@ import { toast } from "react-hot-toast";
 import PureCSSGridFarm from "@/components/farm/PureCSSGridFarm";
 import AdminGuard from "@/components/common/AdminGuard";
 import EnhancedTreeDetailsModal from "@/components/modals/EnhancedTreeDetailsModal";
+import FarmLayoutFilters from "@/components/features/farm/FarmLayoutFilters";
 
 export default function FarmDashboardPage() {
   const [activeTab, setActiveTab] = useState("analytics");
@@ -30,6 +31,21 @@ export default function FarmDashboardPage() {
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [selectedTree, setSelectedTree] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
+  const [farmFilters, setFarmFilters] = useState({
+    selectedLayout: null,
+    showExpandButtons: (() => {
+      // Load from localStorage, default to false for cleaner layout
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("farm-showExpandButtons");
+        return saved ? JSON.parse(saved) : false;
+      }
+      return false;
+    })(),
+    showPlantingGuides: true,
+    zoom: 1,
+    isFullscreen: false,
+  });
   const [plantFormData, setPlantFormData] = useState({
     tree_id: "",
     new_tree: {
@@ -46,6 +62,25 @@ export default function FarmDashboardPage() {
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+  // Listen for global filter toggle from header
+  useEffect(() => {
+    const handleFilterToggle = () => {
+      setShowFilters(true);
+    };
+
+    const handleRefreshFarmData = () => {
+      fetchData();
+    };
+
+    window.addEventListener("toggle-farm-filters", handleFilterToggle);
+    window.addEventListener("refresh-farm-data", handleRefreshFarmData);
+
+    return () => {
+      window.removeEventListener("toggle-farm-filters", handleFilterToggle);
+      window.removeEventListener("refresh-farm-data", handleRefreshFarmData);
+    };
   }, []);
 
   const fetchData = async () => {
@@ -80,6 +115,11 @@ export default function FarmDashboardPage() {
         setLayouts(data);
         const activeLayout = data.find((l) => l.is_active) || data[0];
         setSelectedLayout(activeLayout);
+        // Update filters with the active layout
+        setFarmFilters((prev) => ({
+          ...prev,
+          selectedLayout: activeLayout,
+        }));
       }
     } catch (error) {
       console.error("Error fetching layouts:", error);
@@ -296,6 +336,33 @@ export default function FarmDashboardPage() {
 
   const stats = getTreeStats();
 
+  const updateFarmFilters = (newFilters) => {
+    setFarmFilters((prev) => {
+      const updated = { ...prev, ...newFilters };
+
+      // Handle localStorage for showExpandButtons
+      if ("showExpandButtons" in newFilters) {
+        localStorage.setItem(
+          "farm-showExpandButtons",
+          JSON.stringify(newFilters.showExpandButtons)
+        );
+      }
+
+      // Handle layout changes
+      if ("selectedLayout" in newFilters && newFilters.selectedLayout) {
+        setSelectedLayout(newFilters.selectedLayout);
+      }
+
+      return updated;
+    });
+  };
+
+  // Legacy function for compatibility with any existing expand button controls
+  const toggleExpandButtons = () => {
+    const newValue = !farmFilters.showExpandButtons;
+    updateFarmFilters({ showExpandButtons: newValue });
+  };
+
   if (loading) {
     return (
       <Container className="py-5">
@@ -426,15 +493,29 @@ export default function FarmDashboardPage() {
                             </Button>
                           </div>
                         </Card.Header>
-                        <Card.Body className="p-2">
+                        <Card.Body
+                          className={
+                            farmFilters.showExpandButtons ? "p-2" : "p-1"
+                          }
+                          style={{ transition: "padding 0.3s ease" }}
+                        >
                           <div
-                            style={{ maxHeight: "400px", overflow: "hidden" }}
+                            style={{
+                              maxHeight: farmFilters.showExpandButtons
+                                ? "400px"
+                                : "500px",
+                              overflow: "hidden",
+                              transition: "max-height 0.3s ease",
+                            }}
                           >
                             <PureCSSGridFarm
                               farmId={farmId}
-                              selectedLayoutId={selectedLayout?.id}
+                              selectedLayoutId={
+                                farmFilters.selectedLayout?.id ||
+                                selectedLayout?.id
+                              }
                               onTreeClick={handleTreeClick}
-                              showExpandButtons={false}
+                              showExpandButtons={farmFilters.showExpandButtons}
                               refreshKey={refreshKey}
                               trees={trees}
                             />
@@ -915,6 +996,16 @@ export default function FarmDashboardPage() {
           }}
           farmId={farmId}
           layoutId={selectedLayout?.id}
+        />
+
+        {/* Farm Layout Filters */}
+        <FarmLayoutFilters
+          show={showFilters}
+          onHide={() => setShowFilters(false)}
+          filters={farmFilters}
+          onFilterChange={updateFarmFilters}
+          layouts={layouts}
+          stats={stats}
         />
       </Container>
     </AdminGuard>
