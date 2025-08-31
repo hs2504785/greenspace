@@ -12,6 +12,8 @@ import {
   InputGroup,
   Dropdown,
   ButtonGroup,
+  OverlayTrigger,
+  Popover,
 } from "react-bootstrap";
 import { toast } from "react-hot-toast";
 import { getTreeType } from "../../utils/treeTypeClassifier";
@@ -45,6 +47,11 @@ const PlantTreeModal = ({
 
   // Get all available trees from database only
   const getAllAvailableTrees = () => {
+    // Return empty array if trees is not available yet
+    if (!trees || !Array.isArray(trees)) {
+      return [];
+    }
+
     // Use only trees from database - no hardcoded predefined trees
     const result = trees
       .map((tree) => ({
@@ -79,6 +86,11 @@ const PlantTreeModal = ({
 
     // Get all trees from database
     const allDbTrees = getAllAvailableTrees();
+
+    // Return early if no trees available
+    if (!allDbTrees || allDbTrees.length === 0) {
+      return { type: "Loading tree data...", trees: [] };
+    }
 
     // Create lookup map from database trees
     const treeMap = {};
@@ -427,34 +439,104 @@ const PlantTreeModal = ({
     }
   };
 
+  // Create popover content for position information
+  const positionPopover = (
+    <Popover id="position-popover" className="shadow">
+      <Popover.Header as="h3" className="bg-light">
+        <i className="ti-location-pin me-2 text-success"></i>
+        Tree Position Info
+      </Popover.Header>
+      <Popover.Body>
+        <div className="mb-2">
+          <strong className="text-success">Position:</strong> Block{" "}
+          {(selectedPosition?.blockIndex || 0) + 1}, Grid ({selectedPosition?.x}
+          , {selectedPosition?.y})
+        </div>
+        {(() => {
+          const positionSuggestions = getPositionBasedSuggestions();
+          return (
+            <div>
+              <strong className="text-primary">Recommended for:</strong>
+              <br />
+              <span className="text-muted">{positionSuggestions.type}</span>
+              {positionSuggestions.trees &&
+                positionSuggestions.trees.length > 0 && (
+                  <>
+                    <br />
+                    <small className="text-info">
+                      {positionSuggestions.trees.length} tree types available
+                    </small>
+                  </>
+                )}
+            </div>
+          );
+        })()}
+      </Popover.Body>
+    </Popover>
+  );
+
+  // Create "What happens?" popover similar to EditTreeModal
+  const whatHappensPopover = (
+    <Popover id="what-happens-popover">
+      <Popover.Header>What happens when planting?</Popover.Header>
+      <Popover.Body>
+        <small>
+          <strong>If tree code exists:</strong> Uses existing tree type data and
+          creates new tree instance at this position.
+          <br />
+          <br />
+          <strong>If tree code is new:</strong> Creates new tree type in
+          database, then plants instance.
+          <br />
+          <br />
+          <em>Available tree types: {getAllAvailableTrees()?.length || 0}</em>
+        </small>
+      </Popover.Body>
+    </Popover>
+  );
+
   return (
     <Modal show={show} onHide={onHide} size="lg" centered>
       <Modal.Header closeButton className="bg-success text-white">
-        <Modal.Title>
-          <i className="ti-plus me-2"></i>
-          Plant New Tree
+        <Modal.Title className="d-flex align-items-center justify-content-between w-100">
+          <div className="d-flex align-items-center">
+            <i className="ti-plus me-2"></i>
+            <span>Plant New Tree</span>
+            <OverlayTrigger placement="bottom" overlay={whatHappensPopover}>
+              <div
+                className="ms-2 d-inline-flex align-items-center justify-content-center rounded-circle bg-light bg-opacity-25"
+                style={{
+                  cursor: "help",
+                  width: "20px",
+                  height: "20px",
+                  fontSize: "12px",
+                }}
+              >
+                <i className="ti-help text-white"></i>
+              </div>
+            </OverlayTrigger>
+          </div>
+          <OverlayTrigger
+            trigger={["hover", "focus"]}
+            placement="bottom"
+            overlay={positionPopover}
+          >
+            <Button
+              variant="outline-light"
+              size="sm"
+              className="border-0"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.1)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <i className="ti-location-pin"></i>
+            </Button>
+          </OverlayTrigger>
         </Modal.Title>
       </Modal.Header>
       <Form onSubmit={handlePlantTree}>
         <Modal.Body>
-          <Alert variant="info" className="border-0">
-            <i className="ti-location-pin me-2"></i>
-            <strong>Position:</strong> Block{" "}
-            {(selectedPosition?.blockIndex || 0) + 1}, Grid (
-            {selectedPosition?.x}, {selectedPosition?.y})
-          </Alert>
-
-          <div className="mb-3">
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <i className="ti-info-alt text-primary"></i>
-              <small className="text-muted">
-                Type tree code - will use existing tree if found, create new if
-                not found.
-                {getAllAvailableTrees().length} tree types available.
-              </small>
-            </div>
-          </div>
-
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3">
@@ -571,18 +653,12 @@ const PlantTreeModal = ({
                   </Dropdown>
                 </InputGroup>
 
-                {(() => {
-                  const positionSuggestions = getPositionBasedSuggestions();
-                  return (
-                    !plantFormData.code && (
-                      <Form.Text className="text-muted">
-                        <i className="ti-target me-1"></i>
-                        <strong>{positionSuggestions.type}</strong> - Click
-                        dropdown to see suggested trees for this location
-                      </Form.Text>
-                    )
-                  );
-                })()}
+                {!plantFormData.code && (
+                  <Form.Text className="text-muted">
+                    <i className="ti-target me-1"></i>
+                    Start typing to search existing trees or create new ones
+                  </Form.Text>
+                )}
               </Form.Group>
             </Col>
             <Col md={6}>
