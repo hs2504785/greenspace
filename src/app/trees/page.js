@@ -40,7 +40,7 @@ export default function TreesPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [selectedTree, setSelectedTree] = useState(null);
 
-  // Tree category options
+  // Tree category options - Enhanced with new categories
   const categoryOptions = [
     { value: "citrus", label: "Citrus", variant: "warning" },
     { value: "stone", label: "Stone Fruit", variant: "info" },
@@ -48,6 +48,10 @@ export default function TreesPage() {
     { value: "berry", label: "Berry", variant: "primary" },
     { value: "nut", label: "Nut", variant: "dark" },
     { value: "exotic", label: "Exotic", variant: "secondary" },
+    { value: "spices", label: "Spices", variant: "danger" },
+    { value: "herbs", label: "Herbs", variant: "success" },
+    { value: "medicinal", label: "Medicinal", variant: "info" },
+    { value: "roots", label: "Roots & Rhizomes", variant: "warning" },
   ];
 
   // Season options

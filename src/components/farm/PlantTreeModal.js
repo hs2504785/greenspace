@@ -713,6 +713,10 @@ const PlantTreeModal = ({
                   <option value="berry">Berry</option>
                   <option value="nut">Nut</option>
                   <option value="exotic">Exotic</option>
+                  <option value="spices">Spices</option>
+                  <option value="herbs">Herbs</option>
+                  <option value="medicinal">Medicinal</option>
+                  <option value="roots">Roots & Rhizomes</option>
                 </Form.Select>
               </Form.Group>
             </Col>
