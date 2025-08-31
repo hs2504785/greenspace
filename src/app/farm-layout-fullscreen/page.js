@@ -35,6 +35,7 @@ export default function FarmLayoutFullscreenPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [initialPlantFormData, setInitialPlantFormData] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Use your existing user ID - in real app, get from authentication
   const farmId = "0e13a58b-a5e2-4ed3-9c69-9634c7413550";
@@ -263,6 +264,9 @@ export default function FarmLayoutFullscreenPage() {
         setTrees((prevTrees) => [...prevTrees, newTree]);
       }
 
+      // Trigger refresh of PureCSSGridFarm component
+      setRefreshKey((prev) => prev + 1);
+
       // Also fetch from server to ensure consistency
       await fetchTrees();
     },
@@ -474,6 +478,7 @@ export default function FarmLayoutFullscreenPage() {
             showExpandButtons={true}
             showHeader={false}
             zoom={zoom}
+            refreshKey={refreshKey}
           />
         </div>
       </div>

@@ -17,6 +17,7 @@ const PureCSSGridFarm = memo(
     showExpandButtons = true,
     showHeader = true,
     zoom: externalZoom,
+    refreshKey = 0,
   }) => {
     const [layout, setLayout] = useState(null);
     const [trees, setTrees] = useState([]);
@@ -36,6 +37,13 @@ const PureCSSGridFarm = memo(
         fetchLayout();
       }
     }, [farmId, selectedLayoutId]);
+
+    // Refresh trees when refreshKey changes
+    useEffect(() => {
+      if (refreshKey > 0 && layout) {
+        fetchTrees();
+      }
+    }, [refreshKey]);
 
     const fetchLayout = async () => {
       try {

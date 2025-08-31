@@ -327,18 +327,23 @@
 
 /* Tiny tree circles - smallest size for most positions */
 .treeCircleTiny {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: #ffc107; /* Golden Yellow */
-  color: #212529; /* Dark text for better contrast */
+  background: linear-gradient(
+    135deg,
+    #ffc107,
+    #ffca28
+  ); /* Enhanced gradient for better visual appeal */
+  color: #2c3e50; /* Darker text for better contrast */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 8px; /* Reduced from 9px for better fit */
+  font-weight: 600; /* Slightly reduced from 700 for less heaviness */
+  letter-spacing: 0.3px; /* Improved letter spacing for readability */
   border: 2px solid #ffffff;
-  box-shadow: 0 2px 6px rgba(255, 193, 7, 0.3);
+  box-shadow: 0 2px 6px rgba(255, 193, 7, 0.3), 0 1px 2px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
   cursor: pointer;
   position: relative;
@@ -346,8 +351,8 @@
 }
 
 .treeCircleTiny:hover {
-  transform: scale(1.3);
-  box-shadow: 0 3px 8px rgba(255, 193, 7, 0.5);
+  transform: scale(1.25);
+  box-shadow: 0 3px 10px rgba(255, 193, 7, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
   z-index: 20;
 }
 

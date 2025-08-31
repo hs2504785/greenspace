@@ -27,6 +27,7 @@ export default function FarmDashboardPage() {
   const [showTreeModal, setShowTreeModal] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [selectedTree, setSelectedTree] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [plantFormData, setPlantFormData] = useState({
     tree_id: "",
     new_tree: {
@@ -157,6 +158,20 @@ export default function FarmDashboardPage() {
     }
   };
 
+  // Callback for when tree is successfully planted
+  const handleTreePlanted = async (newTree) => {
+    // Immediately update the trees state for instant UI feedback
+    if (newTree) {
+      setTrees((prevTrees) => [...prevTrees, newTree]);
+    }
+
+    // Trigger refresh of PureCSSGridFarm component
+    setRefreshKey((prev) => prev + 1);
+
+    // Also fetch from server to ensure consistency
+    await fetchTrees();
+  };
+
   const handlePlantTree = async (e) => {
     e.preventDefault();
 
@@ -247,7 +262,8 @@ export default function FarmDashboardPage() {
         },
       });
 
-      await fetchTrees(); // Refresh the tree list
+      // Immediately update UI state
+      await handleTreePlanted(treeToPlant);
     } catch (error) {
       console.error("Error planting tree:", error);
       toast.error(error.message);
@@ -401,6 +417,7 @@ export default function FarmDashboardPage() {
                             selectedLayoutId={selectedLayout?.id}
                             onTreeClick={handleTreeClick}
                             showExpandButtons={false}
+                            refreshKey={refreshKey}
                           />
                         </div>
                         <div className="text-center mt-2">
