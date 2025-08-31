@@ -61,12 +61,12 @@ export async function POST(request) {
     const {
       code,
       name,
-      scientific_name,
       variety,
+      category,
+      season,
+      years_to_fruit,
+      mature_height,
       description,
-      planting_date,
-      expected_harvest_date,
-      status = "healthy",
       farm_id,
       position, // { layout_id, grid_x, grid_y, block_index }
     } = body;
@@ -79,16 +79,16 @@ export async function POST(request) {
       );
     }
 
-    // Convert empty strings to null for date fields
+    // Convert empty strings to null for optional fields
     const treeData = {
       code,
       name,
-      scientific_name: scientific_name || null,
       variety: variety || null,
+      category: category || null,
+      season: season || null,
+      years_to_fruit: years_to_fruit || null,
+      mature_height: mature_height || null,
       description: description || null,
-      planting_date: planting_date || null,
-      expected_harvest_date: expected_harvest_date || null,
-      status,
       farm_id,
     };
 
@@ -140,12 +140,12 @@ export async function PUT(request) {
       id,
       code,
       name,
-      scientific_name,
       variety,
+      category,
+      season,
+      years_to_fruit,
+      mature_height,
       description,
-      planting_date,
-      expected_harvest_date,
-      status,
     } = body;
 
     if (!id) {
@@ -155,16 +155,16 @@ export async function PUT(request) {
       );
     }
 
-    // Convert empty strings to null for date fields
+    // Convert empty strings to null for optional fields
     const updateData = {
       code,
       name,
-      scientific_name: scientific_name || null,
       variety: variety || null,
+      category: category || null,
+      season: season || null,
+      years_to_fruit: years_to_fruit || null,
+      mature_height: mature_height || null,
       description: description || null,
-      planting_date: planting_date || null,
-      expected_harvest_date: expected_harvest_date || null,
-      status,
       updated_at: new Date().toISOString(),
     };
 

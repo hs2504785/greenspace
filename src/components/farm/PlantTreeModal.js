@@ -16,34 +16,216 @@ import {
 import { toast } from "react-hot-toast";
 import { getTreeType } from "../../utils/treeTypeClassifier";
 
-// Predefined tree types - always available
+// Predefined tree types - always available with default properties
 const PREDEFINED_TREES = [
-  { code: "M", name: "Mango" },
-  { code: "L", name: "Lemon" },
-  { code: "AS", name: "All Spices" },
-  { code: "A", name: "Apple" },
-  { code: "CA", name: "Custard Apple" },
-  { code: "G", name: "Guava" },
-  { code: "AN", name: "Anjeer" },
-  { code: "P", name: "Pomegranate" },
-  { code: "MB", name: "Mulberry" },
-  { code: "JA", name: "Jackfruit" },
-  { code: "BC", name: "Barbadoos Cherry" },
-  { code: "AV", name: "Avocado" },
-  { code: "SF", name: "Starfruit" },
-  { code: "C", name: "Cashew" },
-  { code: "PR", name: "Pear" },
-  { code: "PC", name: "Peach" },
-  { code: "SP", name: "Sapota" },
-  { code: "MR", name: "Moringa" },
-  { code: "BB", name: "Black Berry" },
-  { code: "LC", name: "Lychee" },
-  { code: "MF", name: "Miracle Fruit" },
-  { code: "KR", name: "Karoda" },
-  { code: "AB", name: "Apple Ber" },
-  { code: "BA", name: "Banana" },
-  { code: "PA", name: "Papaya" },
-  { code: "GR", name: "Grape" },
+  {
+    code: "M",
+    name: "Mango",
+    category: "tropical",
+    season: "summer",
+    years_to_fruit: "3",
+    mature_height: "large",
+  },
+  {
+    code: "L",
+    name: "Lemon",
+    category: "citrus",
+    season: "year-round",
+    years_to_fruit: "2",
+    mature_height: "medium",
+  },
+  {
+    code: "AS",
+    name: "All Spices",
+    category: "exotic",
+    season: "year-round",
+    years_to_fruit: "4",
+    mature_height: "medium",
+  },
+  {
+    code: "A",
+    name: "Apple",
+    category: "stone",
+    season: "winter",
+    years_to_fruit: "3",
+    mature_height: "medium",
+  },
+  {
+    code: "CA",
+    name: "Custard Apple",
+    category: "tropical",
+    season: "winter",
+    years_to_fruit: "3",
+    mature_height: "medium",
+  },
+  {
+    code: "G",
+    name: "Guava",
+    category: "tropical",
+    season: "year-round",
+    years_to_fruit: "2",
+    mature_height: "medium",
+  },
+  {
+    code: "AN",
+    name: "Anjeer",
+    category: "stone",
+    season: "summer",
+    years_to_fruit: "3",
+    mature_height: "medium",
+  },
+  {
+    code: "P",
+    name: "Pomegranate",
+    category: "stone",
+    season: "winter",
+    years_to_fruit: "3",
+    mature_height: "medium",
+  },
+  {
+    code: "MB",
+    name: "Mulberry",
+    category: "berry",
+    season: "summer",
+    years_to_fruit: "2",
+    mature_height: "large",
+  },
+  {
+    code: "JA",
+    name: "Jackfruit",
+    category: "tropical",
+    season: "summer",
+    years_to_fruit: "5",
+    mature_height: "large",
+  },
+  {
+    code: "BC",
+    name: "Barbadoos Cherry",
+    category: "berry",
+    season: "year-round",
+    years_to_fruit: "2",
+    mature_height: "small",
+  },
+  {
+    code: "AV",
+    name: "Avocado",
+    category: "tropical",
+    season: "year-round",
+    years_to_fruit: "4",
+    mature_height: "large",
+  },
+  {
+    code: "SF",
+    name: "Starfruit",
+    category: "tropical",
+    season: "year-round",
+    years_to_fruit: "3",
+    mature_height: "medium",
+  },
+  {
+    code: "C",
+    name: "Cashew",
+    category: "nut",
+    season: "summer",
+    years_to_fruit: "5",
+    mature_height: "large",
+  },
+  {
+    code: "PR",
+    name: "Pear",
+    category: "stone",
+    season: "winter",
+    years_to_fruit: "3",
+    mature_height: "medium",
+  },
+  {
+    code: "PC",
+    name: "Peach",
+    category: "stone",
+    season: "summer",
+    years_to_fruit: "3",
+    mature_height: "medium",
+  },
+  {
+    code: "SP",
+    name: "Sapota",
+    category: "tropical",
+    season: "year-round",
+    years_to_fruit: "4",
+    mature_height: "large",
+  },
+  {
+    code: "MR",
+    name: "Moringa",
+    category: "exotic",
+    season: "year-round",
+    years_to_fruit: "1",
+    mature_height: "medium",
+  },
+  {
+    code: "BB",
+    name: "Black Berry",
+    category: "berry",
+    season: "summer",
+    years_to_fruit: "2",
+    mature_height: "small",
+  },
+  {
+    code: "LC",
+    name: "Lychee",
+    category: "tropical",
+    season: "summer",
+    years_to_fruit: "5",
+    mature_height: "large",
+  },
+  {
+    code: "MF",
+    name: "Miracle Fruit",
+    category: "exotic",
+    season: "year-round",
+    years_to_fruit: "3",
+    mature_height: "small",
+  },
+  {
+    code: "KR",
+    name: "Karoda",
+    category: "berry",
+    season: "summer",
+    years_to_fruit: "2",
+    mature_height: "small",
+  },
+  {
+    code: "AB",
+    name: "Apple Ber",
+    category: "stone",
+    season: "winter",
+    years_to_fruit: "3",
+    mature_height: "medium",
+  },
+  {
+    code: "BA",
+    name: "Banana",
+    category: "tropical",
+    season: "year-round",
+    years_to_fruit: "1",
+    mature_height: "medium",
+  },
+  {
+    code: "PA",
+    name: "Papaya",
+    category: "tropical",
+    season: "year-round",
+    years_to_fruit: "1",
+    mature_height: "medium",
+  },
+  {
+    code: "GR",
+    name: "Grape",
+    category: "berry",
+    season: "summer",
+    years_to_fruit: "2",
+    mature_height: "medium",
+  },
 ];
 
 const PlantTreeModal = ({
@@ -59,9 +241,12 @@ const PlantTreeModal = ({
   const [plantFormData, setPlantFormData] = useState({
     code: "",
     name: "",
-    scientific_name: "",
     variety: "",
-    status: "healthy",
+    category: "",
+    season: "",
+    years_to_fruit: "",
+    mature_height: "",
+    description: "",
   });
 
   const [matchedTree, setMatchedTree] = useState(null); // Store matched existing tree
@@ -212,9 +397,12 @@ const PlantTreeModal = ({
       setPlantFormData({
         code: "",
         name: "",
-        scientific_name: "",
         variety: "",
-        status: "healthy",
+        category: "",
+        season: "",
+        years_to_fruit: "",
+        mature_height: "",
+        description: "",
       });
 
       setMatchedTree(null);
@@ -250,8 +438,12 @@ const PlantTreeModal = ({
             ...prev,
             code: upperCode,
             name: existingTree.name,
-            scientific_name: existingTree.scientific_name || "",
             variety: existingTree.variety || "",
+            category: existingTree.category || "",
+            season: existingTree.season || "",
+            years_to_fruit: existingTree.years_to_fruit || "",
+            mature_height: existingTree.mature_height || "",
+            description: existingTree.description || "",
             status: existingTree.status || "healthy",
           }));
           setCodeValidation({
@@ -288,17 +480,51 @@ const PlantTreeModal = ({
     }));
   }, []);
 
-  const handleScientificNameChange = useCallback((value) => {
-    setPlantFormData((prev) => ({
-      ...prev,
-      scientific_name: value,
-    }));
-  }, []);
-
   const handleVarietyChange = useCallback((value) => {
+    setMatchedTree(null); // Clear matched tree when manually changing variety
     setPlantFormData((prev) => ({
       ...prev,
       variety: value,
+    }));
+  }, []);
+
+  const handleCategoryChange = useCallback((value) => {
+    setMatchedTree(null);
+    setPlantFormData((prev) => ({
+      ...prev,
+      category: value,
+    }));
+  }, []);
+
+  const handleSeasonChange = useCallback((value) => {
+    setMatchedTree(null);
+    setPlantFormData((prev) => ({
+      ...prev,
+      season: value,
+    }));
+  }, []);
+
+  const handleYearsToFruitChange = useCallback((value) => {
+    setMatchedTree(null);
+    setPlantFormData((prev) => ({
+      ...prev,
+      years_to_fruit: value,
+    }));
+  }, []);
+
+  const handleMatureHeightChange = useCallback((value) => {
+    setMatchedTree(null);
+    setPlantFormData((prev) => ({
+      ...prev,
+      mature_height: value,
+    }));
+  }, []);
+
+  const handleDescriptionChange = useCallback((value) => {
+    setMatchedTree(null);
+    setPlantFormData((prev) => ({
+      ...prev,
+      description: value,
     }));
   }, []);
 
@@ -609,21 +835,101 @@ const PlantTreeModal = ({
             </Col>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Scientific Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={plantFormData.scientific_name}
-                  onChange={(e) => handleScientificNameChange(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-3">
                 <Form.Label>Variety</Form.Label>
                 <Form.Control
                   type="text"
                   value={plantFormData.variety}
                   onChange={(e) => handleVarietyChange(e.target.value)}
+                  placeholder="e.g., Alphonso, Kesar"
+                  readOnly={matchedTree}
+                  className={matchedTree ? "bg-light" : ""}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Category</Form.Label>
+                <Form.Select
+                  value={plantFormData.category}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  disabled={matchedTree}
+                  className={matchedTree ? "bg-light" : ""}
+                >
+                  <option value="">Select Category</option>
+                  <option value="citrus">Citrus</option>
+                  <option value="stone">Stone Fruit</option>
+                  <option value="tropical">Tropical</option>
+                  <option value="berry">Berry</option>
+                  <option value="nut">Nut</option>
+                  <option value="exotic">Exotic</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col md={4}>
+              <Form.Group className="mb-3">
+                <Form.Label>Season</Form.Label>
+                <Form.Select
+                  value={plantFormData.season}
+                  onChange={(e) => handleSeasonChange(e.target.value)}
+                  disabled={matchedTree}
+                  className={matchedTree ? "bg-light" : ""}
+                >
+                  <option value="">Select Season</option>
+                  <option value="summer">Summer</option>
+                  <option value="winter">Winter</option>
+                  <option value="monsoon">Monsoon</option>
+                  <option value="year-round">Year-round</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group className="mb-3">
+                <Form.Label>Years to Fruit</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={plantFormData.years_to_fruit}
+                  onChange={(e) => handleYearsToFruitChange(e.target.value)}
+                  placeholder="e.g., 3-5"
+                  min="1"
+                  max="20"
+                  readOnly={matchedTree}
+                  className={matchedTree ? "bg-light" : ""}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group className="mb-3">
+                <Form.Label>Mature Height</Form.Label>
+                <Form.Select
+                  value={plantFormData.mature_height}
+                  onChange={(e) => handleMatureHeightChange(e.target.value)}
+                  disabled={matchedTree}
+                  className={matchedTree ? "bg-light" : ""}
+                >
+                  <option value="">Select Height</option>
+                  <option value="small">Small (5-10 ft)</option>
+                  <option value="medium">Medium (10-20 ft)</option>
+                  <option value="large">Large (20+ ft)</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col md={12}>
+              <Form.Group className="mb-3">
+                <Form.Label>Description</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={2}
+                  value={plantFormData.description}
+                  onChange={(e) => handleDescriptionChange(e.target.value)}
+                  placeholder="Care tips, notes, or additional details..."
+                  readOnly={matchedTree}
+                  className={matchedTree ? "bg-light" : ""}
                 />
               </Form.Group>
             </Col>

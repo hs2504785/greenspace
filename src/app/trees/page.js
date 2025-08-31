@@ -28,27 +28,42 @@ export default function TreesPage() {
   const [formData, setFormData] = useState({
     code: "",
     name: "",
-    scientific_name: "",
     variety: "",
+    category: "",
+    season: "",
+    years_to_fruit: "",
+    mature_height: "",
     description: "",
-    planting_date: "",
-    expected_harvest_date: "",
-    status: "healthy",
   });
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [selectedTree, setSelectedTree] = useState(null);
 
-  // Tree status options
-  const statusOptions = [
-    { value: "healthy", label: "Healthy", variant: "success" },
-    { value: "growing", label: "Growing", variant: "info" },
-    { value: "flowering", label: "Flowering", variant: "warning" },
-    { value: "fruiting", label: "Fruiting", variant: "primary" },
-    { value: "diseased", label: "Diseased", variant: "danger" },
-    { value: "dormant", label: "Dormant", variant: "secondary" },
+  // Tree category options
+  const categoryOptions = [
+    { value: "citrus", label: "Citrus", variant: "warning" },
+    { value: "stone", label: "Stone Fruit", variant: "info" },
+    { value: "tropical", label: "Tropical", variant: "success" },
+    { value: "berry", label: "Berry", variant: "primary" },
+    { value: "nut", label: "Nut", variant: "dark" },
+    { value: "exotic", label: "Exotic", variant: "secondary" },
+  ];
+
+  // Season options
+  const seasonOptions = [
+    { value: "summer", label: "Summer", variant: "warning" },
+    { value: "winter", label: "Winter", variant: "info" },
+    { value: "monsoon", label: "Monsoon", variant: "success" },
+    { value: "year-round", label: "Year-round", variant: "primary" },
+  ];
+
+  // Mature height options
+  const heightOptions = [
+    { value: "small", label: "Small (5-10 ft)", variant: "success" },
+    { value: "medium", label: "Medium (10-20 ft)", variant: "warning" },
+    { value: "large", label: "Large (20+ ft)", variant: "danger" },
   ];
 
   // Predefined tree codes for quick selection - matches PlantTreeModal
@@ -139,12 +154,12 @@ export default function TreesPage() {
     setFormData({
       code: tree.code || "",
       name: tree.name || "",
-      scientific_name: tree.scientific_name || "",
       variety: tree.variety || "",
+      category: tree.category || "",
+      season: tree.season || "",
+      years_to_fruit: tree.years_to_fruit || "",
+      mature_height: tree.mature_height || "",
       description: tree.description || "",
-      planting_date: tree.planting_date || "",
-      expected_harvest_date: tree.expected_harvest_date || "",
-      status: tree.status || "healthy",
     });
     setShowModal(true);
   };
@@ -181,12 +196,12 @@ export default function TreesPage() {
     setFormData({
       code: "",
       name: "",
-      scientific_name: "",
       variety: "",
+      category: "",
+      season: "",
+      years_to_fruit: "",
+      mature_height: "",
       description: "",
-      planting_date: "",
-      expected_harvest_date: "",
-      status: "healthy",
     });
   };
 
@@ -198,24 +213,50 @@ export default function TreesPage() {
     }));
   };
 
-  // Filter trees based on search and status
+  // Filter trees based on search and category (updated after migration)
   const filteredTrees = trees.filter((tree) => {
     const matchesSearch =
       searchTerm === "" ||
       tree.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tree.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (tree.scientific_name &&
-        tree.scientific_name.toLowerCase().includes(searchTerm.toLowerCase()));
+      (tree.variety &&
+        tree.variety.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (tree.category &&
+        tree.category.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesStatus = filterStatus === "" || tree.status === filterStatus;
+    const matchesCategory =
+      filterCategory === "" || tree.category === filterCategory;
 
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesCategory;
   });
 
-  const getStatusBadge = (status) => {
-    const statusOption =
-      statusOptions.find((opt) => opt.value === status) || statusOptions[0];
-    return <Badge bg={statusOption.variant}>{statusOption.label}</Badge>;
+  const getCategoryBadge = (category) => {
+    const categoryOption = categoryOptions.find(
+      (opt) => opt.value === category
+    ) || {
+      value: "unknown",
+      label: "Unknown",
+      variant: "secondary",
+    };
+    return <Badge bg={categoryOption.variant}>{categoryOption.label}</Badge>;
+  };
+
+  const getSeasonBadge = (season) => {
+    const seasonOption = seasonOptions.find((opt) => opt.value === season) || {
+      value: "unknown",
+      label: "Unknown",
+      variant: "secondary",
+    };
+    return <Badge bg={seasonOption.variant}>{seasonOption.label}</Badge>;
+  };
+
+  const getHeightBadge = (height) => {
+    const heightOption = heightOptions.find((opt) => opt.value === height) || {
+      value: "unknown",
+      label: "Unknown",
+      variant: "secondary",
+    };
+    return <Badge bg={heightOption.variant}>{heightOption.label}</Badge>;
   };
 
   return (
@@ -258,21 +299,21 @@ export default function TreesPage() {
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                           onClear={() => setSearchTerm("")}
-                          placeholder="Search by name, code, or scientific name..."
+                          placeholder="Search by name, code, variety, or category..."
                         />
                       </Form.Group>
                     </Col>
                     <Col xs={12} sm={6} lg={3}>
                       <Form.Group className="mb-0">
                         <Form.Label className="small fw-medium text-muted mb-2">
-                          Filter by Status
+                          Filter by Category
                         </Form.Label>
                         <Form.Select
-                          value={filterStatus}
-                          onChange={(e) => setFilterStatus(e.target.value)}
+                          value={filterCategory}
+                          onChange={(e) => setFilterCategory(e.target.value)}
                         >
-                          <option value="">All Status</option>
-                          {statusOptions.map((option) => (
+                          <option value="">All Categories</option>
+                          {categoryOptions.map((option) => (
                             <option key={option.value} value={option.value}>
                               {option.label}
                             </option>
@@ -284,7 +325,7 @@ export default function TreesPage() {
                       <ClearFiltersButton
                         onClick={() => {
                           setSearchTerm("");
-                          setFilterStatus("");
+                          setFilterCategory("");
                         }}
                       />
                     </Col>
@@ -310,11 +351,11 @@ export default function TreesPage() {
                         <tr>
                           <th className="border-0 ps-3">Code</th>
                           <th className="border-0">Name</th>
-                          <th className="border-0">Scientific Name</th>
                           <th className="border-0">Variety</th>
-                          <th className="border-0">Status</th>
-                          <th className="border-0">Planting Date</th>
-                          <th className="border-0">Expected Harvest</th>
+                          <th className="border-0">Category</th>
+                          <th className="border-0">Season</th>
+                          <th className="border-0">Years to Fruit</th>
+                          <th className="border-0">Mature Height</th>
                           <th
                             className="border-0 text-center"
                             style={{ width: "120px" }}
@@ -347,24 +388,26 @@ export default function TreesPage() {
                                 <div className="fw-medium">{tree.name}</div>
                               </td>
                               <td className="text-muted">
-                                {tree.scientific_name || "-"}
-                              </td>
-                              <td className="text-muted">
                                 {tree.variety || "-"}
                               </td>
-                              <td>{getStatusBadge(tree.status)}</td>
-                              <td className="text-muted">
-                                {tree.planting_date
-                                  ? new Date(
-                                      tree.planting_date
-                                    ).toLocaleDateString()
+                              <td>
+                                {tree.category
+                                  ? getCategoryBadge(tree.category)
+                                  : "-"}
+                              </td>
+                              <td>
+                                {tree.season
+                                  ? getSeasonBadge(tree.season)
                                   : "-"}
                               </td>
                               <td className="text-muted">
-                                {tree.expected_harvest_date
-                                  ? new Date(
-                                      tree.expected_harvest_date
-                                    ).toLocaleDateString()
+                                {tree.years_to_fruit
+                                  ? `${tree.years_to_fruit} years`
+                                  : "-"}
+                              </td>
+                              <td>
+                                {tree.mature_height
+                                  ? getHeightBadge(tree.mature_height)
                                   : "-"}
                               </td>
                               <td>
@@ -462,26 +505,31 @@ export default function TreesPage() {
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Scientific Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="scientific_name"
-                      value={formData.scientific_name}
-                      onChange={handleInputChange}
-                      placeholder="e.g., Mangifera indica"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
                     <Form.Label>Variety</Form.Label>
                     <Form.Control
                       type="text"
                       name="variety"
                       value={formData.variety}
                       onChange={handleInputChange}
-                      placeholder="e.g., Alphonso"
+                      placeholder="e.g., Alphonso, Kesar"
                     />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Category</Form.Label>
+                    <Form.Select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                    >
+                      <option value="">Select Category</option>
+                      {categoryOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </Form.Select>
                   </Form.Group>
                 </Col>
               </Row>
@@ -489,13 +537,14 @@ export default function TreesPage() {
               <Row>
                 <Col md={4}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Status</Form.Label>
+                    <Form.Label>Season</Form.Label>
                     <Form.Select
-                      name="status"
-                      value={formData.status}
+                      name="season"
+                      value={formData.season}
                       onChange={handleInputChange}
                     >
-                      {statusOptions.map((option) => (
+                      <option value="">Select Season</option>
+                      {seasonOptions.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
@@ -505,24 +554,33 @@ export default function TreesPage() {
                 </Col>
                 <Col md={4}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Planting Date</Form.Label>
+                    <Form.Label>Years to Fruit</Form.Label>
                     <Form.Control
-                      type="date"
-                      name="planting_date"
-                      value={formData.planting_date}
+                      type="number"
+                      name="years_to_fruit"
+                      value={formData.years_to_fruit}
                       onChange={handleInputChange}
+                      placeholder="e.g., 3-5"
+                      min="1"
+                      max="20"
                     />
                   </Form.Group>
                 </Col>
                 <Col md={4}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Expected Harvest Date</Form.Label>
-                    <Form.Control
-                      type="date"
-                      name="expected_harvest_date"
-                      value={formData.expected_harvest_date}
+                    <Form.Label>Mature Height</Form.Label>
+                    <Form.Select
+                      name="mature_height"
+                      value={formData.mature_height}
                       onChange={handleInputChange}
-                    />
+                    >
+                      <option value="">Select Height</option>
+                      {heightOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </Form.Select>
                   </Form.Group>
                 </Col>
               </Row>
