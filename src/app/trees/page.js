@@ -28,7 +28,6 @@ export default function TreesPage() {
   const [formData, setFormData] = useState({
     code: "",
     name: "",
-    variety: "",
     category: "",
     season: "",
     years_to_fruit: "",
@@ -154,7 +153,6 @@ export default function TreesPage() {
     setFormData({
       code: tree.code || "",
       name: tree.name || "",
-      variety: tree.variety || "",
       category: tree.category || "",
       season: tree.season || "",
       years_to_fruit: tree.years_to_fruit || "",
@@ -219,8 +217,6 @@ export default function TreesPage() {
       searchTerm === "" ||
       tree.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tree.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (tree.variety &&
-        tree.variety.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (tree.category &&
         tree.category.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -351,11 +347,11 @@ export default function TreesPage() {
                         <tr>
                           <th className="border-0 ps-3">Code</th>
                           <th className="border-0">Name</th>
-                          <th className="border-0">Variety</th>
                           <th className="border-0">Category</th>
                           <th className="border-0">Season</th>
                           <th className="border-0">Years to Fruit</th>
                           <th className="border-0">Mature Height</th>
+                          <th className="border-0">Description</th>
                           <th
                             className="border-0 text-center"
                             style={{ width: "120px" }}
@@ -387,9 +383,6 @@ export default function TreesPage() {
                               <td>
                                 <div className="fw-medium">{tree.name}</div>
                               </td>
-                              <td className="text-muted">
-                                {tree.variety || "-"}
-                              </td>
                               <td>
                                 {tree.category
                                   ? getCategoryBadge(tree.category)
@@ -408,6 +401,13 @@ export default function TreesPage() {
                               <td>
                                 {tree.mature_height
                                   ? getHeightBadge(tree.mature_height)
+                                  : "-"}
+                              </td>
+                              <td className="text-muted small">
+                                {tree.description
+                                  ? tree.description.length > 50
+                                    ? tree.description.substring(0, 50) + "..."
+                                    : tree.description
                                   : "-"}
                               </td>
                               <td>
@@ -503,18 +503,6 @@ export default function TreesPage() {
               </Row>
 
               <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Variety</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="variety"
-                      value={formData.variety}
-                      onChange={handleInputChange}
-                      placeholder="e.g., Alphonso, Kesar"
-                    />
-                  </Form.Group>
-                </Col>
                 <Col md={6}>
                   <Form.Group className="mb-3">
                     <Form.Label>Category</Form.Label>

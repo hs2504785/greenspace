@@ -22,35 +22,7 @@ import PlantTreeModal from "@/components/farm/PlantTreeModal";
 import { getTreeType } from "@/utils/treeTypeClassifier";
 import AdminGuard from "@/components/common/AdminGuard";
 
-// Predefined tree types - keep in sync with PlantTreeModal
-const PREDEFINED_TREES = [
-  { code: "M", name: "Mango" },
-  { code: "L", name: "Lemon" },
-  { code: "AS", name: "All Spices" },
-  { code: "A", name: "Apple" },
-  { code: "CA", name: "Custard Apple" },
-  { code: "G", name: "Guava" },
-  { code: "AN", name: "Anjeer" },
-  { code: "P", name: "Pomegranate" },
-  { code: "MB", name: "Mulberry" },
-  { code: "JA", name: "Jackfruit" },
-  { code: "BC", name: "Barbadoos Cherry" },
-  { code: "AV", name: "Avocado" },
-  { code: "SF", name: "Starfruit" },
-  { code: "C", name: "Cashew" },
-  { code: "PR", name: "Pear" },
-  { code: "PC", name: "Peach" },
-  { code: "SP", name: "Sapota" },
-  { code: "MR", name: "Moringa" },
-  { code: "BB", name: "Black Berry" },
-  { code: "LC", name: "Lychee" },
-  { code: "MF", name: "Miracle Fruit" },
-  { code: "KR", name: "Karoda" },
-  { code: "AB", name: "Apple Ber" },
-  { code: "BA", name: "Banana" },
-  { code: "PA", name: "Papaya" },
-  { code: "GR", name: "Grape" },
-];
+// Note: Tree types are now loaded from database dynamically
 
 export default function FarmLayoutFullscreenPage() {
   const router = useRouter();
@@ -129,8 +101,8 @@ export default function FarmLayoutFullscreenPage() {
   }, []); // No dependencies - functions are stable
 
   const generateUniquTreeCode = useCallback(() => {
-    // Use predefined tree codes
-    const treeCodes = PREDEFINED_TREES.map((t) => t.code);
+    // Use tree codes from database
+    const treeCodes = trees.map((t) => t.code);
 
     // Try to be more systematic - use position-based suggestions first
     let preferredCodes = [];
@@ -204,8 +176,8 @@ export default function FarmLayoutFullscreenPage() {
     // Generate a descriptive name based on the code
     const getTreeNameFromCode = (code) => {
       const baseName = code.replace(/\d+$/, ""); // Remove numbers
-      const predefined = PREDEFINED_TREES.find((t) => t.code === baseName);
-      return predefined ? predefined.name : `${code} Tree`;
+      const dbTree = trees.find((t) => t.code === baseName);
+      return dbTree ? dbTree.name : `${code} Tree`;
     };
 
     setInitialPlantFormData({
@@ -458,6 +430,7 @@ export default function FarmLayoutFullscreenPage() {
               showHeader={false}
               zoom={zoom}
               refreshKey={refreshKey}
+              trees={trees}
             />
           </div>
         </div>

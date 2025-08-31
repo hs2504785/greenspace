@@ -18,9 +18,9 @@ const PureCSSGridFarm = memo(
     showHeader = true,
     zoom: externalZoom,
     refreshKey = 0,
+    trees = [],
   }) => {
     const [layout, setLayout] = useState(null);
-    const [trees, setTrees] = useState([]);
     const [loading, setLoading] = useState(true);
     const [internalZoom, setInternalZoom] = useState(1);
     const [showPlantingGuides, setShowPlantingGuides] = useState(true);
@@ -32,18 +32,13 @@ const PureCSSGridFarm = memo(
     useEffect(() => {
       if (selectedLayoutId) {
         fetchLayout();
-        fetchTrees();
       } else if (farmId) {
         fetchLayout();
       }
     }, [farmId, selectedLayoutId]);
 
     // Refresh trees when refreshKey changes
-    useEffect(() => {
-      if (refreshKey > 0 && layout) {
-        fetchTrees();
-      }
-    }, [refreshKey]);
+    // refreshKey handled by parent - trees are passed as props
 
     const fetchLayout = async () => {
       try {
@@ -57,7 +52,7 @@ const PureCSSGridFarm = memo(
 
         if (activeLayout) {
           setLayout(activeLayout);
-          fetchTrees();
+          setLoading(false);
         } else {
           createDefaultLayout();
         }
@@ -67,29 +62,7 @@ const PureCSSGridFarm = memo(
       }
     };
 
-    const fetchTrees = async () => {
-      try {
-        setLoading(true);
-        const url = selectedLayoutId
-          ? `/api/trees?farmId=${farmId}&layoutId=${selectedLayoutId}`
-          : `/api/trees?farmId=${farmId}`;
-
-        const response = await fetch(url);
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Trees API error:", response.status, errorText);
-          throw new Error(`Failed to fetch trees: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setTrees(data);
-      } catch (error) {
-        console.error("Error fetching trees:", error);
-        toast.error(`Failed to load trees: ${error.message}`);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Trees are now provided via props - no need to fetch them
 
     const createDefaultLayout = async () => {
       try {
@@ -121,7 +94,7 @@ const PureCSSGridFarm = memo(
         if (response.ok) {
           const newLayout = await response.json();
           setLayout(newLayout);
-          fetchTrees();
+          setLoading(false);
           toast.success("Default layout created!");
         }
       } catch (error) {
@@ -382,7 +355,12 @@ const PureCSSGridFarm = memo(
               >
                 🔍+ Zoom In
               </Button>
-              <Button size="sm" variant="outline-primary" onClick={fetchTrees}>
+              <Button 
+                size="sm" 
+                variant="outline-primary" 
+                onClick={() => window.location.reload()}
+                title="Refresh page to reload tree data"
+              >
                 🔄 Refresh
               </Button>
               <Button

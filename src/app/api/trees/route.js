@@ -19,7 +19,10 @@ export async function GET(request) {
           grid_y,
           block_index,
           planted_at,
-          layout_id
+          layout_id,
+          variety,
+          status,
+          planting_date
         )
       `
       )
@@ -61,7 +64,7 @@ export async function POST(request) {
     const {
       code,
       name,
-      variety,
+      variety, // Will be stored in tree_positions, not trees
       category,
       season,
       years_to_fruit,
@@ -69,6 +72,7 @@ export async function POST(request) {
       description,
       farm_id,
       position, // { layout_id, grid_x, grid_y, block_index }
+      status = "healthy", // Instance status for tree_positions
     } = body;
 
     // Validate required fields
@@ -83,7 +87,6 @@ export async function POST(request) {
     const treeData = {
       code,
       name,
-      variety: variety || null,
       category: category || null,
       season: season || null,
       years_to_fruit: years_to_fruit || null,
@@ -114,6 +117,9 @@ export async function POST(request) {
           grid_x: position.grid_x,
           grid_y: position.grid_y,
           block_index: position.block_index || 0,
+          variety: variety || null,
+          status: status || "healthy",
+          planting_date: new Date().toISOString().split("T")[0],
         });
 
       if (positionError) {
@@ -140,7 +146,6 @@ export async function PUT(request) {
       id,
       code,
       name,
-      variety,
       category,
       season,
       years_to_fruit,
@@ -159,7 +164,6 @@ export async function PUT(request) {
     const updateData = {
       code,
       name,
-      variety: variety || null,
       category: category || null,
       season: season || null,
       years_to_fruit: years_to_fruit || null,

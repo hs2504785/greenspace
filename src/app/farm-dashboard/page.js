@@ -422,6 +422,7 @@ export default function FarmDashboardPage() {
                               onTreeClick={handleTreeClick}
                               showExpandButtons={false}
                               refreshKey={refreshKey}
+                              trees={trees}
                             />
                           </div>
                           <div className="text-center mt-2">

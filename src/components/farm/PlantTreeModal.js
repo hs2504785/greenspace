@@ -16,217 +16,8 @@ import {
 import { toast } from "react-hot-toast";
 import { getTreeType } from "../../utils/treeTypeClassifier";
 
-// Predefined tree types - always available with default properties
-const PREDEFINED_TREES = [
-  {
-    code: "M",
-    name: "Mango",
-    category: "tropical",
-    season: "summer",
-    years_to_fruit: "3",
-    mature_height: "large",
-  },
-  {
-    code: "L",
-    name: "Lemon",
-    category: "citrus",
-    season: "year-round",
-    years_to_fruit: "2",
-    mature_height: "medium",
-  },
-  {
-    code: "AS",
-    name: "All Spices",
-    category: "exotic",
-    season: "year-round",
-    years_to_fruit: "4",
-    mature_height: "medium",
-  },
-  {
-    code: "A",
-    name: "Apple",
-    category: "stone",
-    season: "winter",
-    years_to_fruit: "3",
-    mature_height: "medium",
-  },
-  {
-    code: "CA",
-    name: "Custard Apple",
-    category: "tropical",
-    season: "winter",
-    years_to_fruit: "3",
-    mature_height: "medium",
-  },
-  {
-    code: "G",
-    name: "Guava",
-    category: "tropical",
-    season: "year-round",
-    years_to_fruit: "2",
-    mature_height: "medium",
-  },
-  {
-    code: "AN",
-    name: "Anjeer",
-    category: "stone",
-    season: "summer",
-    years_to_fruit: "3",
-    mature_height: "medium",
-  },
-  {
-    code: "P",
-    name: "Pomegranate",
-    category: "stone",
-    season: "winter",
-    years_to_fruit: "3",
-    mature_height: "medium",
-  },
-  {
-    code: "MB",
-    name: "Mulberry",
-    category: "berry",
-    season: "summer",
-    years_to_fruit: "2",
-    mature_height: "large",
-  },
-  {
-    code: "JA",
-    name: "Jackfruit",
-    category: "tropical",
-    season: "summer",
-    years_to_fruit: "5",
-    mature_height: "large",
-  },
-  {
-    code: "BC",
-    name: "Barbadoos Cherry",
-    category: "berry",
-    season: "year-round",
-    years_to_fruit: "2",
-    mature_height: "small",
-  },
-  {
-    code: "AV",
-    name: "Avocado",
-    category: "tropical",
-    season: "year-round",
-    years_to_fruit: "4",
-    mature_height: "large",
-  },
-  {
-    code: "SF",
-    name: "Starfruit",
-    category: "tropical",
-    season: "year-round",
-    years_to_fruit: "3",
-    mature_height: "medium",
-  },
-  {
-    code: "C",
-    name: "Cashew",
-    category: "nut",
-    season: "summer",
-    years_to_fruit: "5",
-    mature_height: "large",
-  },
-  {
-    code: "PR",
-    name: "Pear",
-    category: "stone",
-    season: "winter",
-    years_to_fruit: "3",
-    mature_height: "medium",
-  },
-  {
-    code: "PC",
-    name: "Peach",
-    category: "stone",
-    season: "summer",
-    years_to_fruit: "3",
-    mature_height: "medium",
-  },
-  {
-    code: "SP",
-    name: "Sapota",
-    category: "tropical",
-    season: "year-round",
-    years_to_fruit: "4",
-    mature_height: "large",
-  },
-  {
-    code: "MR",
-    name: "Moringa",
-    category: "exotic",
-    season: "year-round",
-    years_to_fruit: "1",
-    mature_height: "medium",
-  },
-  {
-    code: "BB",
-    name: "Black Berry",
-    category: "berry",
-    season: "summer",
-    years_to_fruit: "2",
-    mature_height: "small",
-  },
-  {
-    code: "LC",
-    name: "Lychee",
-    category: "tropical",
-    season: "summer",
-    years_to_fruit: "5",
-    mature_height: "large",
-  },
-  {
-    code: "MF",
-    name: "Miracle Fruit",
-    category: "exotic",
-    season: "year-round",
-    years_to_fruit: "3",
-    mature_height: "small",
-  },
-  {
-    code: "KR",
-    name: "Karoda",
-    category: "berry",
-    season: "summer",
-    years_to_fruit: "2",
-    mature_height: "small",
-  },
-  {
-    code: "AB",
-    name: "Apple Ber",
-    category: "stone",
-    season: "winter",
-    years_to_fruit: "3",
-    mature_height: "medium",
-  },
-  {
-    code: "BA",
-    name: "Banana",
-    category: "tropical",
-    season: "year-round",
-    years_to_fruit: "1",
-    mature_height: "medium",
-  },
-  {
-    code: "PA",
-    name: "Papaya",
-    category: "tropical",
-    season: "year-round",
-    years_to_fruit: "1",
-    mature_height: "medium",
-  },
-  {
-    code: "GR",
-    name: "Grape",
-    category: "berry",
-    season: "summer",
-    years_to_fruit: "2",
-    mature_height: "medium",
-  },
-];
+// Note: Tree types are now managed through the database (/trees page)
+// This component dynamically loads available trees from the database
 
 const PlantTreeModal = ({
   show,
@@ -251,136 +42,115 @@ const PlantTreeModal = ({
 
   const [matchedTree, setMatchedTree] = useState(null); // Store matched existing tree
 
-  // Get all available trees (predefined + custom from database)
+  // Get all available trees from database only
   const getAllAvailableTrees = () => {
-    const allTrees = [];
+    // Use only trees from database - no hardcoded predefined trees
+    const result = trees
+      .map((tree) => ({
+        ...tree,
+        isPredefined: false, // All trees from database are treated as custom
+        isNew: false, // Already exists in database
+      }))
+      // Deduplicate by code to prevent duplicate keys in React
+      .filter((tree, index, arr) => 
+        arr.findIndex(t => t.code === tree.code) === index
+      )
+      .sort((a, b) => {
+        // Sort by availability first, then by code
+        const aPlanted = (a.tree_positions?.length || 0) > 0;
+        const bPlanted = (b.tree_positions?.length || 0) > 0;
+        if (aPlanted !== bPlanted) {
+          return aPlanted ? 1 : -1; // Available first
+        }
+        return a.code.localeCompare(b.code);
+      });
 
-    // Add predefined trees
-    PREDEFINED_TREES.forEach((predefined) => {
-      const existingTree = trees.find((t) => t.code === predefined.code);
-      if (existingTree) {
-        // Tree exists in database - use database version
-        allTrees.push({
-          ...existingTree,
-          isPredefined: true,
-        });
-      } else {
-        // Predefined tree not in database yet
-        allTrees.push({
-          id: `predefined-${predefined.code}`,
-          code: predefined.code,
-          name: predefined.name,
-          isPredefined: true,
-          isNew: true,
-          tree_positions: [],
-        });
-      }
-    });
 
-    // Add custom trees that aren't in predefined list
-    trees.forEach((tree) => {
-      const isPredefined = PREDEFINED_TREES.some((p) => p.code === tree.code);
-      if (!isPredefined) {
-        allTrees.push({
-          ...tree,
-          isPredefined: false,
-        });
-      }
-    });
 
-    return allTrees.sort((a, b) => {
-      // Sort by availability first, then by code
-      const aPlanted = (a.tree_positions?.length || 0) > 0;
-      const bPlanted = (b.tree_positions?.length || 0) > 0;
-      if (aPlanted !== bPlanted) {
-        return aPlanted ? 1 : -1; // Available first
-      }
-      return a.code.localeCompare(b.code);
-    });
+    return result;
   };
 
-  // Get position-based tree suggestions using visual classification system
+  // Get position-based tree suggestions using database trees
   const getPositionBasedSuggestions = () => {
     if (!selectedPosition) return { type: "general", trees: [] };
 
     const { x, y } = selectedPosition;
-
-    // Use the same classification system as the visual circles
     const treeType = getTreeType(x, y, 24, 24);
 
-    const treeDatabase = {
-      M: "Mango",
-      L: "Lemon",
-      AS: "All Spices",
-      A: "Apple",
-      CA: "Custard Apple",
-      G: "Guava",
-      AN: "Anjeer",
-      P: "Pomegranate",
-      MB: "Mulberry",
-      JA: "Jackfruit",
-      BC: "Barbadoos Cherry",
-      AV: "Avocado",
-      SF: "Starfruit",
-      C: "Cashew",
-      PR: "Pear",
-      PC: "Peach",
-      SP: "Sapota",
-      MR: "Moringa",
-      BB: "Black Berry",
-      LC: "Lychee",
-      MF: "Miracle Fruit",
-      KR: "Karoda",
-      AB: "Apple Ber",
-      BA: "Banana",
-      PA: "Papaya",
-      GR: "Grape",
-      OR: "Orange",
-      CO: "Coconut",
-      AM: "Amla",
-      NE: "Neem",
-    };
+    // Get all trees from database
+    const allDbTrees = getAllAvailableTrees();
+
+    // Create lookup map from database trees
+    const treeMap = {};
+    allDbTrees.forEach((tree) => {
+      treeMap[tree.code] = tree.name;
+    });
 
     let positionType, preferredCodes;
 
+    // Suggest trees based on position and what's available in database
     switch (treeType) {
       case "big":
         positionType = "Corner Position (Big Trees)";
-        preferredCodes = ["M", "JA", "CA", "A", "AV", "CO"];
+        preferredCodes = allDbTrees
+          .filter((t) => t.mature_height === "large")
+          .map((t) => t.code);
         break;
       case "centerBig":
         positionType = "Center Position (Big Trees)";
-        preferredCodes = ["M", "JA", "CA", "A", "AV", "CO"];
+        preferredCodes = allDbTrees
+          .filter((t) => t.mature_height === "large")
+          .map((t) => t.code);
         break;
       case "medium":
         positionType = "Mid-Edge Position (Medium Trees)";
-        preferredCodes = ["G", "L", "P", "C", "MR", "NE"];
+        preferredCodes = allDbTrees
+          .filter((t) => t.mature_height === "medium")
+          .map((t) => t.code);
         break;
       case "small":
         positionType = "Quarter Position (Small Trees)";
-        preferredCodes = ["AN", "SF", "BC", "LC", "MF", "AM", "OR"];
+        preferredCodes = allDbTrees
+          .filter((t) => t.mature_height === "small")
+          .map((t) => t.code);
         break;
       case "tiny":
       default:
-        positionType = "Other Position (Tiny Trees)";
-        preferredCodes = ["AM", "OR", "BB", "LC", "MF", "BC", "SF"];
+        positionType = "Other Position (Small Trees)";
+        preferredCodes = allDbTrees
+          .filter(
+            (t) => t.mature_height === "small" || t.mature_height === "medium"
+          )
+          .map((t) => t.code);
         break;
     }
 
-    const suggestedTrees = preferredCodes.map((code) => ({
-      code,
-      name: treeDatabase[code],
-    }));
+    // Fallback: if no trees match height criteria, show first 6 trees
+    if (preferredCodes.length === 0) {
+      preferredCodes = allDbTrees.slice(0, 6).map((t) => t.code);
+    }
 
-    const allTrees = Object.entries(treeDatabase).map(([code, name]) => ({
-      code,
-      name,
-    }));
+    // Deduplicate codes to prevent React key conflicts
+    const uniquePreferredCodes = [...new Set(preferredCodes)];
+
+    const suggestedTrees = uniquePreferredCodes
+      .slice(0, 6)
+      .map((code) => {
+        const tree = allDbTrees.find((t) => t.code === code);
+        return {
+          code: tree?.code || code,
+          name: tree?.name || treeMap[code] || "Unknown",
+        };
+      })
+      .filter((t) => t.name !== "Unknown");
 
     return {
       type: positionType,
       suggested: suggestedTrees,
-      all: allTrees,
+      all: allDbTrees.map((tree) => ({
+        code: tree.code,
+        name: tree.name,
+      })),
     };
   };
 
@@ -395,9 +165,9 @@ const PlantTreeModal = ({
     if (show) {
       // Reset form when modal opens
       setPlantFormData({
-        code: "",
-        name: "",
-        variety: "",
+          code: "",
+          name: "",
+          variety: "",
         category: "",
         season: "",
         years_to_fruit: "",
@@ -431,6 +201,8 @@ const PlantTreeModal = ({
         const allTrees = getAllAvailableTrees();
         const existingTree = allTrees.find((tree) => tree.code === upperCode);
 
+
+
         if (existingTree) {
           // Found existing tree - populate form and mark as matched
           setMatchedTree(existingTree);
@@ -438,13 +210,12 @@ const PlantTreeModal = ({
             ...prev,
             code: upperCode,
             name: existingTree.name,
-            variety: existingTree.variety || "",
+            variety: "", // Variety is for the specific instance, not the tree type
             category: existingTree.category || "",
             season: existingTree.season || "",
             years_to_fruit: existingTree.years_to_fruit || "",
             mature_height: existingTree.mature_height || "",
             description: existingTree.description || "",
-            status: existingTree.status || "healthy",
           }));
           setCodeValidation({
             isChecking: false,
@@ -454,11 +225,11 @@ const PlantTreeModal = ({
         } else {
           // New tree code
           setMatchedTree(null);
-          setCodeValidation({
-            isChecking: false,
+        setCodeValidation({
+          isChecking: false,
             isValid: true,
             message: "Will create new tree",
-          });
+        });
         }
       } else {
         setMatchedTree(null);
@@ -481,7 +252,7 @@ const PlantTreeModal = ({
   }, []);
 
   const handleVarietyChange = useCallback((value) => {
-    setMatchedTree(null); // Clear matched tree when manually changing variety
+    // Don't clear matchedTree - variety is specific to the instance, not the tree type
     setPlantFormData((prev) => ({
       ...prev,
       variety: value,
@@ -544,6 +315,10 @@ const PlantTreeModal = ({
 
       let treeToPlant;
 
+
+
+
+
       if (matchedTree && !matchedTree.isNew) {
         // Existing tree from database - create position only
         const positionData = {
@@ -552,6 +327,9 @@ const PlantTreeModal = ({
           grid_x: selectedPosition.x,
           grid_y: selectedPosition.y,
           block_index: selectedPosition.blockIndex,
+          variety: plantFormData.variety || null,
+          status: "healthy",
+          planting_date: new Date().toISOString().split("T")[0],
         };
 
         const positionResponse = await fetch("/api/tree-positions", {
@@ -586,10 +364,14 @@ const PlantTreeModal = ({
         const treeData = {
           code: plantFormData.code,
           name: plantFormData.name,
-          scientific_name: plantFormData.scientific_name,
-          variety: plantFormData.variety,
-          status: plantFormData.status,
+          category: plantFormData.category,
+          season: plantFormData.season,
+          years_to_fruit: plantFormData.years_to_fruit,
+          mature_height: plantFormData.mature_height,
+          description: plantFormData.description,
           farm_id: farmId,
+          variety: plantFormData.variety, // Will be stored in tree_positions
+          status: "healthy", // Instance status
           position: {
             layout_id: selectedLayout?.id,
             block_index: selectedPosition.blockIndex,
@@ -667,161 +449,144 @@ const PlantTreeModal = ({
             </div>
           </div>
 
-          <Row>
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label className="d-flex justify-content-between align-items-center">
-                  <span>Tree Code</span>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="d-flex justify-content-between align-items-center">
+                    <span>Tree Code</span>
                   {plantFormData.code && (
-                    <Badge
+                      <Badge
                       bg={codeValidation.isValid ? "success" : "info"}
-                      className="ms-2"
-                    >
-                      <i
+                        className="ms-2"
+                      >
+                        <i
                         className={`ti-${matchedTree ? "check" : "plus"} me-1`}
-                      ></i>
-                      {codeValidation.message}
-                    </Badge>
-                  )}
-                </Form.Label>
-                <InputGroup>
-                  <Form.Control
-                    type="text"
+                        ></i>
+                        {codeValidation.message}
+                      </Badge>
+                    )}
+                  </Form.Label>
+                  <InputGroup>
+                    <Form.Control
+                      type="text"
                     value={plantFormData.code}
                     onChange={(e) => handleCodeChange(e.target.value)}
-                    required
-                    className={`fw-semibold ${
+                      required
+                      className={`fw-semibold ${
                       plantFormData.code && matchedTree
-                        ? "is-valid"
+                          ? "is-valid"
                         : plantFormData.code && !matchedTree
                         ? "is-warning"
-                        : ""
-                    }`}
+                          : ""
+                      }`}
                     placeholder="Type tree code (e.g., M, SF, A)"
-                  />
-                  <Dropdown as={ButtonGroup}>
-                    <Dropdown.Toggle
-                      variant="outline-secondary"
-                      id="tree-code-dropdown"
-                      title="Choose tree code"
-                    >
-                      <i className="ti-list"></i>
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu
-                      style={{
-                        maxHeight: "300px",
-                        overflowY: "auto",
-                        minWidth: "280px",
-                      }}
-                    >
-                      {(() => {
-                        const positionSuggestions =
-                          getPositionBasedSuggestions();
-                        const existingCodes = trees.map((t) => t.code);
+                    />
+                    <Dropdown as={ButtonGroup}>
+                      <Dropdown.Toggle
+                        variant="outline-secondary"
+                        id="tree-code-dropdown"
+                        title="Choose tree code"
+                      >
+                        <i className="ti-list"></i>
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu
+                        style={{
+                          maxHeight: "300px",
+                          overflowY: "auto",
+                          minWidth: "280px",
+                        }}
+                      >
+                        {(() => {
+                          const positionSuggestions =
+                            getPositionBasedSuggestions();
 
-                        return (
-                          <>
-                            <Dropdown.Header className="d-flex align-items-center">
-                              <i className="ti-target me-2 text-primary"></i>
-                              <strong>{positionSuggestions.type}</strong>
-                            </Dropdown.Header>
+                          return (
+                            <>
+                              <Dropdown.Header className="d-flex align-items-center">
+                                <i className="ti-target me-2 text-primary"></i>
+                                <strong>{positionSuggestions.type}</strong>
+                              </Dropdown.Header>
 
-                            {positionSuggestions.suggested?.map((tree) => {
-                              // Find next available number for this code
-                              let num = 1;
-                              let availableCode = tree.code;
-                              while (existingCodes.includes(availableCode)) {
-                                availableCode = `${tree.code}${num}`;
-                                num++;
-                              }
+                              {positionSuggestions.suggested?.map((tree) => {
+                                return (
+                                  <Dropdown.Item
+                                  key={`suggested-${tree.code}`}
+                                    onClick={() => {
+                                    handleCodeChange(tree.code);
+                                    }}
+                                    className="d-flex justify-content-between align-items-center"
+                                  >
+                                    <div>
+                                      <strong className="text-success">
+                                      {tree.code}
+                                      </strong>
+                                      <span className="ms-2 text-muted">
+                                        {tree.name}
+                                      </span>
+                                    </div>
+                                    <Badge bg="success" className="ms-2">
+                                      Suggested
+                                    </Badge>
+                                  </Dropdown.Item>
+                                );
+                              })}
 
-                              return (
-                                <Dropdown.Item
-                                  key={tree.code}
-                                  onClick={() => {
-                                    handleCodeChange(availableCode);
-                                  }}
-                                  className="d-flex justify-content-between align-items-center"
-                                >
-                                  <div>
-                                    <strong className="text-success">
-                                      {availableCode}
-                                    </strong>
-                                    <span className="ms-2 text-muted">
-                                      {tree.name}
-                                    </span>
-                                  </div>
-                                  <Badge bg="success" className="ms-2">
-                                    Suggested
-                                  </Badge>
-                                </Dropdown.Item>
-                              );
-                            })}
+                              <Dropdown.Divider />
 
-                            <Dropdown.Divider />
+                              <Dropdown.Header className="d-flex align-items-center">
+                                <i className="ti-list me-2 text-secondary"></i>
+                              <strong>All Available Tree Types</strong>
+                              </Dropdown.Header>
 
-                            <Dropdown.Header className="d-flex align-items-center">
-                              <i className="ti-list me-2 text-secondary"></i>
-                              <strong>All Available Tree Codes</strong>
-                            </Dropdown.Header>
+                              {positionSuggestions.all?.map((tree) => {
+                                return (
+                                  <Dropdown.Item
+                                    key={`all-${tree.code}`}
+                                    onClick={() => {
+                                    handleCodeChange(tree.code);
+                                    }}
+                                    className="d-flex justify-content-between align-items-center py-1"
+                                  >
+                                    <div>
+                                      <strong className="text-primary">
+                                      {tree.code}
+                                      </strong>
+                                      <span className="ms-2 text-muted small">
+                                        {tree.name}
+                                      </span>
+                                    </div>
+                                  </Dropdown.Item>
+                                );
+                              })}
+                            </>
+                          );
+                        })()}
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </InputGroup>
 
-                            {positionSuggestions.all?.map((tree) => {
-                              // Find next available number for this code
-                              let num = 1;
-                              let availableCode = tree.code;
-                              while (existingCodes.includes(availableCode)) {
-                                availableCode = `${tree.code}${num}`;
-                                num++;
-                              }
-
-                              return (
-                                <Dropdown.Item
-                                  key={`all-${tree.code}`}
-                                  onClick={() => {
-                                    handleCodeChange(availableCode);
-                                  }}
-                                  className="d-flex justify-content-between align-items-center py-1"
-                                >
-                                  <div>
-                                    <strong className="text-primary">
-                                      {availableCode}
-                                    </strong>
-                                    <span className="ms-2 text-muted small">
-                                      {tree.name}
-                                    </span>
-                                  </div>
-                                </Dropdown.Item>
-                              );
-                            })}
-                          </>
-                        );
-                      })()}
-                    </Dropdown.Menu>
-                  </Dropdown>
-                </InputGroup>
-
-                {(() => {
-                  const positionSuggestions = getPositionBasedSuggestions();
-                  return (
+                  {(() => {
+                    const positionSuggestions = getPositionBasedSuggestions();
+                    return (
                     !plantFormData.code && (
-                      <Form.Text className="text-muted">
-                        <i className="ti-target me-1"></i>
-                        <strong>{positionSuggestions.type}</strong> - Click
-                        dropdown to see suggested trees for this location
-                      </Form.Text>
-                    )
-                  );
-                })()}
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>Tree Name</Form.Label>
-                <Form.Control
-                  type="text"
+                        <Form.Text className="text-muted">
+                          <i className="ti-target me-1"></i>
+                          <strong>{positionSuggestions.type}</strong> - Click
+                          dropdown to see suggested trees for this location
+                        </Form.Text>
+                      )
+                    );
+                  })()}
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Tree Name</Form.Label>
+                  <Form.Control
+                    type="text"
                   value={plantFormData.name}
                   onChange={(e) => handleNameChange(e.target.value)}
-                  required
+                    required
                   readOnly={matchedTree}
                   className={matchedTree ? "bg-light" : ""}
                 />
@@ -831,23 +596,27 @@ const PlantTreeModal = ({
                     Using existing tree details
                   </Form.Text>
                 )}
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>Variety</Form.Label>
-                <Form.Control
-                  type="text"
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                <Form.Label>
+                  Variety{" "}
+                  <small className="text-muted">(for this specific tree)</small>
+                </Form.Label>
+                  <Form.Control
+                    type="text"
                   value={plantFormData.variety}
                   onChange={(e) => handleVarietyChange(e.target.value)}
-                  placeholder="e.g., Alphonso, Kesar"
-                  readOnly={matchedTree}
-                  className={matchedTree ? "bg-light" : ""}
+                  placeholder="e.g., Alphonso, Kesar, Dasheri"
                 />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-3">
+                <Form.Text className="text-muted">
+                  Optional: Specify the variety for this individual tree
+                </Form.Text>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
                 <Form.Label>Category</Form.Label>
                 <Form.Select
                   value={plantFormData.category}
@@ -922,7 +691,7 @@ const PlantTreeModal = ({
             <Col md={12}>
               <Form.Group className="mb-3">
                 <Form.Label>Description</Form.Label>
-                <Form.Control
+                  <Form.Control
                   as="textarea"
                   rows={2}
                   value={plantFormData.description}
@@ -930,10 +699,10 @@ const PlantTreeModal = ({
                   placeholder="Care tips, notes, or additional details..."
                   readOnly={matchedTree}
                   className={matchedTree ? "bg-light" : ""}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
         </Modal.Body>
         <Modal.Footer className="border-0">
           <Button variant="light" onClick={onHide}>

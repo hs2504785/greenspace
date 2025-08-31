@@ -17,9 +17,11 @@ export async function GET(request) {
           id,
           code,
           name,
-          scientific_name,
-          variety,
-          status
+          category,
+          season,
+          years_to_fruit,
+          mature_height,
+          description
         ),
         farm_layouts(
           id,
@@ -58,7 +60,16 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { tree_id, layout_id, grid_x, grid_y, block_index = 0 } = body;
+    const {
+      tree_id,
+      layout_id,
+      grid_x,
+      grid_y,
+      block_index = 0,
+      variety,
+      status = "healthy",
+      planting_date,
+    } = body;
 
     // Validate required fields
     if (
@@ -90,20 +101,8 @@ export async function POST(request) {
       );
     }
 
-    // Check if tree is already positioned in this layout
-    const { data: existingTreePosition } = await supabase
-      .from("tree_positions")
-      .select("id")
-      .eq("tree_id", tree_id)
-      .eq("layout_id", layout_id)
-      .single();
-
-    if (existingTreePosition) {
-      return NextResponse.json(
-        { error: "Tree is already positioned in this layout" },
-        { status: 409 }
-      );
-    }
+    // Note: We allow multiple instances of the same tree type in the same layout
+    // The position uniqueness check above is sufficient
 
     const { data, error } = await supabase
       .from("tree_positions")
@@ -113,6 +112,9 @@ export async function POST(request) {
         grid_x,
         grid_y,
         block_index,
+        variety: variety || null,
+        status,
+        planting_date: planting_date || new Date().toISOString().split("T")[0],
       })
       .select(
         `
@@ -121,9 +123,11 @@ export async function POST(request) {
           id,
           code,
           name,
-          scientific_name,
-          variety,
-          status
+          category,
+          season,
+          years_to_fruit,
+          mature_height,
+          description
         )
       `
       )
@@ -211,9 +215,11 @@ export async function PUT(request) {
           id,
           code,
           name,
-          scientific_name,
-          variety,
-          status
+          category,
+          season,
+          years_to_fruit,
+          mature_height,
+          description
         )
       `
       )
@@ -266,4 +272,3 @@ export async function DELETE(request) {
     );
   }
 }
-
