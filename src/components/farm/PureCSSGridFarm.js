@@ -209,7 +209,7 @@ const PureCSSGridFarm = memo(
 
             return (
               <div
-                key={`tree-${tree.id}-${pos.block_index}`}
+                key={`tree-position-${pos.id}`}
                 className={styles.plantedTree}
                 style={{
                   position: "absolute",
@@ -220,7 +220,21 @@ const PureCSSGridFarm = memo(
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onTreeClick(tree, {
+                  // Pass the tree position object with nested tree data
+                  const treePosition = {
+                    ...pos,
+                    tree_id: tree.id,
+                    trees: tree, // Add tree type data as nested object
+                    // Add any missing fields for compatibility
+                    name: tree.name,
+                    code: tree.code,
+                    category: tree.category,
+                    season: tree.season,
+                    years_to_fruit: tree.years_to_fruit,
+                    mature_height: tree.mature_height,
+                    description: tree.description,
+                  };
+                  onTreeClick(treePosition, {
                     x: pos.grid_x,
                     y: pos.grid_y,
                     blockIndex: pos.block_index,
@@ -355,9 +369,9 @@ const PureCSSGridFarm = memo(
               >
                 🔍+ Zoom In
               </Button>
-              <Button 
-                size="sm" 
-                variant="outline-primary" 
+              <Button
+                size="sm"
+                variant="outline-primary"
                 onClick={() => window.location.reload()}
                 title="Refresh page to reload tree data"
               >
@@ -552,7 +566,7 @@ const PureCSSGridFarm = memo(
                       const relativeY = absoluteY - clickedBlock.y;
 
                       // Check if there's already a tree here
-                      const existingTree = trees.find((tree) =>
+                      const existingTreeType = trees.find((tree) =>
                         tree.tree_positions?.some(
                           (pos) =>
                             pos.block_index === blockIndex &&
@@ -562,9 +576,34 @@ const PureCSSGridFarm = memo(
                         )
                       );
 
-                      if (existingTree) {
+                      if (existingTreeType) {
+                        // Find the actual tree position object
+                        const treePosition =
+                          existingTreeType.tree_positions.find(
+                            (pos) =>
+                              pos.block_index === blockIndex &&
+                              pos.grid_x === relativeX &&
+                              pos.grid_y === relativeY &&
+                              pos.layout_id === layout.id
+                          );
+
+                        // Create complete tree position object with nested tree data
+                        const completeTreePosition = {
+                          ...treePosition,
+                          tree_id: existingTreeType.id,
+                          trees: existingTreeType, // Add tree type data as nested object
+                          // Add any missing fields for compatibility
+                          name: existingTreeType.name,
+                          code: existingTreeType.code,
+                          category: existingTreeType.category,
+                          season: existingTreeType.season,
+                          years_to_fruit: existingTreeType.years_to_fruit,
+                          mature_height: existingTreeType.mature_height,
+                          description: existingTreeType.description,
+                        };
+
                         // Click on existing tree
-                        onTreeClick(existingTree, {
+                        onTreeClick(completeTreePosition, {
                           x: relativeX,
                           y: relativeY,
                           blockIndex: blockIndex,

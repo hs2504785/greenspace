@@ -22,7 +22,9 @@ export async function GET(request) {
           layout_id,
           variety,
           status,
-          planting_date
+          planting_date,
+          notes,
+          updated_at
         )
       `
       )

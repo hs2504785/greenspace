@@ -17,6 +17,7 @@ import {
 import { toast } from "react-hot-toast";
 import PureCSSGridFarm from "@/components/farm/PureCSSGridFarm";
 import AdminGuard from "@/components/common/AdminGuard";
+import EnhancedTreeDetailsModal from "@/components/modals/EnhancedTreeDetailsModal";
 
 export default function FarmDashboardPage() {
   const [activeTab, setActiveTab] = useState("analytics");
@@ -883,65 +884,25 @@ export default function FarmDashboardPage() {
           </Form>
         </Modal>
 
-        {/* Tree Details Modal */}
-        <Modal show={showTreeModal} onHide={() => setShowTreeModal(false)}>
-          <Modal.Header closeButton>
-            <Modal.Title>Tree Details</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            {selectedTree && (
-              <>
-                <div className="d-flex justify-content-between align-items-start mb-3">
-                  <h5>{selectedTree.name}</h5>
-                  <Badge bg="secondary">{selectedTree.code}</Badge>
-                </div>
-                <div className="mb-2">
-                  <strong>Scientific Name:</strong>{" "}
-                  {selectedTree.scientific_name || "Not specified"}
-                </div>
-                {selectedTree.variety && (
-                  <div className="mb-2">
-                    <strong>Variety:</strong> {selectedTree.variety}
-                  </div>
-                )}
-                <div className="mb-2">
-                  <strong>Status:</strong>{" "}
-                  <Badge
-                    bg={
-                      selectedTree.status === "healthy" ? "success" : "warning"
-                    }
-                  >
-                    {selectedTree.status}
-                  </Badge>
-                </div>
-                {selectedTree.planting_date && (
-                  <div className="mb-2">
-                    <strong>Planting Date:</strong>{" "}
-                    {new Date(selectedTree.planting_date).toLocaleDateString()}
-                  </div>
-                )}
-                {selectedTree.description && (
-                  <div className="mb-2">
-                    <strong>Description:</strong> {selectedTree.description}
-                  </div>
-                )}
-                <div className="mb-2">
-                  <strong>Position:</strong> Block{" "}
-                  {(selectedPosition?.blockIndex || 0) + 1}, Grid (
-                  {selectedPosition?.x}, {selectedPosition?.y})
-                </div>
-              </>
-            )}
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowTreeModal(false)}>
-              Close
-            </Button>
-            <Button variant="primary" href={`/trees`}>
-              Edit Tree
-            </Button>
-          </Modal.Footer>
-        </Modal>
+        {/* Enhanced Tree Details Modal */}
+        <EnhancedTreeDetailsModal
+          key={selectedTree?.id || "no-tree"}
+          show={showTreeModal}
+          onHide={() => setShowTreeModal(false)}
+          selectedTree={selectedTree}
+          selectedPosition={selectedPosition}
+          onTreeUpdated={async () => {
+            // Close the tree details modal
+            setShowTreeModal(false);
+            // Clear selected tree to prevent showing stale data
+            setSelectedTree(null);
+            // Refresh data and grid
+            await fetchData();
+            setRefreshKey((prev) => prev + 1);
+          }}
+          farmId={farmId}
+          layoutId={selectedLayout?.id}
+        />
       </Container>
     </AdminGuard>
   );

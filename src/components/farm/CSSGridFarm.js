@@ -274,7 +274,7 @@ const CSSGridFarm = ({
       if (position && position.grid_x != null && position.grid_y != null) {
         treeElements.push(
           <div
-            key={`tree-${tree.id}`}
+            key={`tree-position-${position.id}`}
             className={styles.intersection}
             style={{
               position: "absolute",

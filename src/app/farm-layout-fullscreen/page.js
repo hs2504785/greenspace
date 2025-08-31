@@ -21,6 +21,7 @@ import PureCSSGridFarm from "@/components/farm/PureCSSGridFarm";
 import PlantTreeModal from "@/components/farm/PlantTreeModal";
 import { getTreeType } from "@/utils/treeTypeClassifier";
 import AdminGuard from "@/components/common/AdminGuard";
+import EnhancedTreeDetailsModal from "@/components/modals/EnhancedTreeDetailsModal";
 
 // Note: Tree types are now loaded from database dynamically
 
@@ -687,104 +688,25 @@ export default function FarmLayoutFullscreenPage() {
           initialFormData={initialPlantFormData}
         />
 
-        {/* Tree Details Modal */}
-        <Modal
+        {/* Enhanced Tree Details Modal */}
+        <EnhancedTreeDetailsModal
+          key={selectedTree?.id || "no-tree"}
           show={showTreeModal}
           onHide={() => setShowTreeModal(false)}
-          centered
-        >
-          <Modal.Header closeButton className="bg-primary text-white">
-            <Modal.Title>
-              <i className="ti-medall me-2"></i>
-              Tree Details
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            {selectedTree && (
-              <>
-                <div className="d-flex justify-content-between align-items-start mb-3">
-                  <h5 className="mb-0">{selectedTree.name}</h5>
-                  <Badge bg="secondary" className="fs-6">
-                    {selectedTree.code}
-                  </Badge>
-                </div>
-
-                <Row>
-                  <Col md={6}>
-                    <div className="mb-3">
-                      <small className="text-muted d-block">
-                        Scientific Name
-                      </small>
-                      <strong>
-                        {selectedTree.scientific_name || "Not specified"}
-                      </strong>
-                    </div>
-                  </Col>
-                  {selectedTree.variety && (
-                    <Col md={6}>
-                      <div className="mb-3">
-                        <small className="text-muted d-block">Variety</small>
-                        <strong>{selectedTree.variety}</strong>
-                      </div>
-                    </Col>
-                  )}
-                  <Col md={6}>
-                    <div className="mb-3">
-                      <small className="text-muted d-block">Status</small>
-                      <Badge
-                        bg={
-                          selectedTree.status === "healthy"
-                            ? "success"
-                            : "warning"
-                        }
-                      >
-                        {selectedTree.status}
-                      </Badge>
-                    </div>
-                  </Col>
-                  {selectedTree.planting_date && (
-                    <Col md={6}>
-                      <div className="mb-3">
-                        <small className="text-muted d-block">
-                          Planting Date
-                        </small>
-                        <strong>
-                          {new Date(
-                            selectedTree.planting_date
-                          ).toLocaleDateString()}
-                        </strong>
-                      </div>
-                    </Col>
-                  )}
-                </Row>
-
-                <div className="bg-light p-3 rounded">
-                  <small className="text-muted d-block mb-1">Position</small>
-                  <strong>
-                    Block {(selectedPosition?.blockIndex || 0) + 1}, Grid (
-                    {selectedPosition?.x}, {selectedPosition?.y})
-                  </strong>
-                </div>
-
-                {selectedTree.description && (
-                  <div className="mt-3">
-                    <small className="text-muted d-block">Description</small>
-                    <p className="mb-0">{selectedTree.description}</p>
-                  </div>
-                )}
-              </>
-            )}
-          </Modal.Body>
-          <Modal.Footer className="border-0">
-            <Button variant="light" onClick={() => setShowTreeModal(false)}>
-              Close
-            </Button>
-            <Button variant="primary" href="/trees">
-              <i className="ti-pencil me-2"></i>
-              Edit Tree
-            </Button>
-          </Modal.Footer>
-        </Modal>
+          selectedTree={selectedTree}
+          selectedPosition={selectedPosition}
+          onTreeUpdated={async () => {
+            // Close the tree details modal
+            setShowTreeModal(false);
+            // Clear selected tree to prevent showing stale data
+            setSelectedTree(null);
+            // Refresh data and grid
+            await fetchTrees();
+            setRefreshKey((prev) => prev + 1);
+          }}
+          farmId={farmId}
+          layoutId={selectedLayout?.id}
+        />
       </div>
     </AdminGuard>
   );
