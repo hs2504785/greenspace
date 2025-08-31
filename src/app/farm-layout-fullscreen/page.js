@@ -22,6 +22,36 @@ import PlantTreeModal from "@/components/farm/PlantTreeModal";
 import { getTreeType } from "@/utils/treeTypeClassifier";
 import AdminGuard from "@/components/common/AdminGuard";
 
+// Predefined tree types - keep in sync with PlantTreeModal
+const PREDEFINED_TREES = [
+  { code: "M", name: "Mango" },
+  { code: "L", name: "Lemon" },
+  { code: "AS", name: "All Spices" },
+  { code: "A", name: "Apple" },
+  { code: "CA", name: "Custard Apple" },
+  { code: "G", name: "Guava" },
+  { code: "AN", name: "Anjeer" },
+  { code: "P", name: "Pomegranate" },
+  { code: "MB", name: "Mulberry" },
+  { code: "JA", name: "Jackfruit" },
+  { code: "BC", name: "Barbadoos Cherry" },
+  { code: "AV", name: "Avocado" },
+  { code: "SF", name: "Starfruit" },
+  { code: "C", name: "Cashew" },
+  { code: "PR", name: "Pear" },
+  { code: "PC", name: "Peach" },
+  { code: "SP", name: "Sapota" },
+  { code: "MR", name: "Moringa" },
+  { code: "BB", name: "Black Berry" },
+  { code: "LC", name: "Lychee" },
+  { code: "MF", name: "Miracle Fruit" },
+  { code: "KR", name: "Karoda" },
+  { code: "AB", name: "Apple Ber" },
+  { code: "BA", name: "Banana" },
+  { code: "PA", name: "Papaya" },
+  { code: "GR", name: "Grape" },
+];
+
 export default function FarmLayoutFullscreenPage() {
   const router = useRouter();
   const [trees, setTrees] = useState([]);
@@ -99,39 +129,8 @@ export default function FarmLayoutFullscreenPage() {
   }, []); // No dependencies - functions are stable
 
   const generateUniquTreeCode = useCallback(() => {
-    // Systematic tree code generation based on your existing trees
-    const treeCodes = [
-      "M", // Mango
-      "L", // Lemon
-      "AS", // All Spices
-      "A", // Apple
-      "CA", // Custard Apple
-      "G", // Guava
-      "AN", // Anjeer (Fig)
-      "P", // Pomegranate
-      "MB", // Mulberry
-      "JA", // Jackfruit
-      "BC", // Barbados Cherry
-      "AV", // Avocado
-      "SF", // Starfruit
-      "C", // Cashew
-      "PR", // Pear
-      "PH", // Peach (changed from PC to avoid confusion with PR)
-      "SP", // Sapota
-      "MR", // Moringa
-      "BB", // Blackberry
-      "LC", // Lychee
-      "MF", // Miracle Fruit
-      "KR", // Karonda
-      "AB", // Apple Ber
-      "BA", // Banana
-      "PA", // Papaya
-      "GR", // Grape
-      "OR", // Orange
-      "CO", // Coconut
-      "AM", // Amla
-      "NE", // Neem
-    ];
+    // Use predefined tree codes
+    const treeCodes = PREDEFINED_TREES.map((t) => t.code);
 
     // Try to be more systematic - use position-based suggestions first
     let preferredCodes = [];
@@ -205,39 +204,8 @@ export default function FarmLayoutFullscreenPage() {
     // Generate a descriptive name based on the code
     const getTreeNameFromCode = (code) => {
       const baseName = code.replace(/\d+$/, ""); // Remove numbers
-      const nameMap = {
-        M: "Mango",
-        L: "Lemon",
-        AS: "All Spices",
-        A: "Apple",
-        CA: "Custard Apple",
-        G: "Guava",
-        AN: "Anjeer",
-        P: "Pomegranate",
-        MB: "Mulberry",
-        JA: "Jackfruit",
-        BC: "Barbados Cherry",
-        AV: "Avocado",
-        SF: "Starfruit",
-        C: "Cashew",
-        PR: "Pear",
-        PH: "Peach",
-        SP: "Sapota",
-        MR: "Moringa",
-        BB: "Blackberry",
-        LC: "Lychee",
-        MF: "Miracle Fruit",
-        KR: "Karonda",
-        AB: "Apple Ber",
-        BA: "Banana",
-        PA: "Papaya",
-        GR: "Grape",
-        OR: "Orange",
-        CO: "Coconut",
-        AM: "Amla",
-        NE: "Neem",
-      };
-      return nameMap[baseName] || `${code} Tree`;
+      const predefined = PREDEFINED_TREES.find((t) => t.code === baseName);
+      return predefined ? predefined.name : `${code} Tree`;
     };
 
     setInitialPlantFormData({

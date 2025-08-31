@@ -79,20 +79,23 @@ export async function POST(request) {
       );
     }
 
+    // Convert empty strings to null for date fields
+    const treeData = {
+      code,
+      name,
+      scientific_name: scientific_name || null,
+      variety: variety || null,
+      description: description || null,
+      planting_date: planting_date || null,
+      expected_harvest_date: expected_harvest_date || null,
+      status,
+      farm_id,
+    };
+
     // Start transaction
     const { data: newTree, error: treeError } = await supabase
       .from("trees")
-      .insert({
-        code,
-        name,
-        scientific_name,
-        variety,
-        description,
-        planting_date,
-        expected_harvest_date,
-        status,
-        farm_id,
-      })
+      .insert(treeData)
       .select()
       .single();
 
@@ -152,19 +155,22 @@ export async function PUT(request) {
       );
     }
 
+    // Convert empty strings to null for date fields
+    const updateData = {
+      code,
+      name,
+      scientific_name: scientific_name || null,
+      variety: variety || null,
+      description: description || null,
+      planting_date: planting_date || null,
+      expected_harvest_date: expected_harvest_date || null,
+      status,
+      updated_at: new Date().toISOString(),
+    };
+
     const { data, error } = await supabase
       .from("trees")
-      .update({
-        code,
-        name,
-        scientific_name,
-        variety,
-        description,
-        planting_date,
-        expected_harvest_date,
-        status,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();
@@ -213,4 +219,3 @@ export async function DELETE(request) {
     );
   }
 }
-

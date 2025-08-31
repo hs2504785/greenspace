@@ -16,6 +16,9 @@ import {
 } from "react-bootstrap";
 import { toast } from "react-hot-toast";
 import AdminGuard from "@/components/common/AdminGuard";
+import SearchInput from "@/components/common/SearchInput";
+import ClearFiltersButton from "@/components/common/ClearFiltersButton";
+import DeleteConfirmationModal from "@/components/common/DeleteConfirmationModal";
 
 export default function TreesPage() {
   const [trees, setTrees] = useState([]);
@@ -34,6 +37,9 @@ export default function TreesPage() {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [selectedTree, setSelectedTree] = useState(null);
 
   // Tree status options
   const statusOptions = [
@@ -45,31 +51,34 @@ export default function TreesPage() {
     { value: "dormant", label: "Dormant", variant: "secondary" },
   ];
 
-  // Predefined tree codes for quick selection
+  // Predefined tree codes for quick selection - matches PlantTreeModal
   const treeCodeOptions = [
-    "M",
-    "L",
-    "P",
-    "G",
-    "AN",
-    "CA",
-    "A",
-    "MB",
-    "PR",
-    "JA",
-    "MU",
-    "O",
-    "B",
-    "AV",
-    "SF",
-    "C",
-    "AM",
-    "MR",
-    "SL",
-    "KR",
-    "BA",
-    "PA",
-    "GRP",
+    "M", // Mango
+    "L", // Lemon
+    "AS", // All Spices
+    "A", // Apple
+    "CA", // Custard Apple
+    "G", // Guava
+    "AN", // Anjeer
+    "P", // Pomegranate
+    "MB", // Mulberry
+    "JA", // Jackfruit
+    "BC", // Barbadoos Cherry
+    "AV", // Avocado
+    "SF", // Starfruit
+    "C", // Cashew
+    "PR", // Pear
+    "PC", // Peach
+    "SP", // Sapota
+    "MR", // Moringa
+    "BB", // Black Berry
+    "LC", // Lychee
+    "MF", // Miracle Fruit
+    "KR", // Karoda
+    "AB", // Apple Ber
+    "BA", // Banana
+    "PA", // Papaya
+    "GR", // Grape
   ];
 
   useEffect(() => {
@@ -140,11 +149,15 @@ export default function TreesPage() {
     setShowModal(true);
   };
 
-  const handleDelete = async (treeId) => {
-    if (!confirm("Are you sure you want to delete this tree?")) return;
+  const handleDelete = (tree) => {
+    setSelectedTree(tree);
+    setShowDeleteModal(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    setDeleteLoading(true);
     try {
-      const response = await fetch(`/api/trees?id=${treeId}`, {
+      const response = await fetch(`/api/trees?id=${selectedTree.id}`, {
         method: "DELETE",
       });
 
@@ -155,6 +168,10 @@ export default function TreesPage() {
     } catch (error) {
       console.error("Error deleting tree:", error);
       toast.error("Failed to delete tree");
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteModal(false);
+      setSelectedTree(null);
     }
   };
 
@@ -203,140 +220,181 @@ export default function TreesPage() {
 
   return (
     <AdminGuard requiredRole="admin">
-      <Container fluid className="py-4">
+      <Container fluid className="pb-4">
+        <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+          <div className="d-flex align-items-center gap-3">
+            <h1 className="h3 mb-0">
+              <i className="ti-package me-2 text-success"></i>
+              Tree Management
+            </h1>
+            <Badge bg="light" text="dark" className="fs-6">
+              {trees.length} Trees
+            </Badge>
+          </div>
+          <Button
+            variant="success"
+            onClick={() => setShowModal(true)}
+            className="d-flex align-items-center flex-shrink-0"
+          >
+            <i className="ti-plus me-2"></i>
+            <span className="d-none d-sm-inline">Add New Tree</span>
+            <span className="d-sm-none">Add</span>
+          </Button>
+        </div>
+
         <Row>
           <Col>
-            <Card>
-              <Card.Header className="d-flex justify-content-between align-items-center">
-                <h3 className="mb-0">Tree Management</h3>
-                <Button
-                  variant="success"
-                  onClick={() => setShowModal(true)}
-                  className="d-flex align-items-center gap-2"
-                >
-                  <i className="bi bi-plus-circle"></i>
-                  Add New Tree
-                </Button>
-              </Card.Header>
-
+            <Card className="shadow-sm">
               <Card.Body>
-                {/* Filters */}
-                <Row className="mb-3">
-                  <Col md={6}>
-                    <Form.Control
-                      type="text"
-                      placeholder="Search trees by name, code, or scientific name..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </Col>
-                  <Col md={3}>
-                    <Form.Select
-                      value={filterStatus}
-                      onChange={(e) => setFilterStatus(e.target.value)}
-                    >
-                      <option value="">All Status</option>
-                      {statusOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </Col>
-                  <Col md={3}>
-                    <Button
-                      variant="outline-secondary"
-                      onClick={() => {
-                        setSearchTerm("");
-                        setFilterStatus("");
-                      }}
-                      className="w-100"
-                    >
-                      Clear Filters
-                    </Button>
-                  </Col>
-                </Row>
+                {/* Search and Filter Controls */}
+                <div className="mb-4">
+                  <Row className="g-3 align-items-end">
+                    <Col xs={12} lg={6}>
+                      <Form.Group className="mb-0">
+                        <Form.Label className="small fw-medium text-muted mb-2">
+                          Search Trees
+                        </Form.Label>
+                        <SearchInput
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          onClear={() => setSearchTerm("")}
+                          placeholder="Search by name, code, or scientific name..."
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col xs={12} sm={6} lg={3}>
+                      <Form.Group className="mb-0">
+                        <Form.Label className="small fw-medium text-muted mb-2">
+                          Filter by Status
+                        </Form.Label>
+                        <Form.Select
+                          value={filterStatus}
+                          onChange={(e) => setFilterStatus(e.target.value)}
+                        >
+                          <option value="">All Status</option>
+                          {statusOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+                    </Col>
+                    <Col xs={12} sm={6} lg={3}>
+                      <ClearFiltersButton
+                        onClick={() => {
+                          setSearchTerm("");
+                          setFilterStatus("");
+                        }}
+                      />
+                    </Col>
+                  </Row>
+                </div>
 
                 {/* Trees Table */}
                 {loading ? (
-                  <div className="text-center py-4">
-                    <Spinner animation="border" />
-                    <p className="mt-2">Loading trees...</p>
+                  <div className="text-center py-5">
+                    <Spinner animation="border" variant="success" />
+                    <p className="mt-3 text-muted">Loading trees...</p>
                   </div>
                 ) : (
-                  <Table responsive striped hover>
-                    <thead>
-                      <tr>
-                        <th>Code</th>
-                        <th>Name</th>
-                        <th>Scientific Name</th>
-                        <th>Variety</th>
-                        <th>Status</th>
-                        <th>Planting Date</th>
-                        <th>Expected Harvest</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTrees.length === 0 ? (
+                  <div className="table-responsive">
+                    <Table
+                      hover
+                      className="mb-0 bg-white rounded-3 shadow-sm overflow-hidden"
+                      style={{
+                        "--bs-table-hover-bg": "rgba(0, 0, 0, 0.075)",
+                      }}
+                    >
+                      <thead className="table-light">
                         <tr>
-                          <td colSpan="8" className="text-center py-4">
-                            {trees.length === 0
-                              ? "No trees found. Add your first tree!"
-                              : "No trees match your filters."}
-                          </td>
+                          <th className="border-0 ps-3">Code</th>
+                          <th className="border-0">Name</th>
+                          <th className="border-0">Scientific Name</th>
+                          <th className="border-0">Variety</th>
+                          <th className="border-0">Status</th>
+                          <th className="border-0">Planting Date</th>
+                          <th className="border-0">Expected Harvest</th>
+                          <th
+                            className="border-0 text-center"
+                            style={{ width: "120px" }}
+                          >
+                            Actions
+                          </th>
                         </tr>
-                      ) : (
-                        filteredTrees.map((tree) => (
-                          <tr key={tree.id}>
-                            <td>
-                              <Badge bg="secondary" className="fs-6">
-                                {tree.code}
-                              </Badge>
-                            </td>
-                            <td>{tree.name}</td>
-                            <td className="text-muted">
-                              {tree.scientific_name || "-"}
-                            </td>
-                            <td>{tree.variety || "-"}</td>
-                            <td>{getStatusBadge(tree.status)}</td>
-                            <td>
-                              {tree.planting_date
-                                ? new Date(
-                                    tree.planting_date
-                                  ).toLocaleDateString()
-                                : "-"}
-                            </td>
-                            <td>
-                              {tree.expected_harvest_date
-                                ? new Date(
-                                    tree.expected_harvest_date
-                                  ).toLocaleDateString()
-                                : "-"}
-                            </td>
-                            <td>
-                              <div className="d-flex gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline-primary"
-                                  onClick={() => handleEdit(tree)}
-                                >
-                                  Edit
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline-danger"
-                                  onClick={() => handleDelete(tree.id)}
-                                >
-                                  Delete
-                                </Button>
-                              </div>
+                      </thead>
+                      <tbody>
+                        {filteredTrees.length === 0 ? (
+                          <tr>
+                            <td colSpan="8" className="text-center py-4">
+                              {trees.length === 0
+                                ? "No trees found. Add your first tree!"
+                                : "No trees match your filters."}
                             </td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </Table>
+                        ) : (
+                          filteredTrees.map((tree) => (
+                            <tr key={tree.id} className="align-middle">
+                              <td className="ps-3">
+                                <Badge
+                                  bg="secondary"
+                                  className="fs-6 fw-normal"
+                                >
+                                  {tree.code}
+                                </Badge>
+                              </td>
+                              <td>
+                                <div className="fw-medium">{tree.name}</div>
+                              </td>
+                              <td className="text-muted">
+                                {tree.scientific_name || "-"}
+                              </td>
+                              <td className="text-muted">
+                                {tree.variety || "-"}
+                              </td>
+                              <td>{getStatusBadge(tree.status)}</td>
+                              <td className="text-muted">
+                                {tree.planting_date
+                                  ? new Date(
+                                      tree.planting_date
+                                    ).toLocaleDateString()
+                                  : "-"}
+                              </td>
+                              <td className="text-muted">
+                                {tree.expected_harvest_date
+                                  ? new Date(
+                                      tree.expected_harvest_date
+                                    ).toLocaleDateString()
+                                  : "-"}
+                              </td>
+                              <td>
+                                <div className="d-flex gap-1 justify-content-center">
+                                  <button
+                                    type="button"
+                                    className="btn btn-link text-primary p-1 border-0"
+                                    onClick={() => handleEdit(tree)}
+                                    title="Edit tree"
+                                    style={{ width: "32px", height: "32px" }}
+                                  >
+                                    <i className="ti ti-pencil"></i>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-link text-danger p-1 border-0"
+                                    onClick={() => handleDelete(tree)}
+                                    title="Delete tree"
+                                    style={{ width: "32px", height: "32px" }}
+                                  >
+                                    <i className="ti ti-trash"></i>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </Table>
+                  </div>
                 )}
               </Card.Body>
             </Card>
@@ -491,6 +549,23 @@ export default function TreesPage() {
             </Modal.Footer>
           </Form>
         </Modal>
+
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmationModal
+          show={showDeleteModal}
+          onHide={() => {
+            setShowDeleteModal(false);
+            setSelectedTree(null);
+          }}
+          onConfirm={handleConfirmDelete}
+          title="Delete Tree"
+          message={
+            selectedTree
+              ? `Are you sure you want to delete "${selectedTree.name}" (${selectedTree.code})? This action cannot be undone.`
+              : "Are you sure you want to delete this tree?"
+          }
+          loading={deleteLoading}
+        />
       </Container>
     </AdminGuard>
   );
