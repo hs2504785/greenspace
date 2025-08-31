@@ -201,16 +201,29 @@ export default function FarmLayoutFullscreenPage() {
   // Callback for when tree is successfully planted
   const handleTreePlanted = useCallback(
     async (newTree) => {
-      // Immediately update the trees state for instant UI feedback
-      if (newTree) {
-        setTrees((prevTrees) => [...prevTrees, newTree]);
+      // Close the plant modal immediately to prevent double-clicks
+      setShowPlantModal(false);
+      setSelectedPosition(null);
+
+      // Show loading feedback
+      toast.loading("Refreshing farm layout...", { id: "refresh-farm" });
+
+      try {
+        // Force refresh of tree data from server (don't rely on local state update)
+        await fetchTrees();
+
+        // Trigger refresh of grid component
+        setRefreshKey((prev) => prev + 1);
+
+        toast.success("Tree planted and layout refreshed!", {
+          id: "refresh-farm",
+        });
+      } catch (error) {
+        console.error("Error refreshing trees:", error);
+        toast.error("Tree planted but failed to refresh layout", {
+          id: "refresh-farm",
+        });
       }
-
-      // Trigger refresh of PureCSSGridFarm component
-      setRefreshKey((prev) => prev + 1);
-
-      // Also fetch from server to ensure consistency
-      await fetchTrees();
     },
     [fetchTrees]
   );

@@ -41,6 +41,7 @@ const PlantTreeModal = ({
   });
 
   const [matchedTree, setMatchedTree] = useState(null); // Store matched existing tree
+  const [isPlanting, setIsPlanting] = useState(false); // Track planting state
 
   // Get all available trees from database only
   const getAllAvailableTrees = () => {
@@ -52,8 +53,9 @@ const PlantTreeModal = ({
         isNew: false, // Already exists in database
       }))
       // Deduplicate by code to prevent duplicate keys in React
-      .filter((tree, index, arr) => 
-        arr.findIndex(t => t.code === tree.code) === index
+      .filter(
+        (tree, index, arr) =>
+          arr.findIndex((t) => t.code === tree.code) === index
       )
       .sort((a, b) => {
         // Sort by availability first, then by code
@@ -64,8 +66,6 @@ const PlantTreeModal = ({
         }
         return a.code.localeCompare(b.code);
       });
-
-
 
     return result;
   };
@@ -165,9 +165,9 @@ const PlantTreeModal = ({
     if (show) {
       // Reset form when modal opens
       setPlantFormData({
-          code: "",
-          name: "",
-          variety: "",
+        code: "",
+        name: "",
+        variety: "",
         category: "",
         season: "",
         years_to_fruit: "",
@@ -201,8 +201,6 @@ const PlantTreeModal = ({
         const allTrees = getAllAvailableTrees();
         const existingTree = allTrees.find((tree) => tree.code === upperCode);
 
-
-
         if (existingTree) {
           // Found existing tree - populate form and mark as matched
           setMatchedTree(existingTree);
@@ -225,11 +223,11 @@ const PlantTreeModal = ({
         } else {
           // New tree code
           setMatchedTree(null);
-        setCodeValidation({
-          isChecking: false,
+          setCodeValidation({
+            isChecking: false,
             isValid: true,
             message: "Will create new tree",
-        });
+          });
         }
       } else {
         setMatchedTree(null);
@@ -302,22 +300,27 @@ const PlantTreeModal = ({
   const handlePlantTree = async (e) => {
     e.preventDefault();
 
+    // Prevent double submissions
+    if (isPlanting) {
+      return;
+    }
+
     try {
+      setIsPlanting(true);
+
       if (!selectedPosition) {
         toast.error("Please select a position to plant the tree");
+        setIsPlanting(false);
         return;
       }
 
       if (!plantFormData.code || !plantFormData.name) {
         toast.error("Please provide tree code and name");
+        setIsPlanting(false);
         return;
       }
 
       let treeToPlant;
-
-
-
-
 
       if (matchedTree && !matchedTree.isNew) {
         // Existing tree from database - create position only
@@ -409,15 +412,18 @@ const PlantTreeModal = ({
 
       const treeName = treeToPlant?.code || treeToPlant?.name || "Tree";
       toast.success(`${treeName} planted successfully!`);
-      onHide();
 
       // Pass the new tree data back for immediate UI update
       if (onTreePlanted) {
         onTreePlanted(treeToPlant);
       }
+
+      // Note: Don't call onHide() here - let the parent handle closing via handleTreePlanted
     } catch (error) {
       console.error("Error planting tree:", error);
       toast.error(error.message);
+    } finally {
+      setIsPlanting(false);
     }
   };
 
@@ -449,144 +455,144 @@ const PlantTreeModal = ({
             </div>
           </div>
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label className="d-flex justify-content-between align-items-center">
-                    <span>Tree Code</span>
+          <Row>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label className="d-flex justify-content-between align-items-center">
+                  <span>Tree Code</span>
                   {plantFormData.code && (
-                      <Badge
+                    <Badge
                       bg={codeValidation.isValid ? "success" : "info"}
-                        className="ms-2"
-                      >
-                        <i
+                      className="ms-2"
+                    >
+                      <i
                         className={`ti-${matchedTree ? "check" : "plus"} me-1`}
-                        ></i>
-                        {codeValidation.message}
-                      </Badge>
-                    )}
-                  </Form.Label>
-                  <InputGroup>
-                    <Form.Control
-                      type="text"
-                    value={plantFormData.code}
-                    onChange={(e) => handleCodeChange(e.target.value)}
-                      required
-                      className={`fw-semibold ${
-                      plantFormData.code && matchedTree
-                          ? "is-valid"
-                        : plantFormData.code && !matchedTree
-                        ? "is-warning"
-                          : ""
-                      }`}
-                    placeholder="Type tree code (e.g., M, SF, A)"
-                    />
-                    <Dropdown as={ButtonGroup}>
-                      <Dropdown.Toggle
-                        variant="outline-secondary"
-                        id="tree-code-dropdown"
-                        title="Choose tree code"
-                      >
-                        <i className="ti-list"></i>
-                      </Dropdown.Toggle>
-                      <Dropdown.Menu
-                        style={{
-                          maxHeight: "300px",
-                          overflowY: "auto",
-                          minWidth: "280px",
-                        }}
-                      >
-                        {(() => {
-                          const positionSuggestions =
-                            getPositionBasedSuggestions();
-
-                          return (
-                            <>
-                              <Dropdown.Header className="d-flex align-items-center">
-                                <i className="ti-target me-2 text-primary"></i>
-                                <strong>{positionSuggestions.type}</strong>
-                              </Dropdown.Header>
-
-                              {positionSuggestions.suggested?.map((tree) => {
-                                return (
-                                  <Dropdown.Item
-                                  key={`suggested-${tree.code}`}
-                                    onClick={() => {
-                                    handleCodeChange(tree.code);
-                                    }}
-                                    className="d-flex justify-content-between align-items-center"
-                                  >
-                                    <div>
-                                      <strong className="text-success">
-                                      {tree.code}
-                                      </strong>
-                                      <span className="ms-2 text-muted">
-                                        {tree.name}
-                                      </span>
-                                    </div>
-                                    <Badge bg="success" className="ms-2">
-                                      Suggested
-                                    </Badge>
-                                  </Dropdown.Item>
-                                );
-                              })}
-
-                              <Dropdown.Divider />
-
-                              <Dropdown.Header className="d-flex align-items-center">
-                                <i className="ti-list me-2 text-secondary"></i>
-                              <strong>All Available Tree Types</strong>
-                              </Dropdown.Header>
-
-                              {positionSuggestions.all?.map((tree) => {
-                                return (
-                                  <Dropdown.Item
-                                    key={`all-${tree.code}`}
-                                    onClick={() => {
-                                    handleCodeChange(tree.code);
-                                    }}
-                                    className="d-flex justify-content-between align-items-center py-1"
-                                  >
-                                    <div>
-                                      <strong className="text-primary">
-                                      {tree.code}
-                                      </strong>
-                                      <span className="ms-2 text-muted small">
-                                        {tree.name}
-                                      </span>
-                                    </div>
-                                  </Dropdown.Item>
-                                );
-                              })}
-                            </>
-                          );
-                        })()}
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </InputGroup>
-
-                  {(() => {
-                    const positionSuggestions = getPositionBasedSuggestions();
-                    return (
-                    !plantFormData.code && (
-                        <Form.Text className="text-muted">
-                          <i className="ti-target me-1"></i>
-                          <strong>{positionSuggestions.type}</strong> - Click
-                          dropdown to see suggested trees for this location
-                        </Form.Text>
-                      )
-                    );
-                  })()}
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Tree Name</Form.Label>
+                      ></i>
+                      {codeValidation.message}
+                    </Badge>
+                  )}
+                </Form.Label>
+                <InputGroup>
                   <Form.Control
                     type="text"
+                    value={plantFormData.code}
+                    onChange={(e) => handleCodeChange(e.target.value)}
+                    required
+                    className={`fw-semibold ${
+                      plantFormData.code && matchedTree
+                        ? "is-valid"
+                        : plantFormData.code && !matchedTree
+                        ? "is-warning"
+                        : ""
+                    }`}
+                    placeholder="Type tree code (e.g., M, SF, A)"
+                  />
+                  <Dropdown as={ButtonGroup}>
+                    <Dropdown.Toggle
+                      variant="outline-secondary"
+                      id="tree-code-dropdown"
+                      title="Choose tree code"
+                    >
+                      <i className="ti-list"></i>
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu
+                      style={{
+                        maxHeight: "300px",
+                        overflowY: "auto",
+                        minWidth: "280px",
+                      }}
+                    >
+                      {(() => {
+                        const positionSuggestions =
+                          getPositionBasedSuggestions();
+
+                        return (
+                          <>
+                            <Dropdown.Header className="d-flex align-items-center">
+                              <i className="ti-target me-2 text-primary"></i>
+                              <strong>{positionSuggestions.type}</strong>
+                            </Dropdown.Header>
+
+                            {positionSuggestions.suggested?.map((tree) => {
+                              return (
+                                <Dropdown.Item
+                                  key={`suggested-${tree.code}`}
+                                  onClick={() => {
+                                    handleCodeChange(tree.code);
+                                  }}
+                                  className="d-flex justify-content-between align-items-center"
+                                >
+                                  <div>
+                                    <strong className="text-success">
+                                      {tree.code}
+                                    </strong>
+                                    <span className="ms-2 text-muted">
+                                      {tree.name}
+                                    </span>
+                                  </div>
+                                  <Badge bg="success" className="ms-2">
+                                    Suggested
+                                  </Badge>
+                                </Dropdown.Item>
+                              );
+                            })}
+
+                            <Dropdown.Divider />
+
+                            <Dropdown.Header className="d-flex align-items-center">
+                              <i className="ti-list me-2 text-secondary"></i>
+                              <strong>All Available Tree Types</strong>
+                            </Dropdown.Header>
+
+                            {positionSuggestions.all?.map((tree) => {
+                              return (
+                                <Dropdown.Item
+                                  key={`all-${tree.code}`}
+                                  onClick={() => {
+                                    handleCodeChange(tree.code);
+                                  }}
+                                  className="d-flex justify-content-between align-items-center py-1"
+                                >
+                                  <div>
+                                    <strong className="text-primary">
+                                      {tree.code}
+                                    </strong>
+                                    <span className="ms-2 text-muted small">
+                                      {tree.name}
+                                    </span>
+                                  </div>
+                                </Dropdown.Item>
+                              );
+                            })}
+                          </>
+                        );
+                      })()}
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </InputGroup>
+
+                {(() => {
+                  const positionSuggestions = getPositionBasedSuggestions();
+                  return (
+                    !plantFormData.code && (
+                      <Form.Text className="text-muted">
+                        <i className="ti-target me-1"></i>
+                        <strong>{positionSuggestions.type}</strong> - Click
+                        dropdown to see suggested trees for this location
+                      </Form.Text>
+                    )
+                  );
+                })()}
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Tree Name</Form.Label>
+                <Form.Control
+                  type="text"
                   value={plantFormData.name}
                   onChange={(e) => handleNameChange(e.target.value)}
-                    required
+                  required
                   readOnly={matchedTree}
                   className={matchedTree ? "bg-light" : ""}
                 />
@@ -596,16 +602,16 @@ const PlantTreeModal = ({
                     Using existing tree details
                   </Form.Text>
                 )}
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group className="mb-3">
                 <Form.Label>
                   Variety{" "}
                   <small className="text-muted">(for this specific tree)</small>
                 </Form.Label>
-                  <Form.Control
-                    type="text"
+                <Form.Control
+                  type="text"
                   value={plantFormData.variety}
                   onChange={(e) => handleVarietyChange(e.target.value)}
                   placeholder="e.g., Alphonso, Kesar, Dasheri"
@@ -613,10 +619,10 @@ const PlantTreeModal = ({
                 <Form.Text className="text-muted">
                   Optional: Specify the variety for this individual tree
                 </Form.Text>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group className="mb-3">
                 <Form.Label>Category</Form.Label>
                 <Form.Select
                   value={plantFormData.category}
@@ -691,7 +697,7 @@ const PlantTreeModal = ({
             <Col md={12}>
               <Form.Group className="mb-3">
                 <Form.Label>Description</Form.Label>
-                  <Form.Control
+                <Form.Control
                   as="textarea"
                   rows={2}
                   value={plantFormData.description}
@@ -699,10 +705,10 @@ const PlantTreeModal = ({
                   placeholder="Care tips, notes, or additional details..."
                   readOnly={matchedTree}
                   className={matchedTree ? "bg-light" : ""}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+                />
+              </Form.Group>
+            </Col>
+          </Row>
         </Modal.Body>
         <Modal.Footer className="border-0">
           <Button variant="light" onClick={onHide}>
@@ -712,10 +718,24 @@ const PlantTreeModal = ({
             variant="success"
             type="submit"
             className="px-4"
-            disabled={!plantFormData.code || !plantFormData.name}
+            disabled={!plantFormData.code || !plantFormData.name || isPlanting}
           >
-            <i className="ti-plus me-2"></i>
-            Plant Tree
+            {isPlanting ? (
+              <>
+                <div
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                >
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                Planting...
+              </>
+            ) : (
+              <>
+                <i className="ti-plus me-2"></i>
+                Plant Tree
+              </>
+            )}
           </Button>
         </Modal.Footer>
       </Form>
