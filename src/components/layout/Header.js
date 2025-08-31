@@ -17,6 +17,7 @@ import { usePathname } from "next/navigation";
 import ProfileDropdown from "@/components/common/ProfileDropdown";
 import { useCart } from "@/context/CartContext";
 import SearchInput from "@/components/common/SearchInput";
+import useUserRole from "@/hooks/useUserRole";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -24,6 +25,7 @@ export default function Header() {
   const { data: session, status } = useSession();
   const { items } = useCart();
   const pathname = usePathname();
+  const { isAdmin, isSuperAdmin, loading: roleLoading } = useUserRole();
 
   // Function to check if a nav item is active
   const isActive = (path) => {
@@ -459,32 +461,36 @@ export default function Header() {
               Community
             </Nav.Link>
 
-            {/* Tree Management Section */}
-            <div className="mobile-nav-divider mt-2 mb-1">
-              <small className="text-muted px-3">FARM MANAGEMENT</small>
-            </div>
-            <Nav.Link
-              as={Link}
-              href="/farm-dashboard"
-              className={`mobile-nav-link ${
-                isActive("/farm-dashboard") ? "active-nav-item" : ""
-              }`}
-              onClick={handleLinkClick}
-            >
-              <i className="ti-layout-grid3 me-2 text-success"></i>
-              Farm Dashboard
-            </Nav.Link>
-            <Nav.Link
-              as={Link}
-              href="/trees"
-              className={`mobile-nav-link ${
-                isActive("/trees") ? "active-nav-item" : ""
-              }`}
-              onClick={handleLinkClick}
-            >
-              <i className="ti-palette me-2 text-warning"></i>
-              Tree Management
-            </Nav.Link>
+            {/* Farm Management Section - Only for Admin/SuperAdmin */}
+            {(isAdmin || isSuperAdmin) && !roleLoading && (
+              <>
+                <div className="mobile-nav-divider mt-2 mb-1">
+                  <small className="text-muted px-3">FARM MANAGEMENT</small>
+                </div>
+                <Nav.Link
+                  as={Link}
+                  href="/farm-dashboard"
+                  className={`mobile-nav-link ${
+                    isActive("/farm-dashboard") ? "active-nav-item" : ""
+                  }`}
+                  onClick={handleLinkClick}
+                >
+                  <i className="ti-layout-grid3 me-2 text-success"></i>
+                  Farm Dashboard
+                </Nav.Link>
+                <Nav.Link
+                  as={Link}
+                  href="/trees"
+                  className={`mobile-nav-link ${
+                    isActive("/trees") ? "active-nav-item" : ""
+                  }`}
+                  onClick={handleLinkClick}
+                >
+                  <i className="ti-palette me-2 text-warning"></i>
+                  Tree Management
+                </Nav.Link>
+              </>
+            )}
 
             {session && (
               <>

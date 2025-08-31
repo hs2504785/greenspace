@@ -16,6 +16,7 @@ import {
 } from "react-bootstrap";
 import { toast } from "react-hot-toast";
 import PureCSSGridFarm from "@/components/farm/PureCSSGridFarm";
+import AdminGuard from "@/components/common/AdminGuard";
 
 export default function FarmDashboardPage() {
   const [activeTab, setActiveTab] = useState("analytics");
@@ -295,644 +296,652 @@ export default function FarmDashboardPage() {
   }
 
   return (
-    <Container fluid className="py-4">
-      <Row>
-        <Col>
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <div>
-              <h2>Farm Dashboard</h2>
-              <p className="text-muted mb-0">
-                Manage your trees and farm layout
-              </p>
+    <AdminGuard requiredRole="admin">
+      <Container fluid className="py-4">
+        <Row>
+          <Col>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <h2>Farm Dashboard</h2>
+                <p className="text-muted mb-0">
+                  Manage your trees and farm layout
+                </p>
+              </div>
+              <div className="d-flex gap-2">
+                <Button
+                  variant="success"
+                  href="/farm-layout-fullscreen"
+                  className="text-decoration-none"
+                >
+                  <i className="bi bi-arrows-fullscreen me-2"></i>
+                  Full Screen Layout
+                </Button>
+                <Button variant="outline-secondary" href="/trees">
+                  Manage Trees
+                </Button>
+                <Button variant="outline-primary" onClick={fetchData}>
+                  Refresh
+                </Button>
+              </div>
             </div>
-            <div className="d-flex gap-2">
-              <Button
-                variant="success"
-                href="/farm-layout-fullscreen"
-                className="text-decoration-none"
-              >
-                <i className="bi bi-arrows-fullscreen me-2"></i>
-                Full Screen Layout
-              </Button>
-              <Button variant="outline-secondary" href="/trees">
-                Manage Trees
-              </Button>
-              <Button variant="outline-primary" onClick={fetchData}>
-                Refresh
-              </Button>
-            </div>
-          </div>
 
-          {/* Stats Cards */}
-          <Row className="mb-4">
-            <Col md={3}>
-              <Card className="text-center">
-                <Card.Body>
-                  <h3 className="text-primary">{stats.totalTrees}</h3>
-                  <p className="mb-0">Total Trees</p>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={3}>
-              <Card className="text-center">
-                <Card.Body>
-                  <h3 className="text-success">{stats.healthyTrees}</h3>
-                  <p className="mb-0">Healthy Trees</p>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={3}>
-              <Card className="text-center">
-                <Card.Body>
-                  <h3 className="text-warning">{stats.fruitingTrees}</h3>
-                  <p className="mb-0">Fruiting Trees</p>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={3}>
-              <Card className="text-center">
-                <Card.Body>
-                  <h3 className="text-danger">{stats.diseasedTrees}</h3>
-                  <p className="mb-0">Diseased Trees</p>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-
-          {/* Main Content Tabs */}
-          <Tab.Container activeKey={activeTab} onSelect={setActiveTab}>
-            <Nav variant="tabs" className="mb-3">
-              <Nav.Item>
-                <Nav.Link eventKey="analytics">
-                  <i className="bi bi-bar-chart-line"></i> Farm Analytics
-                </Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link eventKey="list">
-                  <i className="bi bi-list-ul"></i> Tree List
-                </Nav.Link>
-              </Nav.Item>
-            </Nav>
-
-            <Tab.Content>
-              <Tab.Pane eventKey="analytics">
-                <Row>
-                  {/* Farm Layout Preview Card */}
-                  <Col lg={8}>
-                    <Card className="h-100">
-                      <Card.Header className="d-flex justify-content-between align-items-center">
-                        <div>
-                          <h5 className="mb-0">
-                            <i className="bi bi-grid-3x3-gap text-success me-2"></i>
-                            Farm Layout Overview
-                          </h5>
-                          <small className="text-muted">
-                            {selectedLayout?.name || "Default Layout"}
-                          </small>
-                        </div>
-                        <div className="d-flex gap-2">
-                          <Button
-                            variant="success"
-                            size="sm"
-                            href="/farm-layout-fullscreen"
-                            className="text-decoration-none"
-                          >
-                            <i className="bi bi-arrows-fullscreen me-1"></i>
-                            Full Screen View
-                          </Button>
-                          <Button
-                            variant="outline-primary"
-                            size="sm"
-                            onClick={fetchData}
-                          >
-                            <i className="bi bi-arrow-clockwise me-1"></i>
-                            Refresh
-                          </Button>
-                        </div>
-                      </Card.Header>
-                      <Card.Body className="p-2">
-                        <div style={{ maxHeight: "400px", overflow: "hidden" }}>
-                          <PureCSSGridFarm
-                            farmId={farmId}
-                            selectedLayoutId={selectedLayout?.id}
-                            onTreeClick={handleTreeClick}
-                            showExpandButtons={false}
-                            refreshKey={refreshKey}
-                          />
-                        </div>
-                        <div className="text-center mt-2">
-                          <small className="text-muted">
-                            <i className="bi bi-info-circle me-1"></i>
-                            Click "Full Screen View" for detailed farm
-                            management
-                          </small>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-
-                  {/* Analytics Sidebar */}
-                  <Col lg={4}>
-                    <Row>
-                      {/* Tree Health Analysis */}
-                      <Col>
-                        <Card className="mb-3">
-                          <Card.Header className="bg-success text-white">
-                            <h6 className="mb-0">
-                              <i className="bi bi-tree me-2"></i>
-                              Tree Health Analysis
-                            </h6>
-                          </Card.Header>
-                          <Card.Body>
-                            <div className="d-flex justify-content-between align-items-center mb-2">
-                              <span className="text-success">
-                                Healthy Trees
-                              </span>
-                              <Badge bg="success">{stats.healthyTrees}</Badge>
-                            </div>
-                            <div
-                              className="progress mb-3"
-                              style={{ height: "8px" }}
-                            >
-                              <div
-                                className="progress-bar bg-success"
-                                style={{
-                                  width: `${
-                                    (stats.healthyTrees / stats.totalTrees) *
-                                    100
-                                  }%`,
-                                }}
-                              ></div>
-                            </div>
-
-                            {stats.fruitingTrees > 0 && (
-                              <>
-                                <div className="d-flex justify-content-between align-items-center mb-2">
-                                  <span className="text-warning">
-                                    Fruiting Trees
-                                  </span>
-                                  <Badge bg="warning">
-                                    {stats.fruitingTrees}
-                                  </Badge>
-                                </div>
-                                <div
-                                  className="progress mb-3"
-                                  style={{ height: "8px" }}
-                                >
-                                  <div
-                                    className="progress-bar bg-warning"
-                                    style={{
-                                      width: `${
-                                        (stats.fruitingTrees /
-                                          stats.totalTrees) *
-                                        100
-                                      }%`,
-                                    }}
-                                  ></div>
-                                </div>
-                              </>
-                            )}
-
-                            {stats.diseasedTrees > 0 && (
-                              <>
-                                <div className="d-flex justify-content-between align-items-center mb-2">
-                                  <span className="text-danger">
-                                    Issues Detected
-                                  </span>
-                                  <Badge bg="danger">
-                                    {stats.diseasedTrees}
-                                  </Badge>
-                                </div>
-                                <div
-                                  className="progress mb-3"
-                                  style={{ height: "8px" }}
-                                >
-                                  <div
-                                    className="progress-bar bg-danger"
-                                    style={{
-                                      width: `${
-                                        (stats.diseasedTrees /
-                                          stats.totalTrees) *
-                                        100
-                                      }%`,
-                                    }}
-                                  ></div>
-                                </div>
-                              </>
-                            )}
-
-                            <small className="text-muted">
-                              Health Score:{" "}
-                              {stats.totalTrees > 0
-                                ? Math.round(
-                                    (stats.healthyTrees / stats.totalTrees) *
-                                      100
-                                  )
-                                : 0}
-                              %
-                            </small>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                    </Row>
-
-                    <Row>
-                      {/* Quick Actions */}
-                      <Col>
-                        <Card className="mb-3">
-                          <Card.Header className="bg-primary text-white">
-                            <h6 className="mb-0">
-                              <i className="bi bi-lightning-charge me-2"></i>
-                              Quick Actions
-                            </h6>
-                          </Card.Header>
-                          <Card.Body>
-                            <div className="d-grid gap-2">
-                              <Button
-                                variant="outline-success"
-                                size="sm"
-                                href="/farm-layout-fullscreen"
-                              >
-                                <i className="bi bi-arrows-fullscreen me-2"></i>
-                                Full Screen Layout
-                              </Button>
-                              <Button
-                                variant="outline-primary"
-                                size="sm"
-                                href="/trees"
-                              >
-                                <i className="bi bi-plus-circle me-2"></i>
-                                Add New Trees
-                              </Button>
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={fetchData}
-                              >
-                                <i className="bi bi-arrow-clockwise me-2"></i>
-                                Refresh Data
-                              </Button>
-                              <Button
-                                variant="outline-info"
-                                size="sm"
-                                href="/layouts"
-                              >
-                                <i className="bi bi-grid-1x2 me-2"></i>
-                                Layout Manager
-                              </Button>
-                            </div>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                    </Row>
-
-                    <Row>
-                      {/* Farm Statistics */}
-                      <Col>
-                        <Card>
-                          <Card.Header className="bg-info text-white">
-                            <h6 className="mb-0">
-                              <i className="bi bi-graph-up me-2"></i>
-                              Farm Statistics
-                            </h6>
-                          </Card.Header>
-                          <Card.Body>
-                            <div className="row g-2">
-                              <div className="col-6">
-                                <div className="text-center p-2 bg-light rounded">
-                                  <div className="h6 text-success mb-0">
-                                    {stats.totalTrees}
-                                  </div>
-                                  <small className="text-muted">
-                                    Total Trees
-                                  </small>
-                                </div>
-                              </div>
-                              <div className="col-6">
-                                <div className="text-center p-2 bg-light rounded">
-                                  <div className="h6 text-primary mb-0">
-                                    {layouts.length}
-                                  </div>
-                                  <small className="text-muted">Layouts</small>
-                                </div>
-                              </div>
-                              <div className="col-12 mt-2">
-                                <div className="text-center p-2 bg-light rounded">
-                                  <div className="h6 text-warning mb-0">
-                                    {selectedLayout?.grid_config?.blocks
-                                      ?.length || 0}
-                                  </div>
-                                  <small className="text-muted">
-                                    Active Blocks
-                                  </small>
-                                </div>
-                              </div>
-                            </div>
-
-                            {stats.totalTrees > 0 && (
-                              <div className="mt-3 p-2 bg-success bg-opacity-10 rounded">
-                                <small className="text-success fw-semibold">
-                                  <i className="bi bi-check-circle me-1"></i>
-                                  Farm Operational Status: Active
-                                </small>
-                              </div>
-                            )}
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                    </Row>
-                  </Col>
-                </Row>
-              </Tab.Pane>
-
-              <Tab.Pane eventKey="list">
-                <Card>
-                  <Card.Header>
-                    <h5 className="mb-0">All Trees</h5>
-                  </Card.Header>
+            {/* Stats Cards */}
+            <Row className="mb-4">
+              <Col md={3}>
+                <Card className="text-center">
                   <Card.Body>
-                    {trees.length === 0 ? (
-                      <div className="text-center py-4">
-                        <p>No trees planted yet.</p>
-                        <Button variant="success" href="/trees">
-                          Add Your First Tree
-                        </Button>
-                      </div>
-                    ) : (
-                      <Row>
-                        {trees.map((tree) => (
-                          <Col md={4} key={tree.id} className="mb-3">
-                            <Card className="h-100">
-                              <Card.Body>
-                                <div className="d-flex justify-content-between align-items-start mb-2">
-                                  <Badge bg="secondary" className="fs-6">
-                                    {tree.code}
-                                  </Badge>
-                                  <Badge
-                                    bg={
-                                      tree.status === "healthy"
-                                        ? "success"
-                                        : tree.status === "diseased"
-                                        ? "danger"
-                                        : "warning"
-                                    }
-                                  >
-                                    {tree.status}
-                                  </Badge>
-                                </div>
-                                <h6 className="card-title">{tree.name}</h6>
-                                <p className="card-text text-muted small">
-                                  {tree.scientific_name}
-                                  {tree.variety && (
-                                    <>
-                                      <br />
-                                      Variety: {tree.variety}
-                                    </>
-                                  )}
-                                </p>
-                                {tree.planting_date && (
-                                  <small className="text-muted">
-                                    Planted:{" "}
-                                    {new Date(
-                                      tree.planting_date
-                                    ).toLocaleDateString()}
-                                  </small>
-                                )}
-                              </Card.Body>
-                            </Card>
-                          </Col>
-                        ))}
-                      </Row>
-                    )}
+                    <h3 className="text-primary">{stats.totalTrees}</h3>
+                    <p className="mb-0">Total Trees</p>
                   </Card.Body>
                 </Card>
-              </Tab.Pane>
-            </Tab.Content>
-          </Tab.Container>
-        </Col>
-      </Row>
+              </Col>
+              <Col md={3}>
+                <Card className="text-center">
+                  <Card.Body>
+                    <h3 className="text-success">{stats.healthyTrees}</h3>
+                    <p className="mb-0">Healthy Trees</p>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={3}>
+                <Card className="text-center">
+                  <Card.Body>
+                    <h3 className="text-warning">{stats.fruitingTrees}</h3>
+                    <p className="mb-0">Fruiting Trees</p>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={3}>
+                <Card className="text-center">
+                  <Card.Body>
+                    <h3 className="text-danger">{stats.diseasedTrees}</h3>
+                    <p className="mb-0">Diseased Trees</p>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
 
-      {/* Plant Tree Modal */}
-      <Modal
-        show={showPlantModal}
-        onHide={() => setShowPlantModal(false)}
-        size="lg"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Plant Tree</Modal.Title>
-        </Modal.Header>
-        <Form onSubmit={handlePlantTree}>
-          <Modal.Body>
-            <Alert variant="info">
-              <small>
-                Position: Block {(selectedPosition?.blockIndex || 0) + 1}, Grid
-                ({selectedPosition?.x}, {selectedPosition?.y})
-              </small>
-            </Alert>
+            {/* Main Content Tabs */}
+            <Tab.Container activeKey={activeTab} onSelect={setActiveTab}>
+              <Nav variant="tabs" className="mb-3">
+                <Nav.Item>
+                  <Nav.Link eventKey="analytics">
+                    <i className="bi bi-bar-chart-line"></i> Farm Analytics
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="list">
+                    <i className="bi bi-list-ul"></i> Tree List
+                  </Nav.Link>
+                </Nav.Item>
+              </Nav>
 
-            <div className="mb-3">
-              <Form.Check
-                type="radio"
-                name="plantOption"
-                id="existing-tree"
-                label="Use existing tree"
-                checked={plantFormData.tree_id !== ""}
-                onChange={() =>
-                  setPlantFormData((prev) => ({
-                    ...prev,
-                    tree_id: trees[0]?.id || "",
-                  }))
-                }
-              />
-              <Form.Check
-                type="radio"
-                name="plantOption"
-                id="new-tree"
-                label="Create new tree"
-                checked={plantFormData.tree_id === ""}
-                onChange={() =>
-                  setPlantFormData((prev) => ({ ...prev, tree_id: "" }))
-                }
-              />
-            </div>
+              <Tab.Content>
+                <Tab.Pane eventKey="analytics">
+                  <Row>
+                    {/* Farm Layout Preview Card */}
+                    <Col lg={8}>
+                      <Card className="h-100">
+                        <Card.Header className="d-flex justify-content-between align-items-center">
+                          <div>
+                            <h5 className="mb-0">
+                              <i className="bi bi-grid-3x3-gap text-success me-2"></i>
+                              Farm Layout Overview
+                            </h5>
+                            <small className="text-muted">
+                              {selectedLayout?.name || "Default Layout"}
+                            </small>
+                          </div>
+                          <div className="d-flex gap-2">
+                            <Button
+                              variant="success"
+                              size="sm"
+                              href="/farm-layout-fullscreen"
+                              className="text-decoration-none"
+                            >
+                              <i className="bi bi-arrows-fullscreen me-1"></i>
+                              Full Screen View
+                            </Button>
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={fetchData}
+                            >
+                              <i className="bi bi-arrow-clockwise me-1"></i>
+                              Refresh
+                            </Button>
+                          </div>
+                        </Card.Header>
+                        <Card.Body className="p-2">
+                          <div
+                            style={{ maxHeight: "400px", overflow: "hidden" }}
+                          >
+                            <PureCSSGridFarm
+                              farmId={farmId}
+                              selectedLayoutId={selectedLayout?.id}
+                              onTreeClick={handleTreeClick}
+                              showExpandButtons={false}
+                              refreshKey={refreshKey}
+                            />
+                          </div>
+                          <div className="text-center mt-2">
+                            <small className="text-muted">
+                              <i className="bi bi-info-circle me-1"></i>
+                              Click "Full Screen View" for detailed farm
+                              management
+                            </small>
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
 
-            {plantFormData.tree_id !== "" ? (
-              <Form.Group>
-                <Form.Label>Select Tree</Form.Label>
-                <Form.Select
-                  value={plantFormData.tree_id}
-                  onChange={(e) =>
+                    {/* Analytics Sidebar */}
+                    <Col lg={4}>
+                      <Row>
+                        {/* Tree Health Analysis */}
+                        <Col>
+                          <Card className="mb-3">
+                            <Card.Header className="bg-success text-white">
+                              <h6 className="mb-0">
+                                <i className="bi bi-tree me-2"></i>
+                                Tree Health Analysis
+                              </h6>
+                            </Card.Header>
+                            <Card.Body>
+                              <div className="d-flex justify-content-between align-items-center mb-2">
+                                <span className="text-success">
+                                  Healthy Trees
+                                </span>
+                                <Badge bg="success">{stats.healthyTrees}</Badge>
+                              </div>
+                              <div
+                                className="progress mb-3"
+                                style={{ height: "8px" }}
+                              >
+                                <div
+                                  className="progress-bar bg-success"
+                                  style={{
+                                    width: `${
+                                      (stats.healthyTrees / stats.totalTrees) *
+                                      100
+                                    }%`,
+                                  }}
+                                ></div>
+                              </div>
+
+                              {stats.fruitingTrees > 0 && (
+                                <>
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <span className="text-warning">
+                                      Fruiting Trees
+                                    </span>
+                                    <Badge bg="warning">
+                                      {stats.fruitingTrees}
+                                    </Badge>
+                                  </div>
+                                  <div
+                                    className="progress mb-3"
+                                    style={{ height: "8px" }}
+                                  >
+                                    <div
+                                      className="progress-bar bg-warning"
+                                      style={{
+                                        width: `${
+                                          (stats.fruitingTrees /
+                                            stats.totalTrees) *
+                                          100
+                                        }%`,
+                                      }}
+                                    ></div>
+                                  </div>
+                                </>
+                              )}
+
+                              {stats.diseasedTrees > 0 && (
+                                <>
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <span className="text-danger">
+                                      Issues Detected
+                                    </span>
+                                    <Badge bg="danger">
+                                      {stats.diseasedTrees}
+                                    </Badge>
+                                  </div>
+                                  <div
+                                    className="progress mb-3"
+                                    style={{ height: "8px" }}
+                                  >
+                                    <div
+                                      className="progress-bar bg-danger"
+                                      style={{
+                                        width: `${
+                                          (stats.diseasedTrees /
+                                            stats.totalTrees) *
+                                          100
+                                        }%`,
+                                      }}
+                                    ></div>
+                                  </div>
+                                </>
+                              )}
+
+                              <small className="text-muted">
+                                Health Score:{" "}
+                                {stats.totalTrees > 0
+                                  ? Math.round(
+                                      (stats.healthyTrees / stats.totalTrees) *
+                                        100
+                                    )
+                                  : 0}
+                                %
+                              </small>
+                            </Card.Body>
+                          </Card>
+                        </Col>
+                      </Row>
+
+                      <Row>
+                        {/* Quick Actions */}
+                        <Col>
+                          <Card className="mb-3">
+                            <Card.Header className="bg-primary text-white">
+                              <h6 className="mb-0">
+                                <i className="bi bi-lightning-charge me-2"></i>
+                                Quick Actions
+                              </h6>
+                            </Card.Header>
+                            <Card.Body>
+                              <div className="d-grid gap-2">
+                                <Button
+                                  variant="outline-success"
+                                  size="sm"
+                                  href="/farm-layout-fullscreen"
+                                >
+                                  <i className="bi bi-arrows-fullscreen me-2"></i>
+                                  Full Screen Layout
+                                </Button>
+                                <Button
+                                  variant="outline-primary"
+                                  size="sm"
+                                  href="/trees"
+                                >
+                                  <i className="bi bi-plus-circle me-2"></i>
+                                  Add New Trees
+                                </Button>
+                                <Button
+                                  variant="outline-warning"
+                                  size="sm"
+                                  onClick={fetchData}
+                                >
+                                  <i className="bi bi-arrow-clockwise me-2"></i>
+                                  Refresh Data
+                                </Button>
+                                <Button
+                                  variant="outline-info"
+                                  size="sm"
+                                  href="/layouts"
+                                >
+                                  <i className="bi bi-grid-1x2 me-2"></i>
+                                  Layout Manager
+                                </Button>
+                              </div>
+                            </Card.Body>
+                          </Card>
+                        </Col>
+                      </Row>
+
+                      <Row>
+                        {/* Farm Statistics */}
+                        <Col>
+                          <Card>
+                            <Card.Header className="bg-info text-white">
+                              <h6 className="mb-0">
+                                <i className="bi bi-graph-up me-2"></i>
+                                Farm Statistics
+                              </h6>
+                            </Card.Header>
+                            <Card.Body>
+                              <div className="row g-2">
+                                <div className="col-6">
+                                  <div className="text-center p-2 bg-light rounded">
+                                    <div className="h6 text-success mb-0">
+                                      {stats.totalTrees}
+                                    </div>
+                                    <small className="text-muted">
+                                      Total Trees
+                                    </small>
+                                  </div>
+                                </div>
+                                <div className="col-6">
+                                  <div className="text-center p-2 bg-light rounded">
+                                    <div className="h6 text-primary mb-0">
+                                      {layouts.length}
+                                    </div>
+                                    <small className="text-muted">
+                                      Layouts
+                                    </small>
+                                  </div>
+                                </div>
+                                <div className="col-12 mt-2">
+                                  <div className="text-center p-2 bg-light rounded">
+                                    <div className="h6 text-warning mb-0">
+                                      {selectedLayout?.grid_config?.blocks
+                                        ?.length || 0}
+                                    </div>
+                                    <small className="text-muted">
+                                      Active Blocks
+                                    </small>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {stats.totalTrees > 0 && (
+                                <div className="mt-3 p-2 bg-success bg-opacity-10 rounded">
+                                  <small className="text-success fw-semibold">
+                                    <i className="bi bi-check-circle me-1"></i>
+                                    Farm Operational Status: Active
+                                  </small>
+                                </div>
+                              )}
+                            </Card.Body>
+                          </Card>
+                        </Col>
+                      </Row>
+                    </Col>
+                  </Row>
+                </Tab.Pane>
+
+                <Tab.Pane eventKey="list">
+                  <Card>
+                    <Card.Header>
+                      <h5 className="mb-0">All Trees</h5>
+                    </Card.Header>
+                    <Card.Body>
+                      {trees.length === 0 ? (
+                        <div className="text-center py-4">
+                          <p>No trees planted yet.</p>
+                          <Button variant="success" href="/trees">
+                            Add Your First Tree
+                          </Button>
+                        </div>
+                      ) : (
+                        <Row>
+                          {trees.map((tree) => (
+                            <Col md={4} key={tree.id} className="mb-3">
+                              <Card className="h-100">
+                                <Card.Body>
+                                  <div className="d-flex justify-content-between align-items-start mb-2">
+                                    <Badge bg="secondary" className="fs-6">
+                                      {tree.code}
+                                    </Badge>
+                                    <Badge
+                                      bg={
+                                        tree.status === "healthy"
+                                          ? "success"
+                                          : tree.status === "diseased"
+                                          ? "danger"
+                                          : "warning"
+                                      }
+                                    >
+                                      {tree.status}
+                                    </Badge>
+                                  </div>
+                                  <h6 className="card-title">{tree.name}</h6>
+                                  <p className="card-text text-muted small">
+                                    {tree.scientific_name}
+                                    {tree.variety && (
+                                      <>
+                                        <br />
+                                        Variety: {tree.variety}
+                                      </>
+                                    )}
+                                  </p>
+                                  {tree.planting_date && (
+                                    <small className="text-muted">
+                                      Planted:{" "}
+                                      {new Date(
+                                        tree.planting_date
+                                      ).toLocaleDateString()}
+                                    </small>
+                                  )}
+                                </Card.Body>
+                              </Card>
+                            </Col>
+                          ))}
+                        </Row>
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Tab.Pane>
+              </Tab.Content>
+            </Tab.Container>
+          </Col>
+        </Row>
+
+        {/* Plant Tree Modal */}
+        <Modal
+          show={showPlantModal}
+          onHide={() => setShowPlantModal(false)}
+          size="lg"
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Plant Tree</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handlePlantTree}>
+            <Modal.Body>
+              <Alert variant="info">
+                <small>
+                  Position: Block {(selectedPosition?.blockIndex || 0) + 1},
+                  Grid ({selectedPosition?.x}, {selectedPosition?.y})
+                </small>
+              </Alert>
+
+              <div className="mb-3">
+                <Form.Check
+                  type="radio"
+                  name="plantOption"
+                  id="existing-tree"
+                  label="Use existing tree"
+                  checked={plantFormData.tree_id !== ""}
+                  onChange={() =>
                     setPlantFormData((prev) => ({
                       ...prev,
-                      tree_id: e.target.value,
+                      tree_id: trees[0]?.id || "",
                     }))
                   }
-                  required
-                >
-                  <option value="">Choose a tree...</option>
-                  {trees
-                    .filter((t) => !t.tree_positions?.length)
-                    .map((tree) => (
-                      <option key={tree.id} value={tree.id}>
-                        {tree.code} - {tree.name}
-                      </option>
-                    ))}
-                </Form.Select>
-              </Form.Group>
-            ) : (
+                />
+                <Form.Check
+                  type="radio"
+                  name="plantOption"
+                  id="new-tree"
+                  label="Create new tree"
+                  checked={plantFormData.tree_id === ""}
+                  onChange={() =>
+                    setPlantFormData((prev) => ({ ...prev, tree_id: "" }))
+                  }
+                />
+              </div>
+
+              {plantFormData.tree_id !== "" ? (
+                <Form.Group>
+                  <Form.Label>Select Tree</Form.Label>
+                  <Form.Select
+                    value={plantFormData.tree_id}
+                    onChange={(e) =>
+                      setPlantFormData((prev) => ({
+                        ...prev,
+                        tree_id: e.target.value,
+                      }))
+                    }
+                    required
+                  >
+                    <option value="">Choose a tree...</option>
+                    {trees
+                      .filter((t) => !t.tree_positions?.length)
+                      .map((tree) => (
+                        <option key={tree.id} value={tree.id}>
+                          {tree.code} - {tree.name}
+                        </option>
+                      ))}
+                  </Form.Select>
+                </Form.Group>
+              ) : (
+                <>
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Tree Code</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={plantFormData.new_tree.code}
+                          onChange={(e) =>
+                            setPlantFormData((prev) => ({
+                              ...prev,
+                              new_tree: {
+                                ...prev.new_tree,
+                                code: e.target.value,
+                              },
+                            }))
+                          }
+                          required
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Tree Name</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={plantFormData.new_tree.name}
+                          onChange={(e) =>
+                            setPlantFormData((prev) => ({
+                              ...prev,
+                              new_tree: {
+                                ...prev.new_tree,
+                                name: e.target.value,
+                              },
+                            }))
+                          }
+                          required
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Scientific Name</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={plantFormData.new_tree.scientific_name}
+                          onChange={(e) =>
+                            setPlantFormData((prev) => ({
+                              ...prev,
+                              new_tree: {
+                                ...prev.new_tree,
+                                scientific_name: e.target.value,
+                              },
+                            }))
+                          }
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Variety</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={plantFormData.new_tree.variety}
+                          onChange={(e) =>
+                            setPlantFormData((prev) => ({
+                              ...prev,
+                              new_tree: {
+                                ...prev.new_tree,
+                                variety: e.target.value,
+                              },
+                            }))
+                          }
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                </>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => setShowPlantModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="success" type="submit">
+                Plant Tree
+              </Button>
+            </Modal.Footer>
+          </Form>
+        </Modal>
+
+        {/* Tree Details Modal */}
+        <Modal show={showTreeModal} onHide={() => setShowTreeModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Tree Details</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {selectedTree && (
               <>
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Tree Code</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={plantFormData.new_tree.code}
-                        onChange={(e) =>
-                          setPlantFormData((prev) => ({
-                            ...prev,
-                            new_tree: {
-                              ...prev.new_tree,
-                              code: e.target.value,
-                            },
-                          }))
-                        }
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Tree Name</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={plantFormData.new_tree.name}
-                        onChange={(e) =>
-                          setPlantFormData((prev) => ({
-                            ...prev,
-                            new_tree: {
-                              ...prev.new_tree,
-                              name: e.target.value,
-                            },
-                          }))
-                        }
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Scientific Name</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={plantFormData.new_tree.scientific_name}
-                        onChange={(e) =>
-                          setPlantFormData((prev) => ({
-                            ...prev,
-                            new_tree: {
-                              ...prev.new_tree,
-                              scientific_name: e.target.value,
-                            },
-                          }))
-                        }
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Variety</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={plantFormData.new_tree.variety}
-                        onChange={(e) =>
-                          setPlantFormData((prev) => ({
-                            ...prev,
-                            new_tree: {
-                              ...prev.new_tree,
-                              variety: e.target.value,
-                            },
-                          }))
-                        }
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <h5>{selectedTree.name}</h5>
+                  <Badge bg="secondary">{selectedTree.code}</Badge>
+                </div>
+                <div className="mb-2">
+                  <strong>Scientific Name:</strong>{" "}
+                  {selectedTree.scientific_name || "Not specified"}
+                </div>
+                {selectedTree.variety && (
+                  <div className="mb-2">
+                    <strong>Variety:</strong> {selectedTree.variety}
+                  </div>
+                )}
+                <div className="mb-2">
+                  <strong>Status:</strong>{" "}
+                  <Badge
+                    bg={
+                      selectedTree.status === "healthy" ? "success" : "warning"
+                    }
+                  >
+                    {selectedTree.status}
+                  </Badge>
+                </div>
+                {selectedTree.planting_date && (
+                  <div className="mb-2">
+                    <strong>Planting Date:</strong>{" "}
+                    {new Date(selectedTree.planting_date).toLocaleDateString()}
+                  </div>
+                )}
+                {selectedTree.description && (
+                  <div className="mb-2">
+                    <strong>Description:</strong> {selectedTree.description}
+                  </div>
+                )}
+                <div className="mb-2">
+                  <strong>Position:</strong> Block{" "}
+                  {(selectedPosition?.blockIndex || 0) + 1}, Grid (
+                  {selectedPosition?.x}, {selectedPosition?.y})
+                </div>
               </>
             )}
           </Modal.Body>
           <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={() => setShowPlantModal(false)}
-            >
-              Cancel
+            <Button variant="secondary" onClick={() => setShowTreeModal(false)}>
+              Close
             </Button>
-            <Button variant="success" type="submit">
-              Plant Tree
+            <Button variant="primary" href={`/trees`}>
+              Edit Tree
             </Button>
           </Modal.Footer>
-        </Form>
-      </Modal>
-
-      {/* Tree Details Modal */}
-      <Modal show={showTreeModal} onHide={() => setShowTreeModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Tree Details</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedTree && (
-            <>
-              <div className="d-flex justify-content-between align-items-start mb-3">
-                <h5>{selectedTree.name}</h5>
-                <Badge bg="secondary">{selectedTree.code}</Badge>
-              </div>
-              <div className="mb-2">
-                <strong>Scientific Name:</strong>{" "}
-                {selectedTree.scientific_name || "Not specified"}
-              </div>
-              {selectedTree.variety && (
-                <div className="mb-2">
-                  <strong>Variety:</strong> {selectedTree.variety}
-                </div>
-              )}
-              <div className="mb-2">
-                <strong>Status:</strong>{" "}
-                <Badge
-                  bg={selectedTree.status === "healthy" ? "success" : "warning"}
-                >
-                  {selectedTree.status}
-                </Badge>
-              </div>
-              {selectedTree.planting_date && (
-                <div className="mb-2">
-                  <strong>Planting Date:</strong>{" "}
-                  {new Date(selectedTree.planting_date).toLocaleDateString()}
-                </div>
-              )}
-              {selectedTree.description && (
-                <div className="mb-2">
-                  <strong>Description:</strong> {selectedTree.description}
-                </div>
-              )}
-              <div className="mb-2">
-                <strong>Position:</strong> Block{" "}
-                {(selectedPosition?.blockIndex || 0) + 1}, Grid (
-                {selectedPosition?.x}, {selectedPosition?.y})
-              </div>
-            </>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowTreeModal(false)}>
-            Close
-          </Button>
-          <Button variant="primary" href={`/trees`}>
-            Edit Tree
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </Container>
+        </Modal>
+      </Container>
+    </AdminGuard>
   );
 }

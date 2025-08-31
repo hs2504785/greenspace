@@ -90,35 +90,43 @@ export default function DashboardPage() {
               </Card>
             </Col>
 
-            <Col md={6} className="mb-4">
-              <Card className="h-100 border-0 shadow-sm">
-                <Card.Body className="text-center">
-                  <div className="mb-3">
-                    <i
-                      className="ti-layout-grid3 text-success"
-                      style={{ fontSize: "3rem" }}
-                    ></i>
-                  </div>
-                  <Card.Title>🌳 Farm Management</Card.Title>
-                  <Card.Text>
-                    Manage your farm layout, plant trees, and track growth with
-                    our interactive grid system.
-                  </Card.Text>
-                  <div className="d-flex gap-2">
-                    <Link href="/farm-dashboard" className="btn btn-success">
-                      Farm Dashboard
-                    </Link>
-                    <Link
-                      href="/farm-layout-fullscreen"
-                      className="btn btn-outline-success"
-                    >
-                      <i className="bi bi-arrows-fullscreen me-1"></i>
-                      Full Screen
-                    </Link>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
+            {/* Farm Management - Only for Admin/SuperAdmin */}
+            {(isAdmin || isSuperAdmin) && (
+              <Col md={6} className="mb-4">
+                <Card className="h-100 border-0 shadow-sm border-success">
+                  <Card.Body className="text-center">
+                    <div className="mb-3">
+                      <i
+                        className="ti-layout-grid3 text-success"
+                        style={{ fontSize: "3rem" }}
+                      ></i>
+                    </div>
+                    <Card.Title>🌳 Farm Management</Card.Title>
+                    <Card.Text>
+                      Manage your farm layout, plant trees, and track growth
+                      with our interactive grid system.
+                      <br />
+                      <small className="text-success fw-semibold">
+                        <i className="ti-shield me-1"></i>
+                        Admin Access Required
+                      </small>
+                    </Card.Text>
+                    <div className="d-flex gap-2">
+                      <Link href="/farm-dashboard" className="btn btn-success">
+                        Farm Dashboard
+                      </Link>
+                      <Link
+                        href="/farm-layout-fullscreen"
+                        className="btn btn-outline-success"
+                      >
+                        <i className="bi bi-arrows-fullscreen me-1"></i>
+                        Full Screen
+                      </Link>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            )}
 
             <Col md={6} className="mb-4">
               <Card className="h-100 border-0 shadow-sm">
