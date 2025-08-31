@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { Container, Badge, Button, Offcanvas } from "react-bootstrap";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -42,13 +43,15 @@ export default function FarmLayoutFullscreenPage() {
     isFullscreen: false,
   });
 
-  // Use your existing user ID - in real app, get from authentication
-  const farmId = "0e13a58b-a5e2-4ed3-9c69-9634c7413550";
+  // Get user ID from authentication - works for any admin/superadmin
+  const { userId: farmId, loading: userLoading } = useCurrentUser();
 
   useEffect(() => {
     // Set document title for client component
     document.title = "Farm Layout - Full View | Arya Natural Farms";
-    fetchData();
+    if (farmId) {
+      fetchData();
+    }
 
     // Cleanup function to restore body scroll when leaving
     return () => {
@@ -56,7 +59,7 @@ export default function FarmLayoutFullscreenPage() {
         document.body.style.overflow = "";
       }
     };
-  }, []);
+  }, [farmId]);
 
   // Listen for global filter toggle from header
   useEffect(() => {
@@ -331,7 +334,7 @@ export default function FarmLayoutFullscreenPage() {
 
   const stats = getTreeStats();
 
-  if (loading) {
+  if (loading || userLoading || !farmId) {
     return (
       <div className="d-flex justify-content-center align-items-center min-vh-100">
         <div className="text-center">
@@ -342,7 +345,11 @@ export default function FarmLayoutFullscreenPage() {
           >
             <span className="visually-hidden">Loading...</span>
           </div>
-          <p className="mt-3 text-muted">Loading your farm layout...</p>
+          <p className="mt-3 text-muted">
+            {userLoading
+              ? "Loading user data..."
+              : "Loading your farm layout..."}
+          </p>
         </div>
       </div>
     );
