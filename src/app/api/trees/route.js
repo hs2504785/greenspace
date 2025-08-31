@@ -30,8 +30,10 @@ export async function GET(request) {
       )
       .order("created_at", { ascending: false });
 
+    // If farmId is provided, filter by farm_id OR get template trees (farm_id is null)
+    // This allows showing both user's planted trees and available tree types for planting
     if (farmId) {
-      query = query.eq("farm_id", farmId);
+      query = query.or(`farm_id.eq.${farmId},farm_id.is.null`);
     }
 
     const { data, error } = await query;
