@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import {
   Container,
   Row,
@@ -57,12 +58,51 @@ export default function FarmDashboardPage() {
     },
   });
 
-  // Use your existing user ID - in real app, get from authentication
-  const farmId = "0e13a58b-a5e2-4ed3-9c69-9634c7413550";
+  // Get user ID from authentication - works for any admin/superadmin
+  const [farmId, setFarmId] = useState(null);
 
   useEffect(() => {
-    fetchData();
+    // Get authenticated user ID - works for any admin/superadmin
+    const getUserId = async () => {
+      try {
+        // Use robust current-user API that works for any admin/superadmin
+        const response = await fetch("/api/auth/current-user");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.user?.id) {
+            console.log(
+              `Using ${data.user.source} user:`,
+              data.user.email,
+              `(${data.user.role})`
+            );
+            setFarmId(data.user.id);
+            return;
+          }
+        }
+
+        // If API fails, show error
+        const errorData = await response.json().catch(() => ({}));
+        console.error(
+          "Failed to get current user:",
+          errorData.error || "Unknown error"
+        );
+        toast.error(
+          "Unable to load user data. Please ensure you have admin access."
+        );
+      } catch (error) {
+        console.error("Error getting user ID:", error);
+        toast.error("Failed to load user data. Please check your connection.");
+      }
+    };
+
+    getUserId();
   }, []);
+
+  useEffect(() => {
+    if (farmId) {
+      fetchData();
+    }
+  }, [farmId]);
 
   // Listen for global filter toggle from header
   useEffect(() => {
