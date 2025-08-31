@@ -256,19 +256,18 @@ const EditTreeModal = ({
       };
     }
 
-    // Find the item across all categories
+    // Find the category by converting categoryValue back to category name
     for (const [categoryName, categoryData] of Object.entries(
       categoryStructure
     )) {
-      const foundItem = categoryData.items.find(
-        (item) => item.value === categoryValue
-      );
-      if (foundItem) {
+      const categoryKey = categoryName.toLowerCase().replace(/\s+/g, "-");
+      if (categoryKey === categoryValue) {
         return {
-          label: foundItem.label,
+          label: categoryName,
           icon: categoryData.icon,
           variant: categoryData.variant,
           categoryName: categoryName,
+          examples: categoryData.items.map((item) => item.label).join(", "),
         };
       }
     }
@@ -287,67 +286,14 @@ const EditTreeModal = ({
       <style jsx global>{`
         /* Override Bootstrap's global dropdown active color */
         .custom-category-selector {
-          --bs-dropdown-link-active-color: #000;
           --bs-dropdown-link-active-bg: rgba(25, 135, 84, 0.25);
-        }
-        /* Direct override of Bootstrap's dropdown active styles */
-        .custom-category-selector .dropdown-item.active,
-        .custom-category-selector .dropdown-item:active {
-          color: #000 !important;
-          background-color: rgba(25, 135, 84, 0.25) !important;
         }
         .custom-category-selector .dropdown-item:hover {
           background-color: #f8f9fa !important;
           transform: translateX(2px);
           transition: all 0.2s ease;
         }
-        .custom-category-selector .dropdown-item.active {
-          border-left: 3px solid #198754 !important;
-          background-color: rgba(25, 135, 84, 0.25) !important;
-          color: #000 !important;
-          --bs-dropdown-link-active-color: #000 !important;
-          --bs-dropdown-link-active-bg: rgba(25, 135, 84, 0.25) !important;
-        }
-        .custom-category-selector .dropdown-item:active,
-        .custom-category-selector .dropdown-item.active:active,
-        .custom-category-selector .dropdown-item.active:focus {
-          color: #000 !important;
-          background-color: rgba(25, 135, 84, 0.25) !important;
-        }
-        .custom-category-selector .dropdown-item.active,
-        .custom-category-selector .dropdown-item.active *:not(.badge) {
-          color: #000 !important;
-          font-weight: 600 !important;
-        }
-        .custom-category-selector .dropdown-item.active span:not(.badge) {
-          color: #000 !important;
-          font-weight: 600 !important;
-        }
-        .custom-category-selector .dropdown-item.active .d-flex span {
-          color: #000 !important;
-        }
-        .custom-category-selector .dropdown-item.active .d-flex .d-flex span {
-          color: #000 !important;
-          text-shadow: none !important;
-        }
-        .custom-category-selector
-          .dropdown-item.active
-          .justify-content-between
-          .d-flex
-          span {
-          color: #000 !important;
-        }
-        .custom-category-selector .dropdown-item.active .badge {
-          background-color: #198754 !important;
-          color: #fff !important;
-          font-weight: 600 !important;
-        }
-        /* Force override Bootstrap's active link color */
-        .dropdown-item.active .d-flex .d-flex span,
-        .custom-category-selector .dropdown-item.active .d-flex .d-flex span,
-        .custom-category-selector [role="button"].dropdown-item.active span {
-          color: #000 !important;
-        }
+
         .custom-category-selector .dropdown-menu {
           box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
           border: 1px solid rgba(0, 0, 0, 0.1);
@@ -370,6 +316,17 @@ const EditTreeModal = ({
         }
         .custom-category-selector .dropdown-divider {
           margin: 0.5rem 0;
+        }
+        /* Ensure examples are completely non-interactive */
+        .custom-category-selector .dropdown-menu div[style*="pointerEvents"] {
+          pointer-events: none !important;
+          user-select: none !important;
+        }
+        .custom-category-selector
+          .dropdown-menu
+          div[style*="pointerEvents"]:hover {
+          background-color: transparent !important;
+          transform: none !important;
         }
       `}</style>
       <Modal
@@ -670,12 +627,10 @@ const EditTreeModal = ({
                           selectedCategory ? "text-dark" : "text-muted"
                         }`}
                         style={{
-                          backgroundColor: selectedCategory
-                            ? "#f8f9fa"
-                            : "#fff",
+                          backgroundColor: "#fff",
                           cursor: "pointer",
                           border: selectedCategory
-                            ? "1px solid #0d6efd"
+                            ? "1px solid #198754"
                             : "1px solid #dee2e6",
                           fontSize: "0.95rem",
                         }}
@@ -711,78 +666,99 @@ const EditTreeModal = ({
                           {Object.entries(categoryStructure).map(
                             ([categoryName, categoryData], categoryIndex) => (
                               <div key={categoryName}>
-                                {/* Category Header (Read-only) */}
-                                <Dropdown.Header className="d-flex align-items-center">
-                                  <span
-                                    className="me-2"
-                                    style={{ fontSize: "1em" }}
-                                  >
-                                    {categoryData.icon}
-                                  </span>
-                                  <strong
-                                    className={`text-${categoryData.variant}`}
-                                  >
-                                    {categoryName}
-                                  </strong>
-                                </Dropdown.Header>
+                                {/* Category Header (Selectable) */}
+                                <Dropdown.Item
+                                  onClick={() =>
+                                    handleCategorySelect(
+                                      categoryName
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")
+                                    )
+                                  }
+                                  className={`d-flex align-items-center py-2 px-3 fw-bold ${
+                                    selectedCategory ===
+                                    categoryName
+                                      .toLowerCase()
+                                      .replace(/\s+/g, "-")
+                                      ? "active bg-success bg-opacity-10"
+                                      : ""
+                                  }`}
+                                  style={{
+                                    cursor: "pointer",
+                                    backgroundColor:
+                                      selectedCategory ===
+                                      categoryName
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")
+                                        ? "rgba(25, 135, 84, 0.25)"
+                                        : "rgba(248, 249, 250, 0.8)",
+                                    borderRadius: "0.25rem",
+                                    margin: "4px",
+                                    ...(selectedCategory ===
+                                    categoryName
+                                      .toLowerCase()
+                                      .replace(/\s+/g, "-")
+                                      ? {
+                                          color: "#000",
+                                          borderLeft: "3px solid #198754",
+                                        }
+                                      : {}),
+                                  }}
+                                >
+                                  <div className="d-flex align-items-center justify-content-between w-100">
+                                    <div className="d-flex align-items-center">
+                                      <span
+                                        className="me-2"
+                                        style={{ fontSize: "1.2em" }}
+                                      >
+                                        {categoryData.icon}
+                                      </span>
+                                      <strong
+                                        className={`text-${categoryData.variant}`}
+                                        style={
+                                          selectedCategory ===
+                                          categoryName
+                                            .toLowerCase()
+                                            .replace(/\s+/g, "-")
+                                            ? { color: "#000" }
+                                            : {}
+                                        }
+                                      >
+                                        {categoryName}
+                                      </strong>
+                                    </div>
+                                    {selectedCategory ===
+                                      categoryName
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-") && (
+                                      <Badge bg="success" className="ms-2">
+                                        Selected
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </Dropdown.Item>
 
-                                {/* Category Items (Selectable) */}
-                                {categoryData.items.map((item) => (
-                                  <Dropdown.Item
-                                    key={item.value}
-                                    onClick={() =>
-                                      handleCategorySelect(item.value)
-                                    }
-                                    className={`d-flex align-items-center py-2 px-3 ${
-                                      selectedCategory === item.value
-                                        ? "active bg-success bg-opacity-10"
-                                        : ""
-                                    }`}
+                                {/* Category Items (Read-only examples) */}
+                                <div
+                                  className="px-3 pb-2"
+                                  style={{
+                                    pointerEvents: "none",
+                                    userSelect: "none",
+                                  }}
+                                >
+                                  <small
+                                    className="text-muted"
                                     style={{
-                                      cursor: "pointer",
-                                      ...(selectedCategory === item.value
-                                        ? {
-                                            color: "#000",
-                                            backgroundColor:
-                                              "rgba(25, 135, 84, 0.25)",
-                                            borderLeft: "3px solid #198754",
-                                          }
-                                        : {}),
+                                      fontSize: "0.75rem",
+                                      fontStyle: "italic",
                                     }}
                                   >
-                                    <div className="d-flex align-items-center justify-content-between w-100">
-                                      <div className="d-flex align-items-center">
-                                        <strong
-                                          className={`me-2 text-${categoryData.variant}`}
-                                          style={{
-                                            minWidth: "25px",
-                                            ...(selectedCategory === item.value
-                                              ? { color: "#000" }
-                                              : {}),
-                                          }}
-                                        >
-                                          {item.value
-                                            .toUpperCase()
-                                            .substring(0, 2)}
-                                        </strong>
-                                        <span
-                                          style={
-                                            selectedCategory === item.value
-                                              ? { color: "#000" }
-                                              : {}
-                                          }
-                                        >
-                                          {item.label}
-                                        </span>
-                                      </div>
-                                      {selectedCategory === item.value && (
-                                        <Badge bg="success" className="ms-2">
-                                          Selected
-                                        </Badge>
-                                      )}
-                                    </div>
-                                  </Dropdown.Item>
-                                ))}
+                                    Examples:{" "}
+                                    {categoryData.items
+                                      .map((item) => item.label)
+                                      .join(", ")}
+                                  </small>
+                                </div>
 
                                 {/* Add divider between categories (except last one) */}
                                 {categoryIndex <

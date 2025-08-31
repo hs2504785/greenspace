@@ -13,6 +13,11 @@ import {
   Alert,
   Badge,
   Spinner,
+  Dropdown,
+  ButtonGroup,
+  InputGroup,
+  OverlayTrigger,
+  Popover,
 } from "react-bootstrap";
 import { toast } from "react-hot-toast";
 import AdminGuard from "@/components/common/AdminGuard";
@@ -39,6 +44,7 @@ export default function TreesPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [selectedTree, setSelectedTree] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   // Tree category options - Enhanced with new categories
   const categoryOptions = [
@@ -53,6 +59,144 @@ export default function TreesPage() {
     { value: "medicinal", label: "Medicinal", variant: "info" },
     { value: "roots", label: "Roots & Rhizomes", variant: "warning" },
   ];
+
+  // Category structure with selectable items (same as EditTreeModal)
+  const categoryStructure = {
+    Citrus: {
+      icon: "🍊",
+      variant: "warning",
+      items: [
+        { value: "lemon", label: "Lemon" },
+        { value: "orange", label: "Orange" },
+        { value: "lime", label: "Lime" },
+        { value: "grapefruit", label: "Grapefruit" },
+      ],
+    },
+    "Stone Fruit": {
+      icon: "🍑",
+      variant: "info",
+      items: [
+        { value: "mango", label: "Mango" },
+        { value: "plum", label: "Plum" },
+        { value: "peach", label: "Peach" },
+        { value: "cherry", label: "Cherry" },
+      ],
+    },
+    Tropical: {
+      icon: "🥭",
+      variant: "success",
+      items: [
+        { value: "papaya", label: "Papaya" },
+        { value: "banana", label: "Banana" },
+        { value: "jackfruit", label: "Jackfruit" },
+        { value: "coconut", label: "Coconut" },
+      ],
+    },
+    Berry: {
+      icon: "🫐",
+      variant: "primary",
+      items: [
+        { value: "strawberry", label: "Strawberry" },
+        { value: "mulberry", label: "Mulberry" },
+        { value: "blueberry", label: "Blueberry" },
+        { value: "blackberry", label: "Blackberry" },
+      ],
+    },
+    Nut: {
+      icon: "🥥",
+      variant: "secondary",
+      items: [
+        { value: "cashew", label: "Cashew" },
+        { value: "almond", label: "Almond" },
+        { value: "walnut", label: "Walnut" },
+        { value: "pistachio", label: "Pistachio" },
+      ],
+    },
+    Exotic: {
+      icon: "🐲",
+      variant: "danger",
+      items: [
+        { value: "dragon-fruit", label: "Dragon Fruit" },
+        { value: "kiwi", label: "Kiwi" },
+        { value: "rambutan", label: "Rambutan" },
+        { value: "lychee", label: "Lychee" },
+      ],
+    },
+    Spices: {
+      icon: "🌶️",
+      variant: "warning",
+      items: [
+        { value: "allspice", label: "Allspice" },
+        { value: "clove", label: "Clove" },
+        { value: "cinnamon", label: "Cinnamon" },
+        { value: "pepper", label: "Pepper" },
+        { value: "cardamom", label: "Cardamom" },
+        { value: "nutmeg", label: "Nutmeg" },
+      ],
+    },
+    Herbs: {
+      icon: "🌿",
+      variant: "success",
+      items: [
+        { value: "tulsi", label: "Tulsi (Holy Basil)" },
+        { value: "mint", label: "Mint" },
+        { value: "curry-leaf", label: "Curry Leaf" },
+        { value: "lemongrass", label: "Lemongrass" },
+      ],
+    },
+    Medicinal: {
+      icon: "💊",
+      variant: "info",
+      items: [
+        { value: "aloe-vera", label: "Aloe Vera" },
+        { value: "neem", label: "Neem" },
+        { value: "ashwagandha", label: "Ashwagandha" },
+        { value: "giloy", label: "Giloy" },
+      ],
+    },
+    "Roots & Rhizomes": {
+      icon: "🫚",
+      variant: "secondary",
+      items: [
+        { value: "turmeric", label: "Turmeric" },
+        { value: "ginger", label: "Ginger" },
+        { value: "galangal", label: "Galangal" },
+      ],
+    },
+  };
+
+  // Get category display info
+  const getCategoryInfo = (categoryValue) => {
+    if (!categoryValue) {
+      return {
+        label: "Select Category",
+        icon: "🌳",
+        description: "Choose a category for this tree",
+      };
+    }
+
+    // Find the category by converting categoryValue back to category name
+    for (const [categoryName, categoryData] of Object.entries(
+      categoryStructure
+    )) {
+      const categoryKey = categoryName.toLowerCase().replace(/\s+/g, "-");
+      if (categoryKey === categoryValue) {
+        return {
+          label: categoryName,
+          icon: categoryData.icon,
+          variant: categoryData.variant,
+          categoryName: categoryName,
+          examples: categoryData.items.map((item) => item.label).join(", "),
+        };
+      }
+    }
+
+    return {
+      label: "Unknown Category",
+      icon: "🌳",
+      description: "Category not found",
+    };
+  };
 
   // Season options
   const seasonOptions = [
@@ -157,12 +301,14 @@ export default function TreesPage() {
     setFormData({
       code: tree.code || "",
       name: tree.name || "",
+      variety: tree.variety || "",
       category: tree.category || "",
       season: tree.season || "",
       years_to_fruit: tree.years_to_fruit || "",
       mature_height: tree.mature_height || "",
       description: tree.description || "",
     });
+    setSelectedCategory(tree.category || "");
     setShowModal(true);
   };
 
@@ -205,6 +351,7 @@ export default function TreesPage() {
       mature_height: "",
       description: "",
     });
+    setSelectedCategory("");
   };
 
   const handleInputChange = (e) => {
@@ -212,6 +359,15 @@ export default function TreesPage() {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+  };
+
+  // Handle category selection
+  const handleCategorySelect = (categoryValue) => {
+    setSelectedCategory(categoryValue);
+    setFormData((prev) => ({
+      ...prev,
+      category: categoryValue,
     }));
   };
 
@@ -509,19 +665,255 @@ export default function TreesPage() {
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Category</Form.Label>
-                    <Form.Select
-                      name="category"
-                      value={formData.category}
-                      onChange={handleInputChange}
-                    >
-                      <option value="">Select Category</option>
-                      {categoryOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </Form.Select>
+                    <Form.Label className="d-flex align-items-center">
+                      <strong>Category</strong>
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={
+                          <Popover
+                            id="category-help-popover"
+                            style={{ maxWidth: "400px" }}
+                          >
+                            <Popover.Header className="bg-primary text-white">
+                              <strong>🌳 Tree Categories</strong>
+                            </Popover.Header>
+                            <Popover.Body>
+                              <div className="small">
+                                <p className="mb-2">
+                                  <strong>Choose the main category:</strong>
+                                </p>
+                                <ul className="mb-0 ps-3">
+                                  <li>
+                                    🍊 <strong>Citrus</strong> - Lemon, Orange,
+                                    Lime
+                                  </li>
+                                  <li>
+                                    🍑 <strong>Stone Fruit</strong> - Mango,
+                                    Plum, Peach
+                                  </li>
+                                  <li>
+                                    🥭 <strong>Tropical</strong> - Papaya,
+                                    Banana, Jackfruit
+                                  </li>
+                                  <li>
+                                    🫐 <strong>Berry</strong> - Strawberry,
+                                    Mulberry
+                                  </li>
+                                  <li>
+                                    🥥 <strong>Nut</strong> - Cashew, Almond,
+                                    Walnut
+                                  </li>
+                                  <li>
+                                    🐲 <strong>Exotic</strong> - Dragon Fruit,
+                                    Kiwi
+                                  </li>
+                                  <li>
+                                    🌶️ <strong>Spices</strong> - Clove,
+                                    Cinnamon, Pepper
+                                  </li>
+                                  <li>
+                                    🌿 <strong>Herbs</strong> - Tulsi, Mint,
+                                    Curry Leaf
+                                  </li>
+                                  <li>
+                                    💊 <strong>Medicinal</strong> - Aloe Vera,
+                                    Neem
+                                  </li>
+                                  <li>
+                                    🫚 <strong>Roots & Rhizomes</strong> -
+                                    Turmeric, Ginger
+                                  </li>
+                                </ul>
+                              </div>
+                            </Popover.Body>
+                          </Popover>
+                        }
+                      >
+                        <span
+                          className="ms-1 d-inline-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-25"
+                          style={{
+                            cursor: "help",
+                            width: "16px",
+                            height: "16px",
+                            fontSize: "10px",
+                          }}
+                        >
+                          <i className="ti-help text-primary"></i>
+                        </span>
+                      </OverlayTrigger>
+                    </Form.Label>
+
+                    <div className="position-relative">
+                      <InputGroup className="custom-category-selector">
+                        <Form.Control
+                          type="text"
+                          value={
+                            selectedCategory
+                              ? `${getCategoryInfo(selectedCategory).icon} ${
+                                  getCategoryInfo(selectedCategory).label
+                                }`
+                              : "Select a category..."
+                          }
+                          readOnly
+                          className={`fw-medium ${
+                            selectedCategory ? "text-dark" : "text-muted"
+                          }`}
+                          style={{
+                            backgroundColor: "#fff",
+                            cursor: "pointer",
+                            border: selectedCategory
+                              ? "1px solid #198754"
+                              : "1px solid #dee2e6",
+                            fontSize: "0.95rem",
+                          }}
+                          onClick={() => {
+                            /* Handled by dropdown toggle */
+                          }}
+                        />
+                        <Dropdown as={ButtonGroup}>
+                          <Dropdown.Toggle
+                            variant={
+                              selectedCategory
+                                ? "outline-success"
+                                : "outline-secondary"
+                            }
+                            id="category-dropdown"
+                            title="Select category"
+                            className="px-3"
+                            style={{
+                              borderLeftColor: selectedCategory
+                                ? "#198754"
+                                : "#dee2e6",
+                            }}
+                          >
+                            <i className="ti-chevron-down"></i>
+                          </Dropdown.Toggle>
+                          <Dropdown.Menu
+                            style={{
+                              maxHeight: "400px",
+                              overflowY: "auto",
+                              minWidth: "320px",
+                            }}
+                          >
+                            {Object.entries(categoryStructure).map(
+                              ([categoryName, categoryData], categoryIndex) => (
+                                <div key={categoryName}>
+                                  {/* Category Header (Selectable) */}
+                                  <Dropdown.Item
+                                    onClick={() =>
+                                      handleCategorySelect(
+                                        categoryName
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-")
+                                      )
+                                    }
+                                    className={`d-flex align-items-center py-2 px-3 fw-bold ${
+                                      selectedCategory ===
+                                      categoryName
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")
+                                        ? "active bg-success bg-opacity-10"
+                                        : ""
+                                    }`}
+                                    style={{
+                                      cursor: "pointer",
+                                      backgroundColor:
+                                        selectedCategory ===
+                                        categoryName
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-")
+                                          ? "rgba(25, 135, 84, 0.25)"
+                                          : "rgba(248, 249, 250, 0.8)",
+                                      borderRadius: "0.25rem",
+                                      margin: "4px",
+                                      ...(selectedCategory ===
+                                      categoryName
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "-")
+                                        ? {
+                                            color: "#000",
+                                            borderLeft: "3px solid #198754",
+                                          }
+                                        : {}),
+                                    }}
+                                  >
+                                    <div className="d-flex align-items-center justify-content-between w-100">
+                                      <div className="d-flex align-items-center">
+                                        <span
+                                          className="me-2"
+                                          style={{ fontSize: "1.2em" }}
+                                        >
+                                          {categoryData.icon}
+                                        </span>
+                                        <strong
+                                          className={`text-${categoryData.variant}`}
+                                          style={
+                                            selectedCategory ===
+                                            categoryName
+                                              .toLowerCase()
+                                              .replace(/\s+/g, "-")
+                                              ? { color: "#000" }
+                                              : {}
+                                          }
+                                        >
+                                          {categoryName}
+                                        </strong>
+                                      </div>
+                                      {selectedCategory ===
+                                        categoryName
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "-") && (
+                                        <Badge bg="success" className="ms-2">
+                                          Selected
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </Dropdown.Item>
+
+                                  {/* Category Items (Read-only examples) */}
+                                  <div
+                                    className="px-3 pb-2"
+                                    style={{
+                                      pointerEvents: "none",
+                                      userSelect: "none",
+                                    }}
+                                  >
+                                    <small
+                                      className="text-muted"
+                                      style={{
+                                        fontSize: "0.75rem",
+                                        fontStyle: "italic",
+                                      }}
+                                    >
+                                      Examples:{" "}
+                                      {categoryData.items
+                                        .map((item) => item.label)
+                                        .join(", ")}
+                                    </small>
+                                  </div>
+
+                                  {/* Add divider between categories (except last one) */}
+                                  {categoryIndex <
+                                    Object.keys(categoryStructure).length -
+                                      1 && <Dropdown.Divider />}
+                                </div>
+                              )
+                            )}
+                            <Dropdown.Divider />
+                            <Dropdown.Item
+                              onClick={() => handleCategorySelect("")}
+                              className="text-muted px-3 py-2 text-center"
+                              style={{
+                                cursor: "pointer",
+                                transition: "all 0.2s ease",
+                              }}
+                            >
+                              <i className="ti-x me-2"></i>Clear selection
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown>
+                      </InputGroup>
+                    </div>
                   </Form.Group>
                 </Col>
               </Row>
