@@ -25,6 +25,19 @@ CustomToggle.displayName = "CustomToggle";
 
 export default function ProfileDropdown({ user }) {
   const { isSeller, isAdmin, isSuperAdmin, loading } = useUserRole();
+  const [isSigningOut, setIsSigningOut] = React.useState(false);
+
+  const handleSignOut = async () => {
+    if (isSigningOut) return; // Prevent multiple signout calls
+
+    try {
+      setIsSigningOut(true);
+      await signOut({ callbackUrl: "/login", redirect: true });
+    } catch (error) {
+      console.error("Signout error:", error);
+      setIsSigningOut(false);
+    }
+  };
   return (
     <Dropdown align="end">
       <Dropdown.Toggle as={CustomToggle}>
@@ -131,9 +144,13 @@ export default function ProfileDropdown({ user }) {
 
         {/* Account Section */}
         <Dropdown.Divider />
-        <Dropdown.Item onClick={() => signOut()} className="text-danger">
+        <Dropdown.Item
+          onClick={handleSignOut}
+          className="text-danger"
+          disabled={isSigningOut}
+        >
           <i className="ti-power-off me-2"></i>
-          Sign out
+          {isSigningOut ? "Signing out..." : "Sign out"}
         </Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>

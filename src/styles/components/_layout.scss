@@ -8,6 +8,13 @@
 .main-content {
   flex: 1;
   position: relative;
+  // Add top padding to account for fixed header + margin for breathing room
+  padding-top: 100px; // 80px header + 20px margin
+
+  // Additional padding on mobile to account for search section
+  @media (max-width: 991.98px) {
+    padding-top: 160px; // 140px (header + search) + 20px margin
+  }
 }
 
 // Ensure sticky elements don't overlap with header

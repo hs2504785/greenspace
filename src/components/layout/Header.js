@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Navbar,
   Nav,
@@ -12,16 +12,18 @@ import {
   Offcanvas,
 } from "react-bootstrap";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import ProfileDropdown from "@/components/common/ProfileDropdown";
 import { useCart } from "@/context/CartContext";
 import SearchInput from "@/components/common/SearchInput";
 import useUserRole from "@/hooks/useUserRole";
+import GoogleLoginModal from "@/components/auth/GoogleLoginModal";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const { data: session, status } = useSession();
   const { items } = useCart();
   const pathname = usePathname();
@@ -44,6 +46,24 @@ export default function Header() {
   const handleLinkClick = () => {
     setIsMenuOpen(false);
   };
+
+  // Handle login modal
+  const handleShowLogin = () => {
+    setShowLoginModal(true);
+  };
+
+  const handleCloseLogin = () => {
+    setShowLoginModal(false);
+  };
+
+  // Handle invalid sessions - removed to prevent infinite loop
+  // useEffect(() => {
+  //   // If we have a session but no user data, it's an invalid session
+  //   if (session && !session.user && status !== "loading") {
+  //     console.log("🔧 Detected invalid session, signing out...");
+  //     signOut({ redirect: false });
+  //   }
+  // }, [session, status]);
 
   // Handle search functionality
   const handleSearchChange = (e) => {
@@ -148,14 +168,14 @@ export default function Header() {
                 >
                   <span className="visually-hidden">Loading...</span>
                 </div>
-              ) : session ? (
+              ) : session?.user ? (
                 <ProfileDropdown user={session.user} />
               ) : (
                 <Button
-                  as={Link}
-                  href="/login"
                   variant="outline-success"
                   size="sm"
+                  onClick={handleShowLogin}
+                  style={{ whiteSpace: "nowrap", minWidth: "70px" }}
                 >
                   Sign in
                 </Button>
@@ -273,10 +293,14 @@ export default function Header() {
               >
                 <span className="visually-hidden">Loading...</span>
               </div>
-            ) : session ? (
+            ) : session?.user ? (
               <ProfileDropdown user={session.user} />
             ) : (
-              <Button as={Link} href="/login" variant="outline-success">
+              <Button
+                variant="outline-success"
+                onClick={handleShowLogin}
+                style={{ whiteSpace: "nowrap", minWidth: "80px" }}
+              >
                 Sign in
               </Button>
             )}
@@ -508,7 +532,7 @@ export default function Header() {
               </>
             )}
 
-            {session && (
+            {session?.user && (
               <>
                 <div className="mobile-nav-divider mt-2 mb-1">
                   <small className="text-muted px-3">MY ACCOUNT</small>
@@ -542,6 +566,9 @@ export default function Header() {
           </Nav>
         </Offcanvas.Body>
       </Offcanvas>
+
+      {/* Google Login Modal */}
+      <GoogleLoginModal show={showLoginModal} onHide={handleCloseLogin} />
     </>
   );
 }

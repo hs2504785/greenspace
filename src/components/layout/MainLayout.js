@@ -36,7 +36,7 @@ const MainLayout = ({ children }) => {
   return (
     <div className="layout-wrapper">
       <Header />
-      <main className="main-content mt-4">{children}</main>
+      <main className="main-content">{children}</main>
       <Cart />
 
       {/* AI Chat Assistant - Always enabled */}
