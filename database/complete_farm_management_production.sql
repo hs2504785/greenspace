@@ -100,25 +100,41 @@ CREATE INDEX IF NOT EXISTS idx_tree_care_logs_performed_at ON tree_care_logs(per
 -- STEP 3: ADD CONSTRAINTS FOR DATA INTEGRITY
 -- ===================================================
 
--- Tree category constraints
-ALTER TABLE trees 
-  ADD CONSTRAINT IF NOT EXISTS check_category 
-  CHECK (category IN ('citrus', 'stone', 'tropical', 'berry', 'nut', 'exotic'));
+-- Tree category constraints (including spices)
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_category') THEN
+    ALTER TABLE trees ADD CONSTRAINT check_category 
+    CHECK (category IN ('citrus', 'stone', 'tropical', 'berry', 'nut', 'exotic', 'spices', 'herbs', 'medicinal'));
+  END IF;
+END $$;
 
 -- Tree season constraints
-ALTER TABLE trees 
-  ADD CONSTRAINT IF NOT EXISTS check_season 
-  CHECK (season IN ('summer', 'winter', 'monsoon', 'year-round'));
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_season') THEN
+    ALTER TABLE trees ADD CONSTRAINT check_season 
+    CHECK (season IN ('summer', 'winter', 'monsoon', 'year-round'));
+  END IF;
+END $$;
 
 -- Tree mature height constraints
-ALTER TABLE trees 
-  ADD CONSTRAINT IF NOT EXISTS check_mature_height 
-  CHECK (mature_height IN ('small', 'medium', 'large'));
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_mature_height') THEN
+    ALTER TABLE trees ADD CONSTRAINT check_mature_height 
+    CHECK (mature_height IN ('small', 'medium', 'large'));
+  END IF;
+END $$;
 
 -- Years to fruit constraints
-ALTER TABLE trees 
-  ADD CONSTRAINT IF NOT EXISTS check_years_to_fruit 
-  CHECK (years_to_fruit > 0 AND years_to_fruit <= 20);
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_years_to_fruit') THEN
+    ALTER TABLE trees ADD CONSTRAINT check_years_to_fruit 
+    CHECK (years_to_fruit > 0 AND years_to_fruit <= 20);
+  END IF;
+END $$;
 
 -- ===================================================
 -- STEP 4: CREATE UPDATE TRIGGERS
@@ -189,7 +205,7 @@ INSERT INTO trees (code, name, description, category, season, years_to_fruit, ma
 ('AB', 'Apricot', 'Stone fruit tree with orange, velvety fruits', 'stone', 'winter', 3, 'medium'),
 ('PC', 'Peach', 'Stone fruit tree with fuzzy, sweet fruits', 'stone', 'summer', 3, 'medium'),
 ('SP', 'Sapodilla', 'Tropical tree with brown, sweet fruits', 'tropical', 'year-round', 4, 'large'),
-('AS', 'Apple Star', 'Tropical tree with star-shaped fruits', 'exotic', 'year-round', 3, 'small')
+('AS', 'All Spices', 'Collection of spice trees and aromatic plants', 'spices', 'year-round', 3, 'small')
 ON CONFLICT (code) DO UPDATE SET
   category = EXCLUDED.category,
   season = EXCLUDED.season,

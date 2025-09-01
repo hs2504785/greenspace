@@ -36,7 +36,7 @@ INSERT INTO trees (code, name, description, category, season, years_to_fruit, ma
 ('AB', 'Apricot', 'Stone fruit tree with orange, velvety fruits', 'stone', 'winter', 3, 'medium'),
 ('PC', 'Peach', 'Stone fruit tree with fuzzy, sweet fruits', 'stone', 'summer', 3, 'medium'),
 ('SP', 'Sapodilla', 'Tropical tree with brown, sweet fruits', 'tropical', 'year-round', 4, 'large'),
-('AS', 'Apple Star', 'Tropical tree with star-shaped fruits', 'exotic', 'year-round', 3, 'small')
+('AS', 'All Spices', 'Collection of spice trees and aromatic plants', 'spices', 'year-round', 3, 'small')
 ON CONFLICT (code) DO UPDATE SET
   name = EXCLUDED.name,
   description = EXCLUDED.description,
