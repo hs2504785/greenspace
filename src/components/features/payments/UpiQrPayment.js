@@ -328,28 +328,92 @@ export default function UpiQrPayment({
       });
 
       if (app === "gpay") {
+        // 🚨 ENHANCED DEBUG: Log all extracted parameters
+        console.log("🔍 GPAY DEBUG - Original UPI parameters:", {
+          pa: params.get("pa"),
+          pn: params.get("pn"),
+          am: params.get("am"),
+          tr: params.get("tr"),
+          tn: params.get("tn"),
+          mc: params.get("mc"),
+          cu: params.get("cu"),
+          allParams: Object.fromEntries(params.entries()),
+        });
+
+        // Validate critical parameters before proceeding
+        const payeeAddress = params.get("pa");
+        const amount = params.get("am");
+        const payeeName = params.get("pn");
+
+        if (!payeeAddress) {
+          console.error("❌ GPAY ERROR: Missing payee address (pa)");
+          toastService.error("Payment setup error: Missing UPI ID");
+          return;
+        }
+
+        if (!amount || parseFloat(amount) <= 0) {
+          console.error("❌ GPAY ERROR: Invalid amount", { amount });
+          toastService.error("Payment setup error: Invalid amount");
+          return;
+        }
+
         // Enhanced Google Pay handling with multiple fallback strategies
         const gpayParams = new URLSearchParams({
-          pa: params.get("pa") || "",
-          pn: params.get("pn") || "",
-          am: params.get("am") || "",
-          tr: params.get("tr") || "",
-          tn: params.get("tn") || "",
+          pa: payeeAddress,
+          pn: payeeName || "Seller",
+          am: amount,
+          tr: params.get("tr") || `TXN${Date.now()}`,
+          tn: params.get("tn") || `Payment for Order`,
           mc: params.get("mc") || "5411",
           cu: params.get("cu") || "INR",
         });
 
+        console.log("🔍 GPAY DEBUG - Final parameters for Google Pay:", {
+          finalParams: Object.fromEntries(gpayParams.entries()),
+          gpayParamsString: gpayParams.toString(),
+        });
+
+        // 🚨 SPECIAL FIX for "money not debited" issue
+        // Use simpler, more reliable URL construction
+        const simpleParams = `pa=${encodeURIComponent(
+          payeeAddress
+        )}&am=${encodeURIComponent(amount)}&pn=${encodeURIComponent(
+          payeeName || "Seller"
+        )}&tr=${encodeURIComponent(
+          params.get("tr") || `TXN${Date.now()}`
+        )}&tn=${encodeURIComponent(params.get("tn") || "Payment")}&cu=INR`;
+
+        console.log("🔍 GPAY DEBUG - Simple params string:", simpleParams);
+
         // Platform-specific Google Pay handling
         if (platform === "android") {
-          // Android: Try multiple schemes
+          // Android: Try the most reliable schemes first
           const androidSchemes = [
-            `tez://upi/pay?${gpayParams.toString()}`,
-            `googlepay://upi/pay?${gpayParams.toString()}`,
-            `intent://pay?${gpayParams.toString()}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`,
+            // Most reliable for newer Android versions
+            `intent://pay?${simpleParams}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`,
+            // Standard tez scheme
+            `tez://upi/pay?${simpleParams}`,
+            // Alternative google pay scheme
+            `googlepay://upi/pay?${simpleParams}`,
           ];
 
-          // Try each scheme with small delays
-          androidSchemes.forEach((scheme, index) => {
+          console.log("🔍 GPAY DEBUG - Android schemes:", androidSchemes);
+
+          // Try the primary scheme immediately
+          try {
+            const linkElement = document.createElement("a");
+            linkElement.href = androidSchemes[0];
+            linkElement.style.display = "none";
+            document.body.appendChild(linkElement);
+            linkElement.click();
+            document.body.removeChild(linkElement);
+            console.log("✅ GPAY: Tried primary Android Intent scheme");
+          } catch (error) {
+            console.error("❌ GPAY: Primary Android scheme failed:", error);
+          }
+
+          // Try fallback schemes with delays
+          androidSchemes.slice(1).forEach((scheme, index) => {
             setTimeout(() => {
               try {
                 const linkElement = document.createElement("a");
@@ -358,39 +422,55 @@ export default function UpiQrPayment({
                 document.body.appendChild(linkElement);
                 linkElement.click();
                 document.body.removeChild(linkElement);
-                console.log(`Tried Android scheme ${index + 1}:`, scheme);
+                console.log(
+                  `✅ GPAY: Tried Android fallback scheme ${index + 2}:`,
+                  scheme
+                );
               } catch (error) {
-                console.log(`Android scheme ${index + 1} failed:`, error);
+                console.log(
+                  `❌ GPAY: Android fallback scheme ${index + 2} failed:`,
+                  error
+                );
               }
-            }, index * 500);
+            }, (index + 1) * 800);
           });
         } else if (platform === "ios") {
-          // iOS: Use universal links and deep links
+          // iOS: Use more reliable approach
           const iosSchemes = [
-            `tez://upi/pay?${gpayParams.toString()}`,
-            `https://pay.google.com/gp/p/ui/pay?${gpayParams.toString()}`,
+            `tez://upi/pay?${simpleParams}`,
+            `https://pay.google.com/gp/p/ui/pay?${simpleParams}`,
           ];
 
-          iosSchemes.forEach((scheme, index) => {
-            setTimeout(() => {
-              try {
-                if (index === 0) {
-                  // First try deep link
-                  window.location.href = scheme;
-                } else {
-                  // Then try web fallback
-                  window.open(scheme, "_blank", "noopener,noreferrer");
-                }
-                console.log(`Tried iOS scheme ${index + 1}:`, scheme);
-              } catch (error) {
-                console.log(`iOS scheme ${index + 1} failed:`, error);
-              }
-            }, index * 1000);
-          });
+          console.log("🔍 GPAY DEBUG - iOS schemes:", iosSchemes);
+
+          // Try deep link first
+          try {
+            window.location.href = iosSchemes[0];
+            console.log("✅ GPAY: Tried iOS deep link");
+          } catch (error) {
+            console.error("❌ GPAY: iOS deep link failed:", error);
+          }
+
+          // Web fallback after 1.5 seconds
+          setTimeout(() => {
+            try {
+              window.open(iosSchemes[1], "_blank", "noopener,noreferrer");
+              console.log("✅ GPAY: Tried iOS web fallback");
+            } catch (error) {
+              console.error("❌ GPAY: iOS web fallback failed:", error);
+            }
+          }, 1500);
         } else {
-          // Desktop: Direct to web version
-          const webUrl = `https://pay.google.com/gp/p/ui/pay?${gpayParams.toString()}`;
-          window.open(webUrl, "_blank", "noopener,noreferrer");
+          // Desktop: Direct to web version with simple params
+          const webUrl = `https://pay.google.com/gp/p/ui/pay?${simpleParams}`;
+          console.log("🔍 GPAY DEBUG - Desktop web URL:", webUrl);
+
+          try {
+            window.open(webUrl, "_blank", "noopener,noreferrer");
+            console.log("✅ GPAY: Opened desktop web version");
+          } catch (error) {
+            console.error("❌ GPAY: Desktop web version failed:", error);
+          }
         }
 
         // Always show QR code guidance for mobile users
@@ -405,7 +485,19 @@ export default function UpiQrPayment({
           }, 3000);
         }
 
-        toastService.info("Opening Google Pay...");
+        // 🚨 ENHANCED USER FEEDBACK for debugging
+        toastService.info("Opening Google Pay... Check console for debug info");
+
+        // Add debugging info to help troubleshoot
+        setTimeout(() => {
+          console.log("🔍 GPAY DEBUG - If payment failed, check:");
+          console.log("1. UPI ID format:", payeeAddress);
+          console.log("2. Amount validity:", amount);
+          console.log("3. Transaction reference:", params.get("tr"));
+          console.log("4. Platform detected:", platform);
+          console.log("5. Original UPI string:", qrData.upiString);
+        }, 2000);
+
         return;
       } else {
         // BHIM and other UPI apps - use standard UPI URL
