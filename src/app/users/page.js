@@ -16,6 +16,11 @@ import UserAvatar from "@/components/common/UserAvatar";
 import UserProfilePopover from "@/components/common/UserProfilePopover";
 import SearchInput from "@/components/common/SearchInput";
 import ClearFiltersButton from "@/components/common/ClearFiltersButton";
+import {
+  isMapLink,
+  getLocationDisplayText,
+  openMapLink,
+} from "@/utils/locationUtils";
 
 export default function PublicUsersPage() {
   const router = useRouter();
@@ -93,20 +98,20 @@ export default function PublicUsersPage() {
             <div className="text-center text-md-start mb-3 mb-md-0">
               <div className="d-flex align-items-center justify-content-center justify-content-md-start flex-wrap gap-3 mb-2">
                 <h1 className="h3 mb-0 lh-1">
-                  <i className="ti ti-users me-2 text-success"></i>
+                  <i className="ti-user me-2 text-success"></i>
                   Community Members
                 </h1>
                 <div className="d-flex flex-wrap gap-2">
                   <Badge bg="info" className="small px-2 py-1">
-                    <i className="ti ti-users me-1"></i>
+                    <i className="ti-user me-1"></i>
                     {users.length} Members
                   </Badge>
                   <Badge bg="success" className="small px-2 py-1">
-                    <i className="ti ti-map-pin me-1"></i>
+                    <i className="ti-location-pin me-1"></i>
                     {users.filter((u) => u.location).length} With Location
                   </Badge>
                   <Badge bg="warning" className="small px-2 py-1">
-                    <i className="ti ti-brand-whatsapp me-1"></i>
+                    <i className="ti-mobile me-1"></i>
                     {users.filter((u) => u.whatsapp_store_link).length} WhatsApp
                     Stores
                   </Badge>
@@ -173,13 +178,23 @@ export default function PublicUsersPage() {
           <Table hover className="mb-0 align-middle">
             <thead className="table-light">
               <tr>
-                <th className="border-0 ps-3" style={{ minWidth: "200px" }}>
+                <th
+                  className="border-0 ps-3"
+                  style={{ minWidth: "140px", maxWidth: "160px" }}
+                >
                   Member
                   <small className="text-muted d-block fw-normal">
                     Click for profile & contact info
                   </small>
                 </th>
-                <th className="border-0" style={{ minWidth: "200px" }}>
+                <th
+                  className="border-0"
+                  style={{
+                    width: "250px",
+                    minWidth: "200px",
+                    maxWidth: "250px",
+                  }}
+                >
                   Location
                 </th>
                 <th className="border-0" style={{ minWidth: "120px" }}>
@@ -211,13 +226,6 @@ export default function PublicUsersPage() {
                           <div className="min-w-0">
                             <div className="fw-bold text-truncate fs-6 text-primary">
                               {user.name}
-                              <i className="ti ti-external-link ms-1 small"></i>
-                              {user.whatsapp_store_link && (
-                                <i
-                                  className="ti ti-brand-whatsapp ms-1 small text-success"
-                                  title="Has WhatsApp Store"
-                                ></i>
-                              )}
                             </div>
                             <small className="text-muted">
                               Community Member • Click for details
@@ -228,16 +236,47 @@ export default function PublicUsersPage() {
                         </div>
                       </UserProfilePopover>
                     </td>
-                    <td>
+                    <td style={{ maxWidth: "250px" }}>
                       {user.location ? (
-                        <div className="d-flex align-items-center">
-                          <i className="ti ti-map-pin me-2 text-success flex-shrink-0"></i>
-                          <span className="text-truncate">{user.location}</span>
+                        <div
+                          className="d-flex align-items-center"
+                          style={{ minWidth: 0 }}
+                        >
+                          <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                            {isMapLink(user.location) ? (
+                              <Button
+                                variant="link"
+                                size="sm"
+                                className="p-0 text-decoration-none text-success fw-medium text-start"
+                                onClick={() => openMapLink(user.location)}
+                                title={`Click to open location in map: ${user.location}`}
+                                style={{
+                                  maxWidth: "100%",
+                                  whiteSpace: "normal",
+                                  lineHeight: "1.2",
+                                }}
+                              >
+                                {getLocationDisplayText(user.location, false)}
+                              </Button>
+                            ) : (
+                              <span
+                                className="d-block text-muted"
+                                title={user.location}
+                                style={{
+                                  maxWidth: "100%",
+                                  whiteSpace: "normal",
+                                  wordBreak: "break-word",
+                                  lineHeight: "1.2",
+                                }}
+                              >
+                                {user.location}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       ) : (
-                        <div className="d-flex align-items-center text-muted">
-                          <i className="ti ti-map-pin me-2 flex-shrink-0"></i>
-                          <span>Location not specified</span>
+                        <div className="text-muted">
+                          <span className="small">Not specified</span>
                         </div>
                       )}
                     </td>
@@ -292,7 +331,7 @@ export default function PublicUsersPage() {
                           } product listings from ${user.name}`}
                           disabled={userCounts[user.id] === 0}
                         >
-                          <i className="ti ti-package me-1"></i>
+                          <i className="ti-package me-2"></i>
                           {userCounts[user.id] > 0
                             ? `View ${userCounts[user.id]} Products`
                             : "No Products"}
@@ -307,7 +346,7 @@ export default function PublicUsersPage() {
                             }
                             title={`Visit ${user.name}'s WhatsApp Store`}
                           >
-                            <i className="ti ti-brand-whatsapp me-1"></i>
+                            <i className="ti-mobile me-2"></i>
                             WhatsApp Store
                           </Button>
                         )}
@@ -320,7 +359,7 @@ export default function PublicUsersPage() {
                   <td colSpan="4" className="text-center py-5">
                     <div className="text-muted">
                       <i
-                        className="ti ti-search mb-3"
+                        className="ti-search mb-3"
                         style={{ fontSize: "2.5rem" }}
                       ></i>
                       <h6 className="mb-2">
@@ -349,7 +388,7 @@ export default function PublicUsersPage() {
               </Col>
               <Col xs={12} sm={6} className="text-sm-end mt-2 mt-sm-0">
                 <small className="text-muted">
-                  <i className="ti ti-leaf me-1 text-success"></i>
+                  <i className="ti-star me-1 text-success"></i>
                   Growing our sustainable community together
                 </small>
               </Col>
@@ -363,7 +402,7 @@ export default function PublicUsersPage() {
         <Card className="text-center py-5">
           <Card.Body>
             <i
-              className="ti ti-users text-muted mb-3"
+              className="ti-user text-muted mb-3"
               style={{ fontSize: "3rem" }}
             ></i>
             <h5 className="text-muted mb-3">Welcome to Our Community!</h5>

@@ -14,6 +14,11 @@ import { useUserVegetables } from "@/hooks/useUserVegetables";
 import VegetableFilterOffcanvas from "@/components/features/VegetableFilterOffcanvas";
 import VegetableResults from "@/components/features/VegetableResults";
 import UserAvatar from "@/components/common/UserAvatar";
+import {
+  isMapLink,
+  getLocationDisplayText,
+  openMapLink,
+} from "@/utils/locationUtils";
 
 export default function UserListingsPage() {
   const params = useParams();
@@ -186,10 +191,23 @@ export default function UserListingsPage() {
                           {totalCount} Products
                         </Badge>
                         {user.location && (
-                          <Badge bg="success" className="small">
-                            <i className="ti ti-map-pin me-1"></i>
-                            {user.location}
-                          </Badge>
+                          <div className="d-flex align-items-center text-muted small">
+                            <i className="ti ti-map-pin me-1 text-success"></i>
+                            {isMapLink(user.location) ? (
+                              <Button
+                                variant="link"
+                                size="sm"
+                                className="p-0 text-decoration-none text-success fw-medium"
+                                onClick={() => openMapLink(user.location)}
+                                title="Open location in map"
+                              >
+                                {getLocationDisplayText(user.location)}
+                                <i className="ti ti-external-link ms-1 small"></i>
+                              </Button>
+                            ) : (
+                              <span>{user.location}</span>
+                            )}
+                          </div>
                         )}
                       </div>
                       <p className="text-muted mb-0 small">
