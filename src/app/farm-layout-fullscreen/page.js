@@ -437,6 +437,15 @@ export default function FarmLayoutFullscreenPage() {
             await fetchTrees();
             setRefreshKey((prev) => prev + 1);
           }}
+          onTreeDeleted={async () => {
+            // Close the tree details modal
+            setShowTreeModal(false);
+            // Clear selected tree to prevent showing stale data
+            setSelectedTree(null);
+            // Refresh data and grid
+            await fetchTrees();
+            setRefreshKey((prev) => prev + 1);
+          }}
           farmId={farmId}
           layoutId={selectedLayout?.id}
         />

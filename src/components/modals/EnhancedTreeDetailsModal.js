@@ -11,6 +11,7 @@ import {
   OverlayTrigger,
   Tooltip,
 } from "react-bootstrap";
+import { toast } from "react-hot-toast";
 import EditTreeModal from "./EditTreeModal";
 
 const EnhancedTreeDetailsModal = ({
@@ -19,10 +20,13 @@ const EnhancedTreeDetailsModal = ({
   selectedTree,
   selectedPosition,
   onTreeUpdated,
+  onTreeDeleted,
   farmId,
   layoutId,
 }) => {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const statusOptions = [
     { value: "healthy", label: "Healthy", variant: "success" },
@@ -38,6 +42,47 @@ const EnhancedTreeDetailsModal = ({
 
   const handleEditModalClose = () => {
     setShowEditModal(false);
+  };
+
+  const handleDeleteClick = () => {
+    if (!selectedTree || !selectedTree.id) {
+      console.error("No tree position ID available for deletion");
+      return;
+    }
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setShowDeleteConfirm(false);
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/tree-positions/${selectedTree.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete tree");
+      }
+
+      // Call the callback to refresh the parent component
+      if (onTreeDeleted) {
+        onTreeDeleted(selectedTree, selectedPosition);
+      }
+
+      // Close the modal
+      onHide();
+
+      // Show success message
+      toast.success("Tree deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting tree:", error);
+      toast.error(`Failed to delete tree: ${error.message}`);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -259,6 +304,14 @@ const EnhancedTreeDetailsModal = ({
             <i className="ti-close me-1"></i>
             Close
           </Button>
+          <Button
+            variant="outline-danger"
+            onClick={handleDeleteClick}
+            disabled={isDeleting}
+          >
+            <i className={`${isDeleting ? "ti-reload" : "ti-trash"} me-1`}></i>
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
           <Button variant="primary" onClick={handleEditClick}>
             <i className="ti-pencil me-1"></i>
             Edit Details
@@ -282,6 +335,59 @@ const EnhancedTreeDetailsModal = ({
         onTreeUpdated={onTreeUpdated}
         layoutId={layoutId}
       />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        show={showDeleteConfirm}
+        onHide={() => setShowDeleteConfirm(false)}
+        centered
+        backdrop="static"
+      >
+        <Modal.Header closeButton className="bg-danger text-white">
+          <Modal.Title>
+            <i className="ti-alert me-2"></i>
+            Confirm Tree Deletion
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="text-center">
+            <div className="mb-3">
+              <i
+                className="ti-trash"
+                style={{ fontSize: "3rem", color: "#dc3545" }}
+              ></i>
+            </div>
+            <h5>Are you sure you want to delete this tree?</h5>
+            <p className="text-muted mb-3">
+              <strong>{selectedTree?.name}</strong> from Block{" "}
+              {(selectedPosition?.blockIndex || 0) + 1}, Position (
+              {selectedPosition?.x}, {selectedPosition?.y})
+            </p>
+            <div className="alert alert-warning">
+              <i className="ti-info-alt me-2"></i>
+              This action cannot be undone. The tree will be permanently removed
+              from this location.
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="outline-secondary"
+            onClick={() => setShowDeleteConfirm(false)}
+            disabled={isDeleting}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleConfirmDelete}
+            disabled={isDeleting}
+          >
+            <i className={`${isDeleting ? "ti-reload" : "ti-trash"} me-1`}></i>
+            {isDeleting ? "Deleting..." : "Delete Tree"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Modal>
   );
 };

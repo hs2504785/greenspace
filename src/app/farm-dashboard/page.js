@@ -1034,6 +1034,15 @@ export default function FarmDashboardPage() {
             await fetchData();
             setRefreshKey((prev) => prev + 1);
           }}
+          onTreeDeleted={async () => {
+            // Close the tree details modal
+            setShowTreeModal(false);
+            // Clear selected tree to prevent showing stale data
+            setSelectedTree(null);
+            // Refresh data and grid
+            await fetchData();
+            setRefreshKey((prev) => prev + 1);
+          }}
           farmId={farmId}
           layoutId={selectedLayout?.id}
         />
