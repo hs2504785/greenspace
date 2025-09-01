@@ -54,6 +54,7 @@ const EditTreeModal = ({
         { value: "orange", label: "Orange" },
         { value: "lime", label: "Lime" },
         { value: "grapefruit", label: "Grapefruit" },
+        { value: "pampara-pansa", label: "Pampara Pansa" },
       ],
     },
     "Stone Fruit": {
@@ -104,6 +105,7 @@ const EditTreeModal = ({
         { value: "kiwi", label: "Kiwi" },
         { value: "rambutan", label: "Rambutan" },
         { value: "passion-fruit", label: "Passion Fruit" },
+        { value: "miracle-fruit", label: "Miracle Fruit" },
       ],
     },
     Spices: {

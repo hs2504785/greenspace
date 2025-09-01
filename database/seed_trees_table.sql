@@ -24,6 +24,8 @@ INSERT INTO trees (code, name, description, category, season, years_to_fruit, ma
 ('SF', 'Starfruit', 'Tree with star-shaped yellow fruits', 'tropical', 'year-round', 3, 'medium'),
 ('C', 'Cashew', 'Tree producing cashew nuts', 'nut', 'summer', 5, 'large'),
 ('AM', 'Amla', 'Tree with vitamin C rich sour fruits', 'stone', 'winter', 3, 'medium'),
+('PP', 'Pampara Pansa', 'Traditional citrus variety with unique flavor', 'citrus', 'year-round', 3, 'medium'),
+('MI', 'Miracle Fruit', 'Berry that makes sour foods taste sweet', 'exotic', 'year-round', 2, 'small'),
 ('MR', 'Moringa', 'Nutritious tree with edible leaves', 'exotic', 'year-round', 1, 'medium'),
 ('SL', 'Sapota/Chiku', 'Tree with sweet, brown fruits', 'tropical', 'summer', 5, 'large'),
 ('KR', 'Karonda', 'Small tree with tart berries', 'berry', 'summer', 2, 'small'),

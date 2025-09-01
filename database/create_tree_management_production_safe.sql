@@ -94,7 +94,9 @@ INSERT INTO trees (code, name, scientific_name, description) VALUES
 ('AB', 'Apricot', 'Prunus armeniaca', 'Stone fruit tree with orange, velvety fruits'),
 ('PC', 'Peach', 'Prunus persica', 'Stone fruit tree with fuzzy, sweet fruits'),
 ('SP', 'Sapodilla', 'Manilkara zapota', 'Tropical tree with brown, sweet fruits'),
-('AS', 'All Spices', 'Pimenta dioica', 'Collection of spice trees and aromatic plants')
+('AS', 'All Spices', 'Pimenta dioica', 'Collection of spice trees and aromatic plants'),
+('PP', 'Pampara Pansa', 'Citrus reticulata', 'Traditional citrus variety with unique flavor'),
+('MI', 'Miracle Fruit', 'Synsepalum dulcificum', 'Berry that makes sour foods taste sweet')
 ON CONFLICT (code) DO NOTHING;
 
 -- ===================================================

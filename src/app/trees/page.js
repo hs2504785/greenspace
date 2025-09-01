@@ -70,6 +70,7 @@ export default function TreesPage() {
         { value: "orange", label: "Orange" },
         { value: "lime", label: "Lime" },
         { value: "grapefruit", label: "Grapefruit" },
+        { value: "pampara-pansa", label: "Pampara Pansa" },
       ],
     },
     "Stone Fruit": {
@@ -120,6 +121,7 @@ export default function TreesPage() {
         { value: "kiwi", label: "Kiwi" },
         { value: "rambutan", label: "Rambutan" },
         { value: "lychee", label: "Lychee" },
+        { value: "miracle-fruit", label: "Miracle Fruit" },
       ],
     },
     Spices: {
