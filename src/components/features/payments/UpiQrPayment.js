@@ -295,6 +295,21 @@ export default function UpiQrPayment({
     }
   };
 
+  // Detect mobile platform for better UPI handling
+  const detectMobilePlatform = () => {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+    if (/android/i.test(userAgent)) {
+      return "android";
+    }
+
+    if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+      return "ios";
+    }
+
+    return "desktop";
+  };
+
   const openUpiApp = (app) => {
     if (!qrData?.upiString) {
       toastService.error("Payment information not available");
@@ -302,85 +317,118 @@ export default function UpiQrPayment({
     }
 
     try {
-      let appUrl;
+      const platform = detectMobilePlatform();
+      const upiUrl = new URL(qrData.upiString);
+      const params = new URLSearchParams(upiUrl.search);
+
+      console.log("🔍 Opening UPI app:", {
+        app,
+        platform,
+        upiString: qrData.upiString,
+      });
 
       if (app === "gpay") {
-        // Extract UPI parameters from the upiString for Google Pay
-        const upiUrl = new URL(qrData.upiString);
-        const params = new URLSearchParams(upiUrl.search);
-
-        // Build Google Pay deep link with proper parameter encoding
+        // Enhanced Google Pay handling with multiple fallback strategies
         const gpayParams = new URLSearchParams({
-          pa: params.get("pa") || "", // Payee Address (UPI ID)
-          pn: params.get("pn") || "", // Payee Name
-          am: params.get("am") || "", // Amount
-          tr: params.get("tr") || "", // Transaction Reference
-          tn: params.get("tn") || "", // Transaction Note
-          mc: params.get("mc") || "5411", // Merchant Code
-          cu: params.get("cu") || "INR", // Currency
+          pa: params.get("pa") || "",
+          pn: params.get("pn") || "",
+          am: params.get("am") || "",
+          tr: params.get("tr") || "",
+          tn: params.get("tn") || "",
+          mc: params.get("mc") || "5411",
+          cu: params.get("cu") || "INR",
         });
 
-        // Use both tez:// and googlepay:// schemes for better compatibility
-        appUrl = `tez://upi/pay?${gpayParams.toString()}`;
+        // Platform-specific Google Pay handling
+        if (platform === "android") {
+          // Android: Try multiple schemes
+          const androidSchemes = [
+            `tez://upi/pay?${gpayParams.toString()}`,
+            `googlepay://upi/pay?${gpayParams.toString()}`,
+            `intent://pay?${gpayParams.toString()}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`,
+          ];
 
-        // Fallback to Google Pay web URL if deep link fails
-        const fallbackUrl = `https://pay.google.com/gp/p/ui/pay?pa=${params.get(
-          "pa"
-        )}&pn=${encodeURIComponent(params.get("pn") || "")}&am=${params.get(
-          "am"
-        )}&cu=INR`;
+          // Try each scheme with small delays
+          androidSchemes.forEach((scheme, index) => {
+            setTimeout(() => {
+              try {
+                const linkElement = document.createElement("a");
+                linkElement.href = scheme;
+                linkElement.style.display = "none";
+                document.body.appendChild(linkElement);
+                linkElement.click();
+                document.body.removeChild(linkElement);
+                console.log(`Tried Android scheme ${index + 1}:`, scheme);
+              } catch (error) {
+                console.log(`Android scheme ${index + 1} failed:`, error);
+              }
+            }, index * 500);
+          });
+        } else if (platform === "ios") {
+          // iOS: Use universal links and deep links
+          const iosSchemes = [
+            `tez://upi/pay?${gpayParams.toString()}`,
+            `https://pay.google.com/gp/p/ui/pay?${gpayParams.toString()}`,
+          ];
 
-        // Try opening the deep link first
-        const linkElement = document.createElement("a");
-        linkElement.href = appUrl;
-        linkElement.click();
+          iosSchemes.forEach((scheme, index) => {
+            setTimeout(() => {
+              try {
+                if (index === 0) {
+                  // First try deep link
+                  window.location.href = scheme;
+                } else {
+                  // Then try web fallback
+                  window.open(scheme, "_blank", "noopener,noreferrer");
+                }
+                console.log(`Tried iOS scheme ${index + 1}:`, scheme);
+              } catch (error) {
+                console.log(`iOS scheme ${index + 1} failed:`, error);
+              }
+            }, index * 1000);
+          });
+        } else {
+          // Desktop: Direct to web version
+          const webUrl = `https://pay.google.com/gp/p/ui/pay?${gpayParams.toString()}`;
+          window.open(webUrl, "_blank", "noopener,noreferrer");
+        }
 
-        // Set a timeout to open fallback if deep link fails
-        setTimeout(() => {
-          try {
-            window.open(fallbackUrl, "_blank");
-          } catch (error) {
-            console.log("Fallback URL also failed:", error);
-            toastService.warning(
-              "Please open Google Pay manually and scan the QR code"
+        // Always show QR code guidance for mobile users
+        if (platform !== "desktop") {
+          setTimeout(() => {
+            toastService.info(
+              "If Google Pay doesn't open, please scan the QR code manually",
+              {
+                autoClose: 8000,
+              }
             );
-          }
-        }, 2000);
+          }, 3000);
+        }
 
         toastService.info("Opening Google Pay...");
         return;
-      } else if (app === "phonepe") {
-        // PhonePe deep link
-        const upiUrl = new URL(qrData.upiString);
-        const params = new URLSearchParams(upiUrl.search);
-
-        appUrl = `phonepe://pay?${params.toString()}`;
-      } else if (app === "paytm") {
-        // Paytm deep link
-        const upiUrl = new URL(qrData.upiString);
-        const params = new URLSearchParams(upiUrl.search);
-
-        appUrl = `paytmmp://pay?${params.toString()}`;
       } else {
         // BHIM and other UPI apps - use standard UPI URL
-        appUrl = qrData.upiString;
-      }
-
-      // Try to open the app
-      if (appUrl) {
-        // Create a temporary link element for better compatibility
         const linkElement = document.createElement("a");
-        linkElement.href = appUrl;
-        linkElement.target = "_blank";
-        linkElement.rel = "noopener noreferrer";
-
-        // Add to DOM temporarily and click
+        linkElement.href = qrData.upiString;
+        linkElement.style.display = "none";
         document.body.appendChild(linkElement);
         linkElement.click();
         document.body.removeChild(linkElement);
-
-        toastService.info(`Opening ${app.toUpperCase()}...`);
       }
+
+      // Show success message
+      toastService.info(`Opening ${app.toUpperCase()}...`);
+
+      // Fallback guidance for all apps
+      setTimeout(() => {
+        toastService.info(
+          `If ${app.toUpperCase()} doesn't open, please scan the QR code manually`,
+          {
+            autoClose: 6000,
+          }
+        );
+      }, 4000);
     } catch (error) {
       console.error(`Error opening ${app}:`, error);
       toastService.error(
@@ -498,57 +546,45 @@ export default function UpiQrPayment({
                   </div>
                 </div>
 
-                {/* UPI App Buttons - Enhanced */}
+                {/* UPI App Buttons - Google Pay & BHIM Only */}
                 <div className="mb-3 payment-section">
                   <small className="text-muted d-block mb-2">
                     <i className="ti-mobile me-1"></i>
                     Quick pay with your UPI app:
                   </small>
-                  <div className="row g-2">
-                    <div className="col-6 col-md-3">
+                  <div className="row g-2 justify-content-center">
+                    <div className="col-6 col-md-4">
                       <Button
                         variant="outline-primary"
-                        className="w-100"
+                        className="w-100 d-flex align-items-center justify-content-center"
                         onClick={() => openUpiApp("gpay")}
                         size="sm"
                       >
-                        <i className="ti-mobile me-1"></i>
+                        <img
+                          src="/images/gpay.svg"
+                          alt="Google Pay"
+                          width="20"
+                          height="20"
+                          className="me-1"
+                        />
                         <span className="d-none d-sm-inline">Google Pay</span>
                         <span className="d-sm-none">GPay</span>
                       </Button>
                     </div>
-                    <div className="col-6 col-md-3">
-                      <Button
-                        variant="outline-success"
-                        className="w-100"
-                        onClick={() => openUpiApp("phonepe")}
-                        size="sm"
-                      >
-                        <i className="ti-mobile me-1"></i>
-                        <span className="d-none d-sm-inline">PhonePe</span>
-                        <span className="d-sm-none">PhonePe</span>
-                      </Button>
-                    </div>
-                    <div className="col-6 col-md-3">
-                      <Button
-                        variant="outline-info"
-                        className="w-100"
-                        onClick={() => openUpiApp("paytm")}
-                        size="sm"
-                      >
-                        <i className="ti-mobile me-1"></i>
-                        <span className="d-none d-sm-inline">Paytm</span>
-                        <span className="d-sm-none">Paytm</span>
-                      </Button>
-                    </div>
-                    <div className="col-6 col-md-3">
+                    <div className="col-6 col-md-4">
                       <Button
                         variant="outline-warning"
-                        className="w-100"
+                        className="w-100 d-flex align-items-center justify-content-center"
                         onClick={() => openUpiApp("bhim")}
                         size="sm"
                       >
-                        <i className="ti-mobile me-1"></i>
+                        <img
+                          src="/images/bhim.svg"
+                          alt="BHIM UPI"
+                          width="20"
+                          height="20"
+                          className="me-1"
+                        />
                         <span className="d-none d-sm-inline">BHIM UPI</span>
                         <span className="d-sm-none">BHIM</span>
                       </Button>
