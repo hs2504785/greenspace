@@ -44,6 +44,7 @@ const PlantTreeModal = ({
 
   const [matchedTree, setMatchedTree] = useState(null); // Store matched existing tree
   const [isPlanting, setIsPlanting] = useState(false); // Track planting state
+  const [dropdownSearch, setDropdownSearch] = useState(""); // Search term for dropdown
 
   // Get all available trees from database only
   const getAllAvailableTrees = () => {
@@ -195,6 +196,7 @@ const PlantTreeModal = ({
         isValid: true,
         message: "",
       });
+      setDropdownSearch(""); // Reset search when modal opens
     }
   }, [show]);
 
@@ -579,14 +581,48 @@ const PlantTreeModal = ({
                     </Dropdown.Toggle>
                     <Dropdown.Menu
                       style={{
-                        maxHeight: "300px",
+                        maxHeight: "350px",
                         overflowY: "auto",
-                        minWidth: "280px",
+                        minWidth: "320px",
                       }}
                     >
+                      {/* Search Input */}
+                      <div className="p-2 border-bottom">
+                        <Form.Control
+                          size="sm"
+                          type="text"
+                          placeholder="Search tree codes, names..."
+                          value={dropdownSearch}
+                          onChange={(e) => setDropdownSearch(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+
                       {(() => {
                         const positionSuggestions =
                           getPositionBasedSuggestions();
+
+                        // Filter trees based on search term
+                        const filterTrees = (trees) => {
+                          if (!dropdownSearch.trim()) return trees;
+                          const searchLower = dropdownSearch.toLowerCase();
+                          return trees.filter(
+                            (tree) =>
+                              tree.code.toLowerCase().includes(searchLower) ||
+                              tree.name.toLowerCase().includes(searchLower) ||
+                              (tree.category &&
+                                tree.category
+                                  .toLowerCase()
+                                  .includes(searchLower))
+                          );
+                        };
+
+                        const filteredSuggested = filterTrees(
+                          positionSuggestions.suggested || []
+                        );
+                        const filteredAll = filterTrees(
+                          positionSuggestions.all || []
+                        );
 
                         return (
                           <>
@@ -595,12 +631,13 @@ const PlantTreeModal = ({
                               <strong>{positionSuggestions.type}</strong>
                             </Dropdown.Header>
 
-                            {positionSuggestions.suggested?.map((tree) => {
+                            {filteredSuggested.map((tree) => {
                               return (
                                 <Dropdown.Item
                                   key={`suggested-${tree.code}`}
                                   onClick={() => {
                                     handleCodeChange(tree.code);
+                                    setDropdownSearch("");
                                   }}
                                   className="d-flex justify-content-between align-items-center"
                                 >
@@ -626,12 +663,13 @@ const PlantTreeModal = ({
                               <strong>All Available Tree Types</strong>
                             </Dropdown.Header>
 
-                            {positionSuggestions.all?.map((tree) => {
+                            {filteredAll.map((tree) => {
                               return (
                                 <Dropdown.Item
                                   key={`all-${tree.code}`}
                                   onClick={() => {
                                     handleCodeChange(tree.code);
+                                    setDropdownSearch("");
                                   }}
                                   className="d-flex justify-content-between align-items-center py-1"
                                 >
@@ -646,6 +684,15 @@ const PlantTreeModal = ({
                                 </Dropdown.Item>
                               );
                             })}
+
+                            {filteredSuggested.length === 0 &&
+                              filteredAll.length === 0 &&
+                              dropdownSearch && (
+                                <div className="p-3 text-center text-muted">
+                                  <i className="ti-search me-2"></i>
+                                  No trees found matching "{dropdownSearch}"
+                                </div>
+                              )}
                           </>
                         );
                       })()}
@@ -656,7 +703,7 @@ const PlantTreeModal = ({
                 {!plantFormData.code && (
                   <Form.Text className="text-muted">
                     <i className="ti-target me-1"></i>
-                    Start typing to search existing trees or create new ones
+                    Select from existing trees or type a new code
                   </Form.Text>
                 )}
               </Form.Group>
