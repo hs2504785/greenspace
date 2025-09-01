@@ -12,9 +12,14 @@ export async function GET(request, { params }) {
       .select(
         `
         id,
+        name,
         email,
         phone,
         whatsapp_number,
+        whatsapp_store_link,
+        location,
+        avatar_url,
+        created_at,
         show_email_publicly,
         show_phone_publicly,
         show_whatsapp_publicly,
@@ -37,9 +42,17 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Build response based on privacy preferences
-    const contactInfo = {};
+    // Build response with basic info and privacy-filtered contact details
+    const contactInfo = {
+      id: user.id,
+      name: user.name,
+      location: user.location,
+      avatar_url: user.avatar_url,
+      created_at: user.created_at,
+      whatsapp_store_link: user.whatsapp_store_link, // Store link is always public if provided
+    };
 
+    // Add contact details based on privacy preferences
     if (user.show_email_publicly && user.email) {
       contactInfo.email = user.email;
     }

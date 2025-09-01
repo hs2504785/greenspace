@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/options";
-import { supabase } from "@/lib/supabase";
+import { createSupabaseClient } from "@/utils/supabaseAuth";
 
 export async function GET(request) {
   try {
@@ -12,6 +12,8 @@ export async function GET(request) {
         headers: { "Content-Type": "application/json" },
       });
     }
+
+    const supabase = createSupabaseClient();
 
     console.log("Initial session:", {
       id: session.user.id,
@@ -71,13 +73,37 @@ export async function GET(request) {
     // Get user profile
     console.log("Fetching user profile for ID:", userId);
 
-    const { data: user, error } = await supabase
-      .from("users")
-      .select(
-        "id, whatsapp_number, location, show_email_publicly, show_phone_publicly, show_whatsapp_publicly, profile_public, updated_at"
-      )
-      .eq("id", userId)
-      .single();
+    // Try to get user data, handling case where whatsapp_store_link column might not exist yet
+    let user, error;
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("users")
+        .select(
+          "id, whatsapp_number, whatsapp_store_link, location, show_email_publicly, show_phone_publicly, show_whatsapp_publicly, profile_public, updated_at"
+        )
+        .eq("id", userId)
+        .single();
+      user = data;
+      error = fetchError;
+    } catch (columnError) {
+      console.warn(
+        "Column might not exist, trying without whatsapp_store_link:",
+        columnError
+      );
+      // Fallback: try without the new column
+      const { data, error: fetchError } = await supabase
+        .from("users")
+        .select(
+          "id, whatsapp_number, location, show_email_publicly, show_phone_publicly, show_whatsapp_publicly, profile_public, updated_at"
+        )
+        .eq("id", userId)
+        .single();
+      user = data;
+      error = fetchError;
+      if (!error && user) {
+        user.whatsapp_store_link = null; // Add missing field
+      }
+    }
 
     console.log("Fetch result:", { user, error });
 
@@ -115,6 +141,8 @@ export async function PATCH(request) {
         headers: { "Content-Type": "application/json" },
       });
     }
+
+    const supabase = createSupabaseClient();
 
     console.log("Initial session:", {
       id: session.user.id,
@@ -236,6 +264,44 @@ export async function PATCH(request) {
       updateData.profile_public = Boolean(data.profile_public);
     }
 
+    // Handle WhatsApp store link update if provided
+    if (data.whatsapp_store_link !== undefined) {
+      const whatsapp_store_link = data.whatsapp_store_link?.trim();
+
+      if (whatsapp_store_link && whatsapp_store_link.length > 500) {
+        return new Response(
+          JSON.stringify({
+            message: "WhatsApp store link is too long",
+            details: "Store link must be 500 characters or less",
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Basic URL validation
+      if (
+        whatsapp_store_link &&
+        !whatsapp_store_link.match(/^(https?:\/\/|wa\.me\/|whatsapp:\/\/)/)
+      ) {
+        return new Response(
+          JSON.stringify({
+            message: "Invalid WhatsApp store link format",
+            details:
+              "Please enter a valid URL starting with http://, https://, wa.me/, or whatsapp://",
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      updateData.whatsapp_store_link = whatsapp_store_link || null;
+    }
+
     // Update the user
     console.log("Attempting to update user:", {
       userId,
@@ -250,13 +316,37 @@ export async function PATCH(request) {
       data: updateData,
     });
 
-    // Do the update with auth context
-    const { data: updatedData, error: updateError } = await supabase
-      .from("users")
-      .update(updateData)
-      .eq("id", userId)
-      .select()
-      .limit(1);
+    // Do the update with auth context, handling potential column errors
+    let updatedData, updateError;
+    try {
+      const result = await supabase
+        .from("users")
+        .update(updateData)
+        .eq("id", userId)
+        .select()
+        .limit(1);
+      updatedData = result.data;
+      updateError = result.error;
+    } catch (columnError) {
+      console.warn(
+        "Update failed, possibly due to missing column. Trying without whatsapp_store_link:",
+        columnError
+      );
+      // Remove whatsapp_store_link from update data and try again
+      const { whatsapp_store_link, ...fallbackUpdateData } = updateData;
+      const result = await supabase
+        .from("users")
+        .update(fallbackUpdateData)
+        .eq("id", userId)
+        .select()
+        .limit(1);
+      updatedData = result.data;
+      updateError = result.error;
+
+      if (!updateError) {
+        console.log("Update succeeded without whatsapp_store_link field");
+      }
+    }
 
     console.log("Update operation result:", {
       data: updatedData,

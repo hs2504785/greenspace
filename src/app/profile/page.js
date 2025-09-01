@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Container, Card, Form, Button } from "react-bootstrap";
+import { Container, Card, Form, Button, Badge } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import UserAvatar from "@/components/common/UserAvatar";
 import LocationAutoDetect from "@/components/common/LocationAutoDetect";
@@ -10,6 +10,7 @@ import toastService from "@/utils/toastService";
 export default function ProfilePage() {
   const { data: session, update: updateSession } = useSession();
   const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [whatsappStoreLink, setWhatsappStoreLink] = useState("");
   const [location, setLocation] = useState("");
   const [showEmailPublicly, setShowEmailPublicly] = useState(false);
   const [showPhonePublicly, setShowPhonePublicly] = useState(false);
@@ -38,6 +39,17 @@ export default function ProfilePage() {
           } else {
             console.log("No WhatsApp number found in profile data");
             setWhatsappNumber(""); // ✅ Ensure field is empty if no data
+          }
+
+          if (data.user?.whatsapp_store_link) {
+            console.log(
+              "Setting WhatsApp store link from profile:",
+              data.user.whatsapp_store_link
+            );
+            setWhatsappStoreLink(data.user.whatsapp_store_link);
+          } else {
+            console.log("No WhatsApp store link found in profile data");
+            setWhatsappStoreLink("");
           }
 
           if (data.user?.location) {
@@ -93,6 +105,7 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({
           whatsapp_number: whatsappNumber,
+          whatsapp_store_link: whatsappStoreLink,
           location: location,
           show_email_publicly: showEmailPublicly,
           show_phone_publicly: showPhonePublicly,
@@ -119,25 +132,10 @@ export default function ProfilePage() {
       if (response.ok) {
         toastService.presets.saveSuccess();
 
-        // Update the session to reflect the changes
-        try {
-          const updatedSession = {
-            ...session,
-            user: {
-              ...session.user,
-              whatsapp_number: whatsappNumber,
-              location: location,
-            },
-          };
-          console.log("Updating session with:", updatedSession);
-          await updateSession(updatedSession);
-
-          // Force reload session to ensure we have latest data
-          await updateSession();
-        } catch (sessionError) {
-          console.error("Failed to update session:", sessionError);
-          // Don't show error to user since the profile update succeeded
-        }
+        // Session will be updated automatically on next page load
+        console.log(
+          "Profile updated successfully, session will refresh automatically"
+        );
       } else {
         console.error("Profile update failed:", {
           status: response.status,
@@ -167,7 +165,7 @@ export default function ProfilePage() {
 
   if (!session) {
     return (
-      <Container className="py-5">
+      <Container className="pb-4">
         <Card className="border-warning">
           <Card.Body className="text-warning">
             <i className="ti ti-alert-triangle me-2"></i>
@@ -179,7 +177,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <Container className="py-5">
+    <Container className="pb-4">
       <div className="row justify-content-center">
         <div className="col-lg-8 col-xl-6">
           <Card className="shadow-sm">
@@ -220,6 +218,30 @@ export default function ProfilePage() {
                   <Form.Text className="text-muted">
                     This will be used for order communications. Format:
                     9876543210 (10 digits)
+                  </Form.Text>
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    WhatsApp Store Link
+                    <Badge bg="info" className="ms-2 small">
+                      Optional
+                    </Badge>
+                  </Form.Label>
+                  <Form.Control
+                    type="url"
+                    placeholder="https://wa.me/c/919876543210 or your store URL"
+                    value={whatsappStoreLink}
+                    onChange={(e) => setWhatsappStoreLink(e.target.value)}
+                    maxLength={500}
+                  />
+                  <Form.Text className="text-muted">
+                    Link to your WhatsApp Business catalog or external store.
+                    This helps customers see your complete product range beyond
+                    platform listings.
+                    <br />
+                    <strong>Examples:</strong> WhatsApp Business catalog, Google
+                    Drive folder, or website
                   </Form.Text>
                 </Form.Group>
 

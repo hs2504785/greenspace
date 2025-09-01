@@ -2,6 +2,7 @@ import ApiBaseService from "./ApiBaseService";
 import { supabase } from "@/lib/supabase";
 import { createSupabaseClient } from "@/utils/supabaseAuth";
 import { imageOptimizationService } from "./ImageOptimizationService";
+import ListingLimitService from "./ListingLimitService";
 // import { mockVegetables } from '@/data/mockVegetables'; // Removed - no longer using mock data
 
 class VegetableService extends ApiBaseService {
@@ -211,6 +212,28 @@ class VegetableService extends ApiBaseService {
         throw new Error("Supabase not initialized");
       }
       console.log("✅ Step 2: Supabase client available");
+
+      // Check listing limits first
+      console.log("✅ Step 2.5: Checking listing limits...");
+      if (vegetableData.owner_id) {
+        try {
+          const validation = await ListingLimitService.validateProduct(
+            vegetableData,
+            vegetableData.owner_id
+          );
+          if (!validation.isValid) {
+            console.error(
+              "❌ Listing limit validation failed:",
+              validation.errors
+            );
+            throw new Error(validation.errors.join(". "));
+          }
+          console.log("✅ Listing limits check passed:", validation.limitInfo);
+        } catch (limitError) {
+          console.error("❌ Error checking listing limits:", limitError);
+          throw new Error(`Listing limit check failed: ${limitError.message}`);
+        }
+      }
 
       // Validate required fields - different for regular vs prebooking products
       console.log("🔍 Step 3: Validating required fields...");
@@ -621,9 +644,21 @@ class VegetableService extends ApiBaseService {
 
       console.log("⏭️ Skipping bucket check - proceeding with upload...");
 
-      // Validate and optimize image
-      imageOptimizationService.validateImageFile(file);
-      console.log("✅ File validation passed");
+      // Get user limits for image validation
+      let userLimits = null;
+      try {
+        const userRole = await ListingLimitService.getUserRole(
+          file.ownerId || "user"
+        );
+        const { getUserLimits } = await import("@/config/listingLimits");
+        userLimits = getUserLimits(userRole);
+      } catch (error) {
+        console.warn("Could not get user limits, using defaults:", error);
+      }
+
+      // Validate and optimize image with user-specific limits
+      imageOptimizationService.validateImageFile(file, userLimits);
+      console.log("✅ File validation passed with limits:", userLimits);
 
       // Create optimized image variants
       console.log("🎨 Creating optimized image variants...");

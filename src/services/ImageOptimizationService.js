@@ -160,9 +160,10 @@ class ImageOptimizationService {
   /**
    * Validate image file before processing
    * @param {File} file - Image file to validate
+   * @param {Object} limits - User-specific limits from listing limits config
    * @returns {boolean} True if valid
    */
-  validateImageFile(file) {
+  validateImageFile(file, limits = null) {
     // Check file type
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
@@ -171,15 +172,44 @@ class ImageOptimizationService {
       );
     }
 
-    // Check file size (max 10MB original)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    // Use provided limits or default to 5MB for basic users
+    const maxSizeMB = limits?.MAX_IMAGE_SIZE_MB || 5;
+    const maxSize = maxSizeMB * 1024 * 1024;
+
     if (file.size > maxSize) {
       throw new Error(
         `File too large: ${(file.size / 1024 / 1024).toFixed(
           1
-        )}MB. Maximum: 10MB`
+        )}MB. Maximum: ${maxSizeMB}MB`
       );
     }
+
+    return true;
+  }
+
+  /**
+   * Validate multiple image files against user limits
+   * @param {FileList|Array} files - Image files to validate
+   * @param {Object} limits - User-specific limits
+   * @returns {boolean} True if valid
+   */
+  validateImageFiles(files, limits = null) {
+    const maxImages = limits?.MAX_IMAGES_PER_PRODUCT || 3;
+
+    if (files.length > maxImages) {
+      throw new Error(
+        `Too many images. Maximum ${maxImages} images allowed per product.`
+      );
+    }
+
+    // Validate each file
+    Array.from(files).forEach((file, index) => {
+      try {
+        this.validateImageFile(file, limits);
+      } catch (error) {
+        throw new Error(`Image ${index + 1}: ${error.message}`);
+      }
+    });
 
     return true;
   }

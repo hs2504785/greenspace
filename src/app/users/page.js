@@ -1,14 +1,26 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Table, Form, Badge } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Table,
+  Form,
+  Badge,
+  Button,
+} from "react-bootstrap";
+import { useRouter } from "next/navigation";
 import UserAvatar from "@/components/common/UserAvatar";
 import UserProfilePopover from "@/components/common/UserProfilePopover";
 import SearchInput from "@/components/common/SearchInput";
 import ClearFiltersButton from "@/components/common/ClearFiltersButton";
 
 export default function PublicUsersPage() {
+  const router = useRouter();
   const [users, setUsers] = useState([]);
+  const [userCounts, setUserCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("all");
@@ -33,10 +45,25 @@ export default function PublicUsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch("/api/users");
-      if (!response.ok) throw new Error("Failed to fetch users");
-      const data = await response.json();
-      setUsers(data || []);
+      const [usersResponse, countsResponse] = await Promise.all([
+        fetch("/api/users"),
+        fetch("/api/users/listing-counts"),
+      ]);
+
+      if (!usersResponse.ok) throw new Error("Failed to fetch users");
+
+      const usersData = await usersResponse.json();
+      setUsers(usersData || []);
+
+      // Get listing counts if available
+      if (countsResponse.ok) {
+        const countsData = await countsResponse.json();
+        const countsMap = {};
+        countsData.forEach((user) => {
+          countsMap[user.id] = user.productCount;
+        });
+        setUserCounts(countsMap);
+      }
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -78,12 +105,18 @@ export default function PublicUsersPage() {
                     <i className="ti ti-map-pin me-1"></i>
                     {users.filter((u) => u.location).length} With Location
                   </Badge>
+                  <Badge bg="warning" className="small px-2 py-1">
+                    <i className="ti ti-brand-whatsapp me-1"></i>
+                    {users.filter((u) => u.whatsapp_store_link).length} WhatsApp
+                    Stores
+                  </Badge>
                 </div>
               </div>
               <p className="text-muted mb-0">
                 Discover and connect with our growing community of natural food
-                enthusiasts, farmers, and local producers. Click on any member
-                to view their contact information.
+                enthusiasts, farmers, and local producers. View their platform
+                listings or visit their WhatsApp stores for complete product
+                catalogs.
               </p>
             </div>
           </Col>
@@ -152,6 +185,12 @@ export default function PublicUsersPage() {
                 <th className="border-0" style={{ minWidth: "120px" }}>
                   Joined
                 </th>
+                <th
+                  className="border-0 text-center"
+                  style={{ minWidth: "120px" }}
+                >
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -173,9 +212,17 @@ export default function PublicUsersPage() {
                             <div className="fw-bold text-truncate fs-6 text-primary">
                               {user.name}
                               <i className="ti ti-external-link ms-1 small"></i>
+                              {user.whatsapp_store_link && (
+                                <i
+                                  className="ti ti-brand-whatsapp ms-1 small text-success"
+                                  title="Has WhatsApp Store"
+                                ></i>
+                              )}
                             </div>
                             <small className="text-muted">
                               Community Member • Click for details
+                              {user.whatsapp_store_link &&
+                                " • Has WhatsApp Store"}
                             </small>
                           </div>
                         </div>
@@ -228,11 +275,49 @@ export default function PublicUsersPage() {
                         </small>
                       </div>
                     </td>
+                    <td className="text-center">
+                      <div className="d-flex flex-column gap-1">
+                        <Button
+                          variant={
+                            userCounts[user.id] > 0
+                              ? "primary"
+                              : "outline-secondary"
+                          }
+                          size="sm"
+                          onClick={() =>
+                            router.push(`/users/${user.id}/listings`)
+                          }
+                          title={`View ${
+                            userCounts[user.id] || 0
+                          } product listings from ${user.name}`}
+                          disabled={userCounts[user.id] === 0}
+                        >
+                          <i className="ti ti-package me-1"></i>
+                          {userCounts[user.id] > 0
+                            ? `View ${userCounts[user.id]} Products`
+                            : "No Products"}
+                        </Button>
+
+                        {user.whatsapp_store_link && (
+                          <Button
+                            variant="success"
+                            size="sm"
+                            onClick={() =>
+                              window.open(user.whatsapp_store_link, "_blank")
+                            }
+                            title={`Visit ${user.name}'s WhatsApp Store`}
+                          >
+                            <i className="ti ti-brand-whatsapp me-1"></i>
+                            WhatsApp Store
+                          </Button>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="3" className="text-center py-5">
+                  <td colSpan="4" className="text-center py-5">
                     <div className="text-muted">
                       <i
                         className="ti ti-search mb-3"

@@ -15,7 +15,8 @@ export async function GET(request) {
         avatar_url,
         location,
         created_at,
-        profile_public
+        profile_public,
+        whatsapp_store_link
       `
       )
       .order("created_at", { ascending: false });
