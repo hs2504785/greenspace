@@ -7,56 +7,23 @@ import {
   Row,
   Col,
   Card,
-  Nav,
-  Tab,
   Badge,
   Button,
-  Modal,
-  Form,
-  Alert,
+  Spinner,
 } from "react-bootstrap";
 import { toast } from "react-hot-toast";
-import PureCSSGridFarm from "@/components/farm/PureCSSGridFarm";
 import AdminGuard from "@/components/common/AdminGuard";
 import EnhancedTreeDetailsModal from "@/components/modals/EnhancedTreeDetailsModal";
-import FarmLayoutFilters from "@/components/features/farm/FarmLayoutFilters";
 
 export default function FarmDashboardPage() {
-  const [activeTab, setActiveTab] = useState("analytics");
+  const [activeView, setActiveView] = useState("all");
   const [trees, setTrees] = useState([]);
   const [layouts, setLayouts] = useState([]);
   const [selectedLayout, setSelectedLayout] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showPlantModal, setShowPlantModal] = useState(false);
   const [showTreeModal, setShowTreeModal] = useState(false);
-  const [selectedPosition, setSelectedPosition] = useState(null);
   const [selectedTree, setSelectedTree] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [showFilters, setShowFilters] = useState(false);
-  const [farmFilters, setFarmFilters] = useState({
-    selectedLayout: null,
-    showExpandButtons: (() => {
-      // Load from localStorage, default to false for cleaner layout
-      if (typeof window !== "undefined") {
-        const saved = localStorage.getItem("farm-showExpandButtons");
-        return saved ? JSON.parse(saved) : false;
-      }
-      return false;
-    })(),
-    showPlantingGuides: true,
-    zoom: 1,
-    isFullscreen: false,
-  });
-  const [plantFormData, setPlantFormData] = useState({
-    tree_id: "",
-    new_tree: {
-      code: "",
-      name: "",
-      scientific_name: "",
-      variety: "",
-      status: "healthy",
-    },
-  });
+  const [varietyFilter, setVarietyFilter] = useState(null); // For filtering by specific variety
 
   // Get user ID from authentication - works for any admin/superadmin
   const [farmId, setFarmId] = useState(null);
@@ -104,25 +71,6 @@ export default function FarmDashboardPage() {
     }
   }, [farmId]);
 
-  // Listen for global filter toggle from header
-  useEffect(() => {
-    const handleFilterToggle = () => {
-      setShowFilters(true);
-    };
-
-    const handleRefreshFarmData = () => {
-      fetchData();
-    };
-
-    window.addEventListener("toggle-farm-filters", handleFilterToggle);
-    window.addEventListener("refresh-farm-data", handleRefreshFarmData);
-
-    return () => {
-      window.removeEventListener("toggle-farm-filters", handleFilterToggle);
-      window.removeEventListener("refresh-farm-data", handleRefreshFarmData);
-    };
-  }, []);
-
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -155,868 +103,608 @@ export default function FarmDashboardPage() {
         setLayouts(data);
         const activeLayout = data.find((l) => l.is_active) || data[0];
         setSelectedLayout(activeLayout);
-        // Update filters with the active layout
-        setFarmFilters((prev) => ({
-          ...prev,
-          selectedLayout: activeLayout,
-        }));
       }
     } catch (error) {
       console.error("Error fetching layouts:", error);
     }
   };
 
-  const handleTreeClick = (tree, position) => {
-    setSelectedPosition(position);
-    if (tree) {
-      setSelectedTree(tree);
-      setShowTreeModal(true);
-    } else {
-      // Empty position clicked - show plant modal with suggested values
-      setSelectedTree(null);
-
-      // Generate unique tree code for quick planting
-      const treeCodes = [
-        "M",
-        "L",
-        "AS",
-        "A",
-        "CA",
-        "G",
-        "AN",
-        "P",
-        "MB",
-        "JA",
-        "MU",
-        "O",
-        "B",
-        "AV",
-        "SF",
-        "C",
-        "AM",
-        "PR",
-        "MR",
-        "SL",
-        "KR",
-        "BA",
-        "PA",
-        "GRP",
-      ];
-      const baseCode = treeCodes[Math.floor(Math.random() * treeCodes.length)];
-
-      // Find next available number for this code type
-      const existingCodes = trees
-        .map((t) => t.code)
-        .filter((code) => code.startsWith(baseCode))
-        .map((code) => {
-          const num = code.replace(baseCode, "");
-          return num === "" ? 1 : parseInt(num) || 1;
-        })
-        .sort((a, b) => a - b);
-
-      let nextNumber = 1;
-      for (const num of existingCodes) {
-        if (num === nextNumber) {
-          nextNumber++;
-        } else {
-          break;
-        }
-      }
-
-      const uniqueCode =
-        nextNumber === 1 ? baseCode : `${baseCode}${nextNumber}`;
-
-      setPlantFormData({
-        tree_id: "",
-        new_tree: {
-          code: uniqueCode,
-          name: `${uniqueCode} Tree`,
-          scientific_name: "",
-          variety: "",
-          status: "healthy",
-        },
-      });
-      setShowPlantModal(true);
-    }
-  };
-
-  // Callback for when tree is successfully planted
-  const handleTreePlanted = async (newTree) => {
-    // Close the plant modal immediately to prevent double-clicks
-    setShowPlantModal(false);
-    setSelectedPosition(null);
-
-    // Show loading feedback
-    toast.loading("Refreshing farm layout...", { id: "refresh-farm" });
-
-    try {
-      // Force refresh of tree data from server (don't rely on local state update)
-      await fetchTrees();
-
-      // Trigger refresh of grid component
-      setRefreshKey((prev) => prev + 1);
-
-      toast.success("Tree planted and layout refreshed!", {
-        id: "refresh-farm",
-      });
-    } catch (error) {
-      console.error("Error refreshing trees:", error);
-      toast.error("Tree planted but failed to refresh layout", {
-        id: "refresh-farm",
-      });
-    }
-  };
-
-  const handlePlantTree = async (e) => {
-    e.preventDefault();
-
-    try {
-      // Validate required fields
-      if (!selectedPosition) {
-        toast.error("Please select a position to plant the tree");
-        return;
-      }
-
-      if (
-        !plantFormData.tree_id &&
-        (!plantFormData.new_tree.code || !plantFormData.new_tree.name)
-      ) {
-        toast.error("Please provide tree code and name");
-        return;
-      }
-
-      let treeToPlant;
-
-      if (plantFormData.tree_id) {
-        // Use existing tree
-        treeToPlant = { id: plantFormData.tree_id };
-      } else {
-        // Create new tree with position directly (simpler approach)
-        const treeData = {
-          ...plantFormData.new_tree,
-          farm_id: farmId,
-          position: {
-            layout_id: selectedLayout?.id,
-            grid_x: selectedPosition.x,
-            grid_y: selectedPosition.y,
-            block_index: selectedPosition.blockIndex,
-          },
-        };
-
-        console.log("Creating tree with data:", treeData); // Debug log
-
-        const response = await fetch("/api/trees", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(treeData),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.text();
-          console.error("Tree creation failed:", response.status, errorData);
-
-          // Parse error message for user-friendly display
-          let errorMessage = `Failed to create tree (${response.status})`;
-          try {
-            const parsedError = JSON.parse(errorData);
-            if (parsedError.error) {
-              if (
-                parsedError.error.includes(
-                  "duplicate key value violates unique constraint"
-                )
-              ) {
-                errorMessage = `Tree code '${treeData.code}' already exists. Please use a different code.`;
-              } else {
-                errorMessage = parsedError.error;
-              }
-            }
-          } catch (e) {
-            // Use generic message if JSON parsing fails
-          }
-
-          throw new Error(errorMessage);
-        }
-
-        treeToPlant = await response.json();
-      }
-
-      toast.success(
-        `Tree ${treeToPlant.code} planted successfully at (${selectedPosition.x}, ${selectedPosition.y})!`
-      );
-      setShowPlantModal(false);
-
-      // Reset form for next planting
-      setPlantFormData({
-        tree_id: "",
-        new_tree: {
-          code: "",
-          name: "",
-          scientific_name: "",
-          variety: "",
-          status: "healthy",
-        },
-      });
-
-      // Immediately update UI state
-      await handleTreePlanted(treeToPlant);
-    } catch (error) {
-      console.error("Error planting tree:", error);
-      toast.error(error.message);
-    }
-  };
-
   const getTreeStats = () => {
-    const totalTrees = trees.length;
-    const healthyTrees = trees.filter((t) => t.status === "healthy").length;
-    const fruitingTrees = trees.filter((t) => t.status === "fruiting").length;
-    const diseasedTrees = trees.filter((t) => t.status === "diseased").length;
+    // Calculate stats based on tree positions, not tree objects
+    let totalTrees = 0;
+    let healthyTrees = 0;
+    let fruitingTrees = 0;
+    let diseasedTrees = 0;
+
+    trees.forEach((tree) => {
+      if (tree.tree_positions && tree.tree_positions.length > 0) {
+        tree.tree_positions.forEach((position) => {
+          totalTrees++;
+          const status = position.status;
+          if (status === "healthy") healthyTrees++;
+          else if (status === "fruiting") fruitingTrees++;
+          else if (status === "diseased") diseasedTrees++;
+        });
+      }
+    });
 
     return { totalTrees, healthyTrees, fruitingTrees, diseasedTrees };
   };
 
-  const stats = getTreeStats();
+  // Group trees by type and variety
+  const getTreeVarietyGroups = () => {
+    const groups = {};
 
-  const updateFarmFilters = (newFilters) => {
-    setFarmFilters((prev) => {
-      const updated = { ...prev, ...newFilters };
+    trees.forEach((tree) => {
+      // Use tree positions to get planted varieties
+      if (tree.tree_positions && tree.tree_positions.length > 0) {
+        tree.tree_positions.forEach((position) => {
+          const treeName = tree.name;
+          const variety = position.variety || "Standard";
 
-      // Handle localStorage for showExpandButtons
-      if ("showExpandButtons" in newFilters) {
-        localStorage.setItem(
-          "farm-showExpandButtons",
-          JSON.stringify(newFilters.showExpandButtons)
-        );
+          if (!groups[treeName]) {
+            groups[treeName] = {
+              name: treeName,
+              code: tree.code,
+              varieties: {},
+              totalCount: 0,
+            };
+          }
+
+          if (!groups[treeName].varieties[variety]) {
+            groups[treeName].varieties[variety] = 0;
+          }
+
+          groups[treeName].varieties[variety]++;
+          groups[treeName].totalCount++;
+        });
+      } else {
+        // Handle trees without positions (template trees)
+        const treeName = tree.name;
+        const variety = "Available";
+
+        if (!groups[treeName]) {
+          groups[treeName] = {
+            name: treeName,
+            code: tree.code,
+            varieties: {},
+            totalCount: 0,
+          };
+        }
+
+        if (!groups[treeName].varieties[variety]) {
+          groups[treeName].varieties[variety] = 0;
+        }
+
+        groups[treeName].varieties[variety]++;
+        groups[treeName].totalCount++;
       }
-
-      // Handle layout changes
-      if ("selectedLayout" in newFilters && newFilters.selectedLayout) {
-        setSelectedLayout(newFilters.selectedLayout);
-      }
-
-      return updated;
     });
+
+    return Object.values(groups).sort((a, b) => b.totalCount - a.totalCount);
   };
 
-  // Legacy function for compatibility with any existing expand button controls
-  const toggleExpandButtons = () => {
-    const newValue = !farmFilters.showExpandButtons;
-    updateFarmFilters({ showExpandButtons: newValue });
+  const filterTrees = (status) => {
+    let filteredTrees = [];
+
+    // Create filtered trees based on status from tree_positions
+    trees.forEach((tree) => {
+      if (tree.tree_positions && tree.tree_positions.length > 0) {
+        // Filter tree positions by status
+        let matchingPositions = tree.tree_positions;
+
+        switch (status) {
+          case "healthy":
+            matchingPositions = tree.tree_positions.filter(
+              (pos) => pos.status === "healthy"
+            );
+            break;
+          case "fruiting":
+            matchingPositions = tree.tree_positions.filter(
+              (pos) => pos.status === "fruiting"
+            );
+            break;
+          case "diseased":
+            matchingPositions = tree.tree_positions.filter(
+              (pos) => pos.status === "diseased"
+            );
+            break;
+          case "all":
+          default:
+            // For "all" view, include all tree positions regardless of status
+            matchingPositions = tree.tree_positions;
+        }
+
+        // If variety filter is active, further filter positions by variety
+        if (varietyFilter) {
+          matchingPositions = matchingPositions.filter((pos) => {
+            return (
+              tree.name === varietyFilter.treeName &&
+              (pos.variety || "Standard") === varietyFilter.variety
+            );
+          });
+        }
+
+        // Create tree instances for each matching position
+        matchingPositions.forEach((position) => {
+          filteredTrees.push({
+            ...tree,
+            // Add position data to tree for display
+            currentPosition: position,
+            // Override tree properties with position-specific data
+            status: position.status,
+            variety: position.variety,
+            planting_date: position.planting_date,
+            // Create unique ID for each tree-position combination
+            id: `${tree.id}-${position.id}`,
+            originalTreeId: tree.id,
+            positionId: position.id,
+          });
+        });
+      }
+      // Note: Template trees (without positions) are no longer shown in tree lists
+      // They should only be available in planting/adding new tree contexts
+    });
+
+    return filteredTrees;
+  };
+
+  // Function to handle variety filter clicks
+  const handleVarietyFilter = (treeName, variety) => {
+    if (
+      varietyFilter &&
+      varietyFilter.treeName === treeName &&
+      varietyFilter.variety === variety
+    ) {
+      // Clear filter if clicking the same variety
+      setVarietyFilter(null);
+      setActiveView("all");
+    } else {
+      // Set new variety filter
+      setVarietyFilter({ treeName, variety });
+      setActiveView("variety");
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const statusMap = {
+      healthy: { bg: "success", text: "🌱 Healthy", icon: "ti-heart" },
+      fruiting: { bg: "warning", text: "🍎 Fruiting", icon: "ti-shine" },
+      diseased: { bg: "danger", text: "🚨 Diseased", icon: "ti-alert" },
+    };
+
+    const badgeInfo = statusMap[status] || {
+      bg: "secondary",
+      text: status,
+      icon: "ti-help",
+    };
+    return <Badge bg={badgeInfo.bg}>{badgeInfo.text}</Badge>;
+  };
+
+  const stats = getTreeStats();
+
+  const renderContent = () => {
+    const filteredData = filterTrees(activeView);
+
+    return (
+      <Card className="border-0 shadow-sm">
+        <Card.Header
+          className={
+            varietyFilter ? "bg-primary bg-opacity-10 border-0" : "d-none"
+          }
+        >
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 className="mb-1 text-primary">
+                <i className="ti-filter me-2"></i>
+                Filtered by: {varietyFilter?.treeName} -{" "}
+                {varietyFilter?.variety}
+              </h6>
+              <small className="text-muted">
+                Showing {filteredData.length} tree
+                {filteredData.length !== 1 ? "s" : ""}
+              </small>
+            </div>
+            <Button
+              variant="outline-primary"
+              size="sm"
+              onClick={() => {
+                setVarietyFilter(null);
+                setActiveView("all");
+              }}
+            >
+              <i className="ti-close me-1"></i>
+              Clear Filter
+            </Button>
+          </div>
+        </Card.Header>
+        <Card.Body>
+          {filteredData.length === 0 ? (
+            <div className="text-center text-muted py-5">
+              {activeView === "variety" && varietyFilter && (
+                <>
+                  <i className="ti-filter text-primary fs-1 d-block mb-3"></i>
+                  <h5>No trees found for this variety</h5>
+                  <p>
+                    No {varietyFilter.treeName} trees with variety "
+                    {varietyFilter.variety}" found.
+                  </p>
+                  <Button
+                    variant="outline-primary"
+                    onClick={() => {
+                      setVarietyFilter(null);
+                      setActiveView("all");
+                    }}
+                  >
+                    Clear Filter
+                  </Button>
+                </>
+              )}
+              {activeView === "all" && !varietyFilter && (
+                <>
+                  <i className="ti-tree text-success fs-1 d-block mb-3"></i>
+                  <h5>No trees planted yet</h5>
+                  <p>Start by planting your first tree in the farm.</p>
+                  <Button variant="success" href="/trees">
+                    <i className="ti-plus me-2"></i>
+                    Add Your First Tree
+                  </Button>
+                </>
+              )}
+              {activeView === "healthy" && (
+                <>
+                  <i className="ti-heart text-success fs-1 d-block mb-3"></i>
+                  <h5>No healthy trees</h5>
+                  <p>Trees in good condition will appear here.</p>
+                </>
+              )}
+              {activeView === "fruiting" && (
+                <>
+                  <i className="ti-shine text-warning fs-1 d-block mb-3"></i>
+                  <h5>No fruiting trees</h5>
+                  <p>Trees that are bearing fruit will show here.</p>
+                </>
+              )}
+              {activeView === "diseased" && (
+                <>
+                  <i className="ti-alert text-danger fs-1 d-block mb-3"></i>
+                  <h5>No diseased trees</h5>
+                  <p>Trees requiring attention will appear here.</p>
+                </>
+              )}
+            </div>
+          ) : (
+            <Row>
+              {filteredData.map((tree) => (
+                <Col md={4} key={tree.id} className="mb-3">
+                  <Card
+                    className="h-100 border shadow-sm rounded-3"
+                    style={{
+                      borderColor: "#e3e6f0",
+                      transition: "all 0.2s ease",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      setSelectedTree(tree);
+                      setShowTreeModal(true);
+                    }}
+                  >
+                    <Card.Body>
+                      <div className="d-flex justify-content-between align-items-start mb-2">
+                        <Badge bg="secondary" className="fs-6">
+                          {tree.code}
+                        </Badge>
+                        {getStatusBadge(tree.status)}
+                      </div>
+                      <h6 className="card-title">{tree.name}</h6>
+                      <p className="card-text text-muted small">
+                        {tree.scientific_name}
+                        {tree.variety && (
+                          <>
+                            <br />
+                            Variety: {tree.variety}
+                          </>
+                        )}
+                      </p>
+                      {tree.planting_date && (
+                        <small className="text-muted">
+                          Planted:{" "}
+                          {new Date(tree.planting_date).toLocaleDateString()}
+                        </small>
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          )}
+        </Card.Body>
+      </Card>
+    );
   };
 
   if (loading) {
     return (
-      <Container className="py-5">
-        <div className="text-center">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-          <p className="mt-2">Loading farm dashboard...</p>
-        </div>
+      <Container className="py-5 text-center">
+        <Spinner animation="border" className="mb-3" />
+        <p className="text-muted">Loading your farm dashboard...</p>
       </Container>
     );
   }
 
   return (
     <AdminGuard requiredRole="admin">
-      <Container fluid className="py-4">
-        <Row>
-          <Col>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <div>
-                <h2>Farm Dashboard</h2>
-                <p className="text-muted mb-0">
-                  Manage your trees and farm layout
-                </p>
-              </div>
-              <div className="d-flex gap-2">
-                <Button
-                  variant="success"
-                  href="/farm-layout-fullscreen"
-                  className="text-decoration-none"
+      <Container fluid className="pb-4">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 className="h3 mb-1">🌱 Farm Dashboard</h1>
+            <p className="text-muted mb-0">Manage your trees and farm layout</p>
+          </div>
+          <div className="d-flex gap-2">
+            <Button
+              variant="success"
+              href="/farm-layout-fullscreen"
+              className="text-decoration-none"
+            >
+              <i className="ti-fullscreen me-2"></i>
+              Full Screen Layout
+            </Button>
+            <Button variant="outline-secondary" href="/trees">
+              <i className="ti-settings me-2"></i>
+              Manage Trees
+            </Button>
+            <Button variant="outline-primary" onClick={fetchData}>
+              <i className="ti-reload me-2"></i>
+              Refresh
+            </Button>
+          </div>
+        </div>
+
+        {/* Summary Tiles - Clickable */}
+        <Row className="g-4 mb-4">
+          <Col md={3}>
+            <Card
+              className={`border shadow-sm rounded-3 h-100 ${
+                activeView === "all" && !varietyFilter ? "border-primary" : ""
+              }`}
+              style={{
+                borderColor:
+                  activeView === "all" && !varietyFilter
+                    ? "#0d6efd"
+                    : "#e3e6f0",
+                transition: "all 0.2s ease",
+                cursor: "pointer",
+                borderWidth:
+                  activeView === "all" && !varietyFilter ? "2px" : "1px",
+              }}
+              onClick={() => {
+                setActiveView("all");
+                setVarietyFilter(null);
+              }}
+            >
+              <Card.Body className="text-center">
+                <div
+                  className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                  style={{ width: "60px", height: "60px" }}
                 >
-                  <i className="bi bi-arrows-fullscreen me-2"></i>
-                  Full Screen Layout
-                </Button>
-                <Button variant="outline-secondary" href="/trees">
-                  Manage Trees
-                </Button>
-                <Button variant="outline-primary" onClick={fetchData}>
-                  Refresh
-                </Button>
-              </div>
-            </div>
+                  <i className="ti-shine text-primary fs-4"></i>
+                </div>
+                <h5 className="mb-1">{stats.totalTrees}</h5>
+                <p className="text-muted mb-0 small">Total Trees</p>
+              </Card.Body>
+            </Card>
+          </Col>
 
-            {/* Stats Cards */}
-            <Row className="mb-4">
-              <Col md={3}>
-                <Card className="text-center">
-                  <Card.Body>
-                    <h3 className="text-primary">{stats.totalTrees}</h3>
-                    <p className="mb-0">Total Trees</p>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col md={3}>
-                <Card className="text-center">
-                  <Card.Body>
-                    <h3 className="text-success">{stats.healthyTrees}</h3>
-                    <p className="mb-0">Healthy Trees</p>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col md={3}>
-                <Card className="text-center">
-                  <Card.Body>
-                    <h3 className="text-warning">{stats.fruitingTrees}</h3>
-                    <p className="mb-0">Fruiting Trees</p>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col md={3}>
-                <Card className="text-center">
-                  <Card.Body>
-                    <h3 className="text-danger">{stats.diseasedTrees}</h3>
-                    <p className="mb-0">Diseased Trees</p>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
+          <Col md={3}>
+            <Card
+              className={`border shadow-sm rounded-3 h-100 ${
+                activeView === "healthy" && !varietyFilter
+                  ? "border-success"
+                  : ""
+              }`}
+              style={{
+                borderColor:
+                  activeView === "healthy" && !varietyFilter
+                    ? "#198754"
+                    : "#e3e6f0",
+                transition: "all 0.2s ease",
+                cursor: "pointer",
+                borderWidth:
+                  activeView === "healthy" && !varietyFilter ? "2px" : "1px",
+              }}
+              onClick={() => {
+                setActiveView("healthy");
+                setVarietyFilter(null);
+              }}
+            >
+              <Card.Body className="text-center">
+                <div
+                  className="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                  style={{ width: "60px", height: "60px" }}
+                >
+                  <i className="ti-heart text-success fs-4"></i>
+                </div>
+                <h5 className="mb-1">{stats.healthyTrees}</h5>
+                <p className="text-muted mb-0 small">Healthy Trees</p>
+              </Card.Body>
+            </Card>
+          </Col>
 
-            {/* Main Content Tabs */}
-            <Tab.Container activeKey={activeTab} onSelect={setActiveTab}>
-              <Nav variant="tabs" className="mb-3">
-                <Nav.Item>
-                  <Nav.Link eventKey="analytics">
-                    <i className="bi bi-bar-chart-line"></i> Farm Analytics
-                  </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="list">
-                    <i className="bi bi-list-ul"></i> Tree List
-                  </Nav.Link>
-                </Nav.Item>
-              </Nav>
+          <Col md={3}>
+            <Card
+              className={`border shadow-sm rounded-3 h-100 ${
+                activeView === "fruiting" && !varietyFilter
+                  ? "border-warning"
+                  : ""
+              }`}
+              style={{
+                borderColor:
+                  activeView === "fruiting" && !varietyFilter
+                    ? "#ffc107"
+                    : "#e3e6f0",
+                transition: "all 0.2s ease",
+                cursor: "pointer",
+                borderWidth:
+                  activeView === "fruiting" && !varietyFilter ? "2px" : "1px",
+              }}
+              onClick={() => {
+                setActiveView("fruiting");
+                setVarietyFilter(null);
+              }}
+            >
+              <Card.Body className="text-center">
+                <div
+                  className="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                  style={{ width: "60px", height: "60px" }}
+                >
+                  <i className="ti-shine text-warning fs-4"></i>
+                </div>
+                <h5 className="mb-1">{stats.fruitingTrees}</h5>
+                <p className="text-muted mb-0 small">Fruiting Trees</p>
+              </Card.Body>
+            </Card>
+          </Col>
 
-              <Tab.Content>
-                <Tab.Pane eventKey="analytics">
-                  <Row>
-                    {/* Farm Layout Preview Card */}
-                    <Col lg={8}>
-                      <Card className="h-100">
-                        <Card.Header className="d-flex justify-content-between align-items-center">
-                          <div>
-                            <h5 className="mb-0">
-                              <i className="bi bi-grid-3x3-gap text-success me-2"></i>
-                              Farm Layout Overview
-                            </h5>
-                            <small className="text-muted">
-                              {selectedLayout?.name || "Default Layout"}
-                            </small>
-                          </div>
-                          <div className="d-flex gap-2">
-                            <Button
-                              variant="success"
-                              size="sm"
-                              href="/farm-layout-fullscreen"
-                              className="text-decoration-none"
-                            >
-                              <i className="bi bi-arrows-fullscreen me-1"></i>
-                              Full Screen View
-                            </Button>
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              onClick={fetchData}
-                            >
-                              <i className="bi bi-arrow-clockwise me-1"></i>
-                              Refresh
-                            </Button>
-                          </div>
-                        </Card.Header>
-                        <Card.Body
-                          className={
-                            farmFilters.showExpandButtons ? "p-2" : "p-1"
-                          }
-                          style={{ transition: "padding 0.3s ease" }}
-                        >
-                          <div
-                            style={{
-                              maxHeight: farmFilters.showExpandButtons
-                                ? "400px"
-                                : "500px",
-                              overflow: "hidden",
-                              transition: "max-height 0.3s ease",
-                            }}
-                          >
-                            <PureCSSGridFarm
-                              farmId={farmId}
-                              selectedLayoutId={
-                                farmFilters.selectedLayout?.id ||
-                                selectedLayout?.id
-                              }
-                              onTreeClick={handleTreeClick}
-                              showExpandButtons={farmFilters.showExpandButtons}
-                              refreshKey={refreshKey}
-                              trees={trees}
-                            />
-                          </div>
-                          <div className="text-center mt-2">
-                            <small className="text-muted">
-                              <i className="bi bi-info-circle me-1"></i>
-                              Click "Full Screen View" for detailed farm
-                              management
-                            </small>
-                          </div>
-                        </Card.Body>
-                      </Card>
-                    </Col>
-
-                    {/* Analytics Sidebar */}
-                    <Col lg={4}>
-                      <Row>
-                        {/* Tree Health Analysis */}
-                        <Col>
-                          <Card className="mb-3">
-                            <Card.Header className="bg-success text-white">
-                              <h6 className="mb-0">
-                                <i className="bi bi-tree me-2"></i>
-                                Tree Health Analysis
-                              </h6>
-                            </Card.Header>
-                            <Card.Body>
-                              <div className="d-flex justify-content-between align-items-center mb-2">
-                                <span className="text-success">
-                                  Healthy Trees
-                                </span>
-                                <Badge bg="success">{stats.healthyTrees}</Badge>
-                              </div>
-                              <div
-                                className="progress mb-3"
-                                style={{ height: "8px" }}
-                              >
-                                <div
-                                  className="progress-bar bg-success"
-                                  style={{
-                                    width: `${
-                                      (stats.healthyTrees / stats.totalTrees) *
-                                      100
-                                    }%`,
-                                  }}
-                                ></div>
-                              </div>
-
-                              {stats.fruitingTrees > 0 && (
-                                <>
-                                  <div className="d-flex justify-content-between align-items-center mb-2">
-                                    <span className="text-warning">
-                                      Fruiting Trees
-                                    </span>
-                                    <Badge bg="warning">
-                                      {stats.fruitingTrees}
-                                    </Badge>
-                                  </div>
-                                  <div
-                                    className="progress mb-3"
-                                    style={{ height: "8px" }}
-                                  >
-                                    <div
-                                      className="progress-bar bg-warning"
-                                      style={{
-                                        width: `${
-                                          (stats.fruitingTrees /
-                                            stats.totalTrees) *
-                                          100
-                                        }%`,
-                                      }}
-                                    ></div>
-                                  </div>
-                                </>
-                              )}
-
-                              {stats.diseasedTrees > 0 && (
-                                <>
-                                  <div className="d-flex justify-content-between align-items-center mb-2">
-                                    <span className="text-danger">
-                                      Issues Detected
-                                    </span>
-                                    <Badge bg="danger">
-                                      {stats.diseasedTrees}
-                                    </Badge>
-                                  </div>
-                                  <div
-                                    className="progress mb-3"
-                                    style={{ height: "8px" }}
-                                  >
-                                    <div
-                                      className="progress-bar bg-danger"
-                                      style={{
-                                        width: `${
-                                          (stats.diseasedTrees /
-                                            stats.totalTrees) *
-                                          100
-                                        }%`,
-                                      }}
-                                    ></div>
-                                  </div>
-                                </>
-                              )}
-
-                              <small className="text-muted">
-                                Health Score:{" "}
-                                {stats.totalTrees > 0
-                                  ? Math.round(
-                                      (stats.healthyTrees / stats.totalTrees) *
-                                        100
-                                    )
-                                  : 0}
-                                %
-                              </small>
-                            </Card.Body>
-                          </Card>
-                        </Col>
-                      </Row>
-
-                      <Row>
-                        {/* Quick Actions */}
-                        <Col>
-                          <Card className="mb-3">
-                            <Card.Header className="bg-primary text-white">
-                              <h6 className="mb-0">
-                                <i className="bi bi-lightning-charge me-2"></i>
-                                Quick Actions
-                              </h6>
-                            </Card.Header>
-                            <Card.Body>
-                              <div className="d-grid gap-2">
-                                <Button
-                                  variant="outline-success"
-                                  size="sm"
-                                  href="/farm-layout-fullscreen"
-                                >
-                                  <i className="bi bi-arrows-fullscreen me-2"></i>
-                                  Full Screen Layout
-                                </Button>
-                                <Button
-                                  variant="outline-primary"
-                                  size="sm"
-                                  href="/trees"
-                                >
-                                  <i className="bi bi-plus-circle me-2"></i>
-                                  Add New Trees
-                                </Button>
-                                <Button
-                                  variant="outline-warning"
-                                  size="sm"
-                                  onClick={fetchData}
-                                >
-                                  <i className="bi bi-arrow-clockwise me-2"></i>
-                                  Refresh Data
-                                </Button>
-                                <Button
-                                  variant="outline-info"
-                                  size="sm"
-                                  href="/layouts"
-                                >
-                                  <i className="bi bi-grid-1x2 me-2"></i>
-                                  Layout Manager
-                                </Button>
-                              </div>
-                            </Card.Body>
-                          </Card>
-                        </Col>
-                      </Row>
-
-                      <Row>
-                        {/* Farm Statistics */}
-                        <Col>
-                          <Card>
-                            <Card.Header className="bg-info text-white">
-                              <h6 className="mb-0">
-                                <i className="bi bi-graph-up me-2"></i>
-                                Farm Statistics
-                              </h6>
-                            </Card.Header>
-                            <Card.Body>
-                              <div className="row g-2">
-                                <div className="col-6">
-                                  <div className="text-center p-2 bg-light rounded">
-                                    <div className="h6 text-success mb-0">
-                                      {stats.totalTrees}
-                                    </div>
-                                    <small className="text-muted">
-                                      Total Trees
-                                    </small>
-                                  </div>
-                                </div>
-                                <div className="col-6">
-                                  <div className="text-center p-2 bg-light rounded">
-                                    <div className="h6 text-primary mb-0">
-                                      {layouts.length}
-                                    </div>
-                                    <small className="text-muted">
-                                      Layouts
-                                    </small>
-                                  </div>
-                                </div>
-                                <div className="col-12 mt-2">
-                                  <div className="text-center p-2 bg-light rounded">
-                                    <div className="h6 text-warning mb-0">
-                                      {selectedLayout?.grid_config?.blocks
-                                        ?.length || 0}
-                                    </div>
-                                    <small className="text-muted">
-                                      Active Blocks
-                                    </small>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {stats.totalTrees > 0 && (
-                                <div className="mt-3 p-2 bg-success bg-opacity-10 rounded">
-                                  <small className="text-success fw-semibold">
-                                    <i className="bi bi-check-circle me-1"></i>
-                                    Farm Operational Status: Active
-                                  </small>
-                                </div>
-                              )}
-                            </Card.Body>
-                          </Card>
-                        </Col>
-                      </Row>
-                    </Col>
-                  </Row>
-                </Tab.Pane>
-
-                <Tab.Pane eventKey="list">
-                  <Card>
-                    <Card.Header>
-                      <h5 className="mb-0">All Trees</h5>
-                    </Card.Header>
-                    <Card.Body>
-                      {trees.length === 0 ? (
-                        <div className="text-center py-4">
-                          <p>No trees planted yet.</p>
-                          <Button variant="success" href="/trees">
-                            Add Your First Tree
-                          </Button>
-                        </div>
-                      ) : (
-                        <Row>
-                          {trees.map((tree) => (
-                            <Col md={4} key={tree.id} className="mb-3">
-                              <Card className="h-100">
-                                <Card.Body>
-                                  <div className="d-flex justify-content-between align-items-start mb-2">
-                                    <Badge bg="secondary" className="fs-6">
-                                      {tree.code}
-                                    </Badge>
-                                    <Badge
-                                      bg={
-                                        tree.status === "healthy"
-                                          ? "success"
-                                          : tree.status === "diseased"
-                                          ? "danger"
-                                          : "warning"
-                                      }
-                                    >
-                                      {tree.status}
-                                    </Badge>
-                                  </div>
-                                  <h6 className="card-title">{tree.name}</h6>
-                                  <p className="card-text text-muted small">
-                                    {tree.scientific_name}
-                                    {tree.variety && (
-                                      <>
-                                        <br />
-                                        Variety: {tree.variety}
-                                      </>
-                                    )}
-                                  </p>
-                                  {tree.planting_date && (
-                                    <small className="text-muted">
-                                      Planted:{" "}
-                                      {new Date(
-                                        tree.planting_date
-                                      ).toLocaleDateString()}
-                                    </small>
-                                  )}
-                                </Card.Body>
-                              </Card>
-                            </Col>
-                          ))}
-                        </Row>
-                      )}
-                    </Card.Body>
-                  </Card>
-                </Tab.Pane>
-              </Tab.Content>
-            </Tab.Container>
+          <Col md={3}>
+            <Card
+              className={`border shadow-sm rounded-3 h-100 ${
+                activeView === "diseased" && !varietyFilter
+                  ? "border-danger"
+                  : ""
+              }`}
+              style={{
+                borderColor:
+                  activeView === "diseased" && !varietyFilter
+                    ? "#dc3545"
+                    : "#e3e6f0",
+                transition: "all 0.2s ease",
+                cursor: "pointer",
+                borderWidth:
+                  activeView === "diseased" && !varietyFilter ? "2px" : "1px",
+              }}
+              onClick={() => {
+                setActiveView("diseased");
+                setVarietyFilter(null);
+              }}
+            >
+              <Card.Body className="text-center">
+                <div
+                  className="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                  style={{ width: "60px", height: "60px" }}
+                >
+                  <i className="ti-alert text-danger fs-4"></i>
+                </div>
+                <h5 className="mb-1">{stats.diseasedTrees}</h5>
+                <p className="text-muted mb-0 small">Diseased Trees</p>
+              </Card.Body>
+            </Card>
           </Col>
         </Row>
 
-        {/* Plant Tree Modal */}
-        <Modal
-          show={showPlantModal}
-          onHide={() => setShowPlantModal(false)}
-          size="lg"
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Plant Tree</Modal.Title>
-          </Modal.Header>
-          <Form onSubmit={handlePlantTree}>
-            <Modal.Body>
-              <Alert variant="info">
-                <small>
-                  Position: Block {(selectedPosition?.blockIndex || 0) + 1},
-                  Grid ({selectedPosition?.x}, {selectedPosition?.y})
-                </small>
-              </Alert>
+        {/* Tree Variety Groups Section - Only show when viewing all trees */}
+        {trees.length > 0 && activeView === "all" && !varietyFilter && (
+          <Card className="border-0 shadow-sm mb-4">
+            <Card.Header className="bg-light border-0">
+              <h5 className="mb-0">
+                <i className="ti-stats-up text-success me-2"></i>
+                Tree Varieties Overview
+              </h5>
+              <small className="text-muted">
+                Detailed breakdown of planted trees by type and variety
+              </small>
+            </Card.Header>
+            <Card.Body>
+              <Row className="g-3">
+                {getTreeVarietyGroups().map((group, index) => (
+                  <Col md={4} lg={3} key={index}>
+                    <Card className="h-100 border border-success border-opacity-25 bg-light bg-opacity-50">
+                      <Card.Body className="p-3">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <div className="d-flex align-items-center gap-2">
+                            <Badge bg="success" className="fs-6">
+                              {group.code}
+                            </Badge>
+                            <h6 className="mb-0 text-success fw-bold">
+                              {group.name}
+                            </h6>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {group.totalCount}
+                          </Badge>
+                        </div>
 
-              <div className="mb-3">
-                <Form.Check
-                  type="radio"
-                  name="plantOption"
-                  id="existing-tree"
-                  label="Use existing tree"
-                  checked={plantFormData.tree_id !== ""}
-                  onChange={() =>
-                    setPlantFormData((prev) => ({
-                      ...prev,
-                      tree_id: trees[0]?.id || "",
-                    }))
-                  }
-                />
-                <Form.Check
-                  type="radio"
-                  name="plantOption"
-                  id="new-tree"
-                  label="Create new tree"
-                  checked={plantFormData.tree_id === ""}
-                  onChange={() =>
-                    setPlantFormData((prev) => ({ ...prev, tree_id: "" }))
-                  }
-                />
-              </div>
+                        <div className="varieties-list">
+                          {Object.entries(group.varieties).map(
+                            ([variety, count]) => (
+                              <div
+                                key={variety}
+                                className={`d-flex justify-content-between align-items-center py-1 border-bottom border-light variety-item ${
+                                  varietyFilter &&
+                                  varietyFilter.treeName === group.name &&
+                                  varietyFilter.variety === variety
+                                    ? "bg-primary bg-opacity-10 border-primary"
+                                    : ""
+                                }`}
+                                style={{
+                                  cursor: "pointer",
+                                  borderRadius: "4px",
+                                  transition: "all 0.2s ease",
+                                }}
+                                onClick={() =>
+                                  handleVarietyFilter(group.name, variety)
+                                }
+                                onMouseEnter={(e) => {
+                                  if (
+                                    !varietyFilter ||
+                                    varietyFilter.treeName !== group.name ||
+                                    varietyFilter.variety !== variety
+                                  ) {
+                                    e.target.style.backgroundColor =
+                                      "rgba(0,123,255,0.05)";
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (
+                                    !varietyFilter ||
+                                    varietyFilter.treeName !== group.name ||
+                                    varietyFilter.variety !== variety
+                                  ) {
+                                    e.target.style.backgroundColor =
+                                      "transparent";
+                                  }
+                                }}
+                              >
+                                <span className="small text-muted">
+                                  {variety}
+                                </span>
+                                <Badge
+                                  bg={
+                                    varietyFilter &&
+                                    varietyFilter.treeName === group.name &&
+                                    varietyFilter.variety === variety
+                                      ? "primary"
+                                      : "secondary"
+                                  }
+                                  pill
+                                  className="small"
+                                >
+                                  {count}
+                                </Badge>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            </Card.Body>
+          </Card>
+        )}
 
-              {plantFormData.tree_id !== "" ? (
-                <Form.Group>
-                  <Form.Label>Select Tree</Form.Label>
-                  <Form.Select
-                    value={plantFormData.tree_id}
-                    onChange={(e) =>
-                      setPlantFormData((prev) => ({
-                        ...prev,
-                        tree_id: e.target.value,
-                      }))
-                    }
-                    required
-                  >
-                    <option value="">Choose a tree...</option>
-                    {trees
-                      .filter((t) => !t.tree_positions?.length)
-                      .map((tree) => (
-                        <option key={tree.id} value={tree.id}>
-                          {tree.code} - {tree.name}
-                        </option>
-                      ))}
-                  </Form.Select>
-                </Form.Group>
-              ) : (
-                <>
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Tree Code</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={plantFormData.new_tree.code}
-                          onChange={(e) =>
-                            setPlantFormData((prev) => ({
-                              ...prev,
-                              new_tree: {
-                                ...prev.new_tree,
-                                code: e.target.value,
-                              },
-                            }))
-                          }
-                          required
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Tree Name</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={plantFormData.new_tree.name}
-                          onChange={(e) =>
-                            setPlantFormData((prev) => ({
-                              ...prev,
-                              new_tree: {
-                                ...prev.new_tree,
-                                name: e.target.value,
-                              },
-                            }))
-                          }
-                          required
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Scientific Name</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={plantFormData.new_tree.scientific_name}
-                          onChange={(e) =>
-                            setPlantFormData((prev) => ({
-                              ...prev,
-                              new_tree: {
-                                ...prev.new_tree,
-                                scientific_name: e.target.value,
-                              },
-                            }))
-                          }
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Variety</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={plantFormData.new_tree.variety}
-                          onChange={(e) =>
-                            setPlantFormData((prev) => ({
-                              ...prev,
-                              new_tree: {
-                                ...prev.new_tree,
-                                variety: e.target.value,
-                              },
-                            }))
-                          }
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                </>
-              )}
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                onClick={() => setShowPlantModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button variant="success" type="submit">
-                Plant Tree
-              </Button>
-            </Modal.Footer>
-          </Form>
-        </Modal>
+        {/* Content based on selected tile */}
+        {renderContent()}
 
         {/* Enhanced Tree Details Modal */}
         <EnhancedTreeDetailsModal
@@ -1024,37 +712,25 @@ export default function FarmDashboardPage() {
           show={showTreeModal}
           onHide={() => setShowTreeModal(false)}
           selectedTree={selectedTree}
-          selectedPosition={selectedPosition}
+          selectedPosition={null}
           onTreeUpdated={async () => {
             // Close the tree details modal
             setShowTreeModal(false);
             // Clear selected tree to prevent showing stale data
             setSelectedTree(null);
-            // Refresh data and grid
+            // Refresh data
             await fetchData();
-            setRefreshKey((prev) => prev + 1);
           }}
           onTreeDeleted={async () => {
             // Close the tree details modal
             setShowTreeModal(false);
             // Clear selected tree to prevent showing stale data
             setSelectedTree(null);
-            // Refresh data and grid
+            // Refresh data
             await fetchData();
-            setRefreshKey((prev) => prev + 1);
           }}
           farmId={farmId}
           layoutId={selectedLayout?.id}
-        />
-
-        {/* Farm Layout Filters */}
-        <FarmLayoutFilters
-          show={showFilters}
-          onHide={() => setShowFilters(false)}
-          filters={farmFilters}
-          onFilterChange={updateFarmFilters}
-          layouts={layouts}
-          stats={stats}
         />
       </Container>
     </AdminGuard>
