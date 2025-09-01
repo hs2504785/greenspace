@@ -61,15 +61,48 @@ export function generateUpiPaymentString({
   // Format amount to 2 decimal places
   const formattedAmount = parseFloat(amount).toFixed(2);
 
-  // Clean and encode parameters for UPI string
+  // Clean and encode parameters for UPI string - Enhanced validation
   const cleanPayeeName = encodeURIComponent(payeeName.trim());
   const cleanTransactionNote = encodeURIComponent(
     transactionNote || `Payment for Order #${transactionRef}`
   );
-  const cleanTransactionRef = transactionRef.replace(/[^a-zA-Z0-9]/g, "");
+
+  // Ensure transaction reference is alphanumeric and within limits (max 35 chars for UPI)
+  let cleanTransactionRef = transactionRef.replace(/[^a-zA-Z0-9]/g, "");
+  if (cleanTransactionRef.length > 35) {
+    cleanTransactionRef = cleanTransactionRef.substring(0, 35);
+  }
+
+  // Validate UPI ID format
+  const upiIdRegex = /^[a-zA-Z0-9.\-_]+@[a-zA-Z0-9.\-_]+$/;
+  if (!upiIdRegex.test(payeeVPA)) {
+    console.warn("⚠️ UPI ID format validation failed:", payeeVPA);
+    // Continue anyway as the validation might be too strict
+  }
 
   // Build UPI payment string according to NPCI specification
-  const upiString = `upi://pay?pa=${payeeVPA}&pn=${cleanPayeeName}&am=${formattedAmount}&tr=${cleanTransactionRef}&tn=${cleanTransactionNote}&mc=${merchantCode}&cu=INR`;
+  // Use URLSearchParams for proper encoding and avoid encoding issues
+  const upiParams = new URLSearchParams({
+    pa: payeeVPA, // Payee Address (UPI ID)
+    pn: payeeName.trim(), // Payee Name (not encoded in URLSearchParams)
+    am: formattedAmount, // Amount
+    tr: cleanTransactionRef, // Transaction Reference
+    tn: transactionNote || `Payment for Order #${transactionRef}`, // Transaction Note
+    mc: merchantCode, // Merchant Code
+    cu: "INR", // Currency
+  });
+
+  const upiString = `upi://pay?${upiParams.toString()}`;
+
+  console.log("✅ Generated UPI string:", upiString);
+  console.log("🔍 UPI parameters breakdown:", {
+    payeeVPA,
+    payeeName: payeeName.trim(),
+    amount: formattedAmount,
+    transactionRef: cleanTransactionRef,
+    merchantCode,
+    fullString: upiString,
+  });
 
   return upiString;
 }

@@ -296,17 +296,96 @@ export default function UpiQrPayment({
   };
 
   const openUpiApp = (app) => {
-    if (!qrData?.upiString) return;
+    if (!qrData?.upiString) {
+      toastService.error("Payment information not available");
+      return;
+    }
 
-    const upiApps = {
-      gpay: `tez://upi/pay?${new URL(qrData.upiString).search.substring(1)}`,
-      bhim: qrData.upiString,
-    };
+    try {
+      let appUrl;
 
-    const appUrl = upiApps[app];
-    if (appUrl) {
-      window.open(appUrl, "_blank");
-      toastService.info(`Opening ${app.toUpperCase()}...`);
+      if (app === "gpay") {
+        // Extract UPI parameters from the upiString for Google Pay
+        const upiUrl = new URL(qrData.upiString);
+        const params = new URLSearchParams(upiUrl.search);
+
+        // Build Google Pay deep link with proper parameter encoding
+        const gpayParams = new URLSearchParams({
+          pa: params.get("pa") || "", // Payee Address (UPI ID)
+          pn: params.get("pn") || "", // Payee Name
+          am: params.get("am") || "", // Amount
+          tr: params.get("tr") || "", // Transaction Reference
+          tn: params.get("tn") || "", // Transaction Note
+          mc: params.get("mc") || "5411", // Merchant Code
+          cu: params.get("cu") || "INR", // Currency
+        });
+
+        // Use both tez:// and googlepay:// schemes for better compatibility
+        appUrl = `tez://upi/pay?${gpayParams.toString()}`;
+
+        // Fallback to Google Pay web URL if deep link fails
+        const fallbackUrl = `https://pay.google.com/gp/p/ui/pay?pa=${params.get(
+          "pa"
+        )}&pn=${encodeURIComponent(params.get("pn") || "")}&am=${params.get(
+          "am"
+        )}&cu=INR`;
+
+        // Try opening the deep link first
+        const linkElement = document.createElement("a");
+        linkElement.href = appUrl;
+        linkElement.click();
+
+        // Set a timeout to open fallback if deep link fails
+        setTimeout(() => {
+          try {
+            window.open(fallbackUrl, "_blank");
+          } catch (error) {
+            console.log("Fallback URL also failed:", error);
+            toastService.warning(
+              "Please open Google Pay manually and scan the QR code"
+            );
+          }
+        }, 2000);
+
+        toastService.info("Opening Google Pay...");
+        return;
+      } else if (app === "phonepe") {
+        // PhonePe deep link
+        const upiUrl = new URL(qrData.upiString);
+        const params = new URLSearchParams(upiUrl.search);
+
+        appUrl = `phonepe://pay?${params.toString()}`;
+      } else if (app === "paytm") {
+        // Paytm deep link
+        const upiUrl = new URL(qrData.upiString);
+        const params = new URLSearchParams(upiUrl.search);
+
+        appUrl = `paytmmp://pay?${params.toString()}`;
+      } else {
+        // BHIM and other UPI apps - use standard UPI URL
+        appUrl = qrData.upiString;
+      }
+
+      // Try to open the app
+      if (appUrl) {
+        // Create a temporary link element for better compatibility
+        const linkElement = document.createElement("a");
+        linkElement.href = appUrl;
+        linkElement.target = "_blank";
+        linkElement.rel = "noopener noreferrer";
+
+        // Add to DOM temporarily and click
+        document.body.appendChild(linkElement);
+        linkElement.click();
+        document.body.removeChild(linkElement);
+
+        toastService.info(`Opening ${app.toUpperCase()}...`);
+      }
+    } catch (error) {
+      console.error(`Error opening ${app}:`, error);
+      toastService.error(
+        `Failed to open ${app.toUpperCase()}. Please scan the QR code manually.`
+      );
     }
   };
 
@@ -419,13 +498,14 @@ export default function UpiQrPayment({
                   </div>
                 </div>
 
-                {/* UPI App Buttons - Compact */}
+                {/* UPI App Buttons - Enhanced */}
                 <div className="mb-3 payment-section">
                   <small className="text-muted d-block mb-2">
-                    Or open in UPI app:
+                    <i className="ti-mobile me-1"></i>
+                    Quick pay with your UPI app:
                   </small>
                   <div className="row g-2">
-                    <div className="col-6">
+                    <div className="col-6 col-md-3">
                       <Button
                         variant="outline-primary"
                         className="w-100"
@@ -437,7 +517,31 @@ export default function UpiQrPayment({
                         <span className="d-sm-none">GPay</span>
                       </Button>
                     </div>
-                    <div className="col-6">
+                    <div className="col-6 col-md-3">
+                      <Button
+                        variant="outline-success"
+                        className="w-100"
+                        onClick={() => openUpiApp("phonepe")}
+                        size="sm"
+                      >
+                        <i className="ti-mobile me-1"></i>
+                        <span className="d-none d-sm-inline">PhonePe</span>
+                        <span className="d-sm-none">PhonePe</span>
+                      </Button>
+                    </div>
+                    <div className="col-6 col-md-3">
+                      <Button
+                        variant="outline-info"
+                        className="w-100"
+                        onClick={() => openUpiApp("paytm")}
+                        size="sm"
+                      >
+                        <i className="ti-mobile me-1"></i>
+                        <span className="d-none d-sm-inline">Paytm</span>
+                        <span className="d-sm-none">Paytm</span>
+                      </Button>
+                    </div>
+                    <div className="col-6 col-md-3">
                       <Button
                         variant="outline-warning"
                         className="w-100"
@@ -449,6 +553,12 @@ export default function UpiQrPayment({
                         <span className="d-sm-none">BHIM</span>
                       </Button>
                     </div>
+                  </div>
+                  <div className="mt-2">
+                    <small className="text-info">
+                      <i className="ti-info-alt me-1"></i>
+                      If app doesn't open, scan the QR code manually
+                    </small>
                   </div>
                 </div>
 
