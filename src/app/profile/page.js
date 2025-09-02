@@ -95,10 +95,28 @@ export default function ProfilePage() {
       return { ...coords, accuracy: 100 }; // Assume moderate accuracy for extracted coordinates
     }
     
-    // For Google Maps shortened links, we can't extract directly
-    // But we can provide a helpful message
+    // For Google Maps shortened links, try to expand them
     if (locationText.includes("maps.app.goo.gl") || locationText.includes("goo.gl/maps")) {
-      console.log("📍 Google Maps shortened link detected. For precise distance calculations, please use the 'Detect Location' button instead.");
+      console.log("📍 Google Maps shortened link detected. Attempting to expand URL...");
+      
+      try {
+        // Try to expand the shortened URL using a simple fetch (may be blocked by CORS)
+        const response = await fetch(`/api/expand-url?url=${encodeURIComponent(locationText)}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.expandedUrl) {
+            const expandedCoords = extractCoordinates(data.expandedUrl);
+            if (expandedCoords) {
+              console.log("✅ Successfully extracted coordinates from expanded URL:", expandedCoords);
+              return { ...expandedCoords, accuracy: 100 };
+            }
+          }
+        }
+      } catch (error) {
+        console.log("❌ Could not expand shortened URL:", error.message);
+      }
+      
+      console.log("💡 For precise distance calculations, please use the 'Detect Location' button instead.");
     }
     
     return null;
