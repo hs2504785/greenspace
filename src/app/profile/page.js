@@ -137,18 +137,19 @@ export default function ProfilePage() {
         setCoordinates(extractedCoords);
         console.log("Extracted coordinates from location:", extractedCoords);
         
-        // If it's a long Google Maps URL, convert to shorter format
+        // If it's a long Google Maps URL, create a shorter clickable link
         if (location.length > 200 && location.includes('google.com/maps')) {
-          // Extract place name or use coordinates as fallback
+          // Extract place name for a shorter URL
           const placeMatch = location.match(/place\/([^/@]+)/);
           if (placeMatch) {
             const placeName = decodeURIComponent(placeMatch[1]).replace(/\+/g, ' ');
-            finalLocation = placeName;
-            console.log("Converted long URL to place name:", placeName);
+            // Create a shorter Google Maps URL that's still clickable
+            finalLocation = `https://maps.google.com/search/${encodeURIComponent(placeName)}/@${extractedCoords.lat},${extractedCoords.lon},15z`;
+            console.log("Converted long URL to shorter clickable link:", finalLocation);
           } else {
-            // Fallback to coordinates
-            finalLocation = `${extractedCoords.lat}, ${extractedCoords.lon}`;
-            console.log("Converted long URL to coordinates");
+            // Create a simple coordinate-based link
+            finalLocation = `https://maps.google.com/@${extractedCoords.lat},${extractedCoords.lon},15z`;
+            console.log("Converted long URL to coordinate-based link");
           }
         }
       }

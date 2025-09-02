@@ -12,6 +12,14 @@ export function isMapLink(location) {
     return false;
   }
 
+  const trimmedLocation = location.trim();
+
+  // Check if it's coordinates (lat, lon format) - make these clickable too
+  const coordPattern = /^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/;
+  if (coordPattern.test(trimmedLocation)) {
+    return true;
+  }
+
   // Common map link patterns
   const mapLinkPatterns = [
     /^https?:\/\/maps\.google\.com/i,
@@ -25,7 +33,7 @@ export function isMapLink(location) {
     /^geo:/i, // geo: protocol
   ];
 
-  return mapLinkPatterns.some((pattern) => pattern.test(location.trim()));
+  return mapLinkPatterns.some((pattern) => pattern.test(trimmedLocation));
 }
 
 /**
@@ -45,10 +53,16 @@ export function getLocationDisplayText(location, compact = false) {
       return "View on Map";
     }
 
-    if (location.includes("maps.app.goo.gl")) {
-      return "View Location on Map";
-    } else if (location.includes("google.com/maps")) {
+    // Try to extract place name from Google Maps URLs
+    if (location.includes("google.com/maps")) {
+      const placeMatch = location.match(/search\/([^/@]+)/);
+      if (placeMatch) {
+        const placeName = decodeURIComponent(placeMatch[1]).replace(/\+/g, " ");
+        return `${placeName} (View on Map)`;
+      }
       return "View on Google Maps";
+    } else if (location.includes("maps.app.goo.gl")) {
+      return "View Location on Map";
     } else if (location.includes("apple.com")) {
       return "View on Apple Maps";
     } else if (location.includes("waze.com")) {
@@ -56,6 +70,15 @@ export function getLocationDisplayText(location, compact = false) {
     } else {
       return "View Location on Map";
     }
+  }
+
+  // Check if it's coordinates (lat, lon format)
+  const coordPattern = /^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/;
+  if (coordPattern.test(location.trim())) {
+    if (compact) {
+      return "View Coordinates";
+    }
+    return `${location} (Click to view on map)`;
   }
 
   // For regular text, return as-is
@@ -67,7 +90,21 @@ export function getLocationDisplayText(location, compact = false) {
  * @param {string} mapUrl - The map URL to open
  */
 export function openMapLink(mapUrl) {
-  if (mapUrl && isMapLink(mapUrl)) {
+  if (!mapUrl || !isMapLink(mapUrl)) {
+    return;
+  }
+
+  // Check if it's coordinates - convert to Google Maps URL
+  const coordPattern = /^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/;
+  const coordMatch = mapUrl.trim().match(coordPattern);
+
+  if (coordMatch) {
+    const lat = coordMatch[1];
+    const lon = coordMatch[2];
+    const googleMapsUrl = `https://maps.google.com/@${lat},${lon},15z`;
+    window.open(googleMapsUrl, "_blank", "noopener,noreferrer");
+  } else {
+    // It's already a URL, open directly
     window.open(mapUrl, "_blank", "noopener,noreferrer");
   }
 }
