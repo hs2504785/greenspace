@@ -128,12 +128,29 @@ export default function ProfilePage() {
 
     // Try to extract coordinates from location text if coordinates are not set
     let finalCoordinates = coordinates;
+    let finalLocation = location;
+    
     if (!coordinates && location) {
       const extractedCoords = await tryExtractCoordinatesFromLocation(location);
       if (extractedCoords) {
         finalCoordinates = extractedCoords;
         setCoordinates(extractedCoords);
         console.log("Extracted coordinates from location:", extractedCoords);
+        
+        // If it's a long Google Maps URL, convert to shorter format
+        if (location.length > 200 && location.includes('google.com/maps')) {
+          // Extract place name or use coordinates as fallback
+          const placeMatch = location.match(/place\/([^/@]+)/);
+          if (placeMatch) {
+            const placeName = decodeURIComponent(placeMatch[1]).replace(/\+/g, ' ');
+            finalLocation = placeName;
+            console.log("Converted long URL to place name:", placeName);
+          } else {
+            // Fallback to coordinates
+            finalLocation = `${extractedCoords.lat}, ${extractedCoords.lon}`;
+            console.log("Converted long URL to coordinates");
+          }
+        }
       }
     }
 
@@ -157,7 +174,7 @@ export default function ProfilePage() {
         body: JSON.stringify({
           whatsapp_number: whatsappNumber,
           whatsapp_store_link: whatsappStoreLink,
-          location: location,
+          location: finalLocation,
           coordinates: finalCoordinates,
           show_email_publicly: showEmailPublicly,
           show_phone_publicly: showPhonePublicly,
@@ -183,6 +200,12 @@ export default function ProfilePage() {
 
       if (response.ok) {
         toastService.presets.saveSuccess();
+        
+        // Update the location field if it was converted from a long URL
+        if (finalLocation !== location) {
+          setLocation(finalLocation);
+          console.log("Updated location field to shorter format:", finalLocation);
+        }
 
         // Session will be updated automatically on next page load
         console.log(
