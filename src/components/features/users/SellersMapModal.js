@@ -375,64 +375,74 @@ export default function SellersMapModal({
 
   const createInfoWindowContent = (seller) => {
     return `
-      <div style="max-width: 250px; padding: 8px;">
-        <div style="display: flex; align-items: center; margin-bottom: 8px;">
-          <div style="width: 40px; height: 40px; border-radius: 50%; background: #28a745; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px;">
+      <div style="max-width: 280px; padding: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+          <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #28a745, #20c997); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);">
             ${seller.name.charAt(0).toUpperCase()}
           </div>
-          <div>
-            <div style="font-weight: bold; color: #333; margin-bottom: 2px;">${
+          <div style="flex: 1;">
+            <div style="font-weight: 600; color: #212529; margin-bottom: 2px; font-size: 14px;">${
               seller.name
             }</div>
             ${
               seller.farm_name
-                ? `<div style="font-size: 12px; color: #666;">${seller.farm_name}</div>`
-                : ""
+                ? `<div style="font-size: 12px; color: #6c757d;">${seller.farm_name}</div>`
+                : `<div style="font-size: 12px; color: #6c757d;">Community Member</div>`
             }
           </div>
         </div>
         
-        <div style="margin-bottom: 8px;">
+        <div style="margin-bottom: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
           ${
             seller.distance
-              ? `<span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px;">${formatDistance(
+              ? `<span style="border: 1px solid #007bff; color: #007bff; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; background: rgba(0, 123, 255, 0.1);">📍 ${formatDistance(
                   seller.distance
                 )} away</span>`
               : ""
           }
           ${
             seller.average_rating > 0
-              ? `<span style="background: #ffc107; color: #333; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 4px;">⭐ ${seller.average_rating.toFixed(
+              ? `<span style="border: 1px solid #ffc107; color: #856404; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; background: rgba(255, 193, 7, 0.1);">⭐ ${seller.average_rating.toFixed(
                   1
                 )}</span>`
               : ""
           }
         </div>
         
-        <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
+        <div style="font-size: 13px; color: #495057; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
           ${
             seller.product_count > 0
-              ? `📦 ${seller.product_count} products`
-              : ""
+              ? `<span style="display: flex; align-items: center; gap: 4px;"><span style="color: #28a745;">📦</span> ${seller.product_count} products</span>`
+              : `<span style="color: #6c757d;">No products available</span>`
           }
           ${
-            seller.total_orders > 0 ? ` • 🛒 ${seller.total_orders} orders` : ""
+            seller.total_orders > 0
+              ? `<span style="color: #6c757d;">•</span> <span style="display: flex; align-items: center; gap: 4px;"><span style="color: #ffc107;">🛒</span> ${seller.total_orders} orders</span>`
+              : ""
           }
         </div>
         
-        <div style="display: flex; gap: 4px;">
+        <div style="display: flex; gap: 6px; margin-top: 8px;">
           <button onclick="window.open('/users/${
             seller.id
           }/listings', '_blank')" 
-                  style="background: #007bff; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;"
-                  ${seller.product_count === 0 ? "disabled" : ""}>
+                  style="background: ${
+                    seller.product_count > 0 ? "#007bff" : "#6c757d"
+                  }; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: ${
+      seller.product_count > 0 ? "pointer" : "not-allowed"
+    }; font-weight: 500; transition: all 0.2s;"
+                  ${seller.product_count === 0 ? "disabled" : ""}
+                  onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'"
+                  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
             View Products
           </button>
           ${
             seller.whatsapp_store_link
               ? `
             <button onclick="window.open('${seller.whatsapp_store_link}', '_blank')" 
-                    style="background: #25d366; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                    style="background: #25d366; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500; transition: all 0.2s;"
+                    onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
               WhatsApp
             </button>
           `
