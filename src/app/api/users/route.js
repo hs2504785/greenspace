@@ -73,7 +73,7 @@ export async function GET(request) {
           : "low"
         : null;
 
-      return {
+      const enhancedUser = {
         ...user,
         is_seller: isSeller,
         product_count: productCount,
@@ -96,6 +96,21 @@ export async function GET(request) {
             }
           : null,
       };
+
+      // Debug logging for first seller
+      if (isSeller && productCount > 0) {
+        console.log("🔍 DEBUG - API Seller Data:", {
+          name: user.name,
+          hasCoordinates,
+          latitude: user.latitude,
+          longitude: user.longitude,
+          coordinates: enhancedUser.coordinates,
+          location: user.location,
+          location_type: enhancedUser.location_type,
+        });
+      }
+
+      return enhancedUser;
     });
 
     return NextResponse.json(enhancedUsers);

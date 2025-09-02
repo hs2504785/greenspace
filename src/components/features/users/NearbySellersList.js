@@ -105,8 +105,24 @@ export default function NearbySellersList({
   }, [sortedUsers, distanceFilter, distanceOptions]);
 
   const nearbySellers = useMemo(() => {
-    return filteredSellers.filter((seller) => seller.distance !== null);
-  }, [filteredSellers]);
+    const nearby = filteredSellers.filter((seller) => seller.distance !== null);
+    console.log("🔍 DEBUG - NearbySellersList:", {
+      totalSellers: sellers.length,
+      filteredSellers: filteredSellers.length,
+      nearbySellers: nearby.length,
+      currentLocation,
+      sampleSeller: filteredSellers[0]
+        ? {
+            name: filteredSellers[0].name,
+            hasCoordinates: filteredSellers[0].has_coordinates,
+            coordinates: filteredSellers[0].coordinates,
+            distance: filteredSellers[0].distance,
+            location: filteredSellers[0].location,
+          }
+        : null,
+    });
+    return nearby;
+  }, [filteredSellers, sellers.length, currentLocation]);
 
   const sellersWithoutLocation = useMemo(() => {
     return filteredSellers.filter((seller) => seller.distance === null);
