@@ -231,11 +231,11 @@ export async function PATCH(request) {
     if (data.location !== undefined) {
       const location = data.location?.trim();
 
-      if (location && location.length > 200) {
+      if (location && location.length > 500) {
         return new Response(
           JSON.stringify({
             message: "Location is too long",
-            details: "Location must be 200 characters or less",
+            details: "Location must be 500 characters or less",
           }),
           {
             status: 400,
