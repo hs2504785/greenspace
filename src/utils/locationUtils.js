@@ -55,11 +55,20 @@ export function getLocationDisplayText(location, compact = false) {
 
     // Try to extract place name from Google Maps URLs
     if (location.includes("google.com/maps")) {
-      const placeMatch = location.match(/search\/([^/@]+)/);
+      // Check for place name in various URL formats
+      const placeMatch =
+        location.match(/place\/([^/@]+)/) || location.match(/search\/([^/@]+)/);
       if (placeMatch) {
         const placeName = decodeURIComponent(placeMatch[1]).replace(/\+/g, " ");
         return `${placeName} (View on Map)`;
       }
+
+      // Check if it's a coordinate-based URL
+      const coordMatch = location.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+      if (coordMatch) {
+        return "View Location on Map";
+      }
+
       return "View on Google Maps";
     } else if (location.includes("maps.app.goo.gl")) {
       return "View Location on Map";

@@ -88,26 +88,36 @@ export default function ProfilePage() {
   // Helper function to try extracting coordinates from location text
   const tryExtractCoordinatesFromLocation = async (locationText) => {
     if (!locationText) return null;
-    
+
     // Try to extract coordinates using the existing utility
     const coords = extractCoordinates(locationText);
     if (coords) {
       return { ...coords, accuracy: 100 }; // Assume moderate accuracy for extracted coordinates
     }
-    
+
     // For Google Maps shortened links, try to expand them
-    if (locationText.includes("maps.app.goo.gl") || locationText.includes("goo.gl/maps")) {
-      console.log("📍 Google Maps shortened link detected. Attempting to expand URL...");
-      
+    if (
+      locationText.includes("maps.app.goo.gl") ||
+      locationText.includes("goo.gl/maps")
+    ) {
+      console.log(
+        "📍 Google Maps shortened link detected. Attempting to expand URL..."
+      );
+
       try {
         // Try to expand the shortened URL using a simple fetch (may be blocked by CORS)
-        const response = await fetch(`/api/expand-url?url=${encodeURIComponent(locationText)}`);
+        const response = await fetch(
+          `/api/expand-url?url=${encodeURIComponent(locationText)}`
+        );
         if (response.ok) {
           const data = await response.json();
           if (data.expandedUrl) {
             const expandedCoords = extractCoordinates(data.expandedUrl);
             if (expandedCoords) {
-              console.log("✅ Successfully extracted coordinates from expanded URL:", expandedCoords);
+              console.log(
+                "✅ Successfully extracted coordinates from expanded URL:",
+                expandedCoords
+              );
               return { ...expandedCoords, accuracy: 100 };
             }
           }
@@ -115,10 +125,12 @@ export default function ProfilePage() {
       } catch (error) {
         console.log("❌ Could not expand shortened URL:", error.message);
       }
-      
-      console.log("💡 For precise distance calculations, please use the 'Detect Location' button instead.");
+
+      console.log(
+        "💡 For precise distance calculations, please use the 'Detect Location' button instead."
+      );
     }
-    
+
     return null;
   };
 
@@ -129,28 +141,22 @@ export default function ProfilePage() {
     // Try to extract coordinates from location text if coordinates are not set
     let finalCoordinates = coordinates;
     let finalLocation = location;
-    
+
     if (!coordinates && location) {
       const extractedCoords = await tryExtractCoordinatesFromLocation(location);
       if (extractedCoords) {
         finalCoordinates = extractedCoords;
         setCoordinates(extractedCoords);
         console.log("Extracted coordinates from location:", extractedCoords);
-        
+
         // If it's a long Google Maps URL, create a shorter clickable link
-        if (location.length > 200 && location.includes('google.com/maps')) {
-          // Extract place name for a shorter URL
-          const placeMatch = location.match(/place\/([^/@]+)/);
-          if (placeMatch) {
-            const placeName = decodeURIComponent(placeMatch[1]).replace(/\+/g, ' ');
-            // Create a shorter Google Maps URL that's still clickable
-            finalLocation = `https://maps.google.com/search/${encodeURIComponent(placeName)}/@${extractedCoords.lat},${extractedCoords.lon},15z`;
-            console.log("Converted long URL to shorter clickable link:", finalLocation);
-          } else {
-            // Create a simple coordinate-based link
-            finalLocation = `https://maps.google.com/@${extractedCoords.lat},${extractedCoords.lon},15z`;
-            console.log("Converted long URL to coordinate-based link");
-          }
+        if (location.length > 200 && location.includes("google.com/maps")) {
+          // Create a proper Google Maps URL with coordinates
+          finalLocation = `https://www.google.com/maps/@${extractedCoords.lat},${extractedCoords.lon},15z`;
+          console.log(
+            "Converted long URL to shorter clickable link:",
+            finalLocation
+          );
         }
       }
     }
@@ -201,11 +207,14 @@ export default function ProfilePage() {
 
       if (response.ok) {
         toastService.presets.saveSuccess();
-        
+
         // Update the location field if it was converted from a long URL
         if (finalLocation !== location) {
           setLocation(finalLocation);
-          console.log("Updated location field to shorter format:", finalLocation);
+          console.log(
+            "Updated location field to shorter format:",
+            finalLocation
+          );
         }
 
         // Session will be updated automatically on next page load
@@ -345,25 +354,27 @@ export default function ProfilePage() {
                   className="mb-3"
                   disabled={isLoading}
                 />
-                
+
                 {/* Show helpful message for Google Maps links */}
-                {location && (location.includes("maps.app.goo.gl") || location.includes("goo.gl/maps")) && (
-                  <div className="mt-2">
-                    <div className="alert alert-warning py-2">
-                      <div className="d-flex align-items-start">
-                        <i className="ti-info-alt me-2 mt-1"></i>
-                        <div className="flex-grow-1">
-                          <strong>Google Maps Link Detected</strong>
-                          <p className="mb-2 small">
-                            Shortened Google Maps links can't be used for distance calculations. 
-                            Here are better options:
-                          </p>
-                          <div className="d-flex flex-wrap gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline-primary"
-                              onClick={() => {
-                                const instructions = `To get your exact address from this Google Maps link:
+                {location &&
+                  (location.includes("maps.app.goo.gl") ||
+                    location.includes("goo.gl/maps")) && (
+                    <div className="mt-2">
+                      <div className="alert alert-warning py-2">
+                        <div className="d-flex align-items-start">
+                          <i className="ti-info-alt me-2 mt-1"></i>
+                          <div className="flex-grow-1">
+                            <strong>Google Maps Link Detected</strong>
+                            <p className="mb-2 small">
+                              Shortened Google Maps links can't be used for
+                              distance calculations. Here are better options:
+                            </p>
+                            <div className="d-flex flex-wrap gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline-primary"
+                                onClick={() => {
+                                  const instructions = `To get your exact address from this Google Maps link:
 
 1. Click on your Google Maps link: ${location}
 2. When it opens, right-click on your exact location
@@ -372,29 +383,29 @@ export default function ProfilePage() {
 5. Come back and paste it in the location field
 
 This will enable accurate distance calculations for customers finding you.`;
-                                alert(instructions);
-                              }}
-                            >
-                              <i className="ti-help me-1"></i>
-                              How to Fix This
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline-success"
-                              onClick={() => {
-                                window.open(location, '_blank');
-                              }}
-                            >
-                              <i className="ti-external-link me-1"></i>
-                              Open Maps Link
-                            </Button>
+                                  alert(instructions);
+                                }}
+                              >
+                                <i className="ti-help me-1"></i>
+                                How to Fix This
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline-success"
+                                onClick={() => {
+                                  window.open(location, "_blank");
+                                }}
+                              >
+                                <i className="ti-external-link me-1"></i>
+                                Open Maps Link
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-                
+                  )}
+
                 {/* Show coordinate status */}
                 {coordinates && (
                   <div className="mt-2">
