@@ -151,8 +151,8 @@ export default function ProfilePage() {
 
         // If it's a long Google Maps URL, create a shorter clickable link
         if (location.length > 200 && location.includes("google.com/maps")) {
-          // Create a proper Google Maps URL with coordinates
-          finalLocation = `https://www.google.com/maps/@${extractedCoords.lat},${extractedCoords.lon},15z`;
+          // Create the shortest possible Google Maps URL (under 200 chars)
+          finalLocation = `https://maps.google.com/?q=${extractedCoords.lat},${extractedCoords.lon}`;
           console.log(
             "Converted long URL to shorter clickable link:",
             finalLocation
