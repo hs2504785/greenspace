@@ -574,8 +574,15 @@ export default function SellersMapModal({
                               onClick={() => {
                                 // Use stored coordinates if available (more reliable than short URLs)
                                 if (seller.coordinates) {
+                                  // Use the most reliable Google Maps URL format
                                   window.open(
-                                    `https://www.google.com/maps/place/${encodeURIComponent(seller.name)}/@${seller.coordinates.lat},${seller.coordinates.lon},17z`,
+                                    `https://www.google.com/maps/search/${encodeURIComponent(
+                                      seller.name +
+                                        " " +
+                                        seller.coordinates.lat +
+                                        "," +
+                                        seller.coordinates.lon
+                                    )}`,
                                     "_blank"
                                   );
                                 } else if (seller.location) {
