@@ -460,9 +460,14 @@ export default function NearbySellersList({
 
                               // Use stored coordinates if available (more reliable than short URLs)
                               if (seller.coordinates) {
-                                const mapsUrl = `https://maps.google.com/?q=${seller.coordinates.lat},${seller.coordinates.lon}`;
+                                // Create a Google Maps URL that shows the business name and location
+                                const mapsUrl = `https://www.google.com/maps/place/${encodeURIComponent(
+                                  seller.name
+                                )}/@${seller.coordinates.lat},${
+                                  seller.coordinates.lon
+                                },17z`;
                                 console.log(
-                                  "🗺️ Opening with stored coordinates:",
+                                  "🗺️ Opening with business name and coordinates:",
                                   mapsUrl
                                 );
                                 window.open(mapsUrl, "_blank");
