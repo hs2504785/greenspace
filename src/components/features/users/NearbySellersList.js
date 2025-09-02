@@ -446,7 +446,17 @@ export default function NearbySellersList({
                             variant="link"
                             size="sm"
                             className="p-0 text-decoration-none text-success fw-medium text-start"
-                            onClick={() => openMapLink(seller.location)}
+                            onClick={() => {
+                              // Use updated coordinates if available, otherwise fall back to original location
+                              if (seller.coordinates) {
+                                window.open(
+                                  `https://maps.google.com/?q=${seller.coordinates.lat},${seller.coordinates.lon}`,
+                                  "_blank"
+                                );
+                              } else {
+                                openMapLink(seller.location);
+                              }
+                            }}
                           >
                             <i className="ti-location-pin me-1"></i>
                             {getLocationDisplayText(seller.location, true)}
