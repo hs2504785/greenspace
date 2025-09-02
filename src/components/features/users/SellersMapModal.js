@@ -572,14 +572,15 @@ export default function SellersMapModal({
                               variant="outline-secondary"
                               size="sm"
                               onClick={() => {
-                                if (seller.coordinates) {
+                                // Always use the original saved URL first (preserves business names, place details)
+                                if (seller.location) {
+                                  window.open(seller.location, "_blank");
+                                } else if (seller.coordinates) {
+                                  // Fallback to coordinates only if no URL is saved
                                   window.open(
                                     `https://maps.google.com/?q=${seller.coordinates.lat},${seller.coordinates.lon}`,
                                     "_blank"
                                   );
-                                } else {
-                                  // For short URLs or text locations, open them directly
-                                  window.open(seller.location, "_blank");
                                 }
                               }}
                             >

@@ -458,20 +458,23 @@ export default function NearbySellersList({
                                 }
                               );
 
-                              if (seller.coordinates) {
+                              // Always use the original saved URL first (preserves business names, place details)
+                              if (seller.location) {
+                                console.log(
+                                  "🗺️ Opening original saved URL:",
+                                  seller.location
+                                );
+                                window.open(seller.location, "_blank");
+                              } else if (seller.coordinates) {
+                                // Fallback to coordinates only if no URL is saved
                                 const mapsUrl = `https://maps.google.com/?q=${seller.coordinates.lat},${seller.coordinates.lon}`;
                                 console.log(
-                                  "🗺️ Opening maps with coordinates:",
+                                  "🗺️ Fallback to coordinates:",
                                   mapsUrl
                                 );
                                 window.open(mapsUrl, "_blank");
                               } else {
-                                // For short URLs, open them directly since we can't extract coordinates
-                                console.log(
-                                  "🗺️ Opening original short URL:",
-                                  seller.location
-                                );
-                                window.open(seller.location, "_blank");
+                                console.log("⚠️ No location data available");
                               }
                             }}
                           >

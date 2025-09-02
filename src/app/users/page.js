@@ -324,21 +324,25 @@ export default function PublicUsersPage() {
                                       }
                                     );
 
-                                    // Use updated coordinates if available, otherwise fall back to original location
-                                    if (user.coordinates) {
+                                    // Always use the original saved URL first (preserves business names, place details)
+                                    if (user.location) {
+                                      console.log(
+                                        "🗺️ Opening original saved URL:",
+                                        user.location
+                                      );
+                                      window.open(user.location, "_blank");
+                                    } else if (user.coordinates) {
+                                      // Fallback to coordinates only if no URL is saved
                                       const mapsUrl = `https://maps.google.com/?q=${user.coordinates.lat},${user.coordinates.lon}`;
                                       console.log(
-                                        "🗺️ Opening maps with coordinates:",
+                                        "🗺️ Fallback to coordinates:",
                                         mapsUrl
                                       );
                                       window.open(mapsUrl, "_blank");
                                     } else {
-                                      // For short URLs, open them directly since we can't extract coordinates
                                       console.log(
-                                        "🗺️ Opening original short URL:",
-                                        user.location
+                                        "⚠️ No location data available"
                                       );
-                                      window.open(user.location, "_blank");
                                     }
                                   }}
                                   title={`Click to open location in map: ${user.location}`}
