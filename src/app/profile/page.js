@@ -5,6 +5,7 @@ import { Container, Card, Form, Button, Badge } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import UserAvatar from "@/components/common/UserAvatar";
 import LocationAutoDetect from "@/components/common/LocationAutoDetect";
+import { extractCoordinates } from "@/utils/distanceUtils";
 import toastService from "@/utils/toastService";
 
 export default function ProfilePage() {
@@ -84,14 +85,44 @@ export default function ProfilePage() {
     fetchUserProfile();
   }, [session]);
 
+  // Helper function to try extracting coordinates from location text
+  const tryExtractCoordinatesFromLocation = async (locationText) => {
+    if (!locationText) return null;
+    
+    // Try to extract coordinates using the existing utility
+    const coords = extractCoordinates(locationText);
+    if (coords) {
+      return { ...coords, accuracy: 100 }; // Assume moderate accuracy for extracted coordinates
+    }
+    
+    // For Google Maps shortened links, we can't extract directly
+    // But we can provide a helpful message
+    if (locationText.includes("maps.app.goo.gl") || locationText.includes("goo.gl/maps")) {
+      console.log("📍 Google Maps shortened link detected. For precise distance calculations, please use the 'Detect Location' button instead.");
+    }
+    
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
+    // Try to extract coordinates from location text if coordinates are not set
+    let finalCoordinates = coordinates;
+    if (!coordinates && location) {
+      const extractedCoords = await tryExtractCoordinatesFromLocation(location);
+      if (extractedCoords) {
+        finalCoordinates = extractedCoords;
+        setCoordinates(extractedCoords);
+        console.log("Extracted coordinates from location:", extractedCoords);
+      }
+    }
+
     console.log("Submitting profile update:", {
       whatsappNumber,
       location,
-      coordinates,
+      coordinates: finalCoordinates,
       showEmailPublicly,
       showPhonePublicly,
       showWhatsappPublicly,
@@ -109,7 +140,7 @@ export default function ProfilePage() {
           whatsapp_number: whatsappNumber,
           whatsapp_store_link: whatsappStoreLink,
           location: location,
-          coordinates: coordinates,
+          coordinates: finalCoordinates,
           show_email_publicly: showEmailPublicly,
           show_phone_publicly: showPhonePublicly,
           show_whatsapp_publicly: showWhatsappPublicly,
@@ -272,6 +303,26 @@ export default function ProfilePage() {
                   className="mb-3"
                   disabled={isLoading}
                 />
+                
+                {/* Show helpful message for Google Maps links */}
+                {location && (location.includes("maps.app.goo.gl") || location.includes("goo.gl/maps")) && (
+                  <div className="mt-2">
+                    <small className="text-warning">
+                      <i className="ti-info-alt me-1"></i>
+                      For precise distance calculations, consider using the "Detect Location" button instead of shortened Google Maps links.
+                    </small>
+                  </div>
+                )}
+                
+                {/* Show coordinate status */}
+                {coordinates && (
+                  <div className="mt-2">
+                    <small className="text-success">
+                      <i className="ti-check me-1"></i>
+                      Precise coordinates available for distance calculations
+                    </small>
+                  </div>
+                )}
 
                 {/* Privacy Settings Section */}
                 <Card className="mt-4">

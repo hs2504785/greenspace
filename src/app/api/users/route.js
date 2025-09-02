@@ -108,7 +108,7 @@ export async function GET(request) {
           location: user.location,
           location_type: enhancedUser.location_type,
           productCount,
-          isSeller
+          isSeller,
         });
       }
 

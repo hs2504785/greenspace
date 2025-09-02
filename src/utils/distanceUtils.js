@@ -124,6 +124,19 @@ export function extractCoordinates(location) {
     }
   }
 
+  // Try to extract from place URLs with coordinates in the path
+  const placeUrlPattern = /place\/[^/]*\/@(-?\d+\.?\d*),(-?\d+\.?\d*)/;
+  const placeMatch = location.match(placeUrlPattern);
+
+  if (placeMatch) {
+    const lat = parseFloat(placeMatch[1]);
+    const lon = parseFloat(placeMatch[2]);
+
+    if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      return { lat, lon };
+    }
+  }
+
   // Check if it's a Google Maps share link (goo.gl) - these can't be parsed directly
   if (
     location.includes("maps.app.goo.gl") ||
@@ -131,6 +144,10 @@ export function extractCoordinates(location) {
   ) {
     // For now, we can't extract coordinates from shortened Google Maps links
     // This would require following the redirect, which is complex in the browser
+    // User should update their location using the location detector in their profile
+    console.log(
+      "📍 Google Maps shortened link detected. User should update location in profile to get precise coordinates."
+    );
     return null;
   }
 
