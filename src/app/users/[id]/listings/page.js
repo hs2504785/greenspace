@@ -209,21 +209,21 @@ export default function UserListingsPage() {
                                     }
                                   );
 
-                                  // Always use the original saved URL first (preserves business names, place details)
-                                  if (user.location) {
-                                    console.log(
-                                      "🗺️ Opening original saved URL:",
-                                      user.location
-                                    );
-                                    window.open(user.location, "_blank");
-                                  } else if (user.coordinates) {
-                                    // Fallback to coordinates only if no URL is saved
+                                  // Use stored coordinates if available (more reliable than short URLs)
+                                  if (user.coordinates) {
                                     const mapsUrl = `https://maps.google.com/?q=${user.coordinates.lat},${user.coordinates.lon}`;
                                     console.log(
-                                      "🗺️ Fallback to coordinates:",
+                                      "🗺️ Opening with stored coordinates:",
                                       mapsUrl
                                     );
                                     window.open(mapsUrl, "_blank");
+                                  } else if (user.location) {
+                                    // Fallback to original URL if no coordinates
+                                    console.log(
+                                      "🗺️ Fallback to original URL:",
+                                      user.location
+                                    );
+                                    window.open(user.location, "_blank");
                                   } else {
                                     console.log(
                                       "⚠️ No location data available"

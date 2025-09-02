@@ -458,21 +458,21 @@ export default function NearbySellersList({
                                 }
                               );
 
-                              // Always use the original saved URL first (preserves business names, place details)
-                              if (seller.location) {
-                                console.log(
-                                  "🗺️ Opening original saved URL:",
-                                  seller.location
-                                );
-                                window.open(seller.location, "_blank");
-                              } else if (seller.coordinates) {
-                                // Fallback to coordinates only if no URL is saved
+                              // Use stored coordinates if available (more reliable than short URLs)
+                              if (seller.coordinates) {
                                 const mapsUrl = `https://maps.google.com/?q=${seller.coordinates.lat},${seller.coordinates.lon}`;
                                 console.log(
-                                  "🗺️ Fallback to coordinates:",
+                                  "🗺️ Opening with stored coordinates:",
                                   mapsUrl
                                 );
                                 window.open(mapsUrl, "_blank");
+                              } else if (seller.location) {
+                                // Fallback to original URL if no coordinates
+                                console.log(
+                                  "🗺️ Fallback to original URL:",
+                                  seller.location
+                                );
+                                window.open(seller.location, "_blank");
                               } else {
                                 console.log("⚠️ No location data available");
                               }
