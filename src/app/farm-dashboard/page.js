@@ -110,25 +110,29 @@ export default function FarmDashboardPage() {
   };
 
   const getTreeStats = () => {
-    // Calculate stats based on tree positions, not tree objects
+    // Calculate stats based on tree positions, excluding healthy trees
     let totalTrees = 0;
-    let healthyTrees = 0;
     let fruitingTrees = 0;
     let diseasedTrees = 0;
 
     trees.forEach((tree) => {
       if (tree.tree_positions && tree.tree_positions.length > 0) {
         tree.tree_positions.forEach((position) => {
-          totalTrees++;
           const status = position.status;
-          if (status === "healthy") healthyTrees++;
-          else if (status === "fruiting") fruitingTrees++;
-          else if (status === "diseased") diseasedTrees++;
+          // Only count non-healthy trees
+          if (status === "fruiting") {
+            fruitingTrees++;
+            totalTrees++;
+          } else if (status === "diseased") {
+            diseasedTrees++;
+            totalTrees++;
+          }
+          // Skip healthy trees entirely
         });
       }
     });
 
-    return { totalTrees, healthyTrees, fruitingTrees, diseasedTrees };
+    return { totalTrees, fruitingTrees, diseasedTrees };
   };
 
   // Group trees by type and variety
@@ -136,9 +140,12 @@ export default function FarmDashboardPage() {
     const groups = {};
 
     trees.forEach((tree) => {
-      // Use tree positions to get planted varieties
+      // Use tree positions to get planted varieties, excluding healthy trees
       if (tree.tree_positions && tree.tree_positions.length > 0) {
         tree.tree_positions.forEach((position) => {
+          // Skip healthy trees
+          if (position.status === "healthy") return;
+
           const treeName = tree.name;
           const variety = position.variety || "Standard";
 
@@ -194,11 +201,6 @@ export default function FarmDashboardPage() {
         let matchingPositions = tree.tree_positions;
 
         switch (status) {
-          case "healthy":
-            matchingPositions = tree.tree_positions.filter(
-              (pos) => pos.status === "healthy"
-            );
-            break;
           case "fruiting":
             matchingPositions = tree.tree_positions.filter(
               (pos) => pos.status === "fruiting"
@@ -211,8 +213,10 @@ export default function FarmDashboardPage() {
             break;
           case "all":
           default:
-            // For "all" view, include all tree positions regardless of status
-            matchingPositions = tree.tree_positions;
+            // For "all" view, exclude healthy trees - only show fruiting and diseased
+            matchingPositions = tree.tree_positions.filter(
+              (pos) => pos.status === "fruiting" || pos.status === "diseased"
+            );
         }
 
         // If variety filter is active, further filter positions by variety
@@ -351,13 +355,7 @@ export default function FarmDashboardPage() {
                   </Button>
                 </>
               )}
-              {activeView === "healthy" && (
-                <>
-                  <i className="ti-heart text-success fs-1 d-block mb-3"></i>
-                  <h5>No healthy trees</h5>
-                  <p>Trees in good condition will appear here.</p>
-                </>
-              )}
+
               {activeView === "fruiting" && (
                 <>
                   <i className="ti-shine text-warning fs-1 d-block mb-3"></i>
@@ -462,7 +460,7 @@ export default function FarmDashboardPage() {
 
         {/* Summary Tiles - Clickable */}
         <Row className="g-4 mb-4">
-          <Col md={3}>
+          <Col md={4}>
             <Card
               className={`border shadow-sm rounded-3 h-100 ${
                 activeView === "all" && !varietyFilter ? "border-primary" : ""
@@ -482,55 +480,20 @@ export default function FarmDashboardPage() {
                 setVarietyFilter(null);
               }}
             >
-              <Card.Body className="text-center">
+              <Card.Body className="text-center p-4">
                 <div
-                  className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                  className="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
                   style={{ width: "60px", height: "60px" }}
                 >
                   <i className="ti-shine text-primary fs-4"></i>
                 </div>
-                <h5 className="mb-1">{stats.totalTrees}</h5>
-                <p className="text-muted mb-0 small">Total Trees</p>
+                <h5 className="mb-2">{stats.totalTrees}</h5>
+                <p className="text-muted mb-0 small">Active Trees</p>
               </Card.Body>
             </Card>
           </Col>
 
-          <Col md={3}>
-            <Card
-              className={`border shadow-sm rounded-3 h-100 ${
-                activeView === "healthy" && !varietyFilter
-                  ? "border-success"
-                  : ""
-              }`}
-              style={{
-                borderColor:
-                  activeView === "healthy" && !varietyFilter
-                    ? "#198754"
-                    : "#e3e6f0",
-                transition: "all 0.2s ease",
-                cursor: "pointer",
-                borderWidth:
-                  activeView === "healthy" && !varietyFilter ? "2px" : "1px",
-              }}
-              onClick={() => {
-                setActiveView("healthy");
-                setVarietyFilter(null);
-              }}
-            >
-              <Card.Body className="text-center">
-                <div
-                  className="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                  style={{ width: "60px", height: "60px" }}
-                >
-                  <i className="ti-heart text-success fs-4"></i>
-                </div>
-                <h5 className="mb-1">{stats.healthyTrees}</h5>
-                <p className="text-muted mb-0 small">Healthy Trees</p>
-              </Card.Body>
-            </Card>
-          </Col>
-
-          <Col md={3}>
+          <Col md={4}>
             <Card
               className={`border shadow-sm rounded-3 h-100 ${
                 activeView === "fruiting" && !varietyFilter
@@ -552,20 +515,20 @@ export default function FarmDashboardPage() {
                 setVarietyFilter(null);
               }}
             >
-              <Card.Body className="text-center">
+              <Card.Body className="text-center p-4">
                 <div
-                  className="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                  className="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
                   style={{ width: "60px", height: "60px" }}
                 >
                   <i className="ti-shine text-warning fs-4"></i>
                 </div>
-                <h5 className="mb-1">{stats.fruitingTrees}</h5>
+                <h5 className="mb-2">{stats.fruitingTrees}</h5>
                 <p className="text-muted mb-0 small">Fruiting Trees</p>
               </Card.Body>
             </Card>
           </Col>
 
-          <Col md={3}>
+          <Col md={4}>
             <Card
               className={`border shadow-sm rounded-3 h-100 ${
                 activeView === "diseased" && !varietyFilter
@@ -587,14 +550,14 @@ export default function FarmDashboardPage() {
                 setVarietyFilter(null);
               }}
             >
-              <Card.Body className="text-center">
+              <Card.Body className="text-center p-4">
                 <div
-                  className="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                  className="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
                   style={{ width: "60px", height: "60px" }}
                 >
                   <i className="ti-alert text-danger fs-4"></i>
                 </div>
-                <h5 className="mb-1">{stats.diseasedTrees}</h5>
+                <h5 className="mb-2">{stats.diseasedTrees}</h5>
                 <p className="text-muted mb-0 small">Diseased Trees</p>
               </Card.Body>
             </Card>
