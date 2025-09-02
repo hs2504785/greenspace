@@ -12,6 +12,7 @@ export default function ProfilePage() {
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [whatsappStoreLink, setWhatsappStoreLink] = useState("");
   const [location, setLocation] = useState("");
+  const [coordinates, setCoordinates] = useState(null);
   const [showEmailPublicly, setShowEmailPublicly] = useState(false);
   const [showPhonePublicly, setShowPhonePublicly] = useState(false);
   const [showWhatsappPublicly, setShowWhatsappPublicly] = useState(false);
@@ -90,6 +91,7 @@ export default function ProfilePage() {
     console.log("Submitting profile update:", {
       whatsappNumber,
       location,
+      coordinates,
       showEmailPublicly,
       showPhonePublicly,
       showWhatsappPublicly,
@@ -107,6 +109,7 @@ export default function ProfilePage() {
           whatsapp_number: whatsappNumber,
           whatsapp_store_link: whatsappStoreLink,
           location: location,
+          coordinates: coordinates,
           show_email_publicly: showEmailPublicly,
           show_phone_publicly: showPhonePublicly,
           show_whatsapp_publicly: showWhatsappPublicly,
@@ -248,6 +251,15 @@ export default function ProfilePage() {
                 <LocationAutoDetect
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
+                  onCoordinatesChange={(coords, accuracy) => {
+                    setCoordinates({ ...coords, accuracy });
+                    console.log(
+                      "Coordinates updated:",
+                      coords,
+                      "Accuracy:",
+                      accuracy
+                    );
+                  }}
                   name="location"
                   placeholder="e.g., Bangalore, Karnataka or My Farm, Village Name"
                   label={

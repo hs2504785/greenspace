@@ -6,6 +6,7 @@ import { Form, Button, InputGroup, Alert, Spinner } from "react-bootstrap";
 const LocationAutoDetect = ({
   value = "",
   onChange,
+  onCoordinatesChange, // New prop for coordinate updates
   name = "location",
   placeholder = "Enter your location",
   required = false,
@@ -20,6 +21,8 @@ const LocationAutoDetect = ({
   const [hasGeolocationSupport, setHasGeolocationSupport] = useState(false);
   const [wasAutoDetected, setWasAutoDetected] = useState(false);
   const [showEditHint, setShowEditHint] = useState(false);
+  const [coordinates, setCoordinates] = useState(null);
+  const [locationAccuracy, setLocationAccuracy] = useState(null);
 
   useEffect(() => {
     // Check if geolocation is supported
@@ -43,7 +46,20 @@ const LocationAutoDetect = ({
 
     try {
       const position = await getCurrentPosition();
-      const { latitude, longitude } = position.coords;
+      const { latitude, longitude, accuracy } = position.coords;
+
+      // Store coordinates and accuracy
+      const coords = {
+        lat: latitude,
+        lon: longitude,
+      };
+      setCoordinates(coords);
+      setLocationAccuracy(accuracy);
+
+      // Notify parent component about coordinates
+      if (onCoordinatesChange) {
+        onCoordinatesChange(coords, accuracy);
+      }
 
       // Use reverse geocoding to get address
       const address = await reverseGeocode(latitude, longitude);
@@ -433,6 +449,32 @@ const LocationAutoDetect = ({
           <i className="ti-check me-1"></i>
           Auto-detected location - feel free to edit and add more specific
           details
+          {locationAccuracy && (
+            <span className="ms-2 text-muted">
+              (±{Math.round(locationAccuracy)}m accuracy)
+            </span>
+          )}
+        </Form.Text>
+      )}
+
+      {coordinates && (
+        <Form.Text className="text-muted small mt-1 d-flex align-items-center">
+          <i className="ti-map-pin me-1"></i>
+          Coordinates: {coordinates.lat.toFixed(6)},{" "}
+          {coordinates.lon.toFixed(6)}
+          {locationAccuracy && locationAccuracy < 50 && (
+            <span className="badge bg-success ms-2 small">High Precision</span>
+          )}
+          {locationAccuracy &&
+            locationAccuracy >= 50 &&
+            locationAccuracy < 200 && (
+              <span className="badge bg-warning ms-2 small">
+                Medium Precision
+              </span>
+            )}
+          {locationAccuracy && locationAccuracy >= 200 && (
+            <span className="badge bg-secondary ms-2 small">Low Precision</span>
+          )}
         </Form.Text>
       )}
 

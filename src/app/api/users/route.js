@@ -5,11 +5,11 @@ export async function GET(request) {
   try {
     const supabase = createSupabaseClient();
 
-    // Get all users with available fields
+    // Get all users with available fields including coordinates
     const { data, error } = await supabase
       .from("users")
       .select(
-        "id, name, email, created_at, location, avatar_url, whatsapp_store_link"
+        "id, name, email, created_at, location, avatar_url, whatsapp_store_link, latitude, longitude, location_accuracy, coordinates_updated_at"
       )
       .order("created_at", { ascending: false });
 
@@ -57,11 +57,21 @@ export async function GET(request) {
       return hasName;
     });
 
-    // Enhance users with seller information
+    // Enhance users with seller information and location data
     const enhancedUsers = publicUsers.map((user) => {
       const productCount = productCountMap[user.id] || 0;
       const farmProfile = farmProfileMap[user.id];
       const isSeller = productCount > 0; // Consider someone a seller if they have products
+
+      // Determine location type and precision
+      const hasCoordinates = user.latitude !== null && user.longitude !== null;
+      const locationPrecision = user.location_accuracy
+        ? user.location_accuracy < 50
+          ? "high"
+          : user.location_accuracy < 200
+          ? "medium"
+          : "low"
+        : null;
 
       return {
         ...user,
@@ -70,6 +80,21 @@ export async function GET(request) {
         farm_name: farmProfile?.farm_name,
         average_rating: farmProfile?.average_rating,
         total_orders: farmProfile?.total_orders || 0,
+        // Location metadata for distance calculations
+        has_coordinates: hasCoordinates,
+        location_type: hasCoordinates
+          ? "coordinates"
+          : user.location
+          ? "text_only"
+          : "none",
+        location_precision: locationPrecision,
+        // Include coordinates for distance calculations (if available)
+        coordinates: hasCoordinates
+          ? {
+              lat: parseFloat(user.latitude),
+              lon: parseFloat(user.longitude),
+            }
+          : null,
       };
     });
 

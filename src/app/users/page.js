@@ -36,6 +36,7 @@ export default function PublicUsersPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [showMapModal, setShowMapModal] = useState(false);
   const [mapSellers, setMapSellers] = useState([]);
+  const [mapCurrentLocation, setMapCurrentLocation] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -85,8 +86,9 @@ export default function PublicUsersPage() {
     }
   };
 
-  const handleShowMap = (sellers) => {
+  const handleShowMap = (sellers, currentLocation = null) => {
     setMapSellers(sellers);
+    setMapCurrentLocation(currentLocation);
     setShowMapModal(true);
   };
 
@@ -488,6 +490,7 @@ export default function PublicUsersPage() {
         show={showMapModal}
         onHide={() => setShowMapModal(false)}
         sellers={mapSellers}
+        currentLocation={mapCurrentLocation}
       />
     </Container>
   );

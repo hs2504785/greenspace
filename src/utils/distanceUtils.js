@@ -186,7 +186,19 @@ export function sortUsersByDistance(users, referencePoint) {
   }
 
   const usersWithDistance = users.map((user) => {
-    const userCoords = extractCoordinates(user.location);
+    let userCoords = null;
+    let coordinateSource = "none";
+
+    // Priority 1: Use API-provided coordinates (most accurate)
+    if (user.coordinates && user.coordinates.lat && user.coordinates.lon) {
+      userCoords = user.coordinates;
+      coordinateSource = "api_coordinates";
+    }
+    // Priority 2: Extract from location string (fallback)
+    else if (user.location) {
+      userCoords = extractCoordinates(user.location);
+      coordinateSource = userCoords ? "extracted_coordinates" : "text_only";
+    }
 
     if (userCoords) {
       const distance = calculateDistance(
@@ -200,6 +212,8 @@ export function sortUsersByDistance(users, referencePoint) {
         ...user,
         distance,
         coordinates: userCoords,
+        coordinate_source: coordinateSource,
+        location_precision: user.location_precision || null,
       };
     }
 
@@ -207,14 +221,31 @@ export function sortUsersByDistance(users, referencePoint) {
       ...user,
       distance: null,
       coordinates: null,
+      coordinate_source: coordinateSource,
+      location_precision: null,
     };
   });
 
   // Sort by distance (users with no coordinates go to the end)
+  // Secondary sort by coordinate accuracy (API coordinates first)
   return usersWithDistance.sort((a, b) => {
     if (a.distance === null && b.distance === null) return 0;
     if (a.distance === null) return 1;
     if (b.distance === null) return -1;
+
+    // If distances are very close, prioritize by coordinate source accuracy
+    if (Math.abs(a.distance - b.distance) < 0.1) {
+      const sourceOrder = {
+        api_coordinates: 0,
+        extracted_coordinates: 1,
+        text_only: 2,
+        none: 3,
+      };
+      return (
+        sourceOrder[a.coordinate_source] - sourceOrder[b.coordinate_source]
+      );
+    }
+
     return a.distance - b.distance;
   });
 }

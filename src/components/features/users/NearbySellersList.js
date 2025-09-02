@@ -11,6 +11,7 @@ import {
   Alert,
   Spinner,
   Table,
+  Dropdown,
 } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import UserAvatar from "@/components/common/UserAvatar";
@@ -57,7 +58,14 @@ export default function NearbySellersList({
     }
   }, [currentLocation, sellers]);
 
-  const handleGetLocation = async () => {
+  // Auto-detect location when component mounts (if not already available)
+  useEffect(() => {
+    if (!currentLocation && sellers.length > 0) {
+      handleGetLocation(true); // true = isAutoDetection
+    }
+  }, [sellers]); // Trigger when sellers are loaded
+
+  const handleGetLocation = async (isAutoDetection = false) => {
     setLocationLoading(true);
     setLocationError(null);
 
@@ -68,12 +76,18 @@ export default function NearbySellersList({
         setShowLocationPrompt(false);
         console.log("Current location detected:", location);
       } else {
-        setLocationError(
-          "Unable to detect your location. Please enable location services."
-        );
+        // Only show error for manual detection, not auto-detection
+        if (!isAutoDetection) {
+          setLocationError(
+            "Unable to detect your location. Please enable location services."
+          );
+        }
       }
     } catch (error) {
-      setLocationError("Failed to get your location. Please try again.");
+      // Only show error for manual detection, not auto-detection
+      if (!isAutoDetection) {
+        setLocationError("Failed to get your location. Please try again.");
+      }
       console.error("Location error:", error);
     } finally {
       setLocationLoading(false);
@@ -131,8 +145,9 @@ export default function NearbySellersList({
               <div>
                 <h6 className="mb-1 fw-semibold">Find Nearby Members</h6>
                 <p className="mb-0 text-muted small">
-                  Allow location access to see members who sell products sorted
-                  by distance from you.
+                  {locationLoading
+                    ? "Detecting your location to show nearby members..."
+                    : "Allow location access to see members who sell products sorted by distance from you."}
                 </p>
               </div>
             </div>
@@ -178,50 +193,6 @@ export default function NearbySellersList({
         </div>
       )}
 
-      {/* Distance Filter */}
-      {currentLocation && (
-        <Card className="mb-4">
-          <Card.Body className="py-3">
-            <Row className="align-items-center">
-              <Col xs={12} md={6}>
-                <div className="d-flex align-items-center">
-                  <i className="ti-location-pin text-success me-2"></i>
-                  <div>
-                    <span className="small text-muted">
-                      Location detected • Showing distances to members
-                    </span>
-                    <br />
-                    <small className="text-muted">
-                      <i className="ti-info me-1"></i>
-                      Some locations can't show distance (Google Maps links,
-                      city names)
-                    </small>
-                  </div>
-                </div>
-              </Col>
-              <Col xs={12} md={6}>
-                <Form.Group className="mb-0">
-                  <Form.Label className="small fw-medium text-muted mb-1">
-                    Distance Filter
-                  </Form.Label>
-                  <Form.Select
-                    size="sm"
-                    value={distanceFilter}
-                    onChange={(e) => setDistanceFilter(e.target.value)}
-                  >
-                    {distanceOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-            </Row>
-          </Card.Body>
-        </Card>
-      )}
-
       {/* Sellers List Header */}
       <div className="d-flex align-items-center justify-content-between mb-3">
         <div>
@@ -236,17 +207,67 @@ export default function NearbySellersList({
             )}
           </p>
         </div>
-        {nearbySellers.length > 0 && onShowMap && (
-          <Button
-            variant="outline-primary"
-            size="sm"
-            onClick={() => onShowMap(nearbySellers)}
-            className="rounded-pill"
-          >
-            <i className="ti-map me-2"></i>
-            View on Map
-          </Button>
-        )}
+
+        <div className="d-flex align-items-center gap-3">
+          {/* Distance Filter */}
+          {currentLocation && (
+            <Dropdown align="end">
+              <Dropdown.Toggle
+                variant="outline-secondary"
+                size="sm"
+                className="d-flex align-items-center gap-2 border-0 shadow-sm"
+                style={{
+                  minWidth: "140px",
+                  backgroundColor: "white",
+                  color: "#495057",
+                  border: "1px solid #dee2e6",
+                }}
+              >
+                <i className="ti-filter text-primary"></i>
+                <span className="text-nowrap fw-medium">
+                  {distanceOptions.find((opt) => opt.value === distanceFilter)
+                    ?.label || "All Distances"}
+                </span>
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu
+                className="shadow border-0"
+                style={{ minWidth: "160px" }}
+              >
+                {distanceOptions.map((option) => (
+                  <Dropdown.Item
+                    key={option.value}
+                    onClick={() => setDistanceFilter(option.value)}
+                    className="d-flex align-items-center gap-2 py-2"
+                    active={distanceFilter === option.value}
+                  >
+                    <i
+                      className={`ti-${
+                        option.value === "all" ? "world" : "target"
+                      } text-muted`}
+                    ></i>
+                    <span>{option.label}</span>
+                    {distanceFilter === option.value && (
+                      <i className="ti-check ms-auto text-primary"></i>
+                    )}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+          )}
+
+          {nearbySellers.length > 0 && onShowMap && (
+            <Button
+              variant="outline-primary"
+              size="sm"
+              onClick={() => onShowMap(nearbySellers, currentLocation)}
+              className="rounded-pill"
+            >
+              <i className="ti-map me-2"></i>
+              View on Map
+            </Button>
+          )}
+        </div>
       </div>
 
       {filteredSellers.length === 0 ? (
@@ -306,25 +327,61 @@ export default function NearbySellersList({
                       </div>
                     </UserProfilePopover>
                   </td>
-                  <td>
+                  <td className="align-middle">
                     {seller.distance !== null ? (
-                      <Badge bg="success" className="small">
-                        <i className="ti-direction me-1"></i>
-                        {formatDistance(seller.distance)}
-                      </Badge>
+                      <div className="d-flex align-items-center">
+                        {seller.distance < 1 ? (
+                          <span className="d-flex align-items-center gap-1 text-success fw-semibold">
+                            <i
+                              className="ti ti-navigation"
+                              style={{ fontSize: "0.9rem" }}
+                            ></i>
+                            {formatDistance(seller.distance)}
+                          </span>
+                        ) : seller.distance < 5 ? (
+                          <span className="d-flex align-items-center gap-1 text-primary fw-semibold">
+                            <i
+                              className="ti ti-map-pin"
+                              style={{ fontSize: "0.9rem" }}
+                            ></i>
+                            {formatDistance(seller.distance)}
+                          </span>
+                        ) : seller.distance < 15 ? (
+                          <span className="d-flex align-items-center gap-1 text-warning fw-semibold">
+                            <i
+                              className="ti ti-route"
+                              style={{ fontSize: "0.9rem" }}
+                            ></i>
+                            {formatDistance(seller.distance)}
+                          </span>
+                        ) : (
+                          <span className="d-flex align-items-center gap-1 text-muted fw-semibold">
+                            <i
+                              className="ti ti-map-2"
+                              style={{ fontSize: "0.9rem" }}
+                            ></i>
+                            {formatDistance(seller.distance)}
+                          </span>
+                        )}
+                      </div>
                     ) : seller.location ? (
-                      <span
-                        className="text-muted small"
-                        title="Location format not supported for distance calculation"
-                      >
-                        <i className="ti-info me-1"></i>
-                        Can't calculate
-                      </span>
+                      <div className="d-flex align-items-center">
+                        <span
+                          className="text-muted small d-flex align-items-center gap-1"
+                          title="Location format not supported for distance calculation"
+                        >
+                          <i
+                            className="ti ti-help-circle"
+                            style={{ fontSize: "0.9rem" }}
+                          ></i>
+                          Can't calculate
+                        </span>
+                      </div>
                     ) : (
                       <span className="text-muted small">N/A</span>
                     )}
                   </td>
-                  <td>
+                  <td className="align-middle">
                     <div className="d-flex align-items-center gap-2">
                       <span className="fw-semibold text-primary">
                         {seller.product_count}
@@ -332,7 +389,7 @@ export default function NearbySellersList({
                       <small className="text-muted">products</small>
                     </div>
                   </td>
-                  <td>
+                  <td className="align-middle">
                     {seller.average_rating > 0 ? (
                       <Badge bg="warning" className="small">
                         ⭐ {seller.average_rating.toFixed(1)}
@@ -341,7 +398,7 @@ export default function NearbySellersList({
                       <span className="text-muted small">No ratings</span>
                     )}
                   </td>
-                  <td style={{ maxWidth: "200px" }}>
+                  <td className="align-middle" style={{ maxWidth: "200px" }}>
                     <small className="text-muted">
                       {seller.location ? (
                         isMapLink(seller.location) ? (
@@ -370,7 +427,7 @@ export default function NearbySellersList({
                       )}
                     </small>
                   </td>
-                  <td className="text-end">
+                  <td className="align-middle text-end">
                     <div className="d-flex gap-1 justify-content-end">
                       <Button
                         variant={

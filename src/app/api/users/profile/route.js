@@ -247,6 +247,42 @@ export async function PATCH(request) {
       updateData.location = location || null;
     }
 
+    // Handle coordinate updates if provided
+    if (data.coordinates !== undefined) {
+      const { lat, lon, accuracy } = data.coordinates || {};
+
+      if (lat !== undefined && lon !== undefined) {
+        // Validate coordinate ranges
+        if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+          return new Response(
+            JSON.stringify({
+              message: "Invalid coordinates",
+              details:
+                "Latitude must be between -90 and 90, longitude between -180 and 180",
+            }),
+            {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+        }
+
+        updateData.latitude = lat;
+        updateData.longitude = lon;
+        updateData.coordinates_updated_at = new Date().toISOString();
+
+        if (accuracy !== undefined && accuracy > 0) {
+          updateData.location_accuracy = Math.round(accuracy);
+        }
+      } else {
+        // Clear coordinates if explicitly set to null
+        updateData.latitude = null;
+        updateData.longitude = null;
+        updateData.location_accuracy = null;
+        updateData.coordinates_updated_at = null;
+      }
+    }
+
     // Handle privacy settings if provided
     if (data.show_email_publicly !== undefined) {
       updateData.show_email_publicly = Boolean(data.show_email_publicly);
