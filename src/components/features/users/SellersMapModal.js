@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Modal, Button, Alert, Spinner, Badge, Card } from "react-bootstrap";
 import UserAvatar from "@/components/common/UserAvatar";
 import { formatDistance } from "@/utils/distanceUtils";
+import mapsUsageService from "@/services/GoogleMapsUsageService";
 
 export default function SellersMapModal({
   show,
@@ -28,6 +29,15 @@ export default function SellersMapModal({
   useEffect(() => {
     if (show) {
       const hasGoogleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+      // Check if maps should be disabled due to usage limits
+      if (mapsUsageService.shouldDisableMaps()) {
+        const stats = mapsUsageService.getUsageStats();
+        setMapError(
+          `Map view temporarily disabled. Daily usage: ${stats.used}/${stats.limit} requests (${stats.percentage}%). Resets tomorrow.`
+        );
+        return;
+      }
 
       if (hasGoogleMapsKey && !window.google) {
         loadGoogleMapsScript();
@@ -188,6 +198,12 @@ export default function SellersMapModal({
           },
         ],
       });
+
+      // Track map usage
+      const newUsage = mapsUsageService.incrementUsage();
+      console.log(
+        `📊 Map loaded. Usage: ${newUsage}/${mapsUsageService.DAILY_LIMIT}`
+      );
 
       setMap(mapInstance);
 

@@ -125,6 +125,10 @@ export default function ProfileDropdown({ user }) {
             <div className="px-3 py-2 border-bottom bg-light mt-2">
               <small className="text-muted fw-semibold">ADMINISTRATION</small>
             </div>
+            <Dropdown.Item as={Link} href="/admin">
+              <i className="ti-dashboard me-2 text-danger"></i>
+              Admin Dashboard
+            </Dropdown.Item>
             {/* Seller Requests - Hidden as requested
             {isAdmin && (
               <Dropdown.Item as={Link} href="/admin/seller-requests">
