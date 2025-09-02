@@ -68,11 +68,13 @@ export function extractCoordinates(location) {
     return null;
   }
 
+  console.log("🔍 Extracting coordinates from:", location);
+
   // Try to extract coordinates from various formats
 
-  // Format: "12.345, 67.890" or "12.345,67.890"
-  const coordPattern = /(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/;
-  const coordMatch = location.match(coordPattern);
+  // 1. Format: "12.345, 67.890" or "12.345,67.890"
+  const coordPattern = /^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/;
+  const coordMatch = location.trim().match(coordPattern);
 
   if (coordMatch) {
     const lat = parseFloat(coordMatch[1]);
@@ -80,11 +82,12 @@ export function extractCoordinates(location) {
 
     // Validate coordinates (rough bounds for Earth)
     if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      console.log("✅ Found coordinates (direct format):", { lat, lon });
       return { lat, lon };
     }
   }
 
-  // Try to extract from Google Maps URLs with @ symbol
+  // 2. Extract from Google Maps URLs with @ symbol (most common)
   const googleMapsPattern = /@(-?\d+\.?\d*),(-?\d+\.?\d*)/;
   const googleMatch = location.match(googleMapsPattern);
 
@@ -93,38 +96,26 @@ export function extractCoordinates(location) {
     const lon = parseFloat(googleMatch[2]);
 
     if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      console.log("✅ Found coordinates (@ pattern):", { lat, lon });
       return { lat, lon };
     }
   }
 
-  // Try to extract from other map URL formats
-  const mapUrlPattern = /[?&](?:q|ll|center)=(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)/;
-  const mapMatch = location.match(mapUrlPattern);
+  // 3. Extract from Google Maps URLs with 3d parameter (your URL format)
+  const googleMaps3dPattern = /[?&]3d=(-?\d+\.?\d*)[&]4d=(-?\d+\.?\d*)/;
+  const google3dMatch = location.match(googleMaps3dPattern);
 
-  if (mapMatch) {
-    const lat = parseFloat(mapMatch[1]);
-    const lon = parseFloat(mapMatch[2]);
+  if (google3dMatch) {
+    const lat = parseFloat(google3dMatch[1]);
+    const lon = parseFloat(google3dMatch[2]);
 
     if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      console.log("✅ Found coordinates (3d/4d pattern):", { lat, lon });
       return { lat, lon };
     }
   }
 
-  // Try to extract from full Google Maps URLs (not shortened)
-  const fullGoogleMapsPattern =
-    /maps\.google\.com.*[@&](-?\d+\.?\d*),(-?\d+\.?\d*)/;
-  const fullGoogleMatch = location.match(fullGoogleMapsPattern);
-
-  if (fullGoogleMatch) {
-    const lat = parseFloat(fullGoogleMatch[1]);
-    const lon = parseFloat(fullGoogleMatch[2]);
-
-    if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
-      return { lat, lon };
-    }
-  }
-
-  // Try to extract from place URLs with coordinates in the path
+  // 4. Extract from place URLs with coordinates in the path
   const placeUrlPattern = /place\/[^/]*\/@(-?\d+\.?\d*),(-?\d+\.?\d*)/;
   const placeMatch = location.match(placeUrlPattern);
 
@@ -133,29 +124,58 @@ export function extractCoordinates(location) {
     const lon = parseFloat(placeMatch[2]);
 
     if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      console.log("✅ Found coordinates (place URL pattern):", { lat, lon });
       return { lat, lon };
     }
   }
 
-  // Check if it's a Google Maps share link (goo.gl) - these can't be parsed directly
+  // 5. Extract from other map URL formats
+  const mapUrlPattern = /[?&](?:q|ll|center)=(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)/;
+  const mapMatch = location.match(mapUrlPattern);
+
+  if (mapMatch) {
+    const lat = parseFloat(mapMatch[1]);
+    const lon = parseFloat(mapMatch[2]);
+
+    if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      console.log("✅ Found coordinates (q/ll/center pattern):", { lat, lon });
+      return { lat, lon };
+    }
+  }
+
+  // 6. Extract from full Google Maps URLs (fallback)
+  const fullGoogleMapsPattern =
+    /maps\.google\.com.*[/@](-?\d+\.?\d*),(-?\d+\.?\d*)/;
+  const fullGoogleMatch = location.match(fullGoogleMapsPattern);
+
+  if (fullGoogleMatch) {
+    const lat = parseFloat(fullGoogleMatch[1]);
+    const lon = parseFloat(fullGoogleMatch[2]);
+
+    if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      console.log("✅ Found coordinates (full URL pattern):", { lat, lon });
+      return { lat, lon };
+    }
+  }
+
+  // 7. Check if it's a Google Maps share link (goo.gl) - these can't be parsed directly
   if (
     location.includes("maps.app.goo.gl") ||
     location.includes("goo.gl/maps")
   ) {
-    // For now, we can't extract coordinates from shortened Google Maps links
-    // This would require following the redirect, which is complex in the browser
-    // User should update their location using the location detector in their profile
     console.log(
-      "📍 Google Maps shortened link detected. User should update location in profile to get precise coordinates."
+      "⚠️ Google Maps shortened link detected - cannot extract coordinates directly"
     );
     return null;
   }
 
-  // Check if it's a simple location name (no coordinates)
+  // 8. Check if it's a simple location name (no coordinates)
   if (!/\d/.test(location)) {
+    console.log("ℹ️ No coordinates found - appears to be text location");
     return null;
   }
 
+  console.log("❌ No coordinates found in location string");
   return null;
 }
 

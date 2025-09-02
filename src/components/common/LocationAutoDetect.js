@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Form, Button, InputGroup, Alert, Spinner } from "react-bootstrap";
+import { extractCoordinates } from "@/utils/distanceUtils";
 
 const LocationAutoDetect = ({
   value = "",
@@ -308,9 +309,11 @@ const LocationAutoDetect = ({
   };
 
   const handleInputChange = (e) => {
+    const inputValue = e.target.value;
+
     console.log("🔄 LocationAutoDetect input change:", {
       name: name,
-      value: e.target.value,
+      value: inputValue,
       disabled: disabled || isDetecting,
     });
 
@@ -321,13 +324,34 @@ const LocationAutoDetect = ({
       setWasAutoDetected(false);
       setShowEditHint(false);
     }
+
+    // Try to extract coordinates from the input (for Google Maps URLs)
+    const extractedCoords = extractCoordinates(inputValue);
+    if (extractedCoords) {
+      console.log("🎯 Extracted coordinates from input:", extractedCoords);
+      setCoordinates(extractedCoords);
+      setLocationAccuracy(10); // High accuracy for extracted coordinates
+
+      // Notify parent component about coordinates
+      if (onCoordinatesChange) {
+        onCoordinatesChange(extractedCoords, 10);
+      }
+    } else if (coordinates && inputValue !== value) {
+      // Clear coordinates if input changed and no coordinates found
+      setCoordinates(null);
+      setLocationAccuracy(null);
+      if (onCoordinatesChange) {
+        onCoordinatesChange(null, null);
+      }
+    }
+
     // Ensure the event has the proper name attribute for form handling
     const event = {
       ...e,
       target: {
         ...e.target,
         name: name, // Use the dynamic name prop
-        value: e.target.value,
+        value: inputValue,
       },
     };
     onChange(event);
@@ -458,22 +482,42 @@ const LocationAutoDetect = ({
       )}
 
       {coordinates && (
-        <Form.Text className="text-muted small mt-1 d-flex align-items-center">
+        <Form.Text className="text-success small mt-1 d-flex align-items-center">
           <i className="ti-map-pin me-1"></i>
-          Coordinates: {coordinates.lat.toFixed(6)},{" "}
-          {coordinates.lon.toFixed(6)}
-          {locationAccuracy && locationAccuracy < 50 && (
-            <span className="badge bg-success ms-2 small">High Precision</span>
-          )}
-          {locationAccuracy &&
-            locationAccuracy >= 50 &&
-            locationAccuracy < 200 && (
-              <span className="badge bg-warning ms-2 small">
-                Medium Precision
+          {locationAccuracy === 10 ? (
+            <>
+              <span className="fw-medium">Coordinates extracted from URL:</span>
+              <span className="ms-1">
+                {coordinates.lat.toFixed(6)}, {coordinates.lon.toFixed(6)}
               </span>
-            )}
-          {locationAccuracy && locationAccuracy >= 200 && (
-            <span className="badge bg-secondary ms-2 small">Low Precision</span>
+              <span className="badge bg-success ms-2 small">
+                High Precision
+              </span>
+            </>
+          ) : (
+            <>
+              <span>Detected coordinates:</span>
+              <span className="ms-1">
+                {coordinates.lat.toFixed(6)}, {coordinates.lon.toFixed(6)}
+              </span>
+              {locationAccuracy && locationAccuracy < 50 && (
+                <span className="badge bg-success ms-2 small">
+                  High Precision
+                </span>
+              )}
+              {locationAccuracy &&
+                locationAccuracy >= 50 &&
+                locationAccuracy < 200 && (
+                  <span className="badge bg-warning ms-2 small">
+                    Medium Precision
+                  </span>
+                )}
+              {locationAccuracy && locationAccuracy >= 200 && (
+                <span className="badge bg-secondary ms-2 small">
+                  Low Precision
+                </span>
+              )}
+            </>
           )}
         </Form.Text>
       )}
