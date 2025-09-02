@@ -125,7 +125,11 @@ export default function NearbySellersList({
   }, [sortedUsers, distanceFilter, distanceOptions]);
 
   const nearbySellers = useMemo(() => {
-    const nearby = filteredSellers.filter((seller) => seller.distance !== null);
+    // Include sellers with coordinates OR distance (for map viewing)
+    const nearby = filteredSellers.filter(
+      (seller) =>
+        seller.distance !== null || seller.coordinates || seller.location
+    );
     console.log("🔍 DEBUG - NearbySellersList:", {
       totalSellers: sellers.length,
       filteredSellers: filteredSellers.length,
@@ -149,7 +153,19 @@ export default function NearbySellersList({
   }, [filteredSellers, sellers.length, currentLocation]);
 
   const sellersWithoutLocation = useMemo(() => {
-    return filteredSellers.filter((seller) => seller.distance === null);
+    // Only include sellers who truly have no location data (no coordinates AND no location text)
+    const withoutLocation = filteredSellers.filter(
+      (seller) => !seller.coordinates && !seller.location
+    );
+    console.log("🔍 DEBUG - Sellers without location:", {
+      count: withoutLocation.length,
+      sellers: withoutLocation.map((s) => ({
+        name: s.name,
+        hasCoords: !!s.coordinates,
+        hasLocation: !!s.location,
+      })),
+    });
+    return withoutLocation;
   }, [filteredSellers]);
 
   if (sellers.length === 0) {
