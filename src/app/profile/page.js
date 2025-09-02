@@ -325,10 +325,49 @@ export default function ProfilePage() {
                 {/* Show helpful message for Google Maps links */}
                 {location && (location.includes("maps.app.goo.gl") || location.includes("goo.gl/maps")) && (
                   <div className="mt-2">
-                    <small className="text-warning">
-                      <i className="ti-info-alt me-1"></i>
-                      For precise distance calculations, consider using the "Detect Location" button instead of shortened Google Maps links.
-                    </small>
+                    <div className="alert alert-warning py-2">
+                      <div className="d-flex align-items-start">
+                        <i className="ti-info-alt me-2 mt-1"></i>
+                        <div className="flex-grow-1">
+                          <strong>Google Maps Link Detected</strong>
+                          <p className="mb-2 small">
+                            Shortened Google Maps links can't be used for distance calculations. 
+                            Here are better options:
+                          </p>
+                          <div className="d-flex flex-wrap gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline-primary"
+                              onClick={() => {
+                                const instructions = `To get your exact address from this Google Maps link:
+
+1. Click on your Google Maps link: ${location}
+2. When it opens, right-click on your exact location
+3. Select "What's here?" from the menu
+4. Copy the address or coordinates that appear
+5. Come back and paste it in the location field
+
+This will enable accurate distance calculations for customers finding you.`;
+                                alert(instructions);
+                              }}
+                            >
+                              <i className="ti-help me-1"></i>
+                              How to Fix This
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline-success"
+                              onClick={() => {
+                                window.open(location, '_blank');
+                              }}
+                            >
+                              <i className="ti-external-link me-1"></i>
+                              Open Maps Link
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
                 
