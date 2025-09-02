@@ -164,7 +164,7 @@ export function extractCoordinates(location) {
     location.includes("goo.gl/maps")
   ) {
     console.log(
-      "⚠️ Google Maps shortened link detected - cannot extract coordinates directly"
+      "ℹ️ Google Maps shortened link detected - will use original URL for map viewing"
     );
     return null;
   }

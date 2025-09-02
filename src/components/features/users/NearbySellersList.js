@@ -466,11 +466,12 @@ export default function NearbySellersList({
                                 );
                                 window.open(mapsUrl, "_blank");
                               } else {
+                                // For short URLs, open them directly since we can't extract coordinates
                                 console.log(
-                                  "🗺️ Falling back to original location:",
+                                  "🗺️ Opening original short URL:",
                                   seller.location
                                 );
-                                openMapLink(seller.location);
+                                window.open(seller.location, "_blank");
                               }
                             }}
                           >

@@ -578,12 +578,8 @@ export default function SellersMapModal({
                                     "_blank"
                                   );
                                 } else {
-                                  window.open(
-                                    `https://maps.google.com/?q=${encodeURIComponent(
-                                      seller.location
-                                    )}`,
-                                    "_blank"
-                                  );
+                                  // For short URLs or text locations, open them directly
+                                  window.open(seller.location, "_blank");
                                 }
                               }}
                             >

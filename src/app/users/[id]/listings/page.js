@@ -218,11 +218,12 @@ export default function UserListingsPage() {
                                     );
                                     window.open(mapsUrl, "_blank");
                                   } else {
+                                    // For short URLs, open them directly since we can't extract coordinates
                                     console.log(
-                                      "🗺️ Falling back to original location:",
+                                      "🗺️ Opening original short URL:",
                                       user.location
                                     );
-                                    openMapLink(user.location);
+                                    window.open(user.location, "_blank");
                                   }
                                 }}
                                 title="Open location in map"
