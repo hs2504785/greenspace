@@ -574,17 +574,13 @@ export default function SellersMapModal({
                               onClick={() => {
                                 // Use stored coordinates if available (more reliable than short URLs)
                                 if (seller.coordinates) {
-                                  // Use the most reliable Google Maps URL format
-                                  window.open(
-                                    `https://www.google.com/maps/search/${encodeURIComponent(
-                                      seller.name +
-                                        " " +
-                                        seller.coordinates.lat +
-                                        "," +
-                                        seller.coordinates.lon
-                                    )}`,
-                                    "_blank"
-                                  );
+                                  // Use simpler encoding that Google Maps prefers (+ for spaces, raw commas)
+                                  const searchQuery = `${seller.name} ${seller.coordinates.lat},${seller.coordinates.lon}`;
+                                  const mapsUrl = `https://www.google.com/maps/search/${searchQuery.replace(
+                                    / /g,
+                                    "+"
+                                  )}`;
+                                  window.open(mapsUrl, "_blank");
                                 } else if (seller.location) {
                                   // Fallback to original URL if no coordinates
                                   window.open(seller.location, "_blank");

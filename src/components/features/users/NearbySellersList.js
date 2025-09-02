@@ -477,13 +477,11 @@ export default function NearbySellersList({
                               // Use stored coordinates if available (more reliable than short URLs)
                               if (seller.coordinates) {
                                 // Create a Google Maps URL that shows the business name and location
-                                // Use the most reliable Google Maps URL format
-                                const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(
-                                  seller.name +
-                                    " " +
-                                    seller.coordinates.lat +
-                                    "," +
-                                    seller.coordinates.lon
+                                // Use simpler encoding that Google Maps prefers (+ for spaces, raw commas)
+                                const searchQuery = `${seller.name} ${seller.coordinates.lat},${seller.coordinates.lon}`;
+                                const mapsUrl = `https://www.google.com/maps/search/${searchQuery.replace(
+                                  / /g,
+                                  "+"
                                 )}`;
                                 console.log(
                                   "🗺️ Opening with business name and coordinates:",

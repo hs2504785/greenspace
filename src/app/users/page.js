@@ -326,13 +326,11 @@ export default function PublicUsersPage() {
 
                                     // Use stored coordinates if available (more reliable than short URLs)
                                     if (user.coordinates) {
-                                      // Use the most reliable Google Maps URL format
-                                      const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(
-                                        user.name +
-                                          " " +
-                                          user.coordinates.lat +
-                                          "," +
-                                          user.coordinates.lon
+                                      // Use simpler encoding that Google Maps prefers (+ for spaces, raw commas)
+                                      const searchQuery = `${user.name} ${user.coordinates.lat},${user.coordinates.lon}`;
+                                      const mapsUrl = `https://www.google.com/maps/search/${searchQuery.replace(
+                                        / /g,
+                                        "+"
                                       )}`;
                                       console.log(
                                         "🗺️ Opening with stored coordinates:",
