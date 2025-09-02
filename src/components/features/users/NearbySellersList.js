@@ -96,12 +96,27 @@ export default function NearbySellersList({
 
   // Filter sellers by distance - memoized for performance
   const filteredSellers = useMemo(() => {
-    return distanceFilter === "all"
+    const result = distanceFilter === "all"
       ? sortedUsers
       : filterUsersByDistance(
           sortedUsers,
           distanceOptions.find((opt) => opt.value === distanceFilter)?.distance
         );
+    
+    console.log("🔍 DEBUG - Distance Filtering:", {
+      distanceFilter,
+      sortedUsersLength: sortedUsers.length,
+      filteredSellersLength: result.length,
+      maxDistance: distanceOptions.find((opt) => opt.value === distanceFilter)?.distance,
+      sampleSortedUser: sortedUsers[0] ? {
+        name: sortedUsers[0].name,
+        distance: sortedUsers[0].distance,
+        coordinates: sortedUsers[0].coordinates,
+        coordinate_source: sortedUsers[0].coordinate_source
+      } : null
+    });
+    
+    return result;
   }, [sortedUsers, distanceFilter, distanceOptions]);
 
   const nearbySellers = useMemo(() => {
@@ -118,8 +133,12 @@ export default function NearbySellersList({
             coordinates: filteredSellers[0].coordinates,
             distance: filteredSellers[0].distance,
             location: filteredSellers[0].location,
+            coordinate_source: filteredSellers[0].coordinate_source,
+            location_type: filteredSellers[0].location_type,
           }
         : null,
+      distanceFilter,
+      sortedUsersLength: sortedUsers.length,
     });
     return nearby;
   }, [filteredSellers, sellers.length, currentLocation]);

@@ -97,7 +97,7 @@ export async function GET(request) {
           : null,
       };
 
-      // Debug logging for first seller
+      // Debug logging for sellers
       if (isSeller && productCount > 0) {
         console.log("🔍 DEBUG - API Seller Data:", {
           name: user.name,
@@ -107,6 +107,8 @@ export async function GET(request) {
           coordinates: enhancedUser.coordinates,
           location: user.location,
           location_type: enhancedUser.location_type,
+          productCount,
+          isSeller
         });
       }
 
