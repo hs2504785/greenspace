@@ -6,7 +6,7 @@ export async function GET(request, { params }) {
     const { id } = await params;
     const supabase = createSupabaseClient();
 
-    // Get user's contact info with privacy preferences
+    // Get user's contact info with privacy preferences and coordinates
     const { data: user, error } = await supabase
       .from("users")
       .select(
@@ -23,7 +23,11 @@ export async function GET(request, { params }) {
         show_email_publicly,
         show_phone_publicly,
         show_whatsapp_publicly,
-        profile_public
+        profile_public,
+        latitude,
+        longitude,
+        location_accuracy,
+        coordinates_updated_at
       `
       )
       .eq("id", id)
@@ -42,6 +46,15 @@ export async function GET(request, { params }) {
       );
     }
 
+    // Process coordinate data
+    const hasCoordinates = user.latitude !== null && user.longitude !== null;
+    const coordinates = hasCoordinates
+      ? {
+          lat: parseFloat(user.latitude),
+          lon: parseFloat(user.longitude),
+        }
+      : null;
+
     // Build response with basic info and privacy-filtered contact details
     const contactInfo = {
       id: user.id,
@@ -50,6 +63,11 @@ export async function GET(request, { params }) {
       avatar_url: user.avatar_url,
       created_at: user.created_at,
       whatsapp_store_link: user.whatsapp_store_link, // Store link is always public if provided
+      // Include coordinate data for map functionality
+      has_coordinates: hasCoordinates,
+      coordinates: coordinates,
+      location_accuracy: user.location_accuracy,
+      coordinates_updated_at: user.coordinates_updated_at,
     };
 
     // Add contact details based on privacy preferences

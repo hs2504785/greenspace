@@ -313,7 +313,33 @@ export default function PublicUsersPage() {
                                   variant="link"
                                   size="sm"
                                   className="p-0 text-decoration-none text-success fw-medium text-start"
-                                  onClick={() => openMapLink(user.location)}
+                                  onClick={() => {
+                                    console.log(
+                                      "🔍 DEBUG - Main users page location click for:",
+                                      user.name,
+                                      {
+                                        hasCoordinates: !!user.coordinates,
+                                        coordinates: user.coordinates,
+                                        originalLocation: user.location,
+                                      }
+                                    );
+
+                                    // Use updated coordinates if available, otherwise fall back to original location
+                                    if (user.coordinates) {
+                                      const mapsUrl = `https://maps.google.com/?q=${user.coordinates.lat},${user.coordinates.lon}`;
+                                      console.log(
+                                        "🗺️ Opening maps with coordinates:",
+                                        mapsUrl
+                                      );
+                                      window.open(mapsUrl, "_blank");
+                                    } else {
+                                      console.log(
+                                        "🗺️ Falling back to original location:",
+                                        user.location
+                                      );
+                                      openMapLink(user.location);
+                                    }
+                                  }}
                                   title={`Click to open location in map: ${user.location}`}
                                   style={{
                                     maxWidth: "100%",

@@ -448,12 +448,28 @@ export default function NearbySellersList({
                             className="p-0 text-decoration-none text-success fw-medium text-start"
                             onClick={() => {
                               // Use updated coordinates if available, otherwise fall back to original location
+                              console.log(
+                                "🔍 DEBUG - Location click for:",
+                                seller.name,
+                                {
+                                  hasCoordinates: !!seller.coordinates,
+                                  coordinates: seller.coordinates,
+                                  originalLocation: seller.location,
+                                }
+                              );
+
                               if (seller.coordinates) {
-                                window.open(
-                                  `https://maps.google.com/?q=${seller.coordinates.lat},${seller.coordinates.lon}`,
-                                  "_blank"
+                                const mapsUrl = `https://maps.google.com/?q=${seller.coordinates.lat},${seller.coordinates.lon}`;
+                                console.log(
+                                  "🗺️ Opening maps with coordinates:",
+                                  mapsUrl
                                 );
+                                window.open(mapsUrl, "_blank");
                               } else {
+                                console.log(
+                                  "🗺️ Falling back to original location:",
+                                  seller.location
+                                );
                                 openMapLink(seller.location);
                               }
                             }}

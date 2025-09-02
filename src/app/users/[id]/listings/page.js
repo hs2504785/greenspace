@@ -198,7 +198,33 @@ export default function UserListingsPage() {
                                 variant="link"
                                 size="sm"
                                 className="p-0 text-decoration-none text-success fw-medium"
-                                onClick={() => openMapLink(user.location)}
+                                onClick={() => {
+                                  console.log(
+                                    "🔍 DEBUG - User listings location click for:",
+                                    user.name,
+                                    {
+                                      hasCoordinates: !!user.coordinates,
+                                      coordinates: user.coordinates,
+                                      originalLocation: user.location,
+                                    }
+                                  );
+
+                                  // Use updated coordinates if available, otherwise fall back to original location
+                                  if (user.coordinates) {
+                                    const mapsUrl = `https://maps.google.com/?q=${user.coordinates.lat},${user.coordinates.lon}`;
+                                    console.log(
+                                      "🗺️ Opening maps with coordinates:",
+                                      mapsUrl
+                                    );
+                                    window.open(mapsUrl, "_blank");
+                                  } else {
+                                    console.log(
+                                      "🗺️ Falling back to original location:",
+                                      user.location
+                                    );
+                                    openMapLink(user.location);
+                                  }
+                                }}
                                 title="Open location in map"
                               >
                                 {getLocationDisplayText(user.location)}
