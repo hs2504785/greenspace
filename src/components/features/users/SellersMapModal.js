@@ -572,18 +572,18 @@ export default function SellersMapModal({
                               variant="outline-secondary"
                               size="sm"
                               onClick={() => {
-                                // Use stored coordinates if available (more reliable than short URLs)
-                                if (seller.coordinates) {
-                                  // Use simpler encoding that Google Maps prefers (+ for spaces, raw commas)
+                                // Prioritize original location URL (more accurate), use coordinates as fallback
+                                if (seller.location) {
+                                  // Use original URL - it's more precise (place URLs vs search URLs)
+                                  window.open(seller.location, "_blank");
+                                } else if (seller.coordinates) {
+                                  // Fallback: Generate search URL from coordinates
                                   const searchQuery = `${seller.name} ${seller.coordinates.lat},${seller.coordinates.lon}`;
                                   const mapsUrl = `https://www.google.com/maps/search/${searchQuery.replace(
                                     / /g,
                                     "+"
                                   )}`;
                                   window.open(mapsUrl, "_blank");
-                                } else if (seller.location) {
-                                  // Fallback to original URL if no coordinates
-                                  window.open(seller.location, "_blank");
                                 }
                               }}
                             >

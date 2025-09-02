@@ -324,26 +324,26 @@ export default function PublicUsersPage() {
                                       }
                                     );
 
-                                    // Use stored coordinates if available (more reliable than short URLs)
-                                    if (user.coordinates) {
-                                      // Use simpler encoding that Google Maps prefers (+ for spaces, raw commas)
+                                    // Prioritize original location URL (more accurate), use coordinates as fallback
+                                    if (user.location) {
+                                      // Use original URL - it's more precise (place URLs vs search URLs)
+                                      console.log(
+                                        "🗺️ Opening original location URL:",
+                                        user.location
+                                      );
+                                      window.open(user.location, "_blank");
+                                    } else if (user.coordinates) {
+                                      // Fallback: Generate search URL from coordinates
                                       const searchQuery = `${user.name} ${user.coordinates.lat},${user.coordinates.lon}`;
                                       const mapsUrl = `https://www.google.com/maps/search/${searchQuery.replace(
                                         / /g,
                                         "+"
                                       )}`;
                                       console.log(
-                                        "🗺️ Opening with stored coordinates:",
+                                        "🗺️ Fallback to coordinate-based search:",
                                         mapsUrl
                                       );
                                       window.open(mapsUrl, "_blank");
-                                    } else if (user.location) {
-                                      // Fallback to original URL if no coordinates
-                                      console.log(
-                                        "🗺️ Fallback to original URL:",
-                                        user.location
-                                      );
-                                      window.open(user.location, "_blank");
                                     } else {
                                       console.log(
                                         "⚠️ No location data available"
