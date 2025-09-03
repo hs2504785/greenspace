@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Modal,
   Form,
@@ -15,6 +15,7 @@ import toastService from "@/utils/toastService";
 import OrderService from "@/services/OrderService";
 import UpiQrPayment from "@/components/features/payments/UpiQrPayment";
 import LocationAutoDetect from "@/components/common/LocationAutoDetect";
+import UserAvatar from "@/components/common/UserAvatar";
 
 export default function CheckoutForm({
   show,
@@ -41,6 +42,72 @@ export default function CheckoutForm({
     deliveryAddress: "",
     contactNumber: "",
   });
+
+  // Auto-fill user data when component mounts or session changes
+  useEffect(() => {
+    const fetchAndFillUserData = async () => {
+      if (session?.user && show) {
+        // Try to get fresh profile data from API
+        try {
+          const response = await fetch("/api/users/profile");
+          if (response.ok) {
+            const data = await response.json();
+
+            setFormData((prev) => ({
+              deliveryAddress:
+                prev.deliveryAddress ||
+                data.user?.location ||
+                session.user.location ||
+                "",
+              contactNumber:
+                prev.contactNumber ||
+                data.user?.whatsapp_number ||
+                session.user.phone ||
+                session.user.whatsappNumber ||
+                session.user.whatsapp_number ||
+                "",
+            }));
+          } else {
+            // Fallback to session data
+            setFormData((prev) => ({
+              deliveryAddress:
+                prev.deliveryAddress || session.user.location || "",
+              contactNumber:
+                prev.contactNumber ||
+                session.user.phone ||
+                session.user.whatsappNumber ||
+                session.user.whatsapp_number ||
+                "",
+            }));
+          }
+        } catch (error) {
+          console.error("Error fetching profile data:", error);
+          // Fallback to session data
+          setFormData((prev) => ({
+            deliveryAddress:
+              prev.deliveryAddress || session.user.location || "",
+            contactNumber:
+              prev.contactNumber ||
+              session.user.phone ||
+              session.user.whatsappNumber ||
+              session.user.whatsapp_number ||
+              "",
+          }));
+        }
+      }
+    };
+
+    fetchAndFillUserData();
+  }, [session, show]);
+
+  // Check if form is complete for enabling payment buttons
+  const isFormComplete = () => {
+    return (
+      formData.deliveryAddress.trim() !== "" &&
+      formData.contactNumber.trim() !== "" &&
+      /^[0-9]{10}$/.test(formData.contactNumber.replace(/\s+/g, ""))
+    );
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -110,6 +177,13 @@ export default function CheckoutForm({
         throw new Error("User session invalid. Please login again.");
       }
 
+      // Check if we already have a created order, if so, just proceed to payment
+      if (createdOrder) {
+        setCheckoutStep("payment");
+        setLoading(false);
+        return;
+      }
+
       const orderData = {
         userId: session.user.id,
         sellerId: seller?.id,
@@ -126,8 +200,6 @@ export default function CheckoutForm({
       const order = await OrderService.createOrder(orderData);
       setCreatedOrder(order);
       setCheckoutStep("payment");
-
-      toastService.success("Order created! Choose your payment method below.");
     } catch (error) {
       console.error("Error creating order:", error);
       toastService.presets.orderError();
@@ -228,11 +300,19 @@ export default function CheckoutForm({
     }, 100);
   };
 
+  const handleModalHide = () => {
+    onHide();
+    // Only reset state if order was not successfully completed
+    if (checkoutStep === "details" || !createdOrder) {
+      resetState();
+    }
+  };
+
   return (
     <>
       <Modal
         show={show}
-        onHide={onHide}
+        onHide={handleModalHide}
         size="lg"
         className={
           showUpiPayment ? "checkout-modal-background" : "checkout-modal"
@@ -284,17 +364,6 @@ export default function CheckoutForm({
                 </div>
               </div>
 
-              <div className="mb-4">
-                <h6>Seller Information</h6>
-                <p className="mb-0">
-                  <strong>{seller?.name || "Unknown Seller"}</strong>
-                  <br />
-                  <small className="text-muted">
-                    {seller?.location || "Location not available"}
-                  </small>
-                </p>
-              </div>
-
               <div className="row">
                 <div className="col-md-8">
                   <LocationAutoDetect
@@ -310,7 +379,9 @@ export default function CheckoutForm({
                 </div>
                 <div className="col-md-4">
                   <Form.Group className="mb-3">
-                    <Form.Label>Contact Number</Form.Label>
+                    <Form.Label>
+                      Contact Number <span className="text-danger">*</span>
+                    </Form.Label>
                     <Form.Control
                       type="tel"
                       name="contactNumber"
@@ -319,7 +390,25 @@ export default function CheckoutForm({
                       required
                       placeholder="10-digit number"
                       pattern="[0-9]{10}"
+                      isInvalid={
+                        formData.contactNumber &&
+                        !/^[0-9]{10}$/.test(
+                          formData.contactNumber.replace(/\s+/g, "")
+                        )
+                      }
+                      isValid={
+                        formData.contactNumber &&
+                        /^[0-9]{10}$/.test(
+                          formData.contactNumber.replace(/\s+/g, "")
+                        )
+                      }
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Please enter a valid 10-digit phone number
+                    </Form.Control.Feedback>
+                    <Form.Control.Feedback type="valid">
+                      Contact number looks good!
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </div>
               </div>
@@ -333,9 +422,17 @@ export default function CheckoutForm({
                   {/* Option 1: Place Order Only */}
                   <div className="col-12">
                     <Card
-                      className="border-0 shadow-sm hover-shadow cursor-pointer"
-                      onClick={handlePlaceOrderOnly}
-                      style={{ cursor: "pointer" }}
+                      className={`border-0 shadow-sm ${
+                        isFormComplete()
+                          ? "hover-shadow cursor-pointer"
+                          : "opacity-50"
+                      }`}
+                      onClick={
+                        isFormComplete() ? handlePlaceOrderOnly : undefined
+                      }
+                      style={{
+                        cursor: isFormComplete() ? "pointer" : "not-allowed",
+                      }}
                     >
                       <Card.Body className="p-3">
                         <div className="d-flex align-items-center">
@@ -368,9 +465,17 @@ export default function CheckoutForm({
                   {/* Option 2: Proceed to Payment */}
                   <div className="col-12">
                     <Card
-                      className="border-0 shadow-sm hover-shadow cursor-pointer"
-                      onClick={handleProceedToPayment}
-                      style={{ cursor: "pointer" }}
+                      className={`border-0 shadow-sm ${
+                        isFormComplete()
+                          ? "hover-shadow cursor-pointer"
+                          : "opacity-50"
+                      }`}
+                      onClick={
+                        isFormComplete() ? handleProceedToPayment : undefined
+                      }
+                      style={{
+                        cursor: isFormComplete() ? "pointer" : "not-allowed",
+                      }}
                     >
                       <Card.Body className="p-3">
                         <div className="d-flex align-items-center">
@@ -402,6 +507,76 @@ export default function CheckoutForm({
                   </div>
                 </div>
               </div>
+
+              {/* Seller Information - Moved to bottom */}
+              <div className="mt-4 pt-3 border-top">
+                <h6 className="mb-3 text-muted">About Your Seller</h6>
+                <Card className="border-0 bg-light">
+                  <Card.Body className="p-3">
+                    <div className="d-flex align-items-center">
+                      <div className="me-3">
+                        <UserAvatar
+                          user={{
+                            name: seller?.name,
+                            image: seller?.avatar_url,
+                          }}
+                          size={48}
+                        />
+                      </div>
+                      <div className="flex-grow-1">
+                        <div className="fw-semibold mb-1 d-flex align-items-center">
+                          {seller?.name || "Unknown Seller"}
+                          <Badge bg="success" className="ms-2 small">
+                            <i className="ti-check me-1"></i>
+                            Verified
+                          </Badge>
+                        </div>
+                        <div className="text-muted small d-flex align-items-center">
+                          <i className="ti-leaf me-1"></i>
+                          Natural Farming Specialist
+                        </div>
+                        {seller?.business_name && (
+                          <div className="text-muted small">
+                            <i className="ti-building me-1"></i>
+                            {seller.business_name}
+                          </div>
+                        )}
+                        {seller?.average_rating && (
+                          <div className="text-muted small d-flex align-items-center">
+                            <i className="ti-star-filled text-warning me-1"></i>
+                            {seller.average_rating.toFixed(1)} rating
+                          </div>
+                        )}
+                      </div>
+                      <div className="ms-2">
+                        {seller?.location && (
+                          <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => {
+                              let mapUrl;
+                              if (seller.location.startsWith("http")) {
+                                // If it's already a URL, use it directly
+                                mapUrl = seller.location;
+                              } else {
+                                // If it's text, create a Google Maps search URL
+                                mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                  seller.location
+                                )}`;
+                              }
+                              window.open(mapUrl, "_blank");
+                            }}
+                            className="d-flex align-items-center"
+                          >
+                            <i className="ti-map-pin me-1"></i>
+                            View on Map
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </div>
             </Modal.Body>
           </Form>
         ) : (
@@ -409,13 +584,6 @@ export default function CheckoutForm({
             <Modal.Body>
               {createdOrder && (
                 <>
-                  <Alert variant="success" className="mb-4">
-                    <i className="ti-check me-2"></i>
-                    <strong>Order Created Successfully!</strong>
-                    <br />
-                    Order ID: <code>#{createdOrder.id.slice(-8)}</code>
-                  </Alert>
-
                   <div className="mb-4">
                     <h6>Payment Summary</h6>
                     <Card className="border-primary">
@@ -443,66 +611,24 @@ export default function CheckoutForm({
                   <div className="mb-4">
                     <h6>Choose How to Proceed</h6>
 
-                    {/* Quick Place Order Option */}
-                    <div className="mb-3">
-                      <Card
-                        className="border-primary"
-                        style={{ cursor: "pointer" }}
-                        onClick={handlePlaceOrderOnly}
-                      >
-                        <Card.Body>
-                          <div className="row align-items-center">
-                            <div className="col-md-2 text-center">
-                              <i
-                                className="ti-check-box text-primary"
-                                style={{ fontSize: "2.5rem" }}
-                              ></i>
-                            </div>
-                            <div className="col-md-8">
-                              <h6 className="text-primary mb-1">
-                                Place Order Now - Pay Later
-                              </h6>
-                              <p className="text-muted small mb-1">
-                                Secure your order instantly. Pay when convenient
-                                from order details.
-                              </p>
-                              <small className="text-primary">
-                                <i className="ti-info-alt me-1"></i>
-                                Quick checkout without payment hassle
-                              </small>
-                            </div>
-                            <div className="col-md-2 text-center">
-                              <Badge bg="primary">Quick & Easy</Badge>
-                            </div>
-                          </div>
-                        </Card.Body>
-                      </Card>
-                    </div>
-
-                    {/* Direct Payment Options */}
-                    <div className="text-center mb-3">
-                      <small className="text-muted">
-                        Or complete payment now:
-                      </small>
-                    </div>
-
-                    <div className="row g-3">
+                    {/* Primary Payment Options */}
+                    <div className="row g-3 mb-4">
                       <div className="col-md-6">
                         <Card
-                          className="border-success h-100"
+                          className="border-success h-100 shadow-sm"
                           style={{ cursor: "pointer" }}
                           onClick={handleUpiPayment}
                         >
-                          <Card.Body className="text-center">
+                          <Card.Body className="text-center p-4">
                             <i
                               className="ti-mobile text-success mb-3"
                               style={{ fontSize: "2.5rem" }}
                             ></i>
-                            <h6 className="text-success">Pay with UPI</h6>
-                            <p className="text-muted small mb-0">
+                            <h6 className="text-success mb-2">Pay with UPI</h6>
+                            <p className="text-muted small mb-2">
                               Complete order with QR code payment
                             </p>
-                            <Badge bg="success" className="mt-2">
+                            <Badge bg="success" className="mt-1">
                               Instant & Complete
                             </Badge>
                           </Card.Body>
@@ -511,20 +637,22 @@ export default function CheckoutForm({
 
                       <div className="col-md-6">
                         <Card
-                          className="border-warning h-100"
+                          className="border-warning h-100 shadow-sm"
                           style={{ cursor: "pointer" }}
                           onClick={handleCodPayment}
                         >
-                          <Card.Body className="text-center">
+                          <Card.Body className="text-center p-4">
                             <i
                               className="ti-truck text-warning mb-3"
                               style={{ fontSize: "2.5rem" }}
                             ></i>
-                            <h6 className="text-warning">Cash on Delivery</h6>
-                            <p className="text-muted small mb-0">
+                            <h6 className="text-warning mb-2">
+                              Cash on Delivery
+                            </h6>
+                            <p className="text-muted small mb-2">
                               Pay cash when order arrives
                             </p>
-                            <Badge bg="warning" className="mt-2">
+                            <Badge bg="warning" className="mt-1">
                               Order Complete
                             </Badge>
                           </Card.Body>
@@ -532,13 +660,6 @@ export default function CheckoutForm({
                       </div>
                     </div>
                   </div>
-
-                  <Alert variant="info" className="mb-0">
-                    <i className="ti-info-alt me-2"></i>
-                    <strong>Flexible Options:</strong> Place order now and pay
-                    later for quick onboarding, or complete payment immediately
-                    with UPI/COD for instant confirmation.
-                  </Alert>
                 </>
               )}
             </Modal.Body>
