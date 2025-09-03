@@ -396,12 +396,13 @@ export default function UpiQrPayment({
         }
 
         // Enhanced Google Pay handling with multiple fallback strategies
+        // Use minimal transaction note for Google Pay compatibility
         const gpayParams = new URLSearchParams({
           pa: payeeAddress,
           pn: payeeName || "Seller",
           am: amount,
           tr: params.get("tr") || `TXN${Date.now()}`,
-          tn: params.get("tn") || `Payment for Order`,
+          tn: "Payment", // Simplified for Google Pay
           mc: params.get("mc") || "5411",
           cu: params.get("cu") || "INR",
         });
@@ -411,21 +412,37 @@ export default function UpiQrPayment({
           gpayParamsString: gpayParams.toString(),
         });
 
+        // 🚨 CRITICAL DEBUG: Compare QR vs Button parameters
+        console.log("🔍 GPAY DEBUG - QR vs Button comparison:", {
+          qrCodeUpiString: qrData.upiString,
+          buttonUpiString: `upi://pay?${gpayParams.toString()}`,
+          areIdentical:
+            qrData.upiString === `upi://pay?${gpayParams.toString()}`,
+          qrTransactionNote: params.get("tn"),
+          buttonTransactionNote: "Payment",
+          difference: "Transaction note simplified for Google Pay button",
+        });
+
         // 🚨 SPECIAL FIX for "money not debited" issue
-        // Use simpler, more reliable URL construction
+        // Use simpler, more reliable URL construction with minimal parameters
         const simpleParams = `pa=${encodeURIComponent(
           payeeAddress
         )}&am=${encodeURIComponent(amount)}&pn=${encodeURIComponent(
           payeeName || "Seller"
         )}&tr=${encodeURIComponent(
           params.get("tr") || `TXN${Date.now()}`
-        )}&tn=${encodeURIComponent(params.get("tn") || "Payment")}&cu=INR`;
+        )}&tn=Payment&cu=INR`;
 
         console.log("🔍 GPAY DEBUG - Simple params string:", simpleParams);
 
         // Platform-specific Google Pay handling
         if (platform === "android") {
           // Android: Try the most reliable schemes first
+          // Also prepare ultra-minimal params as final fallback
+          const minimalParams = `pa=${encodeURIComponent(
+            payeeAddress
+          )}&am=${encodeURIComponent(amount)}&pn=Seller&tn=Payment&cu=INR`;
+
           const androidSchemes = [
             // Most reliable for newer Android versions
             `intent://pay?${simpleParams}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`,
@@ -433,6 +450,8 @@ export default function UpiQrPayment({
             `tez://upi/pay?${simpleParams}`,
             // Alternative google pay scheme
             `googlepay://upi/pay?${simpleParams}`,
+            // Ultra-minimal fallback
+            `tez://upi/pay?${minimalParams}`,
           ];
 
           console.log("🔍 GPAY DEBUG - Android schemes:", androidSchemes);

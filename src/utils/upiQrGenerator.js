@@ -196,7 +196,7 @@ export async function createOrderUpiQR(orderData, sellerPaymentInfo) {
     }
 
     // Generate transaction reference from order ID
-    const transactionRef = `GS${orderData.id.slice(-8)}${Date.now()
+    const transactionRef = `ORD${orderData.id.slice(-8)}${Date.now()
       .toString()
       .slice(-4)}`;
 
@@ -209,7 +209,7 @@ export async function createOrderUpiQR(orderData, sellerPaymentInfo) {
         "Seller",
       amount: amount,
       transactionRef: transactionRef,
-      transactionNote: `Greenspace Order ${orderData.id.slice(-6)}`,
+      transactionNote: `Payment`, // Simplified for Google Pay compatibility
       merchantCode: "5411", // Grocery stores
     };
 
