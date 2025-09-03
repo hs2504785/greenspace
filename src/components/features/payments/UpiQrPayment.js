@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import { Modal, Card, Button, Form, Alert, Spinner } from "react-bootstrap";
 import PaymentService from "@/services/PaymentService";
 import toastService from "@/utils/toastService";
+import {
+  getUpiLimitDisplay,
+  getAppSpecificGuidance,
+} from "@/utils/upiLimitHelper";
 
 export default function UpiQrPayment({
   show,
@@ -310,6 +314,40 @@ export default function UpiQrPayment({
     return "desktop";
   };
 
+  // Handle payment app failures with user-friendly guidance
+  const handlePaymentFailure = (app, error) => {
+    console.error(`❌ ${app} payment failed:`, error);
+
+    const amount = qrData ? parseFloat(qrData.amount) : 0;
+    const guidance = getAppSpecificGuidance(app, amount);
+
+    let message = `${app} couldn't process the payment. `;
+    message += guidance.message;
+
+    if (guidance.suggestions.length > 0) {
+      message += "\n\nPlease try:";
+      guidance.suggestions.forEach((suggestion) => {
+        message += `\n• ${suggestion}`;
+      });
+    }
+
+    toastService.error(message);
+
+    // Auto-suggest alternative apps
+    if (guidance.alternatives.length > 0) {
+      const alternatives = guidance.alternatives
+        .slice(0, 2)
+        .map((alt) => alt.name)
+        .join(" or ");
+
+      if (alternatives) {
+        setTimeout(() => {
+          toastService.info(`Try ${alternatives} for this amount`);
+        }, 2000);
+      }
+    }
+  };
+
   const openUpiApp = (app) => {
     if (!qrData?.upiString) {
       toastService.error("Payment information not available");
@@ -466,10 +504,18 @@ export default function UpiQrPayment({
           console.log("🔍 GPAY DEBUG - Desktop web URL:", webUrl);
 
           try {
-            window.open(webUrl, "_blank", "noopener,noreferrer");
+            const newWindow = window.open(
+              webUrl,
+              "_blank",
+              "noopener,noreferrer"
+            );
+            if (!newWindow) {
+              throw new Error("Popup blocked or failed to open");
+            }
             console.log("✅ GPAY: Opened desktop web version");
           } catch (error) {
             console.error("❌ GPAY: Desktop web version failed:", error);
+            handlePaymentFailure("Google Pay", error);
           }
         }
 
@@ -688,6 +734,54 @@ export default function UpiQrPayment({
                       If app doesn't open, scan the QR code manually
                     </small>
                   </div>
+
+                  {/* UPI Limit Guidance */}
+                  {qrData &&
+                    (() => {
+                      const limitDisplay = getUpiLimitDisplay(
+                        parseFloat(qrData.amount)
+                      );
+                      return (
+                        limitDisplay.showWarning && (
+                          <div className="mt-3">
+                            <Alert
+                              variant={limitDisplay.warningLevel}
+                              className="py-2 mb-0"
+                            >
+                              <div className="d-flex align-items-start">
+                                <i className="ti-alert me-2 mt-1"></i>
+                                <div>
+                                  <strong className="small">
+                                    {limitDisplay.title}
+                                  </strong>
+                                  <div className="small mt-1">
+                                    {limitDisplay.message}
+                                    {limitDisplay.suggestions.length > 0 && (
+                                      <ul className="mb-0 mt-1 ps-3">
+                                        {limitDisplay.suggestions
+                                          .slice(0, 4)
+                                          .map((suggestion, index) => (
+                                            <li key={index}>{suggestion}</li>
+                                          ))}
+                                      </ul>
+                                    )}
+                                    {limitDisplay.alternatives.length > 0 && (
+                                      <div className="mt-2">
+                                        <strong>Recommended apps:</strong>{" "}
+                                        {limitDisplay.alternatives
+                                          .slice(0, 3)
+                                          .map((alt) => alt.name)
+                                          .join(", ")}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </Alert>
+                          </div>
+                        )
+                      );
+                    })()}
                 </div>
 
                 {/* Manual Payment Info - Compact */}
