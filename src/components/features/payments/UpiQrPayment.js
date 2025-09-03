@@ -7,6 +7,8 @@ import toastService from "@/utils/toastService";
 import {
   getUpiLimitDisplay,
   getAppSpecificGuidance,
+  handleBankLimitExceededError,
+  checkUpiLimits,
 } from "@/utils/upiLimitHelper";
 
 export default function UpiQrPayment({
@@ -321,31 +323,19 @@ export default function UpiQrPayment({
     const amount = qrData ? parseFloat(qrData.amount) : 0;
     const guidance = getAppSpecificGuidance(app, amount);
 
-    let message = `${app} couldn't process the payment. `;
-    message += guidance.message;
+    // Show immediate error with clear guidance
+    toastService.error(
+      `${app} couldn't open. This might be due to:\n• App not installed\n• Bank/UPI limits\n• Network issues\n\nPlease scan the QR code manually or try BHIM UPI.`,
+      { autoClose: 8000 }
+    );
 
-    if (guidance.suggestions.length > 0) {
-      message += "\n\nPlease try:";
-      guidance.suggestions.forEach((suggestion) => {
-        message += `\n• ${suggestion}`;
-      });
-    }
-
-    toastService.error(message);
-
-    // Auto-suggest alternative apps
-    if (guidance.alternatives.length > 0) {
-      const alternatives = guidance.alternatives
-        .slice(0, 2)
-        .map((alt) => alt.name)
-        .join(" or ");
-
-      if (alternatives) {
-        setTimeout(() => {
-          toastService.info(`Try ${alternatives} for this amount`);
-        }, 2000);
-      }
-    }
+    // Auto-suggest BHIM UPI or QR scanning after a short delay
+    setTimeout(() => {
+      toastService.info(
+        `💡 Try BHIM UPI instead, or scan the QR code with any UPI app`,
+        { autoClose: 6000 }
+      );
+    }, 3000);
   };
 
   const openUpiApp = (app) => {
@@ -365,219 +355,125 @@ export default function UpiQrPayment({
         upiString: qrData.upiString,
       });
 
+      // Extract and validate critical parameters
+      const payeeAddress = params.get("pa");
+      const amount = params.get("am");
+      const payeeName = params.get("pn");
+      const transactionRef = params.get("tr");
+
+      if (!payeeAddress) {
+        console.error("❌ UPI ERROR: Missing payee address (pa)");
+        toastService.error("Payment setup error: Missing UPI ID");
+        return;
+      }
+
+      if (!amount || parseFloat(amount) <= 0) {
+        console.error("❌ UPI ERROR: Invalid amount", { amount });
+        toastService.error("Payment setup error: Invalid amount");
+        return;
+      }
+
+      // Check UPI limits and show warnings
+      const limitCheck = checkUpiLimits(parseFloat(amount));
+      if (limitCheck.exceedsAllLimits) {
+        toastService.error(
+          `Amount ₹${amount} exceeds UPI transaction limits. Please try a smaller amount or contact your bank.`
+        );
+        return;
+      }
+
       if (app === "gpay") {
-        // 🚨 ENHANCED DEBUG: Log all extracted parameters
-        console.log("🔍 GPAY DEBUG - Original UPI parameters:", {
-          pa: params.get("pa"),
-          pn: params.get("pn"),
-          am: params.get("am"),
-          tr: params.get("tr"),
-          tn: params.get("tn"),
-          mc: params.get("mc"),
-          cu: params.get("cu"),
-          allParams: Object.fromEntries(params.entries()),
-        });
-
-        // Validate critical parameters before proceeding
-        const payeeAddress = params.get("pa");
-        const amount = params.get("am");
-        const payeeName = params.get("pn");
-
-        if (!payeeAddress) {
-          console.error("❌ GPAY ERROR: Missing payee address (pa)");
-          toastService.error("Payment setup error: Missing UPI ID");
-          return;
-        }
-
-        if (!amount || parseFloat(amount) <= 0) {
-          console.error("❌ GPAY ERROR: Invalid amount", { amount });
-          toastService.error("Payment setup error: Invalid amount");
-          return;
-        }
-
-        // Enhanced Google Pay handling with multiple fallback strategies
-        // Use minimal transaction note for Google Pay compatibility
-        const gpayParams = new URLSearchParams({
+        console.log("🔍 GPAY DEBUG - Parameters:", {
           pa: payeeAddress,
-          pn: payeeName || "Seller",
+          pn: payeeName,
           am: amount,
-          tr: params.get("tr") || `TXN${Date.now()}`,
-          tn: "Payment", // Simplified for Google Pay
-          mc: params.get("mc") || "5411",
-          cu: params.get("cu") || "INR",
+          tr: transactionRef,
         });
 
-        console.log("🔍 GPAY DEBUG - Final parameters for Google Pay:", {
-          finalParams: Object.fromEntries(gpayParams.entries()),
-          gpayParamsString: gpayParams.toString(),
-        });
+        // 🚨 SIMPLIFIED APPROACH: Use the exact same UPI string as QR code
+        // This eliminates any parameter encoding issues that cause "bank limit" errors
+        const directUpiString = qrData.upiString;
 
-        // 🚨 CRITICAL DEBUG: Compare QR vs Button parameters
-        console.log("🔍 GPAY DEBUG - QR vs Button comparison:", {
-          qrCodeUpiString: qrData.upiString,
-          buttonUpiString: `upi://pay?${gpayParams.toString()}`,
-          areIdentical:
-            qrData.upiString === `upi://pay?${gpayParams.toString()}`,
-          qrTransactionNote: params.get("tn"),
-          buttonTransactionNote: "Payment",
-          difference: "Transaction note simplified for Google Pay button",
-        });
-
-        // 🚨 SPECIAL FIX for "money not debited" issue
-        // Use simpler, more reliable URL construction with minimal parameters
-        const simpleParams = `pa=${encodeURIComponent(
-          payeeAddress
-        )}&am=${encodeURIComponent(amount)}&pn=${encodeURIComponent(
-          payeeName || "Seller"
-        )}&tr=${encodeURIComponent(
-          params.get("tr") || `TXN${Date.now()}`
-        )}&tn=Payment&cu=INR`;
-
-        console.log("🔍 GPAY DEBUG - Simple params string:", simpleParams);
-
-        // Platform-specific Google Pay handling
+        // For Google Pay, we'll use multiple fallback strategies
         if (platform === "android") {
-          // Android: Try the most reliable schemes first
-          // Also prepare ultra-minimal params as final fallback
-          const minimalParams = `pa=${encodeURIComponent(
-            payeeAddress
-          )}&am=${encodeURIComponent(amount)}&pn=Seller&tn=Payment&cu=INR`;
-
-          const androidSchemes = [
-            // Most reliable for newer Android versions
-            `intent://pay?${simpleParams}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`,
-            // Standard tez scheme
-            `tez://upi/pay?${simpleParams}`,
-            // Alternative google pay scheme
-            `googlepay://upi/pay?${simpleParams}`,
-            // Ultra-minimal fallback
-            `tez://upi/pay?${minimalParams}`,
-          ];
-
-          console.log("🔍 GPAY DEBUG - Android schemes:", androidSchemes);
-
-          // Try the primary scheme immediately
+          // Strategy 1: Direct UPI scheme (most compatible)
           try {
+            window.location.href = directUpiString;
+            console.log("✅ GPAY: Tried direct UPI scheme");
+
+            // Show immediate feedback
+            toastService.info("Opening Google Pay...");
+
+            // Fallback guidance after 3 seconds
+            setTimeout(() => {
+              toastService.info(
+                "If Google Pay didn't open, please scan the QR code manually",
+                { autoClose: 6000 }
+              );
+            }, 3000);
+
+            return;
+          } catch (error) {
+            console.error("❌ GPAY: Direct UPI scheme failed:", error);
+          }
+
+          // Strategy 2: Intent scheme as fallback
+          try {
+            const intentUrl =
+              directUpiString.replace("upi://pay?", "intent://pay?") +
+              "#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end";
+
             const linkElement = document.createElement("a");
-            linkElement.href = androidSchemes[0];
+            linkElement.href = intentUrl;
             linkElement.style.display = "none";
             document.body.appendChild(linkElement);
             linkElement.click();
             document.body.removeChild(linkElement);
-            console.log("✅ GPAY: Tried primary Android Intent scheme");
+            console.log("✅ GPAY: Tried Intent scheme fallback");
           } catch (error) {
-            console.error("❌ GPAY: Primary Android scheme failed:", error);
+            console.error("❌ GPAY: Intent scheme failed:", error);
           }
-
-          // Try fallback schemes with delays
-          androidSchemes.slice(1).forEach((scheme, index) => {
-            setTimeout(() => {
-              try {
-                const linkElement = document.createElement("a");
-                linkElement.href = scheme;
-                linkElement.style.display = "none";
-                document.body.appendChild(linkElement);
-                linkElement.click();
-                document.body.removeChild(linkElement);
-                console.log(
-                  `✅ GPAY: Tried Android fallback scheme ${index + 2}:`,
-                  scheme
-                );
-              } catch (error) {
-                console.log(
-                  `❌ GPAY: Android fallback scheme ${index + 2} failed:`,
-                  error
-                );
-              }
-            }, (index + 1) * 800);
-          });
         } else if (platform === "ios") {
-          // iOS: Use more reliable approach
-          const iosSchemes = [
-            `tez://upi/pay?${simpleParams}`,
-            `https://pay.google.com/gp/p/ui/pay?${simpleParams}`,
-          ];
-
-          console.log("🔍 GPAY DEBUG - iOS schemes:", iosSchemes);
-
-          // Try deep link first
+          // iOS: Try direct UPI scheme first
           try {
-            window.location.href = iosSchemes[0];
-            console.log("✅ GPAY: Tried iOS deep link");
-          } catch (error) {
-            console.error("❌ GPAY: iOS deep link failed:", error);
-          }
+            window.location.href = directUpiString;
+            console.log("✅ GPAY: Tried iOS direct UPI");
 
-          // Web fallback after 1.5 seconds
-          setTimeout(() => {
-            try {
-              window.open(iosSchemes[1], "_blank", "noopener,noreferrer");
-              console.log("✅ GPAY: Tried iOS web fallback");
-            } catch (error) {
-              console.error("❌ GPAY: iOS web fallback failed:", error);
-            }
-          }, 1500);
+            toastService.info("Opening Google Pay...");
+
+            setTimeout(() => {
+              toastService.info(
+                "If Google Pay didn't open, please scan the QR code manually",
+                { autoClose: 6000 }
+              );
+            }, 3000);
+
+            return;
+          } catch (error) {
+            console.error("❌ GPAY: iOS direct UPI failed:", error);
+          }
         } else {
-          // Desktop: Direct to web version with simple params
-          const webUrl = `https://pay.google.com/gp/p/ui/pay?${simpleParams}`;
-          console.log("🔍 GPAY DEBUG - Desktop web URL:", webUrl);
-
-          try {
-            const newWindow = window.open(
-              webUrl,
-              "_blank",
-              "noopener,noreferrer"
-            );
-            if (!newWindow) {
-              throw new Error("Popup blocked or failed to open");
-            }
-            console.log("✅ GPAY: Opened desktop web version");
-          } catch (error) {
-            console.error("❌ GPAY: Desktop web version failed:", error);
-            handlePaymentFailure("Google Pay", error);
-          }
+          // Desktop: Show QR code guidance
+          toastService.info(
+            "Please scan the QR code with Google Pay on your mobile device"
+          );
+          return;
         }
-
-        // Always show QR code guidance for mobile users
-        if (platform !== "desktop") {
-          setTimeout(() => {
-            toastService.info(
-              "If Google Pay doesn't open, please scan the QR code manually",
-              {
-                autoClose: 8000,
-              }
-            );
-          }, 3000);
-        }
-
-        // 🚨 ENHANCED USER FEEDBACK for debugging
-        toastService.info("Opening Google Pay... Check console for debug info");
-
-        // Add debugging info to help troubleshoot
-        setTimeout(() => {
-          console.log("🔍 GPAY DEBUG - If payment failed, check:");
-          console.log("1. UPI ID format:", payeeAddress);
-          console.log("2. Amount validity:", amount);
-          console.log("3. Transaction reference:", params.get("tr"));
-          console.log("4. Platform detected:", platform);
-          console.log("5. Original UPI string:", qrData.upiString);
-        }, 2000);
-
-        return;
       } else {
         // BHIM and other UPI apps - use standard UPI URL
-        const linkElement = document.createElement("a");
-        linkElement.href = qrData.upiString;
-        linkElement.style.display = "none";
-        document.body.appendChild(linkElement);
-        linkElement.click();
-        document.body.removeChild(linkElement);
+        try {
+          window.location.href = qrData.upiString;
+          console.log(`✅ ${app.toUpperCase()}: Opened successfully`);
+          toastService.info(`Opening ${app.toUpperCase()}...`);
+        } catch (error) {
+          console.error(`❌ ${app.toUpperCase()}: Failed to open:`, error);
+          toastService.error(
+            `Failed to open ${app.toUpperCase()}. Please scan the QR code manually.`
+          );
+        }
       }
 
-      // Show success message
-      toastService.info(`Opening ${app.toUpperCase()}...`);
-
-      // Fallback guidance for all apps
+      // Universal fallback guidance for all apps
       setTimeout(() => {
         toastService.info(
           `If ${app.toUpperCase()} doesn't open, please scan the QR code manually`,
@@ -588,9 +484,7 @@ export default function UpiQrPayment({
       }, 4000);
     } catch (error) {
       console.error(`Error opening ${app}:`, error);
-      toastService.error(
-        `Failed to open ${app.toUpperCase()}. Please scan the QR code manually.`
-      );
+      handlePaymentFailure(app, error);
     }
   };
 
@@ -753,54 +647,6 @@ export default function UpiQrPayment({
                       If app doesn't open, scan the QR code manually
                     </small>
                   </div>
-
-                  {/* UPI Limit Guidance */}
-                  {qrData &&
-                    (() => {
-                      const limitDisplay = getUpiLimitDisplay(
-                        parseFloat(qrData.amount)
-                      );
-                      return (
-                        limitDisplay.showWarning && (
-                          <div className="mt-3">
-                            <Alert
-                              variant={limitDisplay.warningLevel}
-                              className="py-2 mb-0"
-                            >
-                              <div className="d-flex align-items-start">
-                                <i className="ti-alert me-2 mt-1"></i>
-                                <div>
-                                  <strong className="small">
-                                    {limitDisplay.title}
-                                  </strong>
-                                  <div className="small mt-1">
-                                    {limitDisplay.message}
-                                    {limitDisplay.suggestions.length > 0 && (
-                                      <ul className="mb-0 mt-1 ps-3">
-                                        {limitDisplay.suggestions
-                                          .slice(0, 4)
-                                          .map((suggestion, index) => (
-                                            <li key={index}>{suggestion}</li>
-                                          ))}
-                                      </ul>
-                                    )}
-                                    {limitDisplay.alternatives.length > 0 && (
-                                      <div className="mt-2">
-                                        <strong>Recommended apps:</strong>{" "}
-                                        {limitDisplay.alternatives
-                                          .slice(0, 3)
-                                          .map((alt) => alt.name)
-                                          .join(", ")}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </Alert>
-                          </div>
-                        )
-                      );
-                    })()}
                 </div>
 
                 {/* Manual Payment Info - Compact */}

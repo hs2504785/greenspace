@@ -4,36 +4,46 @@
  */
 
 // Common UPI app limits (per transaction and daily)
+// Note: "Bank limit exceeded" errors are often due to UPI string formatting issues, not actual limits
 export const UPI_LIMITS = {
   gpay: {
     name: "Google Pay",
     perTransaction: 100000,
     daily: 100000,
-    description: "Most banks support up to ₹1,00,000 per transaction",
+    description: "Most reliable for amounts up to ₹1,00,000",
+    commonIssues: [
+      "Deep link formatting",
+      "Parameter encoding",
+      "App version compatibility",
+    ],
   },
   phonepe: {
     name: "PhonePe",
     perTransaction: 100000,
     daily: 100000,
-    description: "Generally supports higher limits",
+    description: "Generally supports higher limits and better compatibility",
+    commonIssues: ["App not installed", "Network connectivity"],
   },
   paytm: {
     name: "Paytm",
-    perTransaction: 10000,
-    daily: 20000,
-    description: "Lower limits, good for smaller amounts",
+    perTransaction: 50000,
+    daily: 100000,
+    description: "Good for medium amounts, may have lower limits on some banks",
+    commonIssues: ["Bank-specific limits", "Wallet vs UPI confusion"],
   },
   bhim: {
     name: "BHIM UPI",
-    perTransaction: 10000,
-    daily: 20000,
-    description: "Government app with standard limits",
+    perTransaction: 40000,
+    daily: 40000,
+    description: "Government app with conservative limits but high reliability",
+    commonIssues: ["Lower transaction limits", "Slower processing"],
   },
   amazonpay: {
     name: "Amazon Pay",
     perTransaction: 50000,
     daily: 100000,
     description: "Good alternative for medium amounts",
+    commonIssues: ["Limited bank support", "App availability"],
   },
 };
 
@@ -194,6 +204,68 @@ export function getAppSpecificGuidance(app, amount) {
   };
 }
 
+/**
+ * Handle the specific "bank limit exceeded" error that occurs even with small amounts
+ * This is usually a UPI string formatting issue, not an actual limit problem
+ * @param {number} amount - Transaction amount
+ * @param {string} app - UPI app that failed
+ * @returns {Object} Specific guidance for this error
+ */
+export function handleBankLimitExceededError(amount, app = "UPI app") {
+  // For small amounts (< ₹100), this is definitely a formatting issue
+  const isSmallAmount = amount < 100;
+  const isMediumAmount = amount >= 100 && amount <= 5000;
+
+  let primaryMessage = "";
+  let solutions = [];
+  let alternatives = [];
+
+  if (isSmallAmount) {
+    primaryMessage = `"Bank limit exceeded" error for ₹${amount} is likely a technical issue, not an actual limit problem.`;
+    solutions = [
+      "Scan the QR code directly in your UPI app instead of using the button",
+      "Try BHIM UPI which often works better",
+      "Restart your UPI app and try again",
+      "Check if your UPI app needs an update",
+    ];
+    alternatives = ["BHIM UPI", "Any UPI app via QR scan"];
+  } else if (isMediumAmount) {
+    primaryMessage = `For ₹${amount}, try these solutions to resolve the "bank limit exceeded" error:`;
+    solutions = [
+      "Use QR code scanning instead of the app button",
+      "Try BHIM UPI which has better compatibility",
+      "Check your daily UPI transaction history",
+      "Contact your bank if the issue persists",
+    ];
+    alternatives = ["BHIM UPI", "QR code scanning"];
+  } else {
+    primaryMessage = `₹${amount} might genuinely exceed some UPI limits. Try these solutions:`;
+    solutions = [
+      "Use Google Pay which supports higher limits",
+      "Check your bank's UPI transaction limits",
+      "Consider splitting into smaller transactions",
+      "Use net banking for large amounts",
+    ];
+    alternatives = ["Google Pay", "Net Banking"];
+  }
+
+  return {
+    isLikelyTechnicalIssue: isSmallAmount,
+    primaryMessage,
+    solutions,
+    alternatives,
+    recommendedAction: isSmallAmount
+      ? "Scan QR code manually - this will definitely work"
+      : "Try BHIM UPI or scan QR code manually",
+    troubleshooting: [
+      "The QR code always works - it's the most reliable method",
+      "Different UPI apps handle deep links differently",
+      "Your bank account and UPI are working fine",
+      `₹${amount} is well within normal UPI limits`,
+    ],
+  };
+}
+
 export default {
   UPI_LIMITS,
   BANK_LIMITS,
@@ -201,4 +273,5 @@ export default {
   getUpiLimitGuidance,
   getUpiLimitDisplay,
   getAppSpecificGuidance,
+  handleBankLimitExceededError,
 };
