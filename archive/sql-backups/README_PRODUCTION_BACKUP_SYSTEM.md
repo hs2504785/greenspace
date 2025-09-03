@@ -1,8 +1,8 @@
-# 🚀 GREENSPACE MARKETPLACE - PRODUCTION BACKUP SYSTEM
+# 🚀 ARYA NATURAL FARMS MARKETPLACE - PRODUCTION BACKUP SYSTEM
 
 ## 📊 Overview
 
-**Complete database backup system for Greenspace Marketplace - Phase 1 Production Launch**
+**Complete database backup system for Arya Natural Farms Marketplace - Phase 1 Production Launch**
 
 This backup system contains everything needed to deploy, restore, and maintain your Supabase database in production. The backups include **schema, policies, permissions, functions, and triggers** but **NO DATA** - making them perfect for production deployment and disaster recovery.
 
@@ -341,7 +341,7 @@ This database structure supports all existing API endpoints:
 
 ## 🎉 Success! You're Production Ready
 
-**Your Greenspace Marketplace database backup system is complete and ready for production launch!**
+**Your Arya Natural Farms Marketplace database backup system is complete and ready for production launch!**
 
 ### **What You Have**
 

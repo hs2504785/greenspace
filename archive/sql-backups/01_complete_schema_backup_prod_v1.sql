@@ -1,5 +1,5 @@
 -- ===================================================
--- GREENSPACE MARKETPLACE - COMPLETE SCHEMA BACKUP
+-- ARYA NATURAL FARMS MARKETPLACE - COMPLETE SCHEMA BACKUP
 -- ===================================================
 -- Generated on: December 20, 2024
 -- Environment: Production Ready

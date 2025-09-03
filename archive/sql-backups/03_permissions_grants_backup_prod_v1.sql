@@ -1,5 +1,5 @@
 -- ===================================================
--- GREENSPACE MARKETPLACE - PERMISSIONS & GRANTS BACKUP
+-- ARYA NATURAL FARMS MARKETPLACE - PERMISSIONS & GRANTS BACKUP
 -- ===================================================
 -- Generated on: December 20, 2024
 -- Environment: Production Ready
@@ -112,24 +112,24 @@ GRANT USAGE ON SCHEMA public TO anon;
 -- Create custom roles for future use (commented for Phase 1)
 /*
 -- Admin role with elevated privileges
-CREATE ROLE greenspace_admin;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO greenspace_admin;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO greenspace_admin;
-GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO greenspace_admin;
+CREATE ROLE arya_natural_farms_admin;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO arya_natural_farms_admin;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO arya_natural_farms_admin;
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO arya_natural_farms_admin;
 
 -- Seller role with product management privileges
-CREATE ROLE greenspace_seller;
-GRANT SELECT, INSERT, UPDATE ON vegetables TO greenspace_seller;
-GRANT SELECT ON users TO greenspace_seller;
-GRANT SELECT, UPDATE ON orders TO greenspace_seller;
-GRANT SELECT ON order_items TO greenspace_seller;
+CREATE ROLE arya_natural_farms_seller;
+GRANT SELECT, INSERT, UPDATE ON vegetables TO arya_natural_farms_seller;
+GRANT SELECT ON users TO arya_natural_farms_seller;
+GRANT SELECT, UPDATE ON orders TO arya_natural_farms_seller;
+GRANT SELECT ON order_items TO arya_natural_farms_seller;
 
 -- Buyer role with purchasing privileges
-CREATE ROLE greenspace_buyer;
-GRANT SELECT ON vegetables TO greenspace_buyer;
-GRANT SELECT ON users TO greenspace_buyer;
-GRANT SELECT, INSERT, UPDATE ON orders TO greenspace_buyer;
-GRANT SELECT, INSERT ON order_items TO greenspace_buyer;
+CREATE ROLE arya_natural_farms_buyer;
+GRANT SELECT ON vegetables TO arya_natural_farms_buyer;
+GRANT SELECT ON users TO arya_natural_farms_buyer;
+GRANT SELECT, INSERT, UPDATE ON orders TO arya_natural_farms_buyer;
+GRANT SELECT, INSERT ON order_items TO arya_natural_farms_buyer;
 */
 
 -- ===================================================

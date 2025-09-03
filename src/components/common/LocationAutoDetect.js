@@ -217,7 +217,7 @@ const LocationAutoDetect = ({
           `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=${zoom}&addressdetails=1&namedetails=1&extratags=1`,
           {
             headers: {
-              "User-Agent": "GreenSpace-App",
+              "User-Agent": "AryaNaturalFarms-App",
             },
           }
         );

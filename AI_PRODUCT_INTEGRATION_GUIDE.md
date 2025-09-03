@@ -1,4 +1,4 @@
-# 🤖 AI Product Integration Guide - GreenSpace Marketplace
+# 🤖 AI Product Integration Guide - Arya Natural Farms Marketplace
 
 ## 🎉 What's New
 

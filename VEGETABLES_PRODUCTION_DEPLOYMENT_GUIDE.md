@@ -307,7 +307,7 @@ Once completed, your production vegetables table will have:
 - ✅ Improved data structure for future features
 - ✅ Production-ready performance optimization
 
-Your Greenspace marketplace is now ready for enhanced vegetable management! 🌱
+Your Arya Natural Farms marketplace is now ready for enhanced vegetable management! 🌱
 
 ---
 

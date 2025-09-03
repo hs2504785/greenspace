@@ -1,4 +1,4 @@
--- Add Payment System to Greenspace Database
+-- Add Payment System to Arya Natural Farms Database
 -- This migration adds payment tracking, transaction records, and UPI QR functionality
 
 -- Add payment fields to orders table

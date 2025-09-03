@@ -1,5 +1,5 @@
 -- ===================================================
--- GREENSPACE MARKETPLACE - RLS POLICIES BACKUP
+-- ARYA NATURAL FARMS MARKETPLACE - RLS POLICIES BACKUP
 -- ===================================================
 -- Generated on: December 20, 2024
 -- Environment: Production Ready

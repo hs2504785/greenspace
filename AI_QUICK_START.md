@@ -118,4 +118,4 @@ Your AI assistant is now fully functional. Just add your Google AI API key and y
 4. Share with users for feedback
 5. Monitor usage and expand features
 
-Your GreenSpace marketplace now has intelligent AI support! 🌱🤖
+Your Arya Natural Farms marketplace now has intelligent AI support! 🌱🤖

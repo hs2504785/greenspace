@@ -1,4 +1,4 @@
-# Vercel Deployment Guide for Greenspace Project
+# Vercel Deployment Guide for Arya Natural Farms Project
 
 This guide will help you deploy your Next.js application to Vercel production environment.
 

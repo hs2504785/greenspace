@@ -1,4 +1,4 @@
-# 🆓 FREE AI Implementation Guide for GreenSpace
+# 🆓 FREE AI Implementation Guide for Arya Natural Farms
 
 ## Overview
 
@@ -52,7 +52,7 @@ export default function FreeAIChatAssistant({ user }) {
         {
           id: "welcome",
           role: "assistant",
-          content: `🌱 Hello! I'm your FREE GreenSpace AI assistant powered by Google AI!
+          content: `🌱 Hello! I'm your FREE Arya Natural Farms AI assistant powered by Google AI!
 
 I can help you with:
 🥬 Finding vegetables and seasonal produce
@@ -238,7 +238,7 @@ export async function POST(req) {
       return new Response("AI service not configured", { status: 503 });
     }
 
-    const systemPrompt = `You are a helpful AI assistant for GreenSpace, a fresh vegetable marketplace connecting local farmers with consumers.
+    const systemPrompt = `You are a helpful AI assistant for Arya Natural Farms, a fresh vegetable marketplace connecting local farmers with consumers.
 
 KEY INFORMATION:
 - This is a FREE AI service using Google's Gemini

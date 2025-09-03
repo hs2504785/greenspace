@@ -198,7 +198,7 @@ async function tryNominatimGeocoding(address) {
       )}&countrycodes=in&limit=1&addressdetails=1`,
       {
         headers: {
-          "User-Agent": "GreenSpace-App/1.0 (Location Services)",
+          "User-Agent": "AryaNaturalFarms-App/1.0 (Location Services)",
         },
       }
     );

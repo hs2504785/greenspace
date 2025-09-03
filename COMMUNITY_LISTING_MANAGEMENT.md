@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-This document outlines the comprehensive community listing management system implemented to address database storage concerns and improve user experience in the Greenspace community marketplace.
+This document outlines the comprehensive community listing management system implemented to address database storage concerns and improve user experience in the Arya Natural Farms community marketplace.
 
 ## ✅ Implemented Features
 

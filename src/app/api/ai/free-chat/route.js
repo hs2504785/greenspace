@@ -20,7 +20,7 @@ export async function POST(req) {
     console.log("✅ API Key found:", apiKey.substring(0, 10) + "...");
     console.log("📨 Messages received:", messages?.length || 0);
 
-    const systemPrompt = `You are a helpful AI assistant for GreenSpace, a fresh vegetable marketplace connecting local farmers with consumers in India.
+    const systemPrompt = `You are a helpful AI assistant for Arya Natural Farms, a fresh vegetable marketplace connecting local farmers with consumers in India.
 
 KEY INFORMATION:
 - This is a FREE AI service using Google's Gemini

@@ -1,8 +1,8 @@
-# 🤖 AI Integration Guide for GreenSpace Marketplace
+# 🤖 AI Integration Guide for Arya Natural Farms Marketplace
 
 ## Overview
 
-This guide outlines the implementation of AI features to transform GreenSpace into an intelligent agricultural marketplace platform.
+This guide outlines the implementation of AI features to transform Arya Natural Farms into an intelligent agricultural marketplace platform.
 
 ## 🚀 Phase 1: AI Chat Assistant
 
@@ -49,7 +49,7 @@ export default function AIChatAssistant({
         {
           id: "welcome",
           role: "assistant",
-          content: `Hello! I'm your GreenSpace AI assistant. I can help you with:
+          content: `Hello! I'm your Arya Natural Farms AI assistant. I can help you with:
         
 🥬 Finding fresh produce
 💳 Payment questions (UPI, GPay, etc.)
@@ -104,7 +104,7 @@ What would you like to know?`,
           }}
         >
           <Card.Header className="d-flex justify-content-between align-items-center bg-success text-white">
-            <span>🤖 GreenSpace AI Assistant</span>
+            <span>🤖 Arya Natural Farms AI Assistant</span>
             <Button
               variant="link"
               size="sm"
@@ -191,7 +191,7 @@ export async function POST(req) {
     const { messages, context } = await req.json();
 
     // Build context-aware system prompt
-    const systemPrompt = `You are GreenSpace AI, an intelligent assistant for a fresh produce marketplace connecting local farmers with consumers.
+    const systemPrompt = `You are Arya Natural Farms AI, an intelligent assistant for a fresh produce marketplace connecting local farmers with consumers.
 
 CONTEXT:
 - User Role: ${context.userRole || "guest"}
@@ -761,4 +761,4 @@ track("ai_farming_advice_requested", {
 });
 ```
 
-This AI integration will position GreenSpace as a cutting-edge agricultural platform, providing intelligent assistance that grows smarter with every interaction!
+This AI integration will position Arya Natural Farms as a cutting-edge agricultural platform, providing intelligent assistance that grows smarter with every interaction!

@@ -1,5 +1,5 @@
 -- ===================================================
--- GREENSPACE MARKETPLACE - PRODUCTION DEPLOYMENT SCRIPT
+-- ARYA NATURAL FARMS MARKETPLACE - PRODUCTION DEPLOYMENT SCRIPT
 -- ===================================================
 -- Generated on: December 20, 2024
 -- Environment: Production Ready
@@ -17,7 +17,7 @@
 DO $$
 BEGIN
     RAISE NOTICE '';
-    RAISE NOTICE 'GREENSPACE PRODUCTION DEPLOYMENT';
+    RAISE NOTICE 'ARYA NATURAL FARMS PRODUCTION DEPLOYMENT';
     RAISE NOTICE '================================';
     RAISE NOTICE 'Deployment Date: %', NOW();
     RAISE NOTICE 'Version: 1.0 - Phase 1 Launch';
@@ -514,7 +514,7 @@ BEGIN
     RAISE NOTICE 'Security: Phase 1 configuration applied';
     RAISE NOTICE 'Permissions: Full access granted';
     RAISE NOTICE '';
-    RAISE NOTICE 'Your Greenspace Marketplace is ready!';
+    RAISE NOTICE 'Your Arya Natural Farms Marketplace is ready!';
     RAISE NOTICE 'Next: Deploy your application and test';
     RAISE NOTICE 'Support: Check deployment verification below';
     RAISE NOTICE '================================';
@@ -564,5 +564,5 @@ ORDER BY tablename;
 -- ✅ Added complete documentation
 -- ✅ Verified deployment success
 -- 
--- Your Greenspace Marketplace database is now PRODUCTION READY!
+-- Your Arya Natural Farms Marketplace database is now PRODUCTION READY!
 -- ===================================================

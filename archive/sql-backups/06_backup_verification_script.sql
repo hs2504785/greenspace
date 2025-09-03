@@ -1,5 +1,5 @@
 -- ===================================================
--- GREENSPACE MARKETPLACE - BACKUP VERIFICATION SCRIPT
+-- ARYA NATURAL FARMS MARKETPLACE - BACKUP VERIFICATION SCRIPT
 -- ===================================================
 -- Generated on: December 20, 2024
 -- Environment: Production Ready
@@ -18,7 +18,7 @@ DO $$
 BEGIN
     RAISE NOTICE '';
     RAISE NOTICE '🔍 ================================';
-    RAISE NOTICE '🔍 GREENSPACE BACKUP VERIFICATION';
+    RAISE NOTICE '🔍 ARYA NATURAL FARMS BACKUP VERIFICATION';
     RAISE NOTICE '🔍 ================================';
     RAISE NOTICE '📅 Verification Date: %', NOW();
     RAISE NOTICE '📦 Database Version: Production v1.0';
@@ -510,5 +510,5 @@ END $$;
 -- ✅ Performance metrics (table sizes and optimization)
 -- ✅ Extensions (required PostgreSQL extensions)
 -- 
--- Your Greenspace Marketplace database verification is complete!
+-- Your Arya Natural Farms Marketplace database verification is complete!
 -- ===================================================

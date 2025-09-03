@@ -1,6 +1,6 @@
 # Payment System Setup Guide
 
-This guide will help you set up the payment system for the Greenspace application, including UPI QR code payments and screenshot verification.
+This guide will help you set up the payment system for the Arya Natural Farms application, including UPI QR code payments and screenshot verification.
 
 ## 🚀 Quick Setup (Phase 1 - UPI QR Payments)
 

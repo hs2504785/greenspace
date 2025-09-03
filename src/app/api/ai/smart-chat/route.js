@@ -36,7 +36,7 @@ export async function POST(req) {
       return new Response("No valid messages provided", { status: 400 });
     }
 
-    const systemPrompt = `You are GreenSpace AI, an intelligent assistant for a fresh vegetable marketplace connecting local farmers with consumers in India.
+    const systemPrompt = `You are Arya Natural Farms AI, an intelligent assistant for a fresh vegetable marketplace connecting local farmers with consumers in India.
 
 CONTEXT:
 - User: ${user?.email || "Guest"} (${user?.role || "guest"})
@@ -418,7 +418,7 @@ Your order is confirmed and will be processed shortly!`,
           // Return payment guidance based on question type
           const paymentInfo = {
             upi_process: {
-              title: "How UPI Payments Work on GreenSpace",
+              title: "How UPI Payments Work on Arya Natural Farms",
               steps: [
                 "1. Place your order and proceed to checkout",
                 "2. Seller will generate a UPI QR code with the exact amount",
@@ -487,7 +487,7 @@ Your order is confirmed and will be processed shortly!`,
             payment_info: paymentInfo.general,
             question_about: question,
             message:
-              "Here's general UPI payment guidance for GreenSpace marketplace",
+              "Here's general UPI payment guidance for Arya Natural Farms marketplace",
           };
         },
       }),
@@ -685,7 +685,7 @@ Your order is confirmed and will be processed shortly!`,
 ✅ Seller will be notified via WhatsApp
 ✅ You'll get order updates on ${user.whatsapp_number || user.phone}
 
-Thank you for shopping with GreenSpace! 🌱`,
+Thank you for shopping with Arya Natural Farms! 🌱`,
                       {
                         headers: { "Content-Type": "text/plain" },
                       }

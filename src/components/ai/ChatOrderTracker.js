@@ -320,7 +320,7 @@ export default function ChatOrderTracker({
           }}
         >
           {order.status === "delivered"
-            ? "🎉 Thank you for shopping with GreenSpace!"
+            ? "🎉 Thank you for shopping with Arya Natural Farms!"
             : order.status === "cancelled"
             ? "Order cancelled. You can place a new order anytime."
             : `Last updated: ${formatDate(order.updated_at)}`}
