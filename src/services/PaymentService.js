@@ -349,63 +349,25 @@ class PaymentService {
    */
   async verifyPayment(transactionId, isApproved, verifiedBy, notes = "") {
     try {
-      // Get transaction details
-      const { data: transaction, error: fetchError } = await supabase
-        .from("payment_transactions")
-        .select(
-          `
-          *,
-          orders:order_id(*),
-          guest_orders:guest_order_id(*)
-        `
-        )
-        .eq("id", transactionId)
-        .single();
+      const response = await fetch(`${this.baseApiUrl}/verify`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          transactionId,
+          isApproved,
+          notes,
+        }),
+      });
 
-      if (fetchError) throw fetchError;
+      if (!response.ok) {
+        throw new Error("Failed to verify payment");
+      }
 
-      const order = transaction.orders || transaction.guest_orders;
-      const orderType = transaction.orders ? "regular" : "guest";
-      const tableName = orderType === "guest" ? "guest_orders" : "orders";
-
-      // Update transaction status
-      const transactionStatus = isApproved ? "success" : "failed";
-      const { error: transactionUpdateError } = await supabase
-        .from("payment_transactions")
-        .update({
-          status: transactionStatus,
-          verified_by: verifiedBy,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", transactionId);
-
-      if (transactionUpdateError) throw transactionUpdateError;
-
-      // Update order status
-      const orderStatus = isApproved ? "confirmed" : "payment_pending";
-      const paymentStatus = isApproved ? "success" : "failed";
-
-      const { error: orderUpdateError } = await supabase
-        .from(tableName)
-        .update({
-          status: orderStatus,
-          payment_status: paymentStatus,
-          payment_verified_at: isApproved ? new Date().toISOString() : null,
-          payment_verified_by: isApproved ? verifiedBy : null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", order.id);
-
-      if (orderUpdateError) throw orderUpdateError;
-
-      return {
-        success: true,
-        message: isApproved
-          ? "Payment verified and order confirmed"
-          : "Payment rejected",
-        transactionStatus,
-        orderStatus,
-      };
+      const result = await response.json();
+      return result;
     } catch (error) {
       console.error("Error verifying payment:", error);
       throw error;
@@ -420,24 +382,28 @@ class PaymentService {
    */
   async getOrderPaymentTransactions(orderId, orderType = "regular") {
     try {
-      const filter =
-        orderType === "guest"
-          ? { guest_order_id: orderId }
-          : { order_id: orderId };
+      const params = new URLSearchParams({
+        orderId,
+        orderType,
+      });
 
-      const { data, error } = await supabase
-        .from("payment_transactions")
-        .select(
-          `
-          *,
-          verified_by_user:verified_by(name, email)
-        `
-        )
-        .match(filter)
-        .order("created_at", { ascending: false });
+      const response = await fetch(
+        `${this.baseApiUrl}/transactions?${params}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "same-origin",
+        }
+      );
 
-      if (error) throw error;
-      return data || [];
+      if (!response.ok) {
+        throw new Error("Failed to fetch order payment transactions");
+      }
+
+      const result = await response.json();
+      return result.transactions || [];
     } catch (error) {
       console.error("Error fetching order payment transactions:", error);
       throw error;
@@ -451,30 +417,51 @@ class PaymentService {
    */
   async getPendingPaymentVerifications(sellerId = null) {
     try {
-      let query = supabase
-        .from("payment_transactions")
-        .select(
-          `
-          *,
-          orders:order_id(*, users:user_id(name, email)),
-          guest_orders:guest_order_id(*)
-        `
-        )
-        .eq("status", "manual_verification");
+      const params = new URLSearchParams({
+        status: "manual_verification",
+      });
 
       // Filter by seller if provided
       if (sellerId) {
-        query = query.or(
-          `orders.seller_id.eq.${sellerId},guest_orders.seller_id.eq.${sellerId}`
+        params.append("sellerId", sellerId);
+      }
+
+      const url = `${this.baseApiUrl}/transactions?${params}`;
+      console.log("🔍 Fetching pending payment verifications from:", url);
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "same-origin",
+      });
+
+      console.log("📡 Response status:", response.status);
+      console.log("📡 Response ok:", response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ API Error Response:", errorText);
+
+        // If it's a 500 error and mentions payment transactions, it's likely a missing table
+        if (
+          response.status === 500 &&
+          errorText.includes("payment transactions")
+        ) {
+          console.warn("⚠️ Payment system tables may not be set up yet");
+          // Return empty array instead of throwing error
+          return [];
+        }
+
+        throw new Error(
+          `Failed to fetch pending payment verifications: ${response.status} - ${errorText}`
         );
       }
 
-      const { data, error } = await query.order("created_at", {
-        ascending: true,
-      });
-
-      if (error) throw error;
-      return data || [];
+      const result = await response.json();
+      console.log("✅ API Response:", result);
+      return result.transactions || [];
     } catch (error) {
       console.error("Error fetching pending payment verifications:", error);
       throw error;

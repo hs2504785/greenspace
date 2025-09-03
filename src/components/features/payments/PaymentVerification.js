@@ -1,18 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Card, 
-  Badge, 
-  Button, 
-  Modal, 
-  Form, 
-  Alert, 
-  Table, 
+import {
+  Card,
+  Badge,
+  Button,
+  Modal,
+  Form,
+  Alert,
+  Table,
   Spinner,
   Row,
   Col,
-  ListGroup
+  ListGroup,
 } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import PaymentService from "@/services/PaymentService";
@@ -36,11 +36,24 @@ export default function PaymentVerification({ sellerId = null }) {
   const loadPendingPayments = async () => {
     setLoading(true);
     try {
-      const payments = await PaymentService.getPendingPaymentVerifications(sellerId);
+      const payments = await PaymentService.getPendingPaymentVerifications(
+        sellerId
+      );
       setPendingPayments(payments);
     } catch (error) {
       console.error("Error loading pending payments:", error);
-      toastService.error("Failed to load pending payments");
+
+      // Check if it's a payment system setup issue
+      if (
+        error.message?.includes("payment transactions") ||
+        error.message?.includes("payment system")
+      ) {
+        toastService.warning(
+          "Payment system is not set up yet. Please contact administrator."
+        );
+      } else {
+        toastService.error("Failed to load pending payments");
+      }
     } finally {
       setLoading(false);
     }
@@ -81,24 +94,26 @@ export default function PaymentVerification({ sellerId = null }) {
   };
 
   const handlePaymentMethodAdded = (paymentMethod) => {
-    toastService.success(`UPI payment method "${paymentMethod.display_name}" added successfully!`);
+    toastService.success(
+      `UPI payment method "${paymentMethod.display_name}" added successfully!`
+    );
     // Could refresh any payment methods list here if needed
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
     }).format(amount);
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -107,22 +122,22 @@ export default function PaymentVerification({ sellerId = null }) {
   };
 
   const getOrderType = (payment) => {
-    return payment.orders ? 'Regular Order' : 'Guest Order';
+    return payment.orders ? "Regular Order" : "Guest Order";
   };
 
   const getCustomerInfo = (payment) => {
     const order = getOrderDetails(payment);
     if (payment.orders) {
       return {
-        name: order.users?.name || 'Unknown User',
-        email: order.users?.email || '',
-        phone: order.contact_number || ''
+        name: order.users?.name || "Unknown User",
+        email: order.users?.email || "",
+        phone: order.contact_number || "",
       };
     } else {
       return {
-        name: order.guest_name || 'Unknown Guest',
-        email: order.guest_email || '',
-        phone: order.guest_phone || ''
+        name: order.guest_name || "Unknown Guest",
+        email: order.guest_email || "",
+        phone: order.guest_phone || "",
       };
     }
   };
@@ -144,15 +159,19 @@ export default function PaymentVerification({ sellerId = null }) {
           Payment Verification
         </h4>
         <div className="d-flex gap-2">
-          <Button 
-            variant="success" 
-            onClick={() => setShowAddPaymentMethod(true)} 
+          <Button
+            variant="success"
+            onClick={() => setShowAddPaymentMethod(true)}
             size="sm"
           >
             <i className="ti-plus me-1"></i>
             Add UPI Method
           </Button>
-          <Button variant="outline-primary" onClick={loadPendingPayments} size="sm">
+          <Button
+            variant="outline-primary"
+            onClick={loadPendingPayments}
+            size="sm"
+          >
             <i className="ti-reload me-1"></i>
             Refresh
           </Button>
@@ -163,13 +182,19 @@ export default function PaymentVerification({ sellerId = null }) {
         <Alert variant="info" className="text-center">
           <i className="ti-info-alt me-2"></i>
           No pending payment verifications at this time.
+          <div className="mt-2">
+            <small className="text-muted">
+              If you're expecting payments to verify, make sure the payment
+              system is properly set up in the database.
+            </small>
+          </div>
         </Alert>
       ) : (
         <div className="row">
           {pendingPayments.map((payment) => {
             const order = getOrderDetails(payment);
             const customer = getCustomerInfo(payment);
-            
+
             return (
               <div key={payment.id} className="col-lg-6 col-xl-4 mb-4">
                 <Card className="h-100 border-warning">
@@ -184,7 +209,7 @@ export default function PaymentVerification({ sellerId = null }) {
                       </small>
                     </div>
                   </Card.Header>
-                  
+
                   <Card.Body>
                     <div className="mb-3">
                       <strong>Order ID:</strong>
@@ -230,15 +255,23 @@ export default function PaymentVerification({ sellerId = null }) {
                       <div className="mb-3">
                         <strong>Payment Screenshot:</strong>
                         <br />
-                        <img 
+                        <img
                           src={payment.screenshot_url}
                           alt="Payment Screenshot"
                           className="img-thumbnail mt-2"
-                          style={{ maxWidth: '100%', maxHeight: '200px', cursor: 'pointer' }}
-                          onClick={() => window.open(payment.screenshot_url, '_blank')}
+                          style={{
+                            maxWidth: "100%",
+                            maxHeight: "200px",
+                            cursor: "pointer",
+                          }}
+                          onClick={() =>
+                            window.open(payment.screenshot_url, "_blank")
+                          }
                         />
                         <br />
-                        <small className="text-muted">Click to view full size</small>
+                        <small className="text-muted">
+                          Click to view full size
+                        </small>
                       </div>
                     )}
                   </Card.Body>
@@ -262,8 +295,8 @@ export default function PaymentVerification({ sellerId = null }) {
       )}
 
       {/* Verification Modal */}
-      <Modal 
-        show={showVerificationModal} 
+      <Modal
+        show={showVerificationModal}
         onHide={() => setShowVerificationModal(false)}
         size="lg"
         centered
@@ -274,7 +307,7 @@ export default function PaymentVerification({ sellerId = null }) {
             Verify Payment
           </Modal.Title>
         </Modal.Header>
-        
+
         <Modal.Body>
           {selectedPayment && (
             <>
@@ -286,19 +319,23 @@ export default function PaymentVerification({ sellerId = null }) {
                     <Col md={6}>
                       <strong>Order ID:</strong>
                       <br />
-                      <code>#{getOrderDetails(selectedPayment).id.slice(-8)}</code>
+                      <code>
+                        #{getOrderDetails(selectedPayment).id.slice(-8)}
+                      </code>
                     </Col>
                     <Col md={6}>
                       <strong>Amount:</strong>
                       <br />
                       <span className="fs-5 text-success fw-bold">
-                        {formatCurrency(getOrderDetails(selectedPayment).total_amount)}
+                        {formatCurrency(
+                          getOrderDetails(selectedPayment).total_amount
+                        )}
                       </span>
                     </Col>
                   </Row>
-                  
+
                   <hr />
-                  
+
                   <div className="row">
                     <Col md={6}>
                       <strong>Customer:</strong>
@@ -328,12 +365,14 @@ export default function PaymentVerification({ sellerId = null }) {
                   <Card.Body>
                     <h6 className="card-title">Payment Screenshot</h6>
                     <div className="text-center">
-                      <img 
+                      <img
                         src={selectedPayment.screenshot_url}
                         alt="Payment Screenshot"
                         className="img-fluid rounded border"
-                        style={{ maxHeight: '400px', cursor: 'pointer' }}
-                        onClick={() => window.open(selectedPayment.screenshot_url, '_blank')}
+                        style={{ maxHeight: "400px", cursor: "pointer" }}
+                        onClick={() =>
+                          window.open(selectedPayment.screenshot_url, "_blank")
+                        }
                       />
                       <br />
                       <small className="text-muted mt-2 d-block">
@@ -359,8 +398,9 @@ export default function PaymentVerification({ sellerId = null }) {
 
               <Alert variant="warning" className="mb-0">
                 <i className="ti-alert-triangle me-2"></i>
-                <strong>Important:</strong> Please verify the payment amount and screenshot carefully before approving. 
-                This action cannot be undone.
+                <strong>Important:</strong> Please verify the payment amount and
+                screenshot carefully before approving. This action cannot be
+                undone.
               </Alert>
             </>
           )}

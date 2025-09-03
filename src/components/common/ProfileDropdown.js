@@ -73,23 +73,44 @@ export default function ProfileDropdown({ user }) {
           My Pre-Bookings
         </Dropdown.Item>
 
-        {/* Become Seller Option - HIDDEN for now */}
-        {false && !loading && !isSeller && !isAdmin && (
+        {/* Become Seller Option */}
+        {!loading && !isSeller && !isAdmin && (
           <>
             <div className="px-3 py-2 border-bottom bg-light mt-2">
               <small className="text-muted fw-semibold">
                 BUSINESS OPPORTUNITY
               </small>
             </div>
-            <Dropdown.Item as={Link} href="/become-seller">
-              <i className="ti-store me-2 text-success"></i>
-              Become a Seller
-              <small
-                className="d-block text-muted"
-                style={{ fontSize: "0.75rem", marginTop: "2px" }}
-              >
-                Join our natural farming community
-              </small>
+            <Dropdown.Item
+              as={Link}
+              href="/become-seller"
+              className="py-3 border border-success border-opacity-25 rounded mx-2 mb-2"
+              style={{ backgroundColor: "rgba(25, 135, 84, 0.05)" }}
+            >
+              <div className="d-flex align-items-center">
+                <span
+                  className="me-3 text-success d-inline-flex align-items-center justify-content-center"
+                  style={{
+                    fontSize: "1.2rem",
+                    width: "20px",
+                    height: "20px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  🌱
+                </span>
+                <div>
+                  <div className="fw-semibold text-success">
+                    Become a Seller
+                  </div>
+                  <small
+                    className="d-block text-muted"
+                    style={{ fontSize: "0.75rem", marginTop: "2px" }}
+                  >
+                    Start selling your natural produce today
+                  </small>
+                </div>
+              </div>
             </Dropdown.Item>
           </>
         )}
@@ -129,14 +150,13 @@ export default function ProfileDropdown({ user }) {
               <i className="ti-dashboard me-2 text-danger"></i>
               Admin Dashboard
             </Dropdown.Item>
-            {/* Seller Requests - Hidden as requested
-            {isAdmin && (
+            {/* Seller Requests */}
+            {(isAdmin || isSuperAdmin) && (
               <Dropdown.Item as={Link} href="/admin/seller-requests">
                 <i className="ti-check me-2 text-warning"></i>
                 Seller Requests
               </Dropdown.Item>
             )}
-            */}
             {isSuperAdmin && (
               <Dropdown.Item as={Link} href="/admin/users">
                 <i className="ti-settings me-2 text-danger"></i>

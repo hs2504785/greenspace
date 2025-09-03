@@ -54,7 +54,33 @@ export async function POST(request) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error creating seller request:", error);
+      console.error("Error details:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
+
+      // If table doesn't exist, provide helpful error message
+      if (
+        error.code === "42P01" ||
+        error.message?.includes("relation") ||
+        error.message?.includes("does not exist")
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Seller registration system is not set up yet. Please contact administrator.",
+            code: "TABLE_NOT_EXISTS",
+          },
+          { status: 503 }
+        );
+      }
+
+      throw error;
+    }
 
     // Also create a basic farm profile
     if (data) {
@@ -126,9 +152,31 @@ export async function GET(request) {
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error fetching seller requests:", error);
+      console.error("Error details:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
 
-    return NextResponse.json(data);
+      // If table doesn't exist, return empty array instead of error
+      if (
+        error.code === "42P01" ||
+        error.message?.includes("relation") ||
+        error.message?.includes("does not exist")
+      ) {
+        console.warn(
+          "⚠️ seller_requests table doesn't exist yet, returning empty array"
+        );
+        return NextResponse.json([]);
+      }
+
+      throw error;
+    }
+
+    return NextResponse.json(data || []);
   } catch (error) {
     console.error("Error fetching seller requests:", error);
     return NextResponse.json(

@@ -15,6 +15,12 @@ export async function GET(request) {
       );
     }
 
+    console.log("🔍 Payment transactions API called by user:", session.user.id);
+    console.log("🔍 User session:", {
+      id: session.user.id,
+      email: session.user.email,
+    });
+
     const { searchParams } = new URL(request.url);
     const orderId = searchParams.get("orderId");
     const orderType = searchParams.get("orderType") || "regular";
@@ -44,9 +50,9 @@ export async function GET(request) {
 
     // Filter by seller if provided (for seller dashboard)
     if (sellerId) {
-      query = query.or(
-        `orders.seller_id.eq.${sellerId},guest_orders.seller_id.eq.${sellerId}`
-      );
+      // Use a more complex approach since PostgREST has issues with nested OR queries
+      // We'll get all transactions and filter on the server side
+      console.log("🔍 Filtering by seller ID:", sellerId);
     }
 
     const { data, error } = await query.order("created_at", {
@@ -55,8 +61,34 @@ export async function GET(request) {
 
     if (error) {
       console.error("Error fetching payment transactions:", error);
+      console.error("Error details:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
+
+      // If table doesn't exist, return empty array instead of error
+      if (
+        error.code === "42P01" ||
+        error.message?.includes("relation") ||
+        error.message?.includes("does not exist")
+      ) {
+        console.warn(
+          "⚠️ payment_transactions table doesn't exist yet, returning empty array"
+        );
+        return new Response(JSON.stringify({ transactions: [] }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       return new Response(
-        JSON.stringify({ error: "Failed to fetch payment transactions" }),
+        JSON.stringify({
+          error: "Failed to fetch payment transactions",
+          details: error.message,
+          code: error.code,
+        }),
         {
           status: 500,
           headers: { "Content-Type": "application/json" },
@@ -64,7 +96,25 @@ export async function GET(request) {
       );
     }
 
-    return new Response(JSON.stringify({ transactions: data }), {
+    // Filter by seller on server side if sellerId was provided
+    let filteredData = data || [];
+    if (sellerId && data && Array.isArray(data)) {
+      filteredData = data.filter((transaction) => {
+        try {
+          // Check if transaction belongs to this seller
+          const order = transaction.orders || transaction.guest_orders;
+          return order && order.seller_id === sellerId;
+        } catch (filterError) {
+          console.warn("Error filtering transaction:", filterError);
+          return false;
+        }
+      });
+      console.log(
+        `🔍 Filtered ${data.length} transactions to ${filteredData.length} for seller ${sellerId}`
+      );
+    }
+
+    return new Response(JSON.stringify({ transactions: filteredData }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
