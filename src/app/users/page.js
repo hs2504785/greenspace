@@ -287,9 +287,7 @@ export default function PublicUsersPage() {
                                 )}
                               </div>
                               <small className="text-muted">
-                                Community Member
-                                {user.is_seller && " • Sells Products"} • Click
-                                for details
+                                Community Member • Click for details
                                 {user.whatsapp_store_link &&
                                   " • Has WhatsApp Store"}
                                 {user.farm_name && <> • {user.farm_name}</>}

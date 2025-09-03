@@ -372,9 +372,6 @@ export default function NearbySellersList({
                             <div className="fw-bold text-truncate fs-6 text-primary">
                               {seller.name}
                             </div>
-                            <Badge bg="success" className="small">
-                              Sells Products
-                            </Badge>
                           </div>
                           <small className="text-muted">
                             {seller.farm_name || "Community Member"}
@@ -583,9 +580,6 @@ export default function NearbySellersList({
                                 <div className="fw-bold text-truncate fs-6 text-primary">
                                   {seller.name}
                                 </div>
-                                <Badge bg="success" className="small">
-                                  Sells Products
-                                </Badge>
                               </div>
                               <small className="text-muted">
                                 {seller.farm_name || "Community Member"}
