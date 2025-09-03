@@ -3,7 +3,7 @@ export const authConfig = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role || "user";
+        token.role = user.role || "buyer";
       }
       return token;
     },
@@ -15,9 +15,9 @@ export const authConfig = {
     },
   },
   pages: {
-    signIn: '/login',
-    error: '/login',
+    signIn: "/login",
+    error: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET || "dev_secret_do_not_use_in_production",
-  debug: process.env.NODE_ENV === 'development',
+  debug: process.env.NODE_ENV === "development",
 };

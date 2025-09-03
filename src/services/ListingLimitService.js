@@ -38,10 +38,10 @@ class ListingLimitService {
         .single();
 
       if (error) throw error;
-      return user?.role || "user";
+      return user?.role || "buyer";
     } catch (error) {
       console.error("Error getting user role:", error);
-      return "user"; // Default to basic user limits
+      return "buyer"; // Default to basic user limits
     }
   }
 

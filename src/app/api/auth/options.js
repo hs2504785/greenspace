@@ -241,7 +241,7 @@ export const authOptions = {
             console.log("✅ Found user in database:", userData.id);
             // Populate session with database user data
             session.user.id = userData.id;
-            session.user.role = userData.role || "user";
+            session.user.role = userData.role || "buyer";
             session.user.phone = userData.phone;
             session.user.whatsappNumber = userData.whatsapp_number;
             session.user.location = userData.location;
@@ -257,7 +257,7 @@ export const authOptions = {
             );
             // Don't create user here - it should be created in signIn callback
             // Just use basic session data
-            session.user.role = "user";
+            session.user.role = "buyer";
           }
         } else {
           console.log("❌ No email in session user");

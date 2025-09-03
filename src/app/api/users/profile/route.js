@@ -42,7 +42,7 @@ export async function GET(request) {
             email: session.user.email,
             name: session.user.name,
             avatar_url: session.user.image,
-            role: "user",
+            role: "buyer",
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           })
@@ -171,7 +171,7 @@ export async function PATCH(request) {
             email: session.user.email,
             name: session.user.name,
             avatar_url: session.user.image,
-            role: "user",
+            role: "buyer",
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           })

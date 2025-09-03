@@ -2,6 +2,7 @@ import ApiBaseService from "./ApiBaseService";
 import { supabase } from "@/lib/supabase";
 import { mockOrders } from "@/data/mockOrders";
 import VegetableService from "./VegetableService";
+import { updateProfileIfEmpty } from "@/utils/profileUtils";
 
 class OrderService extends ApiBaseService {
   constructor() {
@@ -219,6 +220,24 @@ class OrderService extends ApiBaseService {
         // Don't fail the order creation if quantity update fails
         // Log the error but continue with order completion
         console.log("📝 Order created successfully but quantity update failed");
+      }
+
+      // Update user profile with location and contact info if they are empty
+      try {
+        console.log(
+          "🔄 Checking if user profile needs updating with checkout info..."
+        );
+        await updateProfileIfEmpty(
+          orderData.userId,
+          orderData.deliveryAddress,
+          orderData.contactNumber
+        );
+        console.log("✅ Profile update check completed");
+      } catch (profileError) {
+        console.error("⚠️ Error updating user profile:", profileError);
+        // Don't fail the order creation if profile update fails
+        // Log the error but continue with order completion
+        console.log("📝 Order created successfully but profile update failed");
       }
 
       // Fetch the complete order with relationships
