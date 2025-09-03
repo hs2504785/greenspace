@@ -6,6 +6,7 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import UserAvatar from "./UserAvatar";
 import useUserRole from "@/hooks/useUserRole";
+import useSellerRequestStatus from "@/hooks/useSellerRequestStatus";
 
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
   <div
@@ -25,6 +26,12 @@ CustomToggle.displayName = "CustomToggle";
 
 export default function ProfileDropdown({ user }) {
   const { isSeller, isAdmin, isSuperAdmin, loading } = useUserRole();
+  const {
+    sellerRequest,
+    loading: requestLoading,
+    hasPendingRequest,
+    isRejected,
+  } = useSellerRequestStatus();
   const [isSigningOut, setIsSigningOut] = React.useState(false);
 
   const handleSignOut = async () => {
@@ -73,45 +80,114 @@ export default function ProfileDropdown({ user }) {
           My Pre-Bookings
         </Dropdown.Item>
 
-        {/* Become Seller Option */}
-        {!loading && !isSeller && !isAdmin && (
+        {/* Seller Request Status */}
+        {!loading && !requestLoading && !isSeller && !isAdmin && (
           <>
             <div className="px-3 py-2 border-bottom bg-light mt-2">
               <small className="text-muted fw-semibold">
                 BUSINESS OPPORTUNITY
               </small>
             </div>
-            <Dropdown.Item
-              as={Link}
-              href="/become-seller"
-              className="py-3 border border-success border-opacity-25 rounded mx-2 mb-2"
-              style={{ backgroundColor: "rgba(25, 135, 84, 0.05)" }}
-            >
-              <div className="d-flex align-items-center">
-                <span
-                  className="me-3 text-success d-inline-flex align-items-center justify-content-center"
-                  style={{
-                    fontSize: "1.2rem",
-                    width: "20px",
-                    height: "20px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  🌱
-                </span>
-                <div>
-                  <div className="fw-semibold text-success">
-                    Become a Seller
-                  </div>
-                  <small
-                    className="d-block text-muted"
-                    style={{ fontSize: "0.75rem", marginTop: "2px" }}
+
+            {/* Show different states based on seller request status */}
+            {hasPendingRequest ? (
+              // Pending Request State
+              <div
+                className="py-3 border border-warning border-opacity-25 rounded mx-2 mb-2"
+                style={{ backgroundColor: "rgba(255, 193, 7, 0.05)" }}
+              >
+                <div className="d-flex align-items-center px-3">
+                  <span
+                    className="me-3 text-warning d-inline-flex align-items-center justify-content-center"
+                    style={{
+                      fontSize: "1.2rem",
+                      width: "20px",
+                      height: "20px",
+                      fontWeight: "bold",
+                    }}
                   >
-                    Start selling your natural produce today
-                  </small>
+                    ⏳
+                  </span>
+                  <div>
+                    <div className="fw-semibold text-warning">
+                      Request Pending
+                    </div>
+                    <small
+                      className="d-block text-muted"
+                      style={{ fontSize: "0.75rem", marginTop: "2px" }}
+                    >
+                      Your seller application is under review
+                    </small>
+                  </div>
                 </div>
               </div>
-            </Dropdown.Item>
+            ) : isRejected ? (
+              // Rejected Request State - Allow reapplication
+              <Dropdown.Item
+                as={Link}
+                href="/become-seller"
+                className="py-3 border border-danger border-opacity-25 rounded mx-2 mb-2"
+                style={{ backgroundColor: "rgba(220, 53, 69, 0.05)" }}
+              >
+                <div className="d-flex align-items-center">
+                  <span
+                    className="me-3 text-danger d-inline-flex align-items-center justify-content-center"
+                    style={{
+                      fontSize: "1.2rem",
+                      width: "20px",
+                      height: "20px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    🔄
+                  </span>
+                  <div>
+                    <div className="fw-semibold text-danger">
+                      Reapply as Seller
+                    </div>
+                    <small
+                      className="d-block text-muted"
+                      style={{ fontSize: "0.75rem", marginTop: "2px" }}
+                    >
+                      Previous application was declined
+                    </small>
+                  </div>
+                </div>
+              </Dropdown.Item>
+            ) : (
+              // No Request State - Show Become Seller
+              <Dropdown.Item
+                as={Link}
+                href="/become-seller"
+                className="py-3 border border-success border-opacity-25 rounded mx-2 mb-2"
+                style={{ backgroundColor: "rgba(25, 135, 84, 0.05)" }}
+              >
+                <div className="d-flex align-items-center">
+                  <span
+                    className="me-3 text-success d-inline-flex align-items-center justify-content-center"
+                    style={{
+                      fontSize: "1.2rem",
+                      width: "20px",
+                      height: "20px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    🌱
+                  </span>
+                  <div>
+                    <div className="fw-semibold text-success">
+                      Become a Seller
+                    </div>
+                    <small
+                      className="d-block text-muted"
+                      style={{ fontSize: "0.75rem", marginTop: "2px" }}
+                    >
+                      Start selling your natural produce today
+                    </small>
+                  </div>
+                </div>
+              </Dropdown.Item>
+            )}
           </>
         )}
 
