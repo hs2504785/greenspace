@@ -10,6 +10,11 @@ import { useCart } from "@/context/CartContext";
 import { useSession } from "next-auth/react";
 import { checkCartForSimilarFreeItems } from "@/utils/freeItemValidation";
 import toastService from "@/utils/toastService";
+import {
+  isMapLink,
+  getLocationDisplayText,
+  openMapLink,
+} from "@/utils/locationUtils";
 
 // Helper function to validate if a string is a valid URL
 const isValidUrl = (str) => {
@@ -260,34 +265,14 @@ export default function VegetableCard({
       </Link>
 
       <div className="px-3 pb-3 pt-2">
-        <div className="d-flex align-items-start mb-2">
-          <div className="flex-grow-1 me-2 min-w-0" style={{ minWidth: 0 }}>
-            <h3 className="h5 mb-1 text-truncate">{name}</h3>
-            <div
-              className="d-flex align-items-center text-muted"
-              style={{ fontSize: "0.8rem" }}
-            >
-              <UserAvatar
-                user={owner}
-                size={16}
-                className="me-1 flex-shrink-0"
-              />
-              <span
-                className="text-truncate me-2"
-                style={{ maxWidth: "120px" }}
-              >
-                {owner?.name || "Seller"}
-              </span>
-              <span className="text-muted">•</span>
-              <i
-                className="ti-location-pin mx-1"
-                style={{ fontSize: "0.75rem" }}
-              ></i>
-              <span className="text-truncate" style={{ maxWidth: "80px" }}>
-                {location}
-              </span>
-            </div>
-          </div>
+        {/* First line: Product name + Price */}
+        <div className="d-flex align-items-center justify-content-between mb-2">
+          <h3
+            className="h4 mb-0 text-truncate fw-semibold flex-grow-1 me-2"
+            style={{ fontSize: "1.1rem", lineHeight: "1.3" }}
+          >
+            {name}
+          </h3>
           <div
             className="px-2 py-1 rounded text-center"
             style={{
@@ -303,6 +288,55 @@ export default function VegetableCard({
             }}
           >
             {isFree ? "FREE" : `₹${Number(price).toFixed(2)}`}
+          </div>
+        </div>
+
+        {/* Second line: Seller name + Location (full width) */}
+        <div className="d-flex align-items-center justify-content-between mb-2">
+          <div
+            className="d-flex align-items-center text-muted flex-grow-1 me-2"
+            style={{ fontSize: "0.85rem" }}
+          >
+            <UserAvatar user={owner} size={20} className="me-2 flex-shrink-0" />
+            <span className="text-truncate" style={{ maxWidth: "120px" }}>
+              {owner?.name || "Seller"}
+            </span>
+          </div>
+          <div
+            className="d-flex align-items-center text-muted"
+            style={{ fontSize: "0.8rem" }}
+          >
+            {location && isMapLink(location) ? (
+              <Button
+                variant="link"
+                size="sm"
+                className="p-0 text-decoration-none text-success fw-medium d-flex align-items-center"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  openMapLink(location);
+                }}
+                style={{ fontSize: "0.8rem" }}
+              >
+                <i
+                  className="ti-location-pin me-1"
+                  style={{ fontSize: "0.75rem" }}
+                ></i>
+                <span className="text-truncate" style={{ maxWidth: "110px" }}>
+                  {getLocationDisplayText(location, false)}
+                </span>
+              </Button>
+            ) : (
+              <>
+                <i
+                  className="ti-location-pin me-1"
+                  style={{ fontSize: "0.75rem" }}
+                ></i>
+                <span className="text-truncate" style={{ maxWidth: "110px" }}>
+                  {location}
+                </span>
+              </>
+            )}
           </div>
         </div>
 

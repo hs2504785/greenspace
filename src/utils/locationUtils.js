@@ -47,10 +47,9 @@ export function getLocationDisplayText(location, compact = false) {
   if (!location) return "";
 
   if (isMapLink(location)) {
-    // For map links, return a generic "View on Map" text
-    // or try to extract meaningful info from the URL
+    // For map links, return a simple "View Location" text
     if (compact) {
-      return "View on Map";
+      return "View Location";
     }
 
     // Try to extract place name from Google Maps URLs
@@ -60,24 +59,24 @@ export function getLocationDisplayText(location, compact = false) {
         location.match(/place\/([^/@]+)/) || location.match(/search\/([^/@]+)/);
       if (placeMatch) {
         const placeName = decodeURIComponent(placeMatch[1]).replace(/\+/g, " ");
-        return `${placeName} (View on Map)`;
+        return `${placeName} (View Location)`;
       }
 
       // Check if it's a coordinate-based URL
       const coordMatch = location.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
       if (coordMatch) {
-        return "View Location on Map";
+        return "View Location";
       }
 
-      return "View on Google Maps";
+      return "View Location";
     } else if (location.includes("maps.app.goo.gl")) {
-      return "View Location on Map";
+      return "View Location";
     } else if (location.includes("apple.com")) {
-      return "View on Apple Maps";
+      return "View Location";
     } else if (location.includes("waze.com")) {
-      return "View on Waze";
+      return "View Location";
     } else {
-      return "View Location on Map";
+      return "View Location";
     }
   }
 
@@ -85,9 +84,9 @@ export function getLocationDisplayText(location, compact = false) {
   const coordPattern = /^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/;
   if (coordPattern.test(location.trim())) {
     if (compact) {
-      return "View Coordinates";
+      return "View Location";
     }
-    return `${location} (Click to view on map)`;
+    return `${location} (View Location)`;
   }
 
   // For regular text, return as-is

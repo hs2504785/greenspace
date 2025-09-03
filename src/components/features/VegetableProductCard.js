@@ -19,7 +19,7 @@ export default function VegetableProductCard(props) {
         price={props.price}
         owner={props.owner}
         owner_id={props.owner_id}
-        location={props.location}
+        location={props.owner?.location || props.location}
         category={props.category}
         estimated_available_date={props.estimated_available_date}
         harvest_season={props.harvest_season}
@@ -43,7 +43,7 @@ export default function VegetableProductCard(props) {
       price={props.price}
       owner={props.owner}
       owner_id={props.owner_id}
-      location={props.location}
+      location={props.owner?.location || props.location}
       quantity={props.quantity}
       unit={props.unit}
       category={props.category}
