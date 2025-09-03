@@ -11,9 +11,15 @@
   // Add top padding to account for fixed header + margin for breathing room
   padding-top: 100px; // 80px header + 20px margin
 
-  // Additional padding on mobile to account for search section
+  // Additional padding on mobile to account for search section - ONLY when filters are present
   @media (max-width: 991.98px) {
-    padding-top: 160px; // 140px (header + search) + 20px margin
+    // Default: keep 100px max padding
+    padding-top: 100px;
+
+    // Only add extra padding when filters are present (for pages with search/filter functionality)
+    &.has-filters {
+      padding-top: 160px; // 140px (header + search) + 20px margin
+    }
   }
 }
 

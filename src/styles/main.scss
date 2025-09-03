@@ -27,6 +27,9 @@ $prefix: "bs-";
 @import "./components/tooltips";
 @import "./components/upi-payment-modal";
 
+// Import page-specific styles
+@import "./pages/why-join-us";
+
 // Global styles
 html,
 body {
