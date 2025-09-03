@@ -124,7 +124,7 @@ export default function PublicUsersPage() {
                   </Badge>
                   <Badge bg="success" className="small px-2 py-1">
                     <i className="ti-shopping-cart me-1"></i>
-                    {sellersCount} Sellers
+                    {sellersCount} EcoExperts
                   </Badge>
                   <Badge bg="warning" className="small px-2 py-1">
                     <i className="ti-location-pin me-1"></i>
@@ -159,7 +159,7 @@ export default function PublicUsersPage() {
             <Nav.Item>
               <Nav.Link eventKey="sellers">
                 <i className="ti-map me-2"></i>
-                Find Nearby Sellers
+                Find Nearby EcoExperts
                 <Badge bg="success" className="ms-2">
                   {sellersCount}
                 </Badge>
@@ -277,7 +277,7 @@ export default function PublicUsersPage() {
                                 </div>
                                 {user.is_seller && (
                                   <Badge bg="success" className="small">
-                                    Seller
+                                    EcoExpert
                                   </Badge>
                                 )}
                                 {user.average_rating > 0 && (

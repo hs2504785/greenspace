@@ -159,7 +159,7 @@ export default function UserListingsPage() {
               <div className="d-flex align-items-center justify-content-between">
                 <h6 className="mb-0">
                   <i className="ti ti-user me-2"></i>
-                  About This Seller
+                  About This EcoExpert
                 </h6>
                 <Button
                   variant="outline-secondary"

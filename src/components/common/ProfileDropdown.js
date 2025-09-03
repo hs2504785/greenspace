@@ -46,12 +46,12 @@ export default function ProfileDropdown({ user }) {
           className="d-flex flex-column me-1 user-name"
           style={{ lineHeight: "1.2" }}
         >
-          <small className="text-muted" style={{ fontSize: "0.75rem" }}>
-            Welcome,
-          </small>
           <strong style={{ fontSize: "0.95rem" }}>
-            {user?.name?.split(" ")[0]}
+            {user?.name?.split(" ")[0] || "User"}
           </strong>
+          <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+            {user?.email}
+          </small>
         </div>
       </Dropdown.Toggle>
 

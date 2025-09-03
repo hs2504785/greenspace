@@ -500,6 +500,17 @@ export default function Header() {
               <i className="ti-user me-2 text-primary"></i>
               Community
             </Nav.Link>
+            <Nav.Link
+              as={Link}
+              href="/why-join-us"
+              className={`mobile-nav-link ${
+                isActive("/why-join-us") ? "active-nav-item" : ""
+              }`}
+              onClick={handleLinkClick}
+            >
+              <i className="ti-star me-2 text-warning"></i>
+              Why Join Us
+            </Nav.Link>
 
             {/* Farm Management Section - Only for Admin/SuperAdmin */}
             {(isAdmin || isSuperAdmin) && !roleLoading && (
