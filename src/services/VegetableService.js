@@ -875,12 +875,21 @@ class VegetableService extends ApiBaseService {
   async updateQuantitiesAfterOrder(orderItems) {
     try {
       console.log("🔄 Updating vegetable quantities after order:", orderItems);
+      console.log(
+        "🔍 Order items structure:",
+        JSON.stringify(orderItems, null, 2)
+      );
 
       if (
         !orderItems ||
         !Array.isArray(orderItems) ||
         orderItems.length === 0
       ) {
+        console.error("❌ Invalid order items:", {
+          orderItems,
+          isArray: Array.isArray(orderItems),
+          length: orderItems?.length,
+        });
         throw new Error("Order items are required");
       }
 

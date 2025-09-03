@@ -21,6 +21,8 @@ export async function POST(req) {
       id: user?.id,
       email: user?.email,
       role: user?.role,
+      phone: user?.whatsapp_number || user?.phone,
+      location: user?.location,
     });
     console.log("🔧 First few messages:", messages?.slice(0, 3));
 
@@ -113,13 +115,17 @@ You have access to powerful tools to help customers:
    - Payment troubleshooting
    - Support all UPI apps (GPay, PhonePe, Paytm, BHIM)
 
-WORKFLOW FOR BUY COMMANDS:
+SMART ORDER WORKFLOW:
 When customers say "buy [item]" or similar:
-1. Respond immediately with "Processing your order for [item]..."
-2. I will handle the order creation automatically
-3. Show order details directly in chat - NO EMAIL MENTIONS
-4. Use the format: "🎉 **Order Confirmed!** \\n\\n**Order Details:**\\n- **Product**: [item]\\n- **Quantity**: [amount]\\n- **Price**: ₹[price]\\n- **Status**: Confirmed ✅\\n\\n🔗 **Track Your Order**: [will be provided]"
-5. Keep it simple - no cart, no complex checkout
+1. Show order summary with product details
+2. Check user profile for existing phone (${
+      user?.whatsapp_number || user?.phone || "not available"
+    }) and location (${user?.location || "not available"})
+3. If user has complete profile info: Create order immediately
+4. If missing info: Ask only for what's needed in simple format
+5. Use format: "Mobile: 7799111008" or "Address: BHEL Hyderabad 502032"
+6. Don't ask for product/quantity/price again - you already know this
+7. Show order confirmation with tracking URL
 
 IMPORTANT RULES:
 - NEVER mention email confirmations or checking email
@@ -376,11 +382,11 @@ Remember: Always use your tools when customers ask about products, orders, or ne
 - **Status**: Confirmed ✅
 - **Payment**: Pay Later Option Available
 
-🔗 **Track Your Order**: ${order.order_url}
+🔗 **Track Your Order**: ${orderData.order_url}
 
 Your order is confirmed and will be processed shortly!`,
-              order_url: order.order_url,
-              order_id: orderUuid,
+              order_url: orderData.order_url,
+              order_id: order.id,
               product_name: product.name,
               quantity: quantity,
               total_price: totalAmount,
@@ -578,34 +584,123 @@ Your order is confirmed and will be processed shortly!`,
                 parseFloat(product.price.replace("₹", "")) * quantity
               ).toFixed(2);
 
-              // Ask for contact details with product info embedded for context preservation
-              const orderRequest = `🛒 **Ready to place your order!**
+              // Smart order request - use existing user data when available
+              const hasPhone =
+                (user?.whatsapp_number || user?.phone) &&
+                (user?.whatsapp_number || user?.phone).trim();
+              const hasLocation = user?.location && user.location.trim();
+
+              let orderRequest = `🛒 **Ready to place your order!**
 
 **Order Summary:**
 - **Product**: ${product.name}
 - **Quantity**: ${quantity}kg
 - **Unit Price**: ₹${product.price.replace("₹", "")}
 - **Total**: ₹${totalAmount}
-- **Seller**: ${product.seller?.name || "Local Farmer"}
+- **Seller**: ${product.seller?.name || "Local Farmer"}`;
 
-**To complete your order with "Pay Later" option, please provide:**
+              // Check what info we need to ask for
+              const needsPhone = !hasPhone;
+              const needsAddress = !hasLocation;
 
-📱 **Mobile Number**: Your 10-digit mobile number
-📍 **Delivery Address**: Complete address for delivery
+              if (needsPhone || needsAddress) {
+                orderRequest += `\n\n**To complete your order with "Pay Later" option, please provide:**\n`;
 
-**Reply with all details in this format:**
-Product: ${product.name}
-Quantity: ${quantity}
-Price: ${product.price.replace("₹", "")}
-Mobile: [your number]
-Address: [your complete address]
+                if (needsPhone) {
+                  orderRequest += `\n📱 **Mobile Number**: Your 10-digit mobile number`;
+                }
+                if (needsAddress) {
+                  orderRequest += `\n📍 **Delivery Address**: Complete address for delivery`;
+                }
 
-**Example:** 
-Product: ${product.name}
-Quantity: ${quantity}
-Price: ${product.price.replace("₹", "")}
-Mobile: 9876543210
-Address: 123 Main Street, Jubilee Hills, Hyderabad, 500033`;
+                // Simplified format request
+                const missingFields = [];
+                if (needsPhone) missingFields.push("Mobile: [your number]");
+                if (needsAddress) missingFields.push("Address: [your address]");
+
+                orderRequest += `\n\n**Reply with:**\nProduct: ${
+                  product.name
+                }\nQuantity: ${quantity}\nPrice: ${product.price.replace(
+                  "₹",
+                  ""
+                )}\n${missingFields.join("\n")}`;
+
+                orderRequest += `\n\n**Example:**\nProduct: ${
+                  product.name
+                }\nQuantity: ${quantity}\nPrice: ${product.price.replace(
+                  "₹",
+                  ""
+                )}`;
+                if (needsPhone) orderRequest += `\nMobile: 7799111008`;
+                if (needsAddress)
+                  orderRequest += `\nAddress: BHEL Hyderabad 502032`;
+              } else {
+                // We have all info, create order immediately
+                console.log(
+                  "🚀 All user info available, creating order immediately..."
+                );
+
+                try {
+                  const orderResponse = await fetch(
+                    getApiUrl("/api/ai/orders/create", req),
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Cookie: req.headers.get("cookie") || "",
+                      },
+                      body: JSON.stringify({
+                        vegetable_id: product.id,
+                        seller_id:
+                          product.seller?.id ||
+                          "0e13a58b-a5e2-4ed3-9c69-9634c7413550",
+                        quantity: quantity,
+                        unit_price: product.price.replace("₹", ""),
+                        total_amount: totalAmount,
+                        delivery_address: user.location,
+                        contact_number: user.whatsapp_number || user.phone,
+                        product_name: product.name,
+                      }),
+                    }
+                  );
+
+                  if (orderResponse.ok) {
+                    const orderData = await orderResponse.json();
+                    return new Response(
+                      `🎉 **Order Placed Successfully!**
+
+**Order Details:**
+- **Order ID**: ${orderData.order_id}
+- **Product**: ${product.name}
+- **Quantity**: ${quantity}kg
+- **Unit Price**: ₹${product.price.replace("₹", "")}
+- **Total Amount**: ₹${totalAmount}
+- **Status**: Confirmed ✅
+- **Payment**: Pay Later Option
+- **Mobile**: ${user.whatsapp_number || user.phone}
+- **Address**: ${user.location}
+
+🔗 **[Track Your Order](${orderData.order_url})**
+
+✅ Seller will be notified via WhatsApp
+✅ You'll get order updates on ${user.whatsapp_number || user.phone}
+
+Thank you for shopping with GreenSpace! 🌱`,
+                      {
+                        headers: { "Content-Type": "text/plain" },
+                      }
+                    );
+                  } else {
+                    throw new Error("Order creation failed");
+                  }
+                } catch (immediateOrderError) {
+                  console.error(
+                    "❌ Immediate order creation error:",
+                    immediateOrderError
+                  );
+                  orderRequest += `\n\n⚠️ There was an issue creating your order automatically. Please provide the missing details above to complete your order.`;
+                }
+              }
 
               // Store product info for this session (we'll extract it later)
               global.pendingOrder = {
@@ -640,10 +735,11 @@ Address: 123 Main Street, Jubilee Hills, Hyderabad, 500033`;
       }
     }
 
-    // Check for order completion with contact details
+    // Check for order completion with contact details (more flexible)
     const isOrderCompletion =
-      lastUserMessage?.content?.toLowerCase().includes("mobile:") &&
-      lastUserMessage?.content?.toLowerCase().includes("address:");
+      lastUserMessage?.content?.toLowerCase().includes("product:") &&
+      (lastUserMessage?.content?.toLowerCase().includes("mobile:") ||
+        lastUserMessage?.content?.toLowerCase().includes("address:"));
 
     if (isOrderCompletion) {
       console.log("📱 Contact details provided, creating order...");
@@ -656,21 +752,43 @@ Address: 123 Main Street, Jubilee Hills, Hyderabad, 500033`;
         const quantityMatch = userContent.match(/quantity:\s*(\d+)/i);
         const priceMatch = userContent.match(/price:\s*([0-9.]+)/i);
 
-        // Extract mobile and address
+        // Extract mobile and address (flexible - use user profile if not provided)
         const mobileMatch = userContent.match(/mobile:\s*([0-9\s+-]+)/i);
         const addressMatch = userContent.match(/address:\s*(.+?)(?:$|\n)/i);
 
-        if (!mobileMatch || !addressMatch) {
+        // Use provided info or fall back to user profile
+        let mobile = mobileMatch
+          ? mobileMatch[1].trim().replace(/\s/g, "")
+          : (user?.whatsapp_number || user?.phone)?.replace(/\s/g, "");
+        let address = addressMatch ? addressMatch[1].trim() : user?.location;
+
+        // Check if we have the minimum required info
+        if (!mobile && !address) {
           return new Response(
-            "Please provide both mobile number and address in the correct format:\n\nMobile: [your 10-digit number]\nAddress: [your complete address]",
+            "Please provide your contact details:\n\nMobile: [your 10-digit number]\nAddress: [your complete address]",
             {
               headers: { "Content-Type": "text/plain" },
             }
           );
         }
 
-        const mobile = mobileMatch[1].trim().replace(/\s/g, "");
-        const address = addressMatch[1].trim();
+        if (!mobile) {
+          return new Response(
+            "Please provide your mobile number:\n\nMobile: [your 10-digit number]",
+            {
+              headers: { "Content-Type": "text/plain" },
+            }
+          );
+        }
+
+        if (!address) {
+          return new Response(
+            "Please provide your delivery address:\n\nAddress: [your complete address]",
+            {
+              headers: { "Content-Type": "text/plain" },
+            }
+          );
+        }
 
         // Validate mobile number (basic validation)
         if (mobile.length < 10) {

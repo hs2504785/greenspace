@@ -43,11 +43,20 @@ export async function POST(request) {
     };
 
     console.log("🔄 Creating order with OrderService:", orderData);
+    console.log("🔍 Order items for quantity update:", orderData.items);
 
     // Use the same OrderService.createOrder() method as manual checkout
     const order = await OrderService.createOrder(orderData);
 
     console.log("✅ AI Order created successfully:", order.id);
+    console.log("📦 Order details:", {
+      orderId: order.id,
+      items: order.items?.map((item) => ({
+        vegetableId: item.vegetable?.id,
+        vegetableName: item.vegetable?.name,
+        quantity: item.quantity,
+      })),
+    });
 
     return NextResponse.json({
       success: true,

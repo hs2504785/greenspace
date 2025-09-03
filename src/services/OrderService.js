@@ -213,10 +213,15 @@ class OrderService extends ApiBaseService {
       // Update vegetable quantities after successful order creation
       try {
         console.log("🔄 Updating vegetable quantities after order creation...");
+        console.log(
+          "📋 Items to update:",
+          JSON.stringify(orderData.items, null, 2)
+        );
         await VegetableService.updateQuantitiesAfterOrder(orderData.items);
         console.log("✅ Vegetable quantities updated successfully");
       } catch (quantityError) {
         console.error("⚠️ Error updating vegetable quantities:", quantityError);
+        console.error("⚠️ Full error details:", quantityError.stack);
         // Don't fail the order creation if quantity update fails
         // Log the error but continue with order completion
         console.log("📝 Order created successfully but quantity update failed");

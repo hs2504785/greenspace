@@ -40,6 +40,7 @@ export default function Home() {
     const handleOrderCreated = () => handleOrderEvent("Order created");
     const handleAIOrderCreated = () => handleOrderEvent("AI order created");
     const handleOrderCompleted = () => handleOrderEvent("Order completed");
+    const handleProductsUpdated = () => handleOrderEvent("Products updated");
 
     if (typeof window !== "undefined") {
       console.log(
@@ -50,11 +51,13 @@ export default function Home() {
       window.addEventListener("order-created", handleOrderCreated); // Manual & AI orders
       window.addEventListener("ai-order-created", handleAIOrderCreated); // AI orders
       window.addEventListener("order-completed", handleOrderCompleted); // Fallback
+      window.addEventListener("products-updated", handleProductsUpdated); // Product quantity updates
 
       return () => {
         window.removeEventListener("order-created", handleOrderCreated);
         window.removeEventListener("ai-order-created", handleAIOrderCreated);
         window.removeEventListener("order-completed", handleOrderCompleted);
+        window.removeEventListener("products-updated", handleProductsUpdated);
       };
     }
   }, [refresh]);

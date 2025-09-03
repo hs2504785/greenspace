@@ -16,6 +16,7 @@ export default function AIChatAssistant({ user }) {
   const [inputValue, setInputValue] = useState("");
   const [isMobile, setIsMobile] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [fullUserProfile, setFullUserProfile] = useState(null);
 
   // Function to get welcome message based on device type
   const getWelcomeMessage = (mobile) => ({
@@ -61,6 +62,37 @@ I have access to real product data and can help you find, buy, and track orders!
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Fetch complete user profile data
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user?.id) {
+        try {
+          console.log("🔄 Fetching complete user profile for AI chat...");
+          const response = await fetch("/api/users/profile");
+          if (response.ok) {
+            const data = await response.json();
+            console.log("✅ User profile fetched:", {
+              phone: data.user?.whatsapp_number,
+              location: data.user?.location,
+              name: data.user?.name,
+            });
+            setFullUserProfile(data.user);
+          } else {
+            console.warn("⚠️ Failed to fetch user profile, using session data");
+            setFullUserProfile(user);
+          }
+        } catch (error) {
+          console.error("❌ Error fetching user profile:", error);
+          setFullUserProfile(user);
+        }
+      } else {
+        setFullUserProfile(user);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   // Update welcome message when mobile state changes
   useEffect(() => {
@@ -286,7 +318,7 @@ I have access to real product data and can help you find, buy, and track orders!
               text: userMessage.content,
             },
           ],
-          user: user || {},
+          user: fullUserProfile || user || {},
         }),
       });
 
@@ -326,19 +358,24 @@ I have access to real product data and can help you find, buy, and track orders!
       console.log("✅ AI response complete:", aiResponse);
 
       // Check if response contains order confirmation (multiple formats)
-      if (
+      const hasOrderConfirmation =
         (aiResponse.includes("Order Confirmed!") ||
           aiResponse.includes("Order Placed Successfully!") ||
-          aiResponse.includes("🎉 Order Placed Successfully!")) &&
+          aiResponse.includes("🎉 Order Placed Successfully!") ||
+          aiResponse.includes("🎉 **Order Confirmed!**")) &&
         (aiResponse.includes("Track Your Order") ||
           aiResponse.includes("Order Details:") ||
-          aiResponse.includes("Order ID:"))
-      ) {
+          aiResponse.includes("Order ID:"));
+
+      if (hasOrderConfirmation) {
         console.log("🎉 ORDER CONFIRMATION DETECTED in AI response!");
         console.log("📝 Response contains:", {
           hasOrderConfirmed: aiResponse.includes("Order Confirmed!"),
           hasOrderPlaced: aiResponse.includes("Order Placed Successfully!"),
           hasEmojiOrder: aiResponse.includes("🎉 Order Placed Successfully!"),
+          hasEmojiOrderConfirmed: aiResponse.includes(
+            "🎉 **Order Confirmed!**"
+          ),
           hasTrackOrder: aiResponse.includes("Track Your Order"),
           hasOrderDetails: aiResponse.includes("Order Details:"),
           hasOrderId: aiResponse.includes("Order ID:"),
@@ -355,6 +392,10 @@ I have access to real product data and can help you find, buy, and track orders!
           window.dispatchEvent(new CustomEvent("ai-order-created"));
           window.dispatchEvent(new CustomEvent("order-created"));
           console.log("✅ Events dispatched: ai-order-created, order-created");
+
+          // Also dispatch event to refresh product list (for quantity updates)
+          window.dispatchEvent(new CustomEvent("products-updated"));
+          console.log("✅ Products refresh event dispatched");
         }
       } else {
         // Debug: Log if no order confirmation detected
