@@ -25,35 +25,29 @@ export default function SellerRequestsPage() {
         return;
       }
 
-      const supabase = createSupabaseClient();
+      console.log("🔍 Fetching seller requests via API...");
 
-      // Optimized query with specific field selection
-      const { data, error } = await supabase
-        .from("seller_requests")
-        .select(
-          `
-          id,
-          user_id,
-          business_name,
-          business_description,
-          location,
-          contact_number,
-          whatsapp_number,
-          status,
-          created_at,
-          updated_at,
-          user:users!user_id(
-            id, name, email, avatar_url
-          ),
-          reviewer:users!reviewed_by(
-            id, name
-          )
-        `
-        )
-        .order("created_at", { ascending: false })
-        .limit(50); // Limit for performance
+      // Use the API endpoint instead of direct Supabase access
+      const response = await fetch("/api/admin/seller-requests", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "same-origin",
+      });
 
-      if (error) throw error;
+      console.log("📡 API Response:", {
+        status: response.status,
+        ok: response.ok,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ API Error:", errorText);
+        throw new Error(`API Error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
 
       console.log("📋 Debug - Fetched seller requests:", {
         count: data?.length || 0,
