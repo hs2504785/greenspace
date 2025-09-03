@@ -12,6 +12,8 @@ import {
   Button,
   Nav,
   Tab,
+  OverlayTrigger,
+  Tooltip,
 } from "react-bootstrap";
 import { useRouter } from "next/navigation";
 import UserAvatar from "@/components/common/UserAvatar";
@@ -233,7 +235,11 @@ export default function PublicUsersPage() {
                     <tr>
                       <th
                         className="border-0 ps-3"
-                        style={{ minWidth: "140px", maxWidth: "160px" }}
+                        style={{
+                          width: "300px",
+                          minWidth: "280px",
+                          maxWidth: "320px",
+                        }}
                       >
                         Member
                         <small className="text-muted d-block fw-normal">
@@ -243,19 +249,30 @@ export default function PublicUsersPage() {
                       <th
                         className="border-0"
                         style={{
-                          width: "250px",
-                          minWidth: "200px",
-                          maxWidth: "250px",
+                          width: "320px",
+                          minWidth: "300px",
+                          maxWidth: "350px",
                         }}
                       >
                         Location
                       </th>
-                      <th className="border-0" style={{ minWidth: "120px" }}>
+                      <th
+                        className="border-0"
+                        style={{
+                          width: "140px",
+                          minWidth: "120px",
+                          maxWidth: "160px",
+                        }}
+                      >
                         Joined
                       </th>
                       <th
                         className="border-0 text-center"
-                        style={{ minWidth: "120px" }}
+                        style={{
+                          width: "180px",
+                          minWidth: "160px",
+                          maxWidth: "200px",
+                        }}
                       >
                         Actions
                       </th>
@@ -294,9 +311,6 @@ export default function PublicUsersPage() {
                                   </div>
                                   <small className="text-muted">
                                     Community Member • Click for details
-                                    {user.whatsapp_store_link &&
-                                      " • Has WhatsApp Store"}
-                                    {user.farm_name && <> • {user.farm_name}</>}
                                   </small>
                                 </div>
                               </div>
@@ -305,80 +319,118 @@ export default function PublicUsersPage() {
                           <td style={{ maxWidth: "250px" }}>
                             {user.location ? (
                               <div
-                                className="d-flex align-items-center"
+                                className="d-flex align-items-start"
                                 style={{ minWidth: 0 }}
                               >
                                 <div
                                   className="flex-grow-1"
-                                  style={{ minWidth: 0 }}
+                                  style={{ minWidth: 0, maxWidth: "100%" }}
                                 >
                                   {isMapLink(user.location) ? (
-                                    <Button
-                                      variant="link"
-                                      size="sm"
-                                      className="p-0 text-decoration-none text-success fw-medium text-start"
-                                      onClick={() => {
-                                        console.log(
-                                          "🔍 DEBUG - Main users page location click for:",
-                                          user.name,
-                                          {
-                                            hasCoordinates: !!user.coordinates,
-                                            coordinates: user.coordinates,
-                                            originalLocation: user.location,
-                                          }
-                                        );
+                                    <OverlayTrigger
+                                      placement="top"
+                                      overlay={
+                                        <Tooltip
+                                          id={`location-tooltip-${user.id}`}
+                                        >
+                                          Click to open location in map:{" "}
+                                          {user.location}
+                                        </Tooltip>
+                                      }
+                                    >
+                                      <Button
+                                        variant="link"
+                                        size="sm"
+                                        className="p-0 text-decoration-none text-success fw-medium text-start"
+                                        onClick={() => {
+                                          console.log(
+                                            "🔍 DEBUG - Main users page location click for:",
+                                            user.name,
+                                            {
+                                              hasCoordinates:
+                                                !!user.coordinates,
+                                              coordinates: user.coordinates,
+                                              originalLocation: user.location,
+                                            }
+                                          );
 
-                                        // Prioritize original location URL (more accurate), use coordinates as fallback
-                                        if (user.location) {
-                                          // Use original URL - it's more precise (place URLs vs search URLs)
-                                          console.log(
-                                            "🗺️ Opening original location URL:",
-                                            user.location
-                                          );
-                                          window.open(user.location, "_blank");
-                                        } else if (user.coordinates) {
-                                          // Fallback: Generate search URL from coordinates
-                                          const searchQuery = `${user.name} ${user.coordinates.lat},${user.coordinates.lon}`;
-                                          const mapsUrl = `https://www.google.com/maps/search/${searchQuery.replace(
-                                            / /g,
-                                            "+"
-                                          )}`;
-                                          console.log(
-                                            "🗺️ Fallback to coordinate-based search:",
-                                            mapsUrl
-                                          );
-                                          window.open(mapsUrl, "_blank");
-                                        } else {
-                                          console.log(
-                                            "⚠️ No location data available"
-                                          );
-                                        }
-                                      }}
-                                      title={`Click to open location in map: ${user.location}`}
-                                      style={{
-                                        maxWidth: "100%",
-                                        whiteSpace: "normal",
-                                        lineHeight: "1.2",
-                                      }}
-                                    >
-                                      {getLocationDisplayText(
-                                        user.location,
-                                        false
-                                      )}
-                                    </Button>
+                                          // Prioritize original location URL (more accurate), use coordinates as fallback
+                                          if (user.location) {
+                                            // Use original URL - it's more precise (place URLs vs search URLs)
+                                            console.log(
+                                              "🗺️ Opening original location URL:",
+                                              user.location
+                                            );
+                                            window.open(
+                                              user.location,
+                                              "_blank"
+                                            );
+                                          } else if (user.coordinates) {
+                                            // Fallback: Generate search URL from coordinates
+                                            const searchQuery = `${user.name} ${user.coordinates.lat},${user.coordinates.lon}`;
+                                            const mapsUrl = `https://www.google.com/maps/search/${searchQuery.replace(
+                                              / /g,
+                                              "+"
+                                            )}`;
+                                            console.log(
+                                              "🗺️ Fallback to coordinate-based search:",
+                                              mapsUrl
+                                            );
+                                            window.open(mapsUrl, "_blank");
+                                          } else {
+                                            console.log(
+                                              "⚠️ No location data available"
+                                            );
+                                          }
+                                        }}
+                                        style={{
+                                          maxWidth: "100%",
+                                          wordBreak: "break-word",
+                                          lineHeight: "1.3",
+                                          display: "-webkit-box",
+                                          WebkitLineClamp: 2,
+                                          WebkitBoxOrient: "vertical",
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          fontSize: "0.875rem",
+                                          textAlign: "left",
+                                        }}
+                                      >
+                                        {getLocationDisplayText(
+                                          user.location,
+                                          false
+                                        )}
+                                      </Button>
+                                    </OverlayTrigger>
                                   ) : (
-                                    <span
-                                      className="d-block text-muted"
-                                      title={user.location}
-                                      style={{
-                                        maxWidth: "100%",
-                                        whiteSpace: "normal",
-                                        wordBreak: "break-word",
-                                        lineHeight: "1.2",
-                                      }}
+                                    <OverlayTrigger
+                                      placement="top"
+                                      overlay={
+                                        <Tooltip
+                                          id={`location-text-tooltip-${user.id}`}
+                                        >
+                                          {user.location}
+                                        </Tooltip>
+                                      }
                                     >
-                                      {user.location}
-                                    </span>
+                                      <div
+                                        className="text-muted"
+                                        style={{
+                                          maxWidth: "100%",
+                                          wordBreak: "break-word",
+                                          lineHeight: "1.3",
+                                          display: "-webkit-box",
+                                          WebkitLineClamp: 2,
+                                          WebkitBoxOrient: "vertical",
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          fontSize: "0.875rem",
+                                          cursor: "help",
+                                        }}
+                                      >
+                                        {user.location}
+                                      </div>
+                                    </OverlayTrigger>
                                   )}
                                 </div>
                               </div>
