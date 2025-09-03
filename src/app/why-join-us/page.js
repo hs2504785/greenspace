@@ -285,13 +285,28 @@ export default function WhyJoinUsPage() {
                           {feature.title}
                         </h5>
                         <p className="text-muted mb-3">{feature.description}</p>
-                        <div className="d-flex flex-wrap gap-1">
+                        <div className="d-flex flex-wrap gap-2">
                           {feature.benefits.map((benefit, idx) => (
                             <Badge
                               key={idx}
-                              bg="light"
-                              text="success"
-                              className="border border-success"
+                              className="bg-light text-muted border-0 px-3 py-2 rounded-pill fw-normal"
+                              style={{
+                                fontSize: "0.75rem",
+                                backgroundColor: "#f8f9fa !important",
+                                color: "#6c757d !important",
+                                transition: "all 0.2s ease",
+                                cursor: "default",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = "#e9ecef";
+                                e.target.style.color = "#495057";
+                                e.target.style.transform = "translateY(-1px)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = "#f8f9fa";
+                                e.target.style.color = "#6c757d";
+                                e.target.style.transform = "translateY(0)";
+                              }}
                             >
                               {benefit}
                             </Badge>
@@ -338,13 +353,28 @@ export default function WhyJoinUsPage() {
                           {feature.title}
                         </h5>
                         <p className="text-muted mb-3">{feature.description}</p>
-                        <div className="d-flex flex-wrap gap-1">
+                        <div className="d-flex flex-wrap gap-2">
                           {feature.benefits.map((benefit, idx) => (
                             <Badge
                               key={idx}
-                              bg="light"
-                              text="success"
-                              className="border border-success"
+                              className="bg-light text-muted border-0 px-3 py-2 rounded-pill fw-normal"
+                              style={{
+                                fontSize: "0.75rem",
+                                backgroundColor: "#f8f9fa !important",
+                                color: "#6c757d !important",
+                                transition: "all 0.2s ease",
+                                cursor: "default",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = "#e9ecef";
+                                e.target.style.color = "#495057";
+                                e.target.style.transform = "translateY(-1px)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = "#f8f9fa";
+                                e.target.style.color = "#6c757d";
+                                e.target.style.transform = "translateY(0)";
+                              }}
                             >
                               {benefit}
                             </Badge>
@@ -361,48 +391,174 @@ export default function WhyJoinUsPage() {
           {/* Farm Management Highlight */}
           <Row className="mt-5">
             <Col>
-              <Card className="border-success bg-light">
-                <Card.Body className="p-4">
+              <Card
+                className="border-0 shadow-lg overflow-hidden"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #f8fff9 0%, #e8f5e9 100%)",
+                }}
+              >
+                <Card.Body className="p-5">
                   <Row className="align-items-center">
-                    <Col md={8}>
-                      <h4 className="text-success mb-3">
-                        <i className="bi bi-grid-3x3 me-2"></i>
-                        Advanced Farm Management System
-                      </h4>
-                      <p className="mb-3">
-                        Our comprehensive farm management system supports both
-                        uniform 24x24 ft grids and variable width
-                        configurations. Plan your farm layout systematically
-                        with precision grid lines, track tree positions, and
-                        manage expansion with interactive controls.
-                      </p>
-                      <ul className="list-unstyled mb-0">
-                        <li className="mb-2">
-                          <i className="bi bi-check-circle-fill text-success me-2"></i>
-                          Interactive grid system with 1ft precision
-                        </li>
-                        <li className="mb-2">
-                          <i className="bi bi-check-circle-fill text-success me-2"></i>
-                          Tree positioning and growth tracking
-                        </li>
-                        <li className="mb-2">
-                          <i className="bi bi-check-circle-fill text-success me-2"></i>
-                          Comprehensive care logging and history
-                        </li>
-                        <li>
-                          <i className="bi bi-check-circle-fill text-success me-2"></i>
-                          Visual layout planning and expansion tools
-                        </li>
-                      </ul>
-                    </Col>
-                    <Col md={4} className="text-center">
-                      <div className="bg-white rounded p-3 shadow-sm">
-                        <div className="display-1 text-success mb-2">🌳</div>
-                        <h6 className="text-success">Farm Dashboard</h6>
-                        <p className="small text-muted mb-0">
-                          Complete farm visualization and management
+                    <Col lg={8}>
+                      <div className="mb-4">
+                        <div className="d-flex align-items-center mb-3">
+                          <div className="me-3" style={{ fontSize: "3rem" }}>
+                            🌳
+                          </div>
+                          <div>
+                            <h3 className="text-success mb-1 fw-bold">
+                              Advanced Farm Management System
+                            </h3>
+                            <p className="text-muted mb-0 small">
+                              Precision agriculture at your fingertips
+                            </p>
+                          </div>
+                        </div>
+
+                        <p className="text-dark mb-4 fs-6">
+                          Our comprehensive farm management system supports both
+                          uniform 24x24 ft grids and variable width
+                          configurations. Plan your farm layout systematically
+                          with precision grid lines, track tree positions, and
+                          manage expansion with interactive controls.
                         </p>
                       </div>
+
+                      <Row className="g-3">
+                        <Col sm={6}>
+                          <div className="d-flex align-items-start p-3 bg-white rounded-3 shadow-sm h-100">
+                            <div
+                              className="text-success me-3"
+                              style={{ fontSize: "1.25rem" }}
+                            >
+                              <i className="bi bi-grid"></i>
+                            </div>
+                            <div>
+                              <h6 className="mb-1 text-dark">
+                                Interactive Grid System
+                              </h6>
+                              <small className="text-muted">
+                                1ft precision mapping
+                              </small>
+                            </div>
+                          </div>
+                        </Col>
+                        <Col sm={6}>
+                          <div className="d-flex align-items-start p-3 bg-white rounded-3 shadow-sm h-100">
+                            <div
+                              className="text-success me-3"
+                              style={{ fontSize: "1.25rem" }}
+                            >
+                              <i className="bi bi-geo-alt"></i>
+                            </div>
+                            <div>
+                              <h6 className="mb-1 text-dark">
+                                Tree Positioning
+                              </h6>
+                              <small className="text-muted">
+                                Growth tracking & monitoring
+                              </small>
+                            </div>
+                          </div>
+                        </Col>
+                        <Col sm={6}>
+                          <div className="d-flex align-items-start p-3 bg-white rounded-3 shadow-sm h-100">
+                            <div
+                              className="text-success me-3"
+                              style={{ fontSize: "1.25rem" }}
+                            >
+                              <i className="bi bi-journal-text"></i>
+                            </div>
+                            <div>
+                              <h6 className="mb-1 text-dark">Care Logging</h6>
+                              <small className="text-muted">
+                                Comprehensive history
+                              </small>
+                            </div>
+                          </div>
+                        </Col>
+                        <Col sm={6}>
+                          <div className="d-flex align-items-start p-3 bg-white rounded-3 shadow-sm h-100">
+                            <div
+                              className="text-success me-3"
+                              style={{ fontSize: "1.25rem" }}
+                            >
+                              <i className="bi bi-tools"></i>
+                            </div>
+                            <div>
+                              <h6 className="mb-1 text-dark">
+                                Layout Planning
+                              </h6>
+                              <small className="text-muted">
+                                Visual expansion tools
+                              </small>
+                            </div>
+                          </div>
+                        </Col>
+                      </Row>
+                    </Col>
+
+                    <Col lg={4} className="text-center">
+                      <Link
+                        href="/farm-dashboard"
+                        className="text-decoration-none"
+                      >
+                        <div
+                          className="bg-white rounded-4 p-4 shadow-lg position-relative"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+                            border: "1px solid rgba(40, 167, 69, 0.1)",
+                            cursor: "pointer",
+                            transition: "all 0.3s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform =
+                              "translateY(-5px)";
+                            e.currentTarget.style.boxShadow =
+                              "0 10px 30px rgba(40, 167, 69, 0.2)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "translateY(0)";
+                            e.currentTarget.style.boxShadow =
+                              "0 8px 25px rgba(0, 0, 0, 0.1)";
+                          }}
+                        >
+                          <div className="position-absolute top-0 end-0 m-3">
+                            <i
+                              className="bi bi-arrow-up-right-circle text-success"
+                              style={{ fontSize: "1.2rem" }}
+                            ></i>
+                          </div>
+
+                          <div className="mb-3" style={{ fontSize: "4rem" }}>
+                            🌳
+                          </div>
+
+                          <h5 className="text-success mb-2 fw-bold">
+                            Farm Dashboard
+                          </h5>
+                          <p className="text-muted mb-3 small">
+                            Complete farm visualization and management
+                          </p>
+
+                          <div className="d-flex justify-content-around text-center">
+                            <div>
+                              <div className="fw-bold text-success">24x24</div>
+                              <small className="text-muted">Grid System</small>
+                            </div>
+                            <div>
+                              <div className="fw-bold text-success">1ft</div>
+                              <small className="text-muted">Precision</small>
+                            </div>
+                            <div>
+                              <div className="fw-bold text-success">∞</div>
+                              <small className="text-muted">Scalable</small>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
                     </Col>
                   </Row>
                 </Card.Body>
