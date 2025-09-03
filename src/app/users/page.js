@@ -106,426 +106,442 @@ export default function PublicUsersPage() {
   }
 
   return (
-    <Container className="pb-3 py-md-3">
-      {/* Header Section */}
-      <div className="mb-4">
-        <Row className="g-3 align-items-start">
-          <Col xs={12}>
-            <div className="text-center text-md-start mb-3 mb-md-0">
-              <div className="d-flex align-items-center justify-content-center justify-content-md-start flex-wrap gap-3 mb-2">
-                <h1 className="h3 mb-0 lh-1">
-                  <i className="ti-user me-2 text-success"></i>
-                  Community Members
-                </h1>
-                <div className="d-flex flex-wrap gap-2">
-                  <Badge bg="info" className="small px-2 py-1">
-                    <i className="ti-user me-1"></i>
-                    {allCount} Members
-                  </Badge>
-                  <Badge bg="success" className="small px-2 py-1">
-                    <i className="ti-shopping-cart me-1"></i>
-                    {sellersCount} EcoExperts
-                  </Badge>
-                  <Badge bg="warning" className="small px-2 py-1">
-                    <i className="ti-location-pin me-1"></i>
-                    {users.filter((u) => u.location).length} With Location
-                  </Badge>
-                </div>
-              </div>
-              <p className="text-muted mb-0">
+    <Container fluid className="px-0 users-page">
+      <Container
+        className="py-2"
+        role="main"
+        aria-label="Community Members content"
+      >
+        {/* Hero Section */}
+        <Row className="mb-3">
+          <Col lg={10} xl={8} className="mx-auto text-center px-3 px-md-4">
+            <div className="hero-content animate-fade-in">
+              <h1 className="display-1 fw-bold text-success mb-3">
+                Community Members
+              </h1>
+              <p className="lead text-muted mb-3 px-2">
                 Discover and connect with our growing community of natural food
                 enthusiasts, farmers, and local producers. Find nearby members
                 who sell products, view their listings, or visit their WhatsApp
                 stores.
               </p>
+              <div className="d-flex flex-wrap justify-content-center gap-2 gap-md-3 mb-3">
+                <Badge bg="info" className="fs-6 px-3 py-2 badge-hover">
+                  <i className="bi bi-people me-2"></i>
+                  {allCount} Members
+                </Badge>
+                <Badge bg="success" className="fs-6 px-3 py-2 badge-hover">
+                  <i className="bi bi-shop me-2"></i>
+                  {sellersCount} EcoExperts
+                </Badge>
+                <Badge bg="warning" className="fs-6 px-3 py-2 badge-hover">
+                  <i className="bi bi-geo-alt me-2"></i>
+                  {users.filter((u) => u.location).length} With Location
+                </Badge>
+              </div>
             </div>
           </Col>
         </Row>
-      </div>
 
-      {/* Tabs Navigation */}
-      <Card className="shadow-sm mb-4">
-        <Card.Header className="bg-light">
-          <Nav variant="tabs" activeKey={activeTab} onSelect={setActiveTab}>
-            <Nav.Item>
-              <Nav.Link eventKey="all">
-                <i className="ti-user me-2"></i>
-                All Members
-                <Badge bg="secondary" className="ms-2">
-                  {allCount}
-                </Badge>
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link eventKey="sellers">
-                <i className="ti-map me-2"></i>
-                Find Nearby EcoExperts
-                <Badge bg="success" className="ms-2">
-                  {sellersCount}
-                </Badge>
-              </Nav.Link>
-            </Nav.Item>
-          </Nav>
-        </Card.Header>
+        {/* Tabs Navigation */}
+        <Card className="shadow-sm mb-4">
+          <Card.Header className="bg-light">
+            <Nav variant="tabs" activeKey={activeTab} onSelect={setActiveTab}>
+              <Nav.Item>
+                <Nav.Link eventKey="all">
+                  <i className="ti-user me-2"></i>
+                  All Members
+                  <Badge bg="secondary" className="ms-2">
+                    {allCount}
+                  </Badge>
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="sellers">
+                  <i className="ti-map me-2"></i>
+                  Find Nearby EcoExperts
+                  <Badge bg="success" className="ms-2">
+                    {sellersCount}
+                  </Badge>
+                </Nav.Link>
+              </Nav.Item>
+            </Nav>
+          </Card.Header>
 
-        {/* Search and Filter Controls */}
-        <Card.Body className="py-3">
-          <Row className="g-3 align-items-end">
-            <Col xs={12} md={6}>
-              <Form.Group className="mb-0">
-                <Form.Label className="small fw-medium text-muted mb-2">
-                  Search Members
-                </Form.Label>
-                <SearchInput
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onClear={() => setSearchTerm("")}
-                  placeholder={
-                    activeTab === "sellers"
-                      ? "Search members who sell by name, farm, or location..."
-                      : "Search by name or location..."
-                  }
+          {/* Search and Filter Controls */}
+          <Card.Body className="py-3">
+            <Row className="g-3 align-items-end">
+              <Col xs={12} md={6}>
+                <Form.Group className="mb-0">
+                  <Form.Label className="small fw-medium text-muted mb-2">
+                    Search Members
+                  </Form.Label>
+                  <SearchInput
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onClear={() => setSearchTerm("")}
+                    placeholder={
+                      activeTab === "sellers"
+                        ? "Search members who sell by name, farm, or location..."
+                        : "Search by name or location..."
+                    }
+                  />
+                </Form.Group>
+              </Col>
+              <Col xs={12} sm={6} md={3}>
+                <Form.Group className="mb-0">
+                  <Form.Label className="small fw-medium text-muted mb-2">
+                    Filter by Location
+                  </Form.Label>
+                  <Form.Select
+                    value={locationFilter}
+                    onChange={(e) => setLocationFilter(e.target.value)}
+                  >
+                    <option value="all">All Members</option>
+                    <option value="with_location">With Location</option>
+                    <option value="without_location">Location Not Set</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col xs={12} sm={6} md={3}>
+                <ClearFiltersButton
+                  onClick={() => {
+                    setSearchTerm("");
+                    setLocationFilter("all");
+                  }}
                 />
-              </Form.Group>
-            </Col>
-            <Col xs={12} sm={6} md={3}>
-              <Form.Group className="mb-0">
-                <Form.Label className="small fw-medium text-muted mb-2">
-                  Filter by Location
-                </Form.Label>
-                <Form.Select
-                  value={locationFilter}
-                  onChange={(e) => setLocationFilter(e.target.value)}
-                >
-                  <option value="all">All Members</option>
-                  <option value="with_location">With Location</option>
-                  <option value="without_location">Location Not Set</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col xs={12} sm={6} md={3}>
-              <ClearFiltersButton
-                onClick={() => {
-                  setSearchTerm("");
-                  setLocationFilter("all");
-                }}
-              />
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-
-      {/* Tab Content */}
-      {activeTab === "sellers" ? (
-        <NearbySellersList users={filteredUsers} onShowMap={handleShowMap} />
-      ) : (
-        /* All Members and Consumers Table */
-        <Card className="shadow-sm">
-          <div className="table-responsive">
-            <Table hover className="mb-0 align-middle">
-              <thead className="table-light">
-                <tr>
-                  <th
-                    className="border-0 ps-3"
-                    style={{ minWidth: "140px", maxWidth: "160px" }}
-                  >
-                    Member
-                    <small className="text-muted d-block fw-normal">
-                      Click for profile & contact info
-                    </small>
-                  </th>
-                  <th
-                    className="border-0"
-                    style={{
-                      width: "250px",
-                      minWidth: "200px",
-                      maxWidth: "250px",
-                    }}
-                  >
-                    Location
-                  </th>
-                  <th className="border-0" style={{ minWidth: "120px" }}>
-                    Joined
-                  </th>
-                  <th
-                    className="border-0 text-center"
-                    style={{ minWidth: "120px" }}
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.length > 0 ? (
-                  filteredUsers.map((user) => (
-                    <tr key={user.id}>
-                      <td className="ps-3">
-                        <UserProfilePopover user={user}>
-                          <div className="d-flex align-items-center">
-                            <UserAvatar
-                              user={{
-                                name: user.name,
-                                image: user.avatar_url,
-                              }}
-                              size={48}
-                              className="me-3 flex-shrink-0"
-                            />
-                            <div className="min-w-0">
-                              <div className="d-flex align-items-center gap-2 mb-1">
-                                <div className="fw-bold text-truncate fs-6 text-primary">
-                                  {user.name}
-                                </div>
-                                {user.is_seller && (
-                                  <Badge bg="success" className="small">
-                                    EcoExpert
-                                  </Badge>
-                                )}
-                                {user.average_rating > 0 && (
-                                  <Badge bg="warning" className="small">
-                                    ⭐ {user.average_rating.toFixed(1)}
-                                  </Badge>
-                                )}
-                              </div>
-                              <small className="text-muted">
-                                Community Member • Click for details
-                                {user.whatsapp_store_link &&
-                                  " • Has WhatsApp Store"}
-                                {user.farm_name && <> • {user.farm_name}</>}
-                              </small>
-                            </div>
-                          </div>
-                        </UserProfilePopover>
-                      </td>
-                      <td style={{ maxWidth: "250px" }}>
-                        {user.location ? (
-                          <div
-                            className="d-flex align-items-center"
-                            style={{ minWidth: 0 }}
-                          >
-                            <div
-                              className="flex-grow-1"
-                              style={{ minWidth: 0 }}
-                            >
-                              {isMapLink(user.location) ? (
-                                <Button
-                                  variant="link"
-                                  size="sm"
-                                  className="p-0 text-decoration-none text-success fw-medium text-start"
-                                  onClick={() => {
-                                    console.log(
-                                      "🔍 DEBUG - Main users page location click for:",
-                                      user.name,
-                                      {
-                                        hasCoordinates: !!user.coordinates,
-                                        coordinates: user.coordinates,
-                                        originalLocation: user.location,
-                                      }
-                                    );
-
-                                    // Prioritize original location URL (more accurate), use coordinates as fallback
-                                    if (user.location) {
-                                      // Use original URL - it's more precise (place URLs vs search URLs)
-                                      console.log(
-                                        "🗺️ Opening original location URL:",
-                                        user.location
-                                      );
-                                      window.open(user.location, "_blank");
-                                    } else if (user.coordinates) {
-                                      // Fallback: Generate search URL from coordinates
-                                      const searchQuery = `${user.name} ${user.coordinates.lat},${user.coordinates.lon}`;
-                                      const mapsUrl = `https://www.google.com/maps/search/${searchQuery.replace(
-                                        / /g,
-                                        "+"
-                                      )}`;
-                                      console.log(
-                                        "🗺️ Fallback to coordinate-based search:",
-                                        mapsUrl
-                                      );
-                                      window.open(mapsUrl, "_blank");
-                                    } else {
-                                      console.log(
-                                        "⚠️ No location data available"
-                                      );
-                                    }
-                                  }}
-                                  title={`Click to open location in map: ${user.location}`}
-                                  style={{
-                                    maxWidth: "100%",
-                                    whiteSpace: "normal",
-                                    lineHeight: "1.2",
-                                  }}
-                                >
-                                  {getLocationDisplayText(user.location, false)}
-                                </Button>
-                              ) : (
-                                <span
-                                  className="d-block text-muted"
-                                  title={user.location}
-                                  style={{
-                                    maxWidth: "100%",
-                                    whiteSpace: "normal",
-                                    wordBreak: "break-word",
-                                    lineHeight: "1.2",
-                                  }}
-                                >
-                                  {user.location}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="text-muted">
-                            <span className="small">Not specified</span>
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        <div>
-                          <small className="text-muted d-block">
-                            {new Date(user.created_at).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              }
-                            )}
-                          </small>
-                          <small className="text-muted">
-                            {(() => {
-                              const joinDate = new Date(user.created_at);
-                              const now = new Date();
-                              const diffTime = Math.abs(now - joinDate);
-                              const diffDays = Math.ceil(
-                                diffTime / (1000 * 60 * 60 * 24)
-                              );
-
-                              if (diffDays <= 7) {
-                                return "New member";
-                              } else if (diffDays <= 30) {
-                                return "Recent member";
-                              } else if (diffDays <= 90) {
-                                return "Active member";
-                              } else {
-                                return "Established member";
-                              }
-                            })()}
-                          </small>
-                        </div>
-                      </td>
-                      <td className="text-center">
-                        <div className="d-flex flex-column gap-1">
-                          <Button
-                            variant={
-                              user.product_count > 0
-                                ? "primary"
-                                : "outline-secondary"
-                            }
-                            size="sm"
-                            onClick={() =>
-                              router.push(`/users/${user.id}/listings`)
-                            }
-                            title={`View ${
-                              user.product_count || 0
-                            } product listings from ${user.name}`}
-                            disabled={user.product_count === 0}
-                          >
-                            <i className="ti-package me-2"></i>
-                            {user.product_count > 0
-                              ? `View ${user.product_count} Products`
-                              : "No Products"}
-                          </Button>
-
-                          {user.whatsapp_store_link && (
-                            <Button
-                              variant="success"
-                              size="sm"
-                              onClick={() =>
-                                window.open(user.whatsapp_store_link, "_blank")
-                              }
-                              title={`Visit ${user.name}'s WhatsApp Store`}
-                            >
-                              <i className="ti-mobile me-2"></i>
-                              WhatsApp Store
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="text-center py-5">
-                      <div className="text-muted">
-                        <i
-                          className="ti-search mb-3"
-                          style={{ fontSize: "2.5rem" }}
-                        ></i>
-                        <h6 className="mb-2">
-                          No{" "}
-                          {activeTab === "sellers"
-                            ? "members who sell"
-                            : "members"}{" "}
-                          found matching your criteria
-                        </h6>
-                        <p className="small mb-0">
-                          Try adjusting your search terms or filters
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </Table>
-          </div>
-
-          {/* Footer with stats */}
-          {filteredUsers.length > 0 && (
-            <Card.Footer className="bg-light">
-              <Row className="text-center text-sm-start">
-                <Col xs={12} sm={6}>
-                  <small className="text-muted">
-                    Showing {filteredUsers.length} of{" "}
-                    {activeTab === "sellers" ? sellersCount : allCount}{" "}
-                    {activeTab === "sellers" ? "members who sell" : "members"}
-                  </small>
-                </Col>
-                <Col xs={12} sm={6} className="text-sm-end mt-2 mt-sm-0">
-                  <small className="text-muted">
-                    <i className="ti-star me-1 text-success"></i>
-                    Growing our sustainable community together
-                  </small>
-                </Col>
-              </Row>
-            </Card.Footer>
-          )}
-        </Card>
-      )}
-
-      {/* Welcome message for empty state */}
-      {users.length === 0 && !loading && (
-        <Card className="text-center py-5">
-          <Card.Body>
-            <i
-              className="ti-user text-muted mb-3"
-              style={{ fontSize: "3rem" }}
-            ></i>
-            <h5 className="text-muted mb-3">Welcome to Our Community!</h5>
-            <p className="text-muted mb-0">
-              Be among the first to join our growing network of natural food
-              enthusiasts and local producers.
-            </p>
+              </Col>
+            </Row>
           </Card.Body>
         </Card>
-      )}
 
-      {/* Sellers Map Modal */}
-      <SellersMapModal
-        show={showMapModal}
-        onHide={() => setShowMapModal(false)}
-        sellers={mapSellers}
-        currentLocation={mapCurrentLocation}
-      />
+        {/* Tab Content */}
+        {activeTab === "sellers" ? (
+          <div className="tab-content animate-slide-in">
+            <NearbySellersList
+              users={filteredUsers}
+              onShowMap={handleShowMap}
+            />
+          </div>
+        ) : (
+          <div className="tab-content animate-slide-in">
+            {/* All Members and Consumers Table */}
+            <Card className="shadow-sm hover-shadow feature-card">
+              <div className="table-responsive">
+                <Table hover className="mb-0 align-middle">
+                  <thead className="table-light">
+                    <tr>
+                      <th
+                        className="border-0 ps-3"
+                        style={{ minWidth: "140px", maxWidth: "160px" }}
+                      >
+                        Member
+                        <small className="text-muted d-block fw-normal">
+                          Click for profile & contact info
+                        </small>
+                      </th>
+                      <th
+                        className="border-0"
+                        style={{
+                          width: "250px",
+                          minWidth: "200px",
+                          maxWidth: "250px",
+                        }}
+                      >
+                        Location
+                      </th>
+                      <th className="border-0" style={{ minWidth: "120px" }}>
+                        Joined
+                      </th>
+                      <th
+                        className="border-0 text-center"
+                        style={{ minWidth: "120px" }}
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.length > 0 ? (
+                      filteredUsers.map((user) => (
+                        <tr key={user.id}>
+                          <td className="ps-3">
+                            <UserProfilePopover user={user}>
+                              <div className="d-flex align-items-center">
+                                <UserAvatar
+                                  user={{
+                                    name: user.name,
+                                    image: user.avatar_url,
+                                  }}
+                                  size={48}
+                                  className="me-3 flex-shrink-0"
+                                />
+                                <div className="min-w-0">
+                                  <div className="d-flex align-items-center gap-2 mb-1">
+                                    <div className="fw-bold text-truncate fs-6 text-primary">
+                                      {user.name}
+                                    </div>
+                                    {user.is_seller && (
+                                      <Badge bg="success" className="small">
+                                        EcoExpert
+                                      </Badge>
+                                    )}
+                                    {user.average_rating > 0 && (
+                                      <Badge bg="warning" className="small">
+                                        ⭐ {user.average_rating.toFixed(1)}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <small className="text-muted">
+                                    Community Member • Click for details
+                                    {user.whatsapp_store_link &&
+                                      " • Has WhatsApp Store"}
+                                    {user.farm_name && <> • {user.farm_name}</>}
+                                  </small>
+                                </div>
+                              </div>
+                            </UserProfilePopover>
+                          </td>
+                          <td style={{ maxWidth: "250px" }}>
+                            {user.location ? (
+                              <div
+                                className="d-flex align-items-center"
+                                style={{ minWidth: 0 }}
+                              >
+                                <div
+                                  className="flex-grow-1"
+                                  style={{ minWidth: 0 }}
+                                >
+                                  {isMapLink(user.location) ? (
+                                    <Button
+                                      variant="link"
+                                      size="sm"
+                                      className="p-0 text-decoration-none text-success fw-medium text-start"
+                                      onClick={() => {
+                                        console.log(
+                                          "🔍 DEBUG - Main users page location click for:",
+                                          user.name,
+                                          {
+                                            hasCoordinates: !!user.coordinates,
+                                            coordinates: user.coordinates,
+                                            originalLocation: user.location,
+                                          }
+                                        );
+
+                                        // Prioritize original location URL (more accurate), use coordinates as fallback
+                                        if (user.location) {
+                                          // Use original URL - it's more precise (place URLs vs search URLs)
+                                          console.log(
+                                            "🗺️ Opening original location URL:",
+                                            user.location
+                                          );
+                                          window.open(user.location, "_blank");
+                                        } else if (user.coordinates) {
+                                          // Fallback: Generate search URL from coordinates
+                                          const searchQuery = `${user.name} ${user.coordinates.lat},${user.coordinates.lon}`;
+                                          const mapsUrl = `https://www.google.com/maps/search/${searchQuery.replace(
+                                            / /g,
+                                            "+"
+                                          )}`;
+                                          console.log(
+                                            "🗺️ Fallback to coordinate-based search:",
+                                            mapsUrl
+                                          );
+                                          window.open(mapsUrl, "_blank");
+                                        } else {
+                                          console.log(
+                                            "⚠️ No location data available"
+                                          );
+                                        }
+                                      }}
+                                      title={`Click to open location in map: ${user.location}`}
+                                      style={{
+                                        maxWidth: "100%",
+                                        whiteSpace: "normal",
+                                        lineHeight: "1.2",
+                                      }}
+                                    >
+                                      {getLocationDisplayText(
+                                        user.location,
+                                        false
+                                      )}
+                                    </Button>
+                                  ) : (
+                                    <span
+                                      className="d-block text-muted"
+                                      title={user.location}
+                                      style={{
+                                        maxWidth: "100%",
+                                        whiteSpace: "normal",
+                                        wordBreak: "break-word",
+                                        lineHeight: "1.2",
+                                      }}
+                                    >
+                                      {user.location}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-muted">
+                                <span className="small">Not specified</span>
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <div>
+                              <small className="text-muted d-block">
+                                {new Date(user.created_at).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  }
+                                )}
+                              </small>
+                              <small className="text-muted">
+                                {(() => {
+                                  const joinDate = new Date(user.created_at);
+                                  const now = new Date();
+                                  const diffTime = Math.abs(now - joinDate);
+                                  const diffDays = Math.ceil(
+                                    diffTime / (1000 * 60 * 60 * 24)
+                                  );
+
+                                  if (diffDays <= 7) {
+                                    return "New member";
+                                  } else if (diffDays <= 30) {
+                                    return "Recent member";
+                                  } else if (diffDays <= 90) {
+                                    return "Active member";
+                                  } else {
+                                    return "Established member";
+                                  }
+                                })()}
+                              </small>
+                            </div>
+                          </td>
+                          <td className="text-center">
+                            <div className="d-flex flex-column gap-1">
+                              <Button
+                                variant={
+                                  user.product_count > 0
+                                    ? "primary"
+                                    : "outline-secondary"
+                                }
+                                size="sm"
+                                onClick={() =>
+                                  router.push(`/users/${user.id}/listings`)
+                                }
+                                title={`View ${
+                                  user.product_count || 0
+                                } product listings from ${user.name}`}
+                                disabled={user.product_count === 0}
+                              >
+                                <i className="ti-package me-2"></i>
+                                {user.product_count > 0
+                                  ? `View ${user.product_count} Products`
+                                  : "No Products"}
+                              </Button>
+
+                              {user.whatsapp_store_link && (
+                                <Button
+                                  variant="success"
+                                  size="sm"
+                                  onClick={() =>
+                                    window.open(
+                                      user.whatsapp_store_link,
+                                      "_blank"
+                                    )
+                                  }
+                                  title={`Visit ${user.name}'s WhatsApp Store`}
+                                >
+                                  <i className="ti-mobile me-2"></i>
+                                  WhatsApp Store
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="text-center py-5">
+                          <div className="text-muted">
+                            <i
+                              className="ti-search mb-3"
+                              style={{ fontSize: "2.5rem" }}
+                            ></i>
+                            <h6 className="mb-2">
+                              No{" "}
+                              {activeTab === "sellers"
+                                ? "members who sell"
+                                : "members"}{" "}
+                              found matching your criteria
+                            </h6>
+                            <p className="small mb-0">
+                              Try adjusting your search terms or filters
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </Table>
+              </div>
+
+              {/* Footer with stats */}
+              {filteredUsers.length > 0 && (
+                <Card.Footer className="bg-light">
+                  <Row className="text-center text-sm-start">
+                    <Col xs={12} sm={6}>
+                      <small className="text-muted">
+                        Showing {filteredUsers.length} of{" "}
+                        {activeTab === "sellers" ? sellersCount : allCount}{" "}
+                        {activeTab === "sellers"
+                          ? "members who sell"
+                          : "members"}
+                      </small>
+                    </Col>
+                    <Col xs={12} sm={6} className="text-sm-end mt-2 mt-sm-0">
+                      <small className="text-muted">
+                        <i className="ti-star me-1 text-success"></i>
+                        Growing our sustainable community together
+                      </small>
+                    </Col>
+                  </Row>
+                </Card.Footer>
+              )}
+            </Card>
+          </div>
+        )}
+
+        {/* Welcome message for empty state */}
+        {users.length === 0 && !loading && (
+          <Card className="text-center py-5">
+            <Card.Body>
+              <i
+                className="ti-user text-muted mb-3"
+                style={{ fontSize: "3rem" }}
+              ></i>
+              <h5 className="text-muted mb-3">Welcome to Our Community!</h5>
+              <p className="text-muted mb-0">
+                Be among the first to join our growing network of natural food
+                enthusiasts and local producers.
+              </p>
+            </Card.Body>
+          </Card>
+        )}
+
+        {/* Sellers Map Modal */}
+        <SellersMapModal
+          show={showMapModal}
+          onHide={() => setShowMapModal(false)}
+          sellers={mapSellers}
+          currentLocation={mapCurrentLocation}
+        />
+      </Container>
     </Container>
   );
 }

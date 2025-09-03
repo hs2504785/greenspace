@@ -17,7 +17,6 @@ const MainLayout = ({ children }) => {
     "/", // Home page with vegetable filters
     "/prebooking", // Pre-booking page with filters
     "/products", // Products management with filters
-    "/orders", // Orders page with filters
   ];
 
   const hasFilters = pagesWithFilters.includes(pathname);
