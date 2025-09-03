@@ -110,8 +110,9 @@ export default function FarmDashboardPage() {
   };
 
   const getTreeStats = () => {
-    // Calculate stats based on tree positions, excluding healthy trees
+    // Calculate stats based on tree positions, including all planted trees
     let totalTrees = 0;
+    let healthyTrees = 0;
     let fruitingTrees = 0;
     let diseasedTrees = 0;
 
@@ -119,20 +120,20 @@ export default function FarmDashboardPage() {
       if (tree.tree_positions && tree.tree_positions.length > 0) {
         tree.tree_positions.forEach((position) => {
           const status = position.status;
-          // Only count non-healthy trees
-          if (status === "fruiting") {
+          totalTrees++;
+
+          if (status === "healthy") {
+            healthyTrees++;
+          } else if (status === "fruiting") {
             fruitingTrees++;
-            totalTrees++;
           } else if (status === "diseased") {
             diseasedTrees++;
-            totalTrees++;
           }
-          // Skip healthy trees entirely
         });
       }
     });
 
-    return { totalTrees, fruitingTrees, diseasedTrees };
+    return { totalTrees, healthyTrees, fruitingTrees, diseasedTrees };
   };
 
   // Group trees by type and variety
@@ -140,12 +141,9 @@ export default function FarmDashboardPage() {
     const groups = {};
 
     trees.forEach((tree) => {
-      // Use tree positions to get planted varieties, excluding healthy trees
+      // Use tree positions to get planted varieties, including all planted trees
       if (tree.tree_positions && tree.tree_positions.length > 0) {
         tree.tree_positions.forEach((position) => {
-          // Skip healthy trees
-          if (position.status === "healthy") return;
-
           const treeName = tree.name;
           const variety = position.variety || "Standard";
 
@@ -201,6 +199,11 @@ export default function FarmDashboardPage() {
         let matchingPositions = tree.tree_positions;
 
         switch (status) {
+          case "healthy":
+            matchingPositions = tree.tree_positions.filter(
+              (pos) => pos.status === "healthy"
+            );
+            break;
           case "fruiting":
             matchingPositions = tree.tree_positions.filter(
               (pos) => pos.status === "fruiting"
@@ -213,7 +216,7 @@ export default function FarmDashboardPage() {
             break;
           case "all":
           default:
-            // For "all" view, exclude healthy trees - only show fruiting and diseased
+            // For "all" view, exclude healthy trees - only show trees needing attention
             matchingPositions = tree.tree_positions.filter(
               (pos) => pos.status === "fruiting" || pos.status === "diseased"
             );
@@ -289,6 +292,9 @@ export default function FarmDashboardPage() {
 
   const renderContent = () => {
     const filteredData = filterTrees(activeView);
+    const hasAnyTrees = trees.some(
+      (tree) => tree.tree_positions && tree.tree_positions.length > 0
+    );
 
     return (
       <Card className="border-0 shadow-sm">
@@ -346,16 +352,36 @@ export default function FarmDashboardPage() {
               )}
               {activeView === "all" && !varietyFilter && (
                 <>
-                  <i className="ti-tree text-success fs-1 d-block mb-3"></i>
-                  <h5>No trees planted yet</h5>
-                  <p>Start by planting your first tree in the farm.</p>
-                  <Button variant="success" href="/trees">
-                    <i className="ti-plus me-2"></i>
-                    Add Your First Tree
-                  </Button>
+                  {!hasAnyTrees ? (
+                    <>
+                      <i className="ti-tree text-success fs-1 d-block mb-3"></i>
+                      <h5>No trees planted yet</h5>
+                      <p>Start by planting your first tree in the farm.</p>
+                      <Button variant="success" href="/trees">
+                        <i className="ti-plus me-2"></i>
+                        Add Your First Tree
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <i className="ti-heart text-success fs-1 d-block mb-3"></i>
+                      <h5>All trees are healthy!</h5>
+                      <p>
+                        Your trees are doing well. Trees needing attention will
+                        show here.
+                      </p>
+                    </>
+                  )}
                 </>
               )}
 
+              {activeView === "healthy" && (
+                <>
+                  <i className="ti-heart text-success fs-1 d-block mb-3"></i>
+                  <h5>No healthy trees</h5>
+                  <p>Healthy trees will show here.</p>
+                </>
+              )}
               {activeView === "fruiting" && (
                 <>
                   <i className="ti-shine text-warning fs-1 d-block mb-3"></i>
@@ -460,7 +486,7 @@ export default function FarmDashboardPage() {
 
         {/* Summary Tiles - Clickable */}
         <Row className="g-4 mb-4">
-          <Col md={4}>
+          <Col md={3}>
             <Card
               className={`border shadow-sm rounded-3 h-100 ${
                 activeView === "all" && !varietyFilter ? "border-primary" : ""
@@ -488,12 +514,47 @@ export default function FarmDashboardPage() {
                   <i className="ti-shine text-primary fs-4"></i>
                 </div>
                 <h5 className="mb-2">{stats.totalTrees}</h5>
-                <p className="text-muted mb-0 small">Active Trees</p>
+                <p className="text-muted mb-0 small">Total Trees</p>
               </Card.Body>
             </Card>
           </Col>
 
-          <Col md={4}>
+          <Col md={3}>
+            <Card
+              className={`border shadow-sm rounded-3 h-100 ${
+                activeView === "healthy" && !varietyFilter
+                  ? "border-success"
+                  : ""
+              }`}
+              style={{
+                borderColor:
+                  activeView === "healthy" && !varietyFilter
+                    ? "#198754"
+                    : "#e3e6f0",
+                transition: "all 0.2s ease",
+                cursor: "pointer",
+                borderWidth:
+                  activeView === "healthy" && !varietyFilter ? "2px" : "1px",
+              }}
+              onClick={() => {
+                setActiveView("healthy");
+                setVarietyFilter(null);
+              }}
+            >
+              <Card.Body className="text-center p-4">
+                <div
+                  className="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+                  style={{ width: "60px", height: "60px" }}
+                >
+                  <i className="ti-heart text-success fs-4"></i>
+                </div>
+                <h5 className="mb-2">{stats.healthyTrees}</h5>
+                <p className="text-muted mb-0 small">Healthy Trees</p>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          <Col md={3}>
             <Card
               className={`border shadow-sm rounded-3 h-100 ${
                 activeView === "fruiting" && !varietyFilter
@@ -528,7 +589,7 @@ export default function FarmDashboardPage() {
             </Card>
           </Col>
 
-          <Col md={4}>
+          <Col md={3}>
             <Card
               className={`border shadow-sm rounded-3 h-100 ${
                 activeView === "diseased" && !varietyFilter
