@@ -391,24 +391,28 @@ export default function CheckoutForm({
                       placeholder="10-digit number"
                       pattern="[0-9]{10}"
                       isInvalid={
-                        formData.contactNumber &&
+                        formData.contactNumber.trim() !== "" &&
                         !/^[0-9]{10}$/.test(
                           formData.contactNumber.replace(/\s+/g, "")
                         )
                       }
                       isValid={
-                        formData.contactNumber &&
+                        formData.contactNumber.trim() !== "" &&
                         /^[0-9]{10}$/.test(
                           formData.contactNumber.replace(/\s+/g, "")
                         )
                       }
                     />
-                    <Form.Control.Feedback type="invalid">
-                      Please enter a valid 10-digit phone number
-                    </Form.Control.Feedback>
-                    <Form.Control.Feedback type="valid">
-                      Contact number looks good!
-                    </Form.Control.Feedback>
+                    {formData.contactNumber.trim() !== "" && (
+                      <>
+                        <Form.Control.Feedback type="invalid">
+                          Please enter a valid 10-digit phone number
+                        </Form.Control.Feedback>
+                        <Form.Control.Feedback type="valid">
+                          Contact number looks good!
+                        </Form.Control.Feedback>
+                      </>
+                    )}
                   </Form.Group>
                 </div>
               </div>
