@@ -5,6 +5,7 @@ import { Container, Card, Form, Button, Badge } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import UserAvatar from "@/components/common/UserAvatar";
 import LocationAutoDetect from "@/components/common/LocationAutoDetect";
+import ToggleSwitch from "@/components/common/ToggleSwitch";
 import { extractCoordinates } from "@/utils/distanceUtils";
 import toastService from "@/utils/toastService";
 
@@ -417,84 +418,84 @@ This will enable accurate distance calculations for customers finding you.`;
                 )}
 
                 {/* Privacy Settings Section */}
-                <Card className="mt-4">
-                  <Card.Header className="bg-light">
-                    <h6 className="mb-0">
-                      <i className="ti ti-shield-lock me-2"></i>
+                <div className="mt-4">
+                  <div className="mb-4">
+                    <h5 className="mb-3 d-flex align-items-center">
+                      <i className="ti ti-shield-lock me-2 text-primary"></i>
                       Privacy Settings
-                    </h6>
-                  </Card.Header>
-                  <Card.Body>
-                    <div className="mb-3">
-                      <Form.Check
-                        type="switch"
-                        id="profile-public"
-                        label="Show my profile in community listings"
-                        checked={profilePublic}
-                        onChange={(e) => setProfilePublic(e.target.checked)}
-                        disabled={isLoading}
-                      />
-                      <Form.Text className="text-muted">
-                        Control whether your profile appears in the public
-                        community page
-                      </Form.Text>
-                    </div>
+                    </h5>
 
-                    <div className="mb-3">
-                      <h6 className="text-muted mb-2">
-                        Contact Information Visibility
-                      </h6>
-                      <p className="small text-muted mb-2">
-                        Choose what contact information to show when people
-                        click on your profile in community listings:
-                      </p>
+                    <div className="bg-light rounded-3 p-4">
+                      <div className="mb-4">
+                        <ToggleSwitch
+                          id="profile-public"
+                          label="Show my profile in community listings"
+                          description="Control whether your profile appears in the public community page"
+                          checked={profilePublic}
+                          onChange={setProfilePublic}
+                          disabled={isLoading}
+                          variant="success"
+                          showDescription={true}
+                        />
+                      </div>
 
-                      <Form.Check
-                        type="switch"
-                        id="show-email"
-                        label="Show my email address"
-                        checked={showEmailPublicly}
-                        onChange={(e) => setShowEmailPublicly(e.target.checked)}
-                        disabled={isLoading}
-                        className="mb-2"
-                      />
+                      <div className="mb-4">
+                        <h6 className="text-muted mb-3 fw-semibold">
+                          Contact Information Visibility
+                        </h6>
+                        <p className="small text-muted mb-3">
+                          Choose what contact information to show when people
+                          click on your profile in community listings:
+                        </p>
 
-                      <Form.Check
-                        type="switch"
-                        id="show-whatsapp"
-                        label="Show my WhatsApp number"
-                        checked={showWhatsappPublicly}
-                        onChange={(e) =>
-                          setShowWhatsappPublicly(e.target.checked)
-                        }
-                        disabled={isLoading}
-                        className="mb-2"
-                      />
+                        <div className="d-flex flex-column gap-3">
+                          <ToggleSwitch
+                            id="show-email"
+                            label="Show my email address"
+                            checked={showEmailPublicly}
+                            onChange={setShowEmailPublicly}
+                            disabled={isLoading}
+                            variant="success"
+                          />
 
-                      <Form.Check
-                        type="switch"
-                        id="show-phone"
-                        label="Show my phone number"
-                        checked={showPhonePublicly}
-                        onChange={(e) => setShowPhonePublicly(e.target.checked)}
-                        disabled={isLoading}
-                      />
-                    </div>
+                          <ToggleSwitch
+                            id="show-whatsapp"
+                            label="Show my WhatsApp number"
+                            checked={showWhatsappPublicly}
+                            onChange={setShowWhatsappPublicly}
+                            disabled={isLoading}
+                            variant="success"
+                          />
 
-                    <div className="alert alert-info d-flex align-items-start">
-                      <i className="ti ti-info-circle me-2 flex-shrink-0 mt-1"></i>
-                      <div>
-                        <small>
-                          <strong>Privacy Note:</strong> Your contact
-                          information will only be visible when someone clicks
-                          on your profile in community listings. This helps
-                          buyers connect with local sellers while maintaining
-                          your privacy control.
-                        </small>
+                          <ToggleSwitch
+                            id="show-phone"
+                            label="Show my phone number"
+                            checked={showPhonePublicly}
+                            onChange={setShowPhonePublicly}
+                            disabled={isLoading}
+                            variant="success"
+                          />
+                        </div>
+                      </div>
+
+                      <div
+                        className="alert alert-info border-0 d-flex align-items-start mb-0"
+                        style={{ backgroundColor: "#e3f2fd" }}
+                      >
+                        <i className="ti ti-info-circle me-2 flex-shrink-0 mt-1 text-info"></i>
+                        <div>
+                          <small className="text-info-emphasis">
+                            <strong>Privacy Note:</strong> Your contact
+                            information will only be visible when someone clicks
+                            on your profile in community listings. This helps
+                            buyers connect with local sellers while maintaining
+                            your privacy control.
+                          </small>
+                        </div>
                       </div>
                     </div>
-                  </Card.Body>
-                </Card>
+                  </div>
+                </div>
 
                 <Button
                   type="submit"
