@@ -382,7 +382,17 @@ export default function Cart() {
             window.dispatchEvent(new CustomEvent("order-completed"));
           }
 
-          router.push(`/orders/${order.id}`);
+          // Check if this is a guest order by looking for guest-specific fields
+          const isGuestOrder =
+            order.guest_name || order.guest_phone || order.guest_address;
+
+          if (isGuestOrder) {
+            // Redirect to guest order page
+            router.push(`/orders/guest/${order.id}`);
+          } else {
+            // Redirect to regular order page
+            router.push(`/orders/${order.id}`);
+          }
         }}
       />
 

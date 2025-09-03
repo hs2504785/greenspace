@@ -41,6 +41,7 @@ export default function CheckoutForm({
   const [formData, setFormData] = useState({
     deliveryAddress: "",
     contactNumber: "",
+    guestName: "",
   });
 
   // Auto-fill user data when component mounts or session changes
@@ -102,11 +103,17 @@ export default function CheckoutForm({
 
   // Check if form is complete for enabling payment buttons
   const isFormComplete = () => {
-    return (
+    const basicFieldsComplete =
       formData.deliveryAddress.trim() !== "" &&
       formData.contactNumber.trim() !== "" &&
-      /^[0-9]{10}$/.test(formData.contactNumber.replace(/\s+/g, ""))
-    );
+      /^[0-9]{10}$/.test(formData.contactNumber.replace(/\s+/g, ""));
+
+    // For guest users, also require name
+    if (!session?.user?.id) {
+      return basicFieldsComplete && formData.guestName.trim() !== "";
+    }
+
+    return basicFieldsComplete;
   };
 
   const handleInputChange = (e) => {
@@ -122,36 +129,77 @@ export default function CheckoutForm({
     setLoading(true);
 
     try {
-      if (!session?.user?.id) {
-        throw new Error("User session invalid. Please login again.");
-      }
-
       console.log("Session state:", {
         isAuthenticated: !!session,
         user: session?.user,
         id: session?.user?.id,
       });
 
-      const orderData = {
-        userId: session.user.id,
-        sellerId: seller?.id,
-        items: cartItems.map((item) => ({
-          id: item.id,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        total,
-        deliveryAddress: formData.deliveryAddress,
-        contactNumber: formData.contactNumber,
-      };
+      let order;
 
-      console.log("Submitting order:", orderData);
+      if (session?.user?.id) {
+        // Authenticated user flow
+        const orderData = {
+          userId: session.user.id,
+          sellerId: seller?.id,
+          items: cartItems.map((item) => ({
+            id: item.id,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          total,
+          deliveryAddress: formData.deliveryAddress,
+          contactNumber: formData.contactNumber,
+        };
 
-      const order = await OrderService.createOrder(orderData);
+        console.log("Submitting authenticated order:", orderData);
+        order = await OrderService.createOrder(orderData);
+        toastService.success(
+          "Order placed successfully! Redirecting to order details..."
+        );
+      } else {
+        // Guest user flow
+        const guestOrderData = {
+          guestDetails: {
+            name: formData.guestName,
+            phone: formData.contactNumber,
+            email: "", // Optional for guest
+            address: formData.deliveryAddress,
+          },
+          items: cartItems.map((item) => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            total: item.price * item.quantity,
+            unit: item.unit || "kg",
+          })),
+          total,
+          seller: seller,
+          timestamp: new Date().toISOString(),
+        };
 
-      toastService.success(
-        "Order placed successfully! Redirecting to order details..."
-      );
+        console.log("Submitting guest order:", guestOrderData);
+
+        const response = await fetch("/api/orders/guest", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(guestOrderData),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to create guest order");
+        }
+
+        order = result.guestOrder;
+        toastService.success(
+          "Order placed successfully! Order details sent via WhatsApp."
+        );
+      }
 
       // Dispatch event to refresh orders lists
       if (typeof window !== "undefined") {
@@ -173,10 +221,6 @@ export default function CheckoutForm({
     setLoading(true);
 
     try {
-      if (!session?.user?.id) {
-        throw new Error("User session invalid. Please login again.");
-      }
-
       // Check if we already have a created order, if so, just proceed to payment
       if (createdOrder) {
         setCheckoutStep("payment");
@@ -184,20 +228,63 @@ export default function CheckoutForm({
         return;
       }
 
-      const orderData = {
-        userId: session.user.id,
-        sellerId: seller?.id,
-        items: cartItems.map((item) => ({
-          id: item.id,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        total,
-        deliveryAddress: formData.deliveryAddress,
-        contactNumber: formData.contactNumber,
-      };
+      let order;
 
-      const order = await OrderService.createOrder(orderData);
+      if (session?.user?.id) {
+        // Authenticated user flow
+        const orderData = {
+          userId: session.user.id,
+          sellerId: seller?.id,
+          items: cartItems.map((item) => ({
+            id: item.id,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          total,
+          deliveryAddress: formData.deliveryAddress,
+          contactNumber: formData.contactNumber,
+        };
+
+        order = await OrderService.createOrder(orderData);
+      } else {
+        // Guest user flow
+        const guestOrderData = {
+          guestDetails: {
+            name: formData.guestName,
+            phone: formData.contactNumber,
+            email: "", // Optional for guest
+            address: formData.deliveryAddress,
+          },
+          items: cartItems.map((item) => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            total: item.price * item.quantity,
+            unit: item.unit || "kg",
+          })),
+          total,
+          seller: seller,
+          timestamp: new Date().toISOString(),
+        };
+
+        const response = await fetch("/api/orders/guest", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(guestOrderData),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to create guest order");
+        }
+
+        order = result.guestOrder;
+      }
+
       setCreatedOrder(order);
       setCheckoutStep("payment");
     } catch (error) {
@@ -238,27 +325,68 @@ export default function CheckoutForm({
   const handlePlaceOrderOnly = async () => {
     setLoading(true);
     try {
-      if (!session?.user?.id) {
-        throw new Error("User session invalid. Please login again.");
+      let order;
+
+      if (session?.user?.id) {
+        // Authenticated user flow
+        const orderData = {
+          userId: session.user.id,
+          sellerId: seller?.id,
+          items: cartItems.map((item) => ({
+            id: item.id,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          total,
+          deliveryAddress: formData.deliveryAddress,
+          contactNumber: formData.contactNumber,
+        };
+
+        order = await OrderService.createOrder(orderData);
+        toastService.success(
+          "Order placed successfully! You can pay anytime from order details."
+        );
+      } else {
+        // Guest user flow
+        const guestOrderData = {
+          guestDetails: {
+            name: formData.guestName,
+            phone: formData.contactNumber,
+            email: "", // Optional for guest
+            address: formData.deliveryAddress,
+          },
+          items: cartItems.map((item) => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            total: item.price * item.quantity,
+            unit: item.unit || "kg",
+          })),
+          total,
+          seller: seller,
+          timestamp: new Date().toISOString(),
+        };
+
+        const response = await fetch("/api/orders/guest", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(guestOrderData),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to create guest order");
+        }
+
+        order = result.guestOrder;
+        toastService.success(
+          "Order placed successfully! Order details sent via WhatsApp."
+        );
       }
-
-      const orderData = {
-        userId: session.user.id,
-        sellerId: seller?.id,
-        items: cartItems.map((item) => ({
-          id: item.id,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        total,
-        deliveryAddress: formData.deliveryAddress,
-        contactNumber: formData.contactNumber,
-      };
-
-      const order = await OrderService.createOrder(orderData);
-      toastService.success(
-        "Order placed successfully! You can pay anytime from order details."
-      );
 
       // Dispatch event to refresh orders lists
       if (typeof window !== "undefined") {
@@ -296,7 +424,7 @@ export default function CheckoutForm({
       setCheckoutStep("details");
       setCreatedOrder(null);
       setShowUpiPayment(false);
-      setFormData({ deliveryAddress: "", contactNumber: "" });
+      setFormData({ deliveryAddress: "", contactNumber: "", guestName: "" });
     }, 100);
   };
 
@@ -363,6 +491,38 @@ export default function CheckoutForm({
                   </table>
                 </div>
               </div>
+
+              {/* Guest Name Field - Only show for non-authenticated users */}
+              {!session?.user?.id && (
+                <div className="row mb-3">
+                  <div className="col-12">
+                    <Form.Group>
+                      <Form.Label>
+                        Your Name <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="guestName"
+                        value={formData.guestName}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="Enter your full name"
+                        isInvalid={
+                          formData.guestName.trim() === "" &&
+                          formData.contactNumber.trim() !== ""
+                        }
+                        isValid={formData.guestName.trim() !== ""}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        Please enter your name
+                      </Form.Control.Feedback>
+                      <Form.Control.Feedback type="valid">
+                        Name looks good!
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </div>
+                </div>
+              )}
 
               <div className="row">
                 <div className="col-md-8">
