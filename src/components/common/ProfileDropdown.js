@@ -97,10 +97,6 @@ export default function ProfileDropdown({ user }) {
           <i className="ti ti-bell me-2 text-info"></i>
           Notifications
         </Dropdown.Item>
-        <Dropdown.Item as={Link} href="/my-prebookings">
-          <i className="ti-bookmark me-2 text-success"></i>
-          My Pre-Bookings
-        </Dropdown.Item>
 
         {/* Seller Request Status */}
         {!loading && !isSeller && !isAdmin && (
@@ -278,6 +274,14 @@ export default function ProfileDropdown({ user }) {
             <Dropdown.Item as={Link} href="/admin">
               <i className="ti-dashboard me-2 text-danger"></i>
               Admin Dashboard
+            </Dropdown.Item>
+            <Dropdown.Item as={Link} href="/farm-dashboard">
+              <i className="ti-layout-grid3 me-2 text-success"></i>
+              Farm Dashboard
+            </Dropdown.Item>
+            <Dropdown.Item as={Link} href="/trees">
+              <i className="ti-palette me-2 text-warning"></i>
+              Tree Management
             </Dropdown.Item>
             {/* Seller Requests */}
             {(isAdmin || isSuperAdmin) && (

@@ -512,55 +512,22 @@ export default function Header() {
               Why Join Us
             </Nav.Link>
 
-            {/* Farm Management Section - Only for Admin/SuperAdmin */}
-            {(isAdmin || isSuperAdmin) && !roleLoading && (
-              <>
-                <div className="mobile-nav-divider mt-2 mb-1">
-                  <small className="text-muted px-3">FARM MANAGEMENT</small>
-                </div>
-                <Nav.Link
-                  as={Link}
-                  href="/farm-dashboard"
-                  className={`mobile-nav-link ${
-                    isActive("/farm-dashboard") ? "active-nav-item" : ""
-                  }`}
-                  onClick={handleLinkClick}
-                >
-                  <i className="ti-layout-grid3 me-2 text-success"></i>
-                  Farm Dashboard
-                </Nav.Link>
-                <Nav.Link
-                  as={Link}
-                  href="/trees"
-                  className={`mobile-nav-link ${
-                    isActive("/trees") ? "active-nav-item" : ""
-                  }`}
-                  onClick={handleLinkClick}
-                >
-                  <i className="ti-palette me-2 text-warning"></i>
-                  Tree Management
-                </Nav.Link>
-              </>
-            )}
-
             {session?.user && (
               <>
                 <div className="mobile-nav-divider mt-2 mb-1">
-                  <small className="text-muted px-3">MY ACCOUNT</small>
+                  <small className="text-muted px-3">MY ACTIVITY</small>
                 </div>
-                {/* Become a Seller - Hidden as requested 
                 <Nav.Link
                   as={Link}
-                  href="/become-seller"
+                  href="/my-prebookings"
                   className={`mobile-nav-link ${
-                    isActive("/become-seller") ? "active-nav-item" : ""
+                    isActive("/my-prebookings") ? "active-nav-item" : ""
                   }`}
                   onClick={handleLinkClick}
                 >
-                  <i className="ti-store me-2 text-success"></i>
-                  Become a Seller
+                  <i className="ti-bookmark me-2 text-success"></i>
+                  My Pre-Bookings
                 </Nav.Link>
-                */}
                 <Nav.Link
                   as={Link}
                   href="/orders"
