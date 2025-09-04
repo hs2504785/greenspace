@@ -31,7 +31,6 @@ export default function ProfileDropdown({ user }) {
     loading: requestLoading,
     hasPendingRequest,
     isRejected,
-    refreshStatus,
   } = useSellerRequestStatus();
 
   // Debug logging for seller request status
@@ -102,20 +101,6 @@ export default function ProfileDropdown({ user }) {
           <i className="ti-bookmark me-2 text-success"></i>
           My Pre-Bookings
         </Dropdown.Item>
-
-        {/* Temporary Debug Option */}
-        {process.env.NODE_ENV === "development" && (
-          <>
-            <Dropdown.Item onClick={refreshStatus}>
-              <i className="ti-reload me-2 text-info"></i>
-              🔍 Refresh Seller Status (Debug)
-            </Dropdown.Item>
-            <Dropdown.Item as={Link} href="/debug-seller-status">
-              <i className="ti-bug me-2 text-warning"></i>
-              🔍 Debug Seller Status
-            </Dropdown.Item>
-          </>
-        )}
 
         {/* Seller Request Status */}
         {!loading && !isSeller && !isAdmin && (
