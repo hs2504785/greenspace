@@ -67,6 +67,35 @@
     background: #28a745; // All steps completed
   }
 
+  // Seller application timeline progress
+  &.progress-under-review::before {
+    background: linear-gradient(
+      to bottom,
+      #28a745 0%,
+      #28a745 25%,
+      #ffc107 25%,
+      #ffc107 50%,
+      #e9ecef 50%,
+      #e9ecef 100%
+    ); // Application submitted (green) + Under review (yellow)
+  }
+
+  &.progress-decision-notification::before {
+    background: linear-gradient(
+      to bottom,
+      #28a745 0%,
+      #28a745 25%,
+      #28a745 25%,
+      #28a745 75%,
+      #e9ecef 75%,
+      #e9ecef 100%
+    ); // First 3 steps completed
+  }
+
+  &.progress-start-selling::before {
+    background: #28a745; // All seller application steps completed
+  }
+
   .timeline-item {
     position: relative;
     padding-left: 65px;

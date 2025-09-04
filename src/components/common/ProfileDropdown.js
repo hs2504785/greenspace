@@ -31,7 +31,30 @@ export default function ProfileDropdown({ user }) {
     loading: requestLoading,
     hasPendingRequest,
     isRejected,
+    refreshStatus,
   } = useSellerRequestStatus();
+
+  // Debug logging for seller request status
+  React.useEffect(() => {
+    console.log("🔍 ProfileDropdown Debug:", {
+      sellerRequest,
+      requestLoading,
+      hasPendingRequest,
+      isRejected,
+      sellerRequestStatus: sellerRequest?.status,
+      isSeller,
+      isAdmin,
+      loading,
+    });
+  }, [
+    sellerRequest,
+    requestLoading,
+    hasPendingRequest,
+    isRejected,
+    isSeller,
+    isAdmin,
+    loading,
+  ]);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
 
   const handleSignOut = async () => {
@@ -80,8 +103,22 @@ export default function ProfileDropdown({ user }) {
           My Pre-Bookings
         </Dropdown.Item>
 
+        {/* Temporary Debug Option */}
+        {process.env.NODE_ENV === "development" && (
+          <>
+            <Dropdown.Item onClick={refreshStatus}>
+              <i className="ti-reload me-2 text-info"></i>
+              🔍 Refresh Seller Status (Debug)
+            </Dropdown.Item>
+            <Dropdown.Item as={Link} href="/debug-seller-status">
+              <i className="ti-bug me-2 text-warning"></i>
+              🔍 Debug Seller Status
+            </Dropdown.Item>
+          </>
+        )}
+
         {/* Seller Request Status */}
-        {!loading && !requestLoading && !isSeller && !isAdmin && (
+        {!loading && !isSeller && !isAdmin && (
           <>
             <div className="px-3 py-2 border-bottom bg-light mt-2">
               <small className="text-muted fw-semibold">
@@ -90,7 +127,38 @@ export default function ProfileDropdown({ user }) {
             </div>
 
             {/* Show different states based on seller request status */}
-            {hasPendingRequest ? (
+            {requestLoading ? (
+              // Loading State
+              <div
+                className="py-3 border border-info border-opacity-25 rounded mx-2 mb-2"
+                style={{ backgroundColor: "rgba(13, 202, 240, 0.05)" }}
+              >
+                <div className="d-flex align-items-center px-3">
+                  <span
+                    className="me-3 text-info d-inline-flex align-items-center justify-content-center"
+                    style={{
+                      fontSize: "1.2rem",
+                      width: "20px",
+                      height: "20px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    ⏳
+                  </span>
+                  <div>
+                    <div className="fw-semibold text-info">
+                      Checking Status...
+                    </div>
+                    <small
+                      className="d-block text-muted"
+                      style={{ fontSize: "0.75rem", marginTop: "2px" }}
+                    >
+                      Loading seller request status
+                    </small>
+                  </div>
+                </div>
+              </div>
+            ) : hasPendingRequest ? (
               // Pending Request State
               <div
                 className="py-3 border border-warning border-opacity-25 rounded mx-2 mb-2"

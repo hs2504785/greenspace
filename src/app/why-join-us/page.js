@@ -851,7 +851,7 @@ export default function WhyJoinUsPage() {
                     variant="outline-success"
                     size={isMobile ? "md" : "lg"}
                     className={`${isMobile ? "w-100 py-3" : "px-4"} cta-button`}
-                    href="https://chat.whatsapp.com/FRO1IK8oq5FIxO5LPxCjLH"
+                    href="https://chat.whatsapp.com/FRO1IK8oq5FIxO5LPxCjLH?mode=ems_share_c"
                     as="a"
                     target="_blank"
                     rel="noopener noreferrer"

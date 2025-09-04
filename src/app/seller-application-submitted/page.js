@@ -28,73 +28,57 @@ export default function SellerApplicationSubmittedPage() {
               <h5 className="mb-0">🌱 What Happens Next?</h5>
             </Card.Header>
             <Card.Body>
-              <div className="timeline">
-                <div className="d-flex mb-4">
-                  <div className="flex-shrink-0">
-                    <div
-                      className="bg-success text-white rounded-circle d-flex align-items-center justify-content-center"
-                      style={{ width: "40px", height: "40px" }}
-                    >
-                      ✓
-                    </div>
+              <div className="timeline progress-under-review">
+                <div className="timeline-item past">
+                  <div className="timeline-icon bg-success">
+                    <i className="ti ti-check"></i>
                   </div>
-                  <div className="flex-grow-1 ms-3">
-                    <h6 className="text-success">Application Submitted</h6>
-                    <p className="text-muted mb-0">
+                  <div className="timeline-content">
+                    <h6 className="mb-1">Application Submitted</h6>
+                    <p className="mb-0 small text-muted">
                       Your detailed seller application has been received and is
                       in our review queue.
                     </p>
+                    <small className="text-success fw-bold">
+                      <i className="ti ti-check-circle me-1"></i>
+                      Completed
+                    </small>
                   </div>
                 </div>
 
-                <div className="d-flex mb-4">
-                  <div className="flex-shrink-0">
-                    <div
-                      className="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center"
-                      style={{ width: "40px", height: "40px" }}
-                    >
-                      🔍
-                    </div>
+                <div className="timeline-item active">
+                  <div className="timeline-icon bg-warning">
+                    <i className="ti ti-eye"></i>
                   </div>
-                  <div className="flex-grow-1 ms-3">
-                    <h6 className="text-warning">Under Review</h6>
-                    <p className="text-muted mb-0">
+                  <div className="timeline-content">
+                    <h6 className="mb-1">Under Review</h6>
+                    <p className="mb-0 small text-muted">
                       Our team will review your farming practices, photos, and
                       documentation within 1-3 business days.
                     </p>
                   </div>
                 </div>
 
-                <div className="d-flex mb-4">
-                  <div className="flex-shrink-0">
-                    <div
-                      className="bg-info text-white rounded-circle d-flex align-items-center justify-content-center"
-                      style={{ width: "40px", height: "40px" }}
-                    >
-                      📧
-                    </div>
+                <div className="timeline-item future">
+                  <div className="timeline-icon bg-info">
+                    <i className="ti ti-bell"></i>
                   </div>
-                  <div className="flex-grow-1 ms-3">
-                    <h6 className="text-info">Decision Notification</h6>
-                    <p className="text-muted mb-0">
+                  <div className="timeline-content">
+                    <h6 className="mb-1">Decision Notification</h6>
+                    <p className="mb-0 small text-muted">
                       You'll be notified of our decision. If approved, your
                       account will be upgraded to seller status.
                     </p>
                   </div>
                 </div>
 
-                <div className="d-flex">
-                  <div className="flex-shrink-0">
-                    <div
-                      className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                      style={{ width: "40px", height: "40px" }}
-                    >
-                      🚀
-                    </div>
+                <div className="timeline-item future">
+                  <div className="timeline-icon bg-primary">
+                    <i className="ti ti-rocket"></i>
                   </div>
-                  <div className="flex-grow-1 ms-3">
-                    <h6 className="text-primary">Start Selling</h6>
-                    <p className="text-muted mb-0">
+                  <div className="timeline-content">
+                    <h6 className="mb-1">Start Selling</h6>
+                    <p className="mb-0 small text-muted">
                       Once approved, you can immediately start adding products
                       and selling to our community.
                     </p>
