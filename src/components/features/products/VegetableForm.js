@@ -262,7 +262,7 @@ export default function VegetableForm({
       if (imageFiles.length > 0) {
         console.log("🔄 Uploading optimized images...");
         const uploadPromises = imageFiles.map((file) =>
-          vegetableService.uploadImage(file)
+          vegetableService.uploadImage(file, session?.user?.id)
         );
         const uploadResults = await Promise.all(uploadPromises);
 

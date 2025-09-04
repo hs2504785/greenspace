@@ -156,13 +156,13 @@ export function useVegetables(initialFilters = {}) {
     }
   };
 
-  const uploadImage = async (file) => {
+  const uploadImage = async (file, userId = null) => {
     try {
       if (!VegetableService) {
         toastService.error("Database not configured");
         return null;
       }
-      return await vegetableService.uploadImage(file);
+      return await vegetableService.uploadImage(file, userId);
     } catch (err) {
       toastService.error("Failed to upload image");
       throw err;

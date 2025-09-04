@@ -28,19 +28,21 @@ const getImageVariant = (images, variant = "medium") => {
   if (!images || images.length === 0) return "";
 
   // Parse JSON strings if needed
-  const parsedImages = images.map((img) => {
-    if (typeof img === "string") {
-      try {
-        // Try to parse as JSON first
-        const parsed = JSON.parse(img);
-        return parsed.url || img;
-      } catch {
-        // If not JSON, return as is
-        return img;
+  const parsedImages = images
+    .map((img) => {
+      if (typeof img === "string") {
+        try {
+          // Try to parse as JSON first
+          const parsed = JSON.parse(img);
+          return parsed.url || img;
+        } catch {
+          // If not JSON, return as is
+          return img;
+        }
       }
-    }
-    return img?.url || img;
-  }).filter(Boolean);
+      return img?.url || img;
+    })
+    .filter(Boolean);
 
   // First, look for the specific variant pattern (_variant.webp)
   const targetVariant = parsedImages.find((img) => {
@@ -95,9 +97,80 @@ export default function PreBookingProductCard({
   const [loading, setLoading] = useState(false);
   const { data: session } = useSession();
 
+  // Parse and group images like regular products
+  const parsedImages = images
+    ? images
+        .map((img) => {
+          if (typeof img === "string") {
+            try {
+              const parsed = JSON.parse(img);
+              return parsed.url || img;
+            } catch {
+              return img;
+            }
+          }
+          return img?.url || img;
+        })
+        .filter(Boolean)
+    : [];
+
+  // Group images by their base filename (same logic as VegetableCard)
+  const groupImageVariants = (imageList) => {
+    if (!imageList || imageList.length === 0) return [];
+
+    const grouped = {};
+    for (const imageUrl of imageList) {
+      if (typeof imageUrl !== "string") continue;
+
+      const match = imageUrl.match(/(.+?)_(?:thumbnail|medium|large)\.webp$/);
+      if (match) {
+        const baseName = match[1];
+        if (!grouped[baseName]) {
+          grouped[baseName] = {
+            thumbnail: null,
+            medium: null,
+            large: null,
+          };
+        }
+
+        if (imageUrl.includes("_thumbnail.webp")) {
+          grouped[baseName].thumbnail = imageUrl;
+        } else if (imageUrl.includes("_medium.webp")) {
+          grouped[baseName].medium = imageUrl;
+        } else if (imageUrl.includes("_large.webp")) {
+          grouped[baseName].large = imageUrl;
+        }
+      } else {
+        const uniqueKey = imageUrl;
+        grouped[uniqueKey] = {
+          thumbnail: null,
+          medium: imageUrl,
+          large: null,
+        };
+      }
+    }
+
+    return Object.values(grouped)
+      .map(
+        (variants) => variants.medium || variants.large || variants.thumbnail
+      )
+      .filter(Boolean);
+  };
+
+  const uniqueImages = groupImageVariants(parsedImages);
   const imageUrl = getImageVariant(images, "medium") || "";
-  const hasValidImage =
-    imageUrl && imageUrl.trim() !== "" && imageUrl.startsWith("http");
+
+  // Enhanced safety check for valid imageUrl - must be a proper URL
+  const hasValidImage = (() => {
+    if (!imageUrl || imageUrl.trim() === "") return false;
+    try {
+      new URL(imageUrl);
+      return imageUrl.startsWith("http");
+    } catch (error) {
+      console.warn(`Invalid image URL for "${name}":`, imageUrl);
+      return false;
+    }
+  })();
 
   // Images should now be properly parsed from JSON strings
 
@@ -182,7 +255,18 @@ export default function PreBookingProductCard({
 
   const renderImage = () => {
     try {
-      if (imageError || !hasValidImage) {
+      if (imageError || !hasValidImage || !imageUrl) {
+        return <ImagePlaceholder />;
+      }
+
+      // Final validation before passing to Next.js Image
+      try {
+        new URL(imageUrl);
+      } catch (urlError) {
+        console.error(
+          `❌ Invalid URL before Image component for "${name}":`,
+          imageUrl
+        );
         return <ImagePlaceholder />;
       }
 
@@ -253,6 +337,21 @@ export default function PreBookingProductCard({
             className="rounded-top overflow-hidden"
           >
             {renderImage()}
+
+            {/* Multiple Images Indicator */}
+            {uniqueImages && uniqueImages.length > 1 && (
+              <div
+                className="position-absolute bottom-0 end-0 m-2 px-2 py-1 rounded-pill text-white d-flex align-items-center"
+                style={{
+                  backgroundColor: "rgba(0, 0, 0, 0.7)",
+                  fontSize: "0.75rem",
+                  backdropFilter: "blur(4px)",
+                }}
+              >
+                <i className="ti-image me-1" style={{ fontSize: "0.7rem" }}></i>
+                {uniqueImages.length}
+              </div>
+            )}
           </div>
         </Link>
       </div>
@@ -278,7 +377,6 @@ export default function PreBookingProductCard({
             </div>
             {location && (
               <div className="text-muted small text-truncate">
-                <i className="ti-location-pin me-1"></i>
                 {location.startsWith("http") ? (
                   <a
                     href={location}
@@ -288,10 +386,14 @@ export default function PreBookingProductCard({
                     style={{ fontSize: "inherit" }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    📍 View on Map
+                    <i className="ti-location-pin me-1"></i>
+                    View on Map
                   </a>
                 ) : (
-                  location
+                  <>
+                    <i className="ti-location-pin me-1"></i>
+                    {location}
+                  </>
                 )}
               </div>
             )}

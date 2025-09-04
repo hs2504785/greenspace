@@ -31,16 +31,34 @@ class ListingLimitService {
   // Get user role for limit calculation
   async getUserRole(userId) {
     try {
+      if (!userId) {
+        console.warn("No userId provided to getUserRole");
+        return "buyer";
+      }
+
       const { data: user, error } = await this.supabase
         .from("users")
         .select("role")
         .eq("id", userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error getting user role:", {
+          message: error.message,
+          details: error.details,
+          code: error.code,
+          userId: userId,
+        });
+        return "buyer";
+      }
+
       return user?.role || "buyer";
     } catch (error) {
-      console.error("Error getting user role:", error);
+      console.error("Error getting user role:", {
+        message: error.message,
+        stack: error.stack,
+        userId: userId,
+      });
       return "buyer"; // Default to basic user limits
     }
   }

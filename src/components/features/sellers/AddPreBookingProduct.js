@@ -273,7 +273,7 @@ export default function AddPreBookingProduct() {
       if (imageFiles.length > 0) {
         console.log("🔄 Uploading images...");
         const uploadPromises = imageFiles.map((file) =>
-          VegetableService.uploadImage(file)
+          VegetableService.uploadImage(file, session?.user?.id)
         );
         const uploadResults = await Promise.all(uploadPromises);
 

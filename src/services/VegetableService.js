@@ -587,7 +587,7 @@ class VegetableService extends ApiBaseService {
     }
   }
 
-  async uploadImage(file) {
+  async uploadImage(file, userId = null) {
     console.log("🔍 UPLOAD DEBUG: Function called with file:", file?.name);
 
     try {
@@ -647,9 +647,7 @@ class VegetableService extends ApiBaseService {
       // Get user limits for image validation
       let userLimits = null;
       try {
-        const userRole = await ListingLimitService.getUserRole(
-          file.ownerId || "user"
-        );
+        const userRole = await ListingLimitService.getUserRole(userId);
         const { getUserLimits } = await import("@/config/listingLimits");
         userLimits = getUserLimits(userRole);
       } catch (error) {

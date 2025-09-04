@@ -122,9 +122,17 @@ export default function VegetableCard({
   const uniqueImages = groupImageVariants(images);
   const imageUrl = getImageVariant(images, "medium") || "";
 
-  // Safety check for valid imageUrl - must be a proper URL
-  const hasValidImage =
-    imageUrl && imageUrl.trim() !== "" && imageUrl.startsWith("http");
+  // Enhanced safety check for valid imageUrl - must be a proper URL
+  const hasValidImage = (() => {
+    if (!imageUrl || imageUrl.trim() === "") return false;
+    try {
+      new URL(imageUrl);
+      return imageUrl.startsWith("http");
+    } catch (error) {
+      console.warn(`Invalid image URL for "${name}":`, imageUrl);
+      return false;
+    }
+  })();
 
   // Check if item is free (price = 0)
   const isFree = Number(price) === 0;
@@ -213,7 +221,18 @@ export default function VegetableCard({
   // Additional safety check - if anything goes wrong, show placeholder
   const renderImage = () => {
     try {
-      if (imageError || !hasValidImage) {
+      if (imageError || !hasValidImage || !imageUrl) {
+        return <ImagePlaceholder />;
+      }
+
+      // Final validation before passing to Next.js Image
+      try {
+        new URL(imageUrl);
+      } catch (urlError) {
+        console.error(
+          `❌ Invalid URL before Image component for "${name}":`,
+          imageUrl
+        );
         return <ImagePlaceholder />;
       }
 

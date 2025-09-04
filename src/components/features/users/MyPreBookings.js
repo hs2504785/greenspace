@@ -246,7 +246,7 @@ export default function MyPreBookings() {
                                 {prebooking.vegetable_name}
                               </h6>
                               <div className="small text-muted">
-                                <div className="d-flex align-items-center mb-1">
+                                <div className="d-flex align-items-center gap-2 mb-2">
                                   <UserAvatar
                                     user={prebooking.seller}
                                     size={16}

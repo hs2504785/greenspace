@@ -28,11 +28,112 @@ a.text-decoration-none {
   }
 }
 
-// Product description with limited lines and scroll
-.product-description {
-  line-height: 1.6rem;
-  max-height: 4.8rem; // 3 lines * 1.6rem
-  padding-right: 0.5rem;
+// Expandable description component styles
+.expandable-description {
+  .description-text-container {
+    position: relative;
+
+    // Custom scrollbar styling for webkit browsers
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    // Fade effect at bottom when scrollable and not at bottom
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 20px;
+      background: linear-gradient(
+        to bottom,
+        transparent,
+        rgba(248, 249, 250, 0.9)
+      );
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    // Show fade effect only when there's more content below
+    &[data-show-bottom-fade="true"]::after {
+      opacity: 1;
+    }
+  }
+
+  .read-more-btn {
+    // Let Bootstrap handle the default button styling
+    // Just add subtle enhancements
+    &:hover {
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  .fade-ellipsis {
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: -20px;
+      top: 0;
+      width: 20px;
+      height: 100%;
+      background: linear-gradient(
+        to right,
+        transparent,
+        rgba(248, 249, 250, 0.9)
+      );
+      pointer-events: none;
+    }
+  }
+
+  // Smooth text transitions
+  p {
+    transition: all 0.4s ease-in-out;
+  }
+}
+
+// Animation keyframes
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 500px;
+    opacity: 1;
+  }
 }
 
 // Products management table improvements

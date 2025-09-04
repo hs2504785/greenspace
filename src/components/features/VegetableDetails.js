@@ -17,6 +17,7 @@ import { useCart } from "@/context/CartContext";
 import { useSession } from "next-auth/react";
 import { checkCartForSimilarFreeItems } from "@/utils/freeItemValidation";
 import UserAvatar from "../common/UserAvatar";
+import ExpandableDescription from "../ui/ExpandableDescription";
 import toastService from "@/utils/toastService";
 
 // Helper function removed - using direct logic below for better debugging
@@ -79,13 +80,37 @@ export default function VegetableDetails({ vegetable }) {
     return result;
   };
 
-  // Get unique logical images
-  const uniqueImages = groupImageVariants(vegetable.images);
+  // Get unique logical images - handle both regular and prebooking products
+  const uniqueImages = (() => {
+    if (vegetable.product_type === "prebooking") {
+      // For prebooking products, use the same logic as PreBookingProductCard
+      if (!vegetable.images || vegetable.images.length === 0) return [];
 
-  // Debug: Log the image arrays
+      const parsedImages = vegetable.images
+        .map((img) => {
+          if (typeof img === "string") {
+            try {
+              const parsed = JSON.parse(img);
+              return parsed.url || img;
+            } catch {
+              return img;
+            }
+          }
+          return img?.url || img;
+        })
+        .filter(Boolean);
+
+      // Group by base filename for prebooking products too
+      return groupImageVariants(parsedImages);
+    } else {
+      // Regular products use existing logic
+      return groupImageVariants(vegetable.images);
+    }
+  })();
+
+  // Debug: Log the image arrays for troubleshooting
   console.log("🔍 DEBUG - Original images:", vegetable.images);
   console.log("🔍 DEBUG - Unique images:", uniqueImages);
-  console.log("🔍 DEBUG - Selected index:", selectedImageIndex);
 
   // Helper function to check if a string is a valid URL
   const isValidUrl = (string) => {
@@ -94,6 +119,61 @@ export default function VegetableDetails({ vegetable }) {
       return true;
     } catch (_) {
       return false;
+    }
+  };
+
+  // Helper function to safely get image variant with validation
+  const getSafeImageVariant = (currentImageUrl, targetVariant = "large") => {
+    if (!currentImageUrl || typeof currentImageUrl !== "string") {
+      return null;
+    }
+
+    try {
+      // First, validate if the current image URL is valid
+      if (!isValidUrl(currentImageUrl)) {
+        return null;
+      }
+
+      // Find the target variant for the current image
+      const baseMatch = currentImageUrl.match(
+        /(.+?)_(?:thumbnail|medium|large)\.webp$/
+      );
+      if (baseMatch) {
+        const baseName = baseMatch[1];
+        const variant = vegetable.images.find(
+          (img) => img && img.includes(`${baseName}_${targetVariant}.webp`)
+        );
+
+        if (variant && isValidUrl(variant)) {
+          return variant;
+        }
+      }
+
+      // Smart URL construction fallback
+      const variantMappings = {
+        large: ["_medium.webp", "_thumbnail.webp"],
+        thumbnail: ["_medium.webp", "_large.webp"],
+      };
+
+      if (variantMappings[targetVariant]) {
+        for (const fromVariant of variantMappings[targetVariant]) {
+          if (currentImageUrl.includes(fromVariant)) {
+            const constructedUrl = currentImageUrl.replace(
+              fromVariant,
+              `_${targetVariant}.webp`
+            );
+            if (isValidUrl(constructedUrl)) {
+              return constructedUrl;
+            }
+          }
+        }
+      }
+
+      // Use current image as fallback if it's valid (already validated above)
+      return currentImageUrl;
+    } catch (error) {
+      console.error("Error getting image variant:", error);
+      return null;
     }
   };
 
@@ -143,8 +223,11 @@ export default function VegetableDetails({ vegetable }) {
     : { hasConflict: false };
   const hasSimilarFreeItemInCart = similarFreeItemCheck.hasConflict;
 
-  // Check if item is out of stock
-  const isOutOfStock = !vegetable?.quantity || vegetable.quantity <= 0;
+  // Check if item is out of stock (but prebooking products are always "available" for pre-order)
+  const isOutOfStock =
+    vegetable.product_type === "prebooking"
+      ? false
+      : !vegetable?.quantity || vegetable.quantity <= 0;
 
   // Use the actual available quantity for both free and paid items
   const maxQuantity = vegetable?.quantity || 1;
@@ -416,52 +499,48 @@ export default function VegetableDetails({ vegetable }) {
                         className="d-block w-100 position-relative h-100"
                         style={{ height: "450px", backgroundColor: "#f8f9fa" }}
                       >
-                        <Image
-                          src={(() => {
-                            const currentImageUrl = image;
+                        {(() => {
+                          const safeImageUrl = getSafeImageVariant(
+                            image,
+                            "large"
+                          );
 
-                            if (!currentImageUrl) return "";
-
-                            // Find the large variant for the current image
-                            const baseMatch = currentImageUrl.match(
-                              /(.+?)_(?:thumbnail|medium|large)\.webp$/
+                          if (!safeImageUrl) {
+                            return (
+                              <div
+                                className="d-flex align-items-center justify-content-center h-100 bg-light rounded-4"
+                                style={{ minHeight: "450px" }}
+                              >
+                                <div className="text-center text-muted">
+                                  <i
+                                    className="ti-image"
+                                    style={{ fontSize: "3rem" }}
+                                  ></i>
+                                  <div className="mt-2">No image available</div>
+                                </div>
+                              </div>
                             );
-                            if (baseMatch) {
-                              const baseName = baseMatch[1];
-                              const largeVariant = vegetable.images.find(
-                                (img) =>
-                                  img && img.includes(`${baseName}_large.webp`)
-                              );
+                          }
 
-                              if (largeVariant) {
-                                return largeVariant;
-                              }
-                            }
-
-                            // Smart URL construction fallback
-                            if (currentImageUrl.includes("_medium.webp")) {
-                              return currentImageUrl.replace(
-                                "_medium.webp",
-                                "_large.webp"
-                              );
-                            }
-                            if (currentImageUrl.includes("_thumbnail.webp")) {
-                              return currentImageUrl.replace(
-                                "_thumbnail.webp",
-                                "_large.webp"
-                              );
-                            }
-
-                            // Use current image as fallback
-                            return currentImageUrl;
-                          })()}
-                          alt={`${vegetable.name} - Image ${index + 1}`}
-                          fill
-                          style={{ objectFit: "cover" }}
-                          className="rounded-4"
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                          priority={index === 0}
-                        />
+                          return (
+                            <Image
+                              src={safeImageUrl}
+                              alt={`${vegetable.name} - Image ${index + 1}`}
+                              fill
+                              style={{ objectFit: "cover" }}
+                              className="rounded-4"
+                              sizes="(max-width: 768px) 100vw, 50vw"
+                              priority={index === 0}
+                              onError={(e) => {
+                                console.error(
+                                  `❌ Image error in VegetableDetails:`,
+                                  safeImageUrl,
+                                  e
+                                );
+                              }}
+                            />
+                          );
+                        })()}
                       </div>
                     </Carousel.Item>
                   ))}
@@ -569,47 +648,38 @@ export default function VegetableDetails({ vegetable }) {
                       setSelectedImageIndex(index);
                     }}
                   >
-                    <Image
-                      src={(() => {
-                        // Find thumbnail variant for this unique image
-                        const baseMatch = image.match(
-                          /(.+?)_(?:thumbnail|medium|large)\.webp$/
+                    {(() => {
+                      const safeThumbnailUrl = getSafeImageVariant(
+                        image,
+                        "thumbnail"
+                      );
+
+                      if (!safeThumbnailUrl) {
+                        return (
+                          <div className="d-flex align-items-center justify-content-center h-100 bg-light rounded-2">
+                            <i className="ti-image text-muted"></i>
+                          </div>
                         );
-                        if (baseMatch) {
-                          const baseName = baseMatch[1];
-                          const thumbnailVariant = vegetable.images.find(
-                            (img) =>
-                              img && img.includes(`${baseName}_thumbnail.webp`)
-                          );
+                      }
 
-                          if (thumbnailVariant) {
-                            return thumbnailVariant;
-                          }
-                        }
-
-                        // Smart URL construction fallback
-                        if (image.includes("_medium.webp")) {
-                          return image.replace(
-                            "_medium.webp",
-                            "_thumbnail.webp"
-                          );
-                        }
-                        if (image.includes("_large.webp")) {
-                          return image.replace(
-                            "_large.webp",
-                            "_thumbnail.webp"
-                          );
-                        }
-
-                        // Use the image as-is for non-optimized images
-                        return image;
-                      })()}
-                      alt={`${vegetable.name} thumbnail ${index + 1}`}
-                      fill
-                      style={{ objectFit: "cover" }}
-                      className="rounded-2"
-                      sizes="70px"
-                    />
+                      return (
+                        <Image
+                          src={safeThumbnailUrl}
+                          alt={`${vegetable.name} thumbnail ${index + 1}`}
+                          fill
+                          style={{ objectFit: "cover" }}
+                          className="rounded-2"
+                          sizes="70px"
+                          onError={(e) => {
+                            console.error(
+                              `❌ Thumbnail image error in VegetableDetails:`,
+                              safeThumbnailUrl,
+                              e
+                            );
+                          }}
+                        />
+                      );
+                    })()}
                     {/* Overlay for non-selected images */}
                     {selectedImageIndex !== index && (
                       <div
@@ -667,9 +737,12 @@ export default function VegetableDetails({ vegetable }) {
 
             {/* Description */}
             <div className="mb-4">
-              <p className="text-muted lead mb-0 product-description ui-scroll">
-                {vegetable.description}
-              </p>
+              <ExpandableDescription
+                description={vegetable.description}
+                maxLines={3}
+                charactersPerLine={85}
+                maxExpandedHeight={250}
+              />
             </div>
 
             {/* Quick Info Cards */}
@@ -694,18 +767,37 @@ export default function VegetableDetails({ vegetable }) {
                       }`}
                     ></i>
                     <div>
-                      <div className="text-muted small">Available Quantity</div>
+                      <div className="text-muted small">
+                        {vegetable.product_type === "prebooking"
+                          ? "Status"
+                          : "Available Quantity"}
+                      </div>
                       <div
                         className={`fw-semibold ${
-                          isOutOfStock ? "text-danger" : ""
+                          isOutOfStock
+                            ? "text-danger"
+                            : vegetable.product_type === "prebooking"
+                            ? "text-success"
+                            : ""
                         }`}
                       >
-                        {isOutOfStock ? "0" : vegetable.quantity}{" "}
-                        {vegetable.unit || "kg"}
-                        {isOutOfStock && (
-                          <small className="text-danger d-block">
-                            Out of Stock
-                          </small>
+                        {vegetable.product_type === "prebooking" ? (
+                          <>
+                            Available for Pre-order
+                            <small className="text-success d-block">
+                              🌱 Pre-booking
+                            </small>
+                          </>
+                        ) : (
+                          <>
+                            {isOutOfStock ? "0" : vegetable.quantity}{" "}
+                            {vegetable.unit || "kg"}
+                            {isOutOfStock && (
+                              <small className="text-danger d-block">
+                                Out of Stock
+                              </small>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -882,7 +974,9 @@ export default function VegetableDetails({ vegetable }) {
                           : "ti-shopping-cart me-2"
                       }
                     ></i>
-                    {isOutOfStock
+                    {vegetable.product_type === "prebooking"
+                      ? "🌱 Pre-Book This Item"
+                      : isOutOfStock
                       ? "Out of Stock"
                       : hasSimilarFreeItemInCart
                       ? "Similar Item Already in Cart"

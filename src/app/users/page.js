@@ -298,7 +298,7 @@ export default function PublicUsersPage() {
                                   className="me-3 flex-shrink-0"
                                 />
                                 <div className="min-w-0">
-                                  <div className="d-flex align-items-center gap-2 mb-2">
+                                  <div className="d-flex align-items-center gap-2">
                                     <div className="fw-bold text-truncate fs-6 text-primary">
                                       {user.name}
                                     </div>
