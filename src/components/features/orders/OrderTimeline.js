@@ -194,6 +194,15 @@ export default function OrderTimeline({ order, onStatusUpdate }) {
                 isFreeOrder
               )}
             </p>
+            {getStatusTimestamp(status, state, order) && (
+              <small
+                className="text-success fw-bold"
+                style={{ fontSize: "11px" }}
+              >
+                <i className="ti-time me-1"></i>
+                {getStatusTimestamp(status, state, order)}
+              </small>
+            )}
             {state === "future" && (
               <small
                 className="text-muted"
@@ -201,33 +210,6 @@ export default function OrderTimeline({ order, onStatusUpdate }) {
               >
                 {getEstimatedTime(status)}
               </small>
-            )}
-            {state === "active" && canUpdateStatus && (
-              <Button
-                variant={`outline-${statusConfig.color}`}
-                size="sm"
-                className="mt-2"
-                onClick={handleUpdateStatus}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <span
-                      className="spinner-border spinner-border-sm me-1"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
-                    Updating...
-                  </>
-                ) : (
-                  <>
-                    <i
-                      className={`${STATUS_FLOW[statusConfig.next]?.icon} me-1`}
-                    ></i>
-                    Mark as {statusConfig.next}
-                  </>
-                )}
-              </Button>
             )}
           </div>
         </div>
@@ -237,9 +219,39 @@ export default function OrderTimeline({ order, onStatusUpdate }) {
 
   return (
     <Card>
-      <Card.Header>
-        <i className="ti-time me-2"></i>
-        Order Timeline
+      <Card.Header className="d-flex justify-content-between align-items-center">
+        <div>
+          <i className="ti-time me-2"></i>
+          Order Timeline
+        </div>
+        {canUpdateStatus && (
+          <Button
+            variant={`outline-${STATUS_FLOW[currentStatus].color}`}
+            size="sm"
+            onClick={handleUpdateStatus}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-1"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Updating...
+              </>
+            ) : (
+              <>
+                <i
+                  className={`${
+                    STATUS_FLOW[STATUS_FLOW[currentStatus].next]?.icon
+                  } me-1`}
+                ></i>
+                Mark as {STATUS_FLOW[currentStatus].next}
+              </>
+            )}
+          </Button>
+        )}
       </Card.Header>
       <Card.Body>
         <div className={`timeline progress-${currentStatus}`}>
@@ -271,6 +283,60 @@ function getEstimatedTime(status) {
     delivered: "Delivered to your doorstep",
   };
   return estimatedTimes[status] || "";
+}
+
+function getStatusTimestamp(status, state, order) {
+  // Only show timestamps for completed steps
+  if (state !== "past" && state !== "active") {
+    return null;
+  }
+
+  // For the first status (pending), use created_at
+  if (status === "pending" || status === "pending_payment") {
+    return formatTimestamp(order.created_at);
+  }
+
+  // For current active status, use updated_at
+  if (state === "active") {
+    return formatTimestamp(order.updated_at);
+  }
+
+  // For past completed statuses, we don't have individual timestamps
+  // so we'll show a generic "Completed" indicator
+  return "Completed";
+}
+
+function formatTimestamp(timestamp) {
+  if (!timestamp) return null;
+
+  try {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = (now - date) / (1000 * 60 * 60);
+
+    // If less than 24 hours ago, show relative time
+    if (diffInHours < 24) {
+      if (diffInHours < 1) {
+        const minutes = Math.floor((now - date) / (1000 * 60));
+        return minutes <= 1 ? "Just now" : `${minutes} min ago`;
+      } else {
+        const hours = Math.floor(diffInHours);
+        return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+      }
+    }
+
+    // Otherwise show date and time
+    return date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } catch (error) {
+    console.error("Error formatting timestamp:", error);
+    return null;
+  }
 }
 
 function getTimelineDescription(
