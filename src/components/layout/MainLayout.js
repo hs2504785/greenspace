@@ -16,6 +16,7 @@ const MainLayout = ({ children }) => {
   const pagesWithFilters = [
     "/", // Home page with vegetable filters
     "/prebooking", // Pre-booking page with filters
+    "/prebooking-marketplace", // Pre-booking marketplace with filters
     "/products", // Products management with filters
   ];
 

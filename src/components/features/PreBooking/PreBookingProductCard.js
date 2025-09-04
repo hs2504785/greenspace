@@ -23,17 +23,52 @@ const isValidUrl = (str) => {
   return str.startsWith("http://") || str.startsWith("https://");
 };
 
-// Helper function to get image URL
-const getImageUrl = (images) => {
+// Helper function to parse and get the right image variant
+const getImageVariant = (images, variant = "medium") => {
   if (!images || images.length === 0) return "";
-  // Look for medium variant first, then any valid URL
-  const mediumImage = images.find(
-    (img) =>
-      typeof img === "string" && img.includes("_medium") && isValidUrl(img)
-  );
-  if (mediumImage) return mediumImage;
 
-  return images.find((img) => typeof img === "string" && isValidUrl(img)) || "";
+  // Parse JSON strings if needed
+  const parsedImages = images.map((img) => {
+    if (typeof img === "string") {
+      try {
+        // Try to parse as JSON first
+        const parsed = JSON.parse(img);
+        return parsed.url || img;
+      } catch {
+        // If not JSON, return as is
+        return img;
+      }
+    }
+    return img?.url || img;
+  }).filter(Boolean);
+
+  // First, look for the specific variant pattern (_variant.webp)
+  const targetVariant = parsedImages.find((img) => {
+    if (typeof img !== "string") return false;
+    const pattern = new RegExp(`_${variant}\\.webp$`);
+    return pattern.test(img) && isValidUrl(img);
+  });
+
+  if (targetVariant) {
+    return targetVariant;
+  }
+
+  // Fallback: if looking for medium, any image with _medium in the name
+  if (variant === "medium") {
+    const mediumImage = parsedImages.find(
+      (img) =>
+        typeof img === "string" && img.includes("_medium") && isValidUrl(img)
+    );
+    if (mediumImage) {
+      return mediumImage;
+    }
+  }
+
+  // Final fallback: use the first valid URL
+  const firstValidImage = parsedImages.find(
+    (img) => typeof img === "string" && isValidUrl(img)
+  );
+  return firstValidImage || "";
 };
 
 export default function PreBookingProductCard({
@@ -48,6 +83,7 @@ export default function PreBookingProductCard({
   estimated_available_date,
   harvest_season,
   min_order_quantity = 1,
+  unit = "kg",
   seller_confidence = 90,
   prebooking_notes,
   demand_level = "none",
@@ -59,9 +95,11 @@ export default function PreBookingProductCard({
   const [loading, setLoading] = useState(false);
   const { data: session } = useSession();
 
-  const imageUrl = getImageUrl(images);
+  const imageUrl = getImageVariant(images, "medium") || "";
   const hasValidImage =
     imageUrl && imageUrl.trim() !== "" && imageUrl.startsWith("http");
+
+  // Images should now be properly parsed from JSON strings
 
   // Calculate days until available
   const getDaysUntilAvailable = () => {
@@ -86,7 +124,9 @@ export default function PreBookingProductCard({
     }
 
     if (quantity < min_order_quantity) {
-      toastService.error(`Minimum order quantity is ${min_order_quantity}kg`);
+      toastService.error(
+        `Minimum order quantity is ${min_order_quantity}${unit}`
+      );
       return;
     }
 
@@ -113,7 +153,7 @@ export default function PreBookingProductCard({
         vegetable_name: name,
         category,
         quantity,
-        unit: "kg",
+        unit: unit,
         estimated_price: price,
         target_date: estimated_available_date,
         user_notes: null,
@@ -125,7 +165,7 @@ export default function PreBookingProductCard({
 
       if (result) {
         toastService.success(
-          `Pre-booked ${quantity}kg ${name}! You'll be notified when it's ready.`,
+          `Pre-booked ${quantity}${unit} ${name}! You'll be notified when it's ready.`,
           { icon: "🌱", duration: 5000 }
         );
 
@@ -153,12 +193,16 @@ export default function PreBookingProductCard({
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           style={{ objectFit: "cover" }}
-          onError={() => setImageError(true)}
+          onError={(e) => {
+            console.error(`❌ Image error for "${name}":`, imageUrl, e);
+            setImageError(true);
+          }}
           priority={false}
           loading="lazy"
         />
       );
     } catch (error) {
+      console.error(`❌ Image rendering error for "${name}":`, error);
       return <ImagePlaceholder />;
     }
   };
@@ -235,7 +279,20 @@ export default function PreBookingProductCard({
             {location && (
               <div className="text-muted small text-truncate">
                 <i className="ti-location-pin me-1"></i>
-                {location}
+                {location.startsWith("http") ? (
+                  <a
+                    href={location}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted text-decoration-none"
+                    style={{ fontSize: "inherit" }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    📍 View on Map
+                  </a>
+                ) : (
+                  location
+                )}
               </div>
             )}
           </div>
@@ -247,14 +304,17 @@ export default function PreBookingProductCard({
             <div className="text-center p-2 bg-light rounded">
               <div className="small text-muted">Price</div>
               <div className="fw-bold text-success">
-                ₹{Number(price).toFixed(2)}/kg
+                ₹{Number(price).toFixed(2)}/{unit}
               </div>
             </div>
           </div>
           <div className="col-6">
             <div className="text-center p-2 bg-light rounded">
               <div className="small text-muted">Min Order</div>
-              <div className="fw-medium">{min_order_quantity}kg</div>
+              <div className="fw-medium">
+                {min_order_quantity}
+                {unit}
+              </div>
             </div>
           </div>
         </div>
@@ -282,7 +342,8 @@ export default function PreBookingProductCard({
                 −
               </Button>
               <div className="px-2 py-1 d-flex align-items-center border-start border-end bg-white small fw-medium">
-                {quantity}kg
+                {quantity}
+                {unit}
               </div>
               <Button
                 variant="light"

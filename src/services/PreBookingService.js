@@ -109,7 +109,14 @@ class PreBookingService extends ApiBaseService {
         updated_at: new Date().toISOString(),
       };
 
-      console.log("🌱 Creating prebooking with data:", finalData);
+      console.log("🌱 Creating prebooking with data:", {
+        ...finalData,
+        dataKeys: Object.keys(finalData),
+        dataTypes: Object.keys(finalData).reduce((acc, key) => {
+          acc[key] = typeof finalData[key];
+          return acc;
+        }, {})
+      });
 
       const { data, error } = await supabase
         .from(this.tableName)
@@ -124,7 +131,13 @@ class PreBookingService extends ApiBaseService {
         `);
 
       if (error) {
-        console.error("❌ Supabase error details:", error);
+        console.error("❌ Supabase error details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+          fullError: error
+        });
         throw error;
       }
 

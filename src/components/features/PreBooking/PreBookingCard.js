@@ -17,6 +17,7 @@ export default function PreBookingCard({
   sellerLocation = "Unknown",
   sellerAvatar = null,
   currentDemand = 0,
+  unit = "kg",
   onPreBook,
   className = "",
   size = "normal", // "normal" or "compact"
@@ -71,7 +72,7 @@ export default function PreBookingCard({
         vegetable_name: vegetableName,
         category,
         quantity,
-        unit: "kg",
+        unit: unit,
         estimated_price: estimatedPrice,
         target_date: targetDate,
         user_notes: userNotes.trim() || null,
@@ -83,7 +84,7 @@ export default function PreBookingCard({
 
       if (result) {
         toastService.success(
-          `Pre-booked ${quantity}kg ${vegetableName} for ${targetDate}!`,
+          `Pre-booked ${quantity}${unit} ${vegetableName} for ${targetDate}!`,
           {
             icon: "🌱",
           }
@@ -199,7 +200,10 @@ export default function PreBookingCard({
                   −
                 </Button>
                 <div className="px-3 py-1 d-flex align-items-center border-start border-end bg-white">
-                  <span className="small">{quantity}kg</span>
+                  <span className="small">
+                    {quantity}
+                    {unit}
+                  </span>
                 </div>
                 <Button
                   variant="outline-light"
@@ -276,7 +280,8 @@ export default function PreBookingCard({
                 </>
               ) : (
                 <>
-                  🌱 Pre-Book {quantity}kg
+                  🌱 Pre-Book {quantity}
+                  {unit}
                   {estimatedPrice > 0 && ` for ₹${estimatedTotal}`}
                 </>
               )}

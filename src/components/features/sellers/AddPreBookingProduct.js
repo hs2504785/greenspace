@@ -16,18 +16,46 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import toastService from "@/utils/toastService";
 import VegetableService from "@/services/VegetableService";
+import LocationAutoDetect from "@/components/common/LocationAutoDetect";
 
 const defaultCategories = ["Leafy", "Root", "Fruit", "Herbs", "Vegetable"];
 const harvestSeasons = ["Spring", "Summer", "Monsoon", "Winter", "Year-round"];
+
+const UNIT_TYPES = [
+  {
+    value: "kg",
+    label: "Kilogram (kg)",
+    priceLabel: "₹/kg",
+    quantityLabel: "kg",
+  },
+  {
+    value: "pieces",
+    label: "Pieces",
+    priceLabel: "₹/piece",
+    quantityLabel: "pieces",
+  },
+  {
+    value: "bundle",
+    label: "Bundle",
+    priceLabel: "₹/bundle",
+    quantityLabel: "bundle",
+  },
+  {
+    value: "grams",
+    label: "Grams",
+    priceLabel: "₹/100g",
+    quantityLabel: "grams",
+  },
+];
 
 export default function AddPreBookingProduct() {
   const [formData, setFormData] = useState({
     name: "",
     category: "",
-    price: "",
     estimated_available_date: "",
     harvest_season: "",
     min_order_quantity: "1",
+    unit: "kg",
     seller_confidence: "90",
     prebooking_notes: "",
     description: "",
@@ -37,6 +65,9 @@ export default function AddPreBookingProduct() {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [dragOver, setDragOver] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -81,6 +112,13 @@ export default function AddPreBookingProduct() {
   maxDate.setFullYear(maxDate.getFullYear() + 1);
   const maxDateStr = maxDate.toISOString().split("T")[0];
 
+  // Helper function to get current unit type information
+  const getCurrentUnitType = () => {
+    return (
+      UNIT_TYPES.find((unit) => unit.value === formData.unit) || UNIT_TYPES[0]
+    );
+  };
+
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -88,6 +126,78 @@ export default function AddPreBookingProduct() {
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
+  };
+
+  // Image handling functions
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    handleNewImages(files);
+  };
+
+  const handleNewImages = (files) => {
+    // Limit to 5 images total
+    const remainingSlots = 5 - imagePreviews.length;
+    const filesToAdd = files.slice(0, remainingSlots);
+
+    if (files.length > remainingSlots) {
+      toastService.warning(
+        `Only ${remainingSlots} more images can be added. Maximum 5 images allowed.`
+      );
+    }
+
+    // Create preview URLs and add files
+    filesToAdd.forEach((file) => {
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setImagePreviews((prev) => [...prev, e.target.result]);
+        };
+        reader.readAsDataURL(file);
+        setImageFiles((prev) => [...prev, file]);
+      }
+    });
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const files = Array.from(e.dataTransfer.files);
+    handleNewImages(files);
+  };
+
+  const removeImage = (index) => {
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const makePrimary = (targetIndex) => {
+    if (targetIndex === 0) return; // Already primary
+
+    setImagePreviews((prev) => {
+      const newPreviews = [...prev];
+      const [selectedImage] = newPreviews.splice(targetIndex, 1);
+      newPreviews.unshift(selectedImage); // Move to first position
+      return newPreviews;
+    });
+
+    setImageFiles((prev) => {
+      const newFiles = [...prev];
+      if (targetIndex < newFiles.length) {
+        const [selectedFile] = newFiles.splice(targetIndex, 1);
+        newFiles.unshift(selectedFile); // Move to first position
+      }
+      return newFiles;
+    });
   };
 
   const validateForm = () => {
@@ -99,14 +209,6 @@ export default function AddPreBookingProduct() {
 
     if (!formData.category) {
       newErrors.category = "Category is required";
-    }
-
-    if (
-      !formData.price ||
-      isNaN(formData.price) ||
-      parseFloat(formData.price) < 0
-    ) {
-      newErrors.price = "Valid price is required";
     }
 
     if (!formData.estimated_available_date) {
@@ -166,18 +268,47 @@ export default function AddPreBookingProduct() {
     try {
       setLoading(true);
 
+      // Upload images first if any
+      let imageUrls = [];
+      if (imageFiles.length > 0) {
+        console.log("🔄 Uploading images...");
+        const uploadPromises = imageFiles.map((file) =>
+          VegetableService.uploadImage(file)
+        );
+        const uploadResults = await Promise.all(uploadPromises);
+
+        // Extract ALL variant URLs for each image
+        imageUrls = uploadResults.flatMap((result) => {
+          if (typeof result === "string") {
+            return [result]; // Old format - single URL
+          } else if (result.variants) {
+            // New format - return all three variants
+            return [
+              result.variants.thumbnail,
+              result.variants.medium,
+              result.variants.large,
+            ];
+          } else {
+            return [result.url]; // Fallback
+          }
+        });
+
+        console.log("✅ Image upload results:", imageUrls);
+      }
+
       const vegetableData = {
         name: formData.name.trim(),
         category: formData.category,
-        price: parseFloat(formData.price),
+        price: 0, // Prebooking products don't have fixed prices
         quantity: 0, // Prebooking products start with 0 quantity
-        unit: "kg",
+        unit: formData.unit,
         description:
           formData.description.trim() || `Pre-booking for ${formData.name}`,
         location: formData.location.trim(),
         owner_id: session.user.id,
         source_type: "seller",
         product_type: "prebooking",
+        images: imageUrls,
         estimated_available_date: formData.estimated_available_date,
         harvest_season: formData.harvest_season,
         min_order_quantity: parseFloat(formData.min_order_quantity),
@@ -203,10 +334,10 @@ export default function AddPreBookingProduct() {
         setFormData({
           name: "",
           category: "",
-          price: "",
           estimated_available_date: "",
           harvest_season: "",
           min_order_quantity: "1",
+          unit: "kg",
           seller_confidence: "90",
           prebooking_notes: "",
           description: "",
@@ -214,6 +345,11 @@ export default function AddPreBookingProduct() {
           advance_payment_required: false,
           advance_payment_percentage: "0",
         });
+
+        // Reset image state
+        setImageFiles([]);
+        setImagePreviews([]);
+        setDragOver(false);
 
         // Redirect to product management or stay on page
         // router.push("/seller/products");
@@ -300,42 +436,20 @@ export default function AddPreBookingProduct() {
                       </Form.Group>
                     </Col>
 
-                    <Col md={6}>
-                      <Form.Group>
-                        <Form.Label>Expected Price (₹/kg) *</Form.Label>
-                        <Form.Control
-                          type="number"
-                          step="0.50"
-                          min="0"
-                          placeholder="45.00"
-                          value={formData.price}
-                          onChange={(e) =>
-                            handleInputChange("price", e.target.value)
-                          }
-                          isInvalid={!!errors.price}
-                        />
-                        <Form.Control.Feedback type="invalid">
-                          {errors.price}
-                        </Form.Control.Feedback>
-                      </Form.Group>
-                    </Col>
-
-                    <Col md={6}>
-                      <Form.Group>
-                        <Form.Label>Location *</Form.Label>
-                        <Form.Control
-                          type="text"
-                          placeholder="e.g., Pune, Maharashtra"
-                          value={formData.location}
-                          onChange={(e) =>
-                            handleInputChange("location", e.target.value)
-                          }
-                          isInvalid={!!errors.location}
-                        />
-                        <Form.Control.Feedback type="invalid">
-                          {errors.location}
-                        </Form.Control.Feedback>
-                      </Form.Group>
+                    <Col xs={12}>
+                      <LocationAutoDetect
+                        name="location"
+                        value={formData.location}
+                        onChange={(e) =>
+                          handleInputChange("location", e.target.value)
+                        }
+                        placeholder="Type your location or click 'Detect' to auto-fill"
+                        required
+                        label="Location"
+                        showRequiredIndicator
+                        isInvalid={!!errors.location}
+                        errorMessage={errors.location}
+                      />
                     </Col>
 
                     <Col xs={12}>
@@ -350,6 +464,174 @@ export default function AddPreBookingProduct() {
                             handleInputChange("description", e.target.value)
                           }
                         />
+                      </Form.Group>
+                    </Col>
+
+                    <Col xs={12}>
+                      <Form.Group>
+                        <Form.Label>
+                          Product Images{" "}
+                          <span className="text-muted">(Maximum 5 images)</span>
+                        </Form.Label>
+
+                        {/* Image Upload Area */}
+                        <div
+                          className={`border-2 border-dashed rounded-3 p-4 text-center position-relative ${
+                            dragOver
+                              ? "border-success bg-success bg-opacity-10"
+                              : "border-secondary"
+                          } ${
+                            imagePreviews.length >= 5
+                              ? "bg-light text-muted"
+                              : "bg-light"
+                          }`}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                          style={{
+                            minHeight: "120px",
+                            cursor:
+                              imagePreviews.length >= 5
+                                ? "not-allowed"
+                                : "pointer",
+                            transition: "all 0.2s ease",
+                          }}
+                          onClick={() => {
+                            if (imagePreviews.length < 5) {
+                              document.getElementById("imageInput").click();
+                            }
+                          }}
+                        >
+                          <input
+                            id="imageInput"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageChange}
+                            style={{ display: "none" }}
+                            disabled={imagePreviews.length >= 5}
+                          />
+
+                          <div className="d-flex flex-column align-items-center justify-content-center h-100">
+                            <i
+                              className={`ti-cloud-up mb-2 ${
+                                imagePreviews.length >= 5
+                                  ? "text-muted"
+                                  : "text-success"
+                              }`}
+                              style={{ fontSize: "2.5rem" }}
+                            ></i>
+                            {imagePreviews.length >= 5 ? (
+                              <p className="mb-1 text-muted">
+                                Maximum 5 images reached
+                              </p>
+                            ) : (
+                              <>
+                                <p className="mb-1 fw-semibold">
+                                  Drag & drop images here or click to browse
+                                </p>
+                                <p className="mb-0 small text-muted">
+                                  Support JPG, PNG, GIF up to 5MB each •{" "}
+                                  {5 - imagePreviews.length} slots remaining
+                                </p>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Image Previews Grid */}
+                        {imagePreviews.length > 0 && (
+                          <div className="mt-3">
+                            <div className="row g-3">
+                              {imagePreviews.map((preview, index) => (
+                                <div
+                                  key={index}
+                                  className="col-6 col-md-4 col-lg-3"
+                                >
+                                  <div className="position-relative bg-light rounded-3 p-2 h-100 image-preview-card">
+                                    <div className="position-relative">
+                                      <img
+                                        src={preview}
+                                        alt={`Preview ${index + 1}`}
+                                        className="w-100 rounded-2"
+                                        style={{
+                                          height: "120px",
+                                          objectFit: "cover",
+                                        }}
+                                      />
+
+                                      {/* Primary Badge */}
+                                      {index === 0 && (
+                                        <span
+                                          className="position-absolute top-0 start-0 badge bg-success m-1"
+                                          style={{ fontSize: "0.7rem" }}
+                                        >
+                                          <i className="ti-star me-1"></i>
+                                          Primary
+                                        </span>
+                                      )}
+
+                                      {/* Make Primary Button (shows on hover, only for non-primary images) */}
+                                      {index !== 0 && (
+                                        <button
+                                          type="button"
+                                          className="btn btn-success btn-sm position-absolute bottom-0 start-0 end-0 m-2"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            makePrimary(index);
+                                          }}
+                                          style={{
+                                            fontSize: "12px",
+                                            padding: "6px 12px",
+                                            backgroundColor:
+                                              "rgba(40, 167, 69, 0.9)",
+                                            borderColor:
+                                              "rgba(40, 167, 69, 0.9)",
+                                            color: "white",
+                                            backdropFilter: "blur(4px)",
+                                            fontWeight: "500",
+                                          }}
+                                          onMouseEnter={(e) => {
+                                            e.target.style.opacity = "1";
+                                          }}
+                                          onMouseLeave={(e) => {
+                                            e.target.style.opacity = "0.8";
+                                          }}
+                                        >
+                                          <i className="ti-star me-1"></i>Make
+                                          Primary
+                                        </button>
+                                      )}
+
+                                      {/* Remove Button */}
+                                      <button
+                                        type="button"
+                                        className="position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          removeImage(index);
+                                        }}
+                                        style={{
+                                          width: "28px",
+                                          height: "28px",
+                                          fontSize: "16px",
+                                          color: "#dc3545",
+                                          backgroundColor:
+                                            "rgba(255, 255, 255, 0.9)",
+                                          borderRadius: "50%",
+                                          border: "none",
+                                          textDecoration: "none",
+                                        }}
+                                      >
+                                        <i className="ti-close"></i>
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </Form.Group>
                     </Col>
                   </Row>
@@ -415,14 +697,20 @@ export default function AddPreBookingProduct() {
                   <h5 className="mb-3">📦 Order Requirements</h5>
 
                   <Row className="g-3">
-                    <Col md={6}>
+                    <Col md={4}>
                       <Form.Group>
-                        <Form.Label>Minimum Order Quantity (kg) *</Form.Label>
+                        <Form.Label>
+                          Order Quantity ({getCurrentUnitType().quantityLabel})
+                          *
+                        </Form.Label>
                         <Form.Control
                           type="number"
                           step="0.5"
                           min="0.5"
                           max="100"
+                          placeholder={`Enter quantity in ${
+                            getCurrentUnitType().quantityLabel
+                          }`}
                           value={formData.min_order_quantity}
                           onChange={(e) =>
                             handleInputChange(
@@ -438,6 +726,24 @@ export default function AddPreBookingProduct() {
                         <Form.Text>
                           Minimum quantity customers must order
                         </Form.Text>
+                      </Form.Group>
+                    </Col>
+
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>Unit</Form.Label>
+                        <Form.Select
+                          value={formData.unit}
+                          onChange={(e) =>
+                            handleInputChange("unit", e.target.value)
+                          }
+                        >
+                          {UNIT_TYPES.map((unit) => (
+                            <option key={unit.value} value={unit.value}>
+                              {unit.label}
+                            </option>
+                          ))}
+                        </Form.Select>
                       </Form.Group>
                     </Col>
 
@@ -532,33 +838,6 @@ export default function AddPreBookingProduct() {
                       {formData.prebooking_notes.length}/500 characters
                     </Form.Text>
                   </Form.Group>
-                </div>
-
-                {/* Preview */}
-                <div className="mb-4 p-3 bg-light rounded">
-                  <h6 className="mb-2">📋 Preview</h6>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div>
-                      <strong>{formData.name || "Product Name"}</strong>
-                      {formData.category && (
-                        <Badge bg="secondary" className="ms-2">
-                          {formData.category}
-                        </Badge>
-                      )}
-                      <div className="small text-muted">
-                        {formData.location || "Location"} •{" "}
-                        {formData.harvest_season || "Season"}
-                      </div>
-                    </div>
-                    <div className="text-end">
-                      <div className="fw-bold text-success">
-                        ₹{formData.price || "0"}/kg
-                      </div>
-                      <div className="small text-muted">
-                        Min: {formData.min_order_quantity || "1"}kg
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Submit */}

@@ -24,6 +24,7 @@ export default function VegetableProductCard(props) {
         estimated_available_date={props.estimated_available_date}
         harvest_season={props.harvest_season}
         min_order_quantity={props.min_order_quantity}
+        unit={props.unit}
         seller_confidence={props.seller_confidence}
         prebooking_notes={props.prebooking_notes}
         // Include any demand analytics if available

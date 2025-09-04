@@ -93,7 +93,7 @@ export default function PreBookingModal({
         vegetable_name: vegetable.name,
         category: vegetable.category,
         quantity,
-        unit: "kg",
+        unit: vegetable.unit || "kg",
         estimated_price: estimatedPrice ? parseFloat(estimatedPrice) : null,
         target_date: targetDate,
         user_notes: userNotes.trim() || null,
@@ -105,7 +105,9 @@ export default function PreBookingModal({
 
       if (result) {
         toastService.success(
-          `Pre-booked ${quantity}kg ${vegetable.name} for ${targetDate}! The seller will contact you soon.`,
+          `Pre-booked ${quantity}${vegetable.unit || "kg"} ${
+            vegetable.name
+          } for ${targetDate}! The seller will contact you soon.`,
           { icon: "🌱", duration: 5000 }
         );
 

@@ -10,6 +10,8 @@ import {
   Table,
   Form,
   Badge,
+  OverlayTrigger,
+  Tooltip,
 } from "react-bootstrap";
 import { useSession } from "next-auth/react";
 import toastService from "@/utils/toastService";
@@ -19,6 +21,11 @@ import ClearFiltersButton from "@/components/common/ClearFiltersButton";
 import VegetableForm from "./VegetableForm";
 import DeleteConfirmationModal from "@/components/common/DeleteConfirmationModal";
 import { useRouter } from "next/navigation";
+import {
+  isMapLink,
+  getLocationDisplayText,
+  openMapLink,
+} from "@/utils/locationUtils";
 
 // Helper function removed - using direct logic for better debugging
 
@@ -154,70 +161,109 @@ export default function VegetableManagement() {
   }
 
   return (
-    <Container className="py-3 py-md-4">
-      {/* Header Section with Improved Mobile Layout */}
-      <div className="mb-4">
-        <Row className="g-3 align-items-start">
-          <Col xs={12} lg={8}>
-            <div className="mb-3 mb-lg-0">
-              <div className="d-flex align-items-center flex-wrap gap-3 mb-2">
-                <h1 className="h3 mb-0 lh-1">My Products</h1>
-                {vegetables.length > 0 && (
-                  <div className="d-flex align-items-center flex-wrap gap-2">
-                    <Badge
-                      bg="info"
-                      className="small px-2 py-1 d-flex align-items-center"
-                    >
-                      <i className="ti ti-package me-1"></i>
-                      {vegetables.length} Products
-                    </Badge>
+    <Container fluid className="px-3 px-md-4 pt-2 pb-4">
+      {/* Clean Header Section */}
+      <div className="mb-4 pb-3 border-bottom">
+        {/* Desktop Layout */}
+        <div className="d-none d-lg-flex justify-content-between align-items-start">
+          <div>
+            <div className="d-flex align-items-center gap-3 mb-2">
+              <h1 className="h2 mb-0 text-dark fw-bold">
+                <i className="ti ti-package me-2 text-success"></i>
+                My Products
+              </h1>
+              {vegetables.length > 0 && (
+                <div className="d-flex align-items-center gap-2">
+                  <Badge
+                    bg="primary"
+                    className="px-3 py-2 rounded-pill fw-medium"
+                  >
+                    {vegetables.length} Total
+                  </Badge>
+                  {filteredVegetables.length !== vegetables.length && (
                     <Badge
                       bg="success"
-                      className="small px-2 py-1 d-flex align-items-center"
+                      className="px-3 py-2 rounded-pill fw-medium"
                     >
-                      <i className="ti ti-check me-1"></i>
                       {filteredVegetables.length} Shown
                     </Badge>
-                  </div>
-                )}
-              </div>
-              <p className="text-muted mb-0 small">
-                {vegetables.length === 0
-                  ? "Start your natural farming business"
-                  : "Manage your product listings"}
-              </p>
+                  )}
+                </div>
+              )}
             </div>
-          </Col>
-          <Col xs={12} lg={4}>
-            <div className="d-grid d-lg-flex justify-content-lg-end gap-2">
-              <Button
-                variant="outline-success"
-                onClick={() => router.push("/add-prebooking-product")}
-                className="px-3 py-2 fw-semibold shadow-sm"
-                title="Create advance order products"
+            <p className="text-muted mb-0">
+              {vegetables.length === 0
+                ? "Start your natural farming business by adding your first product"
+                : "Manage and track your product listings"}
+            </p>
+          </div>
+
+          {/* Desktop Action Buttons */}
+          <div className="d-flex gap-2 flex-shrink-0">
+            <Button
+              variant="outline-success"
+              onClick={() => router.push("/add-prebooking-product")}
+              className="px-3 py-2 fw-medium border-2"
+              title="Create advance order products"
+            >
+              <i className="ti ti-calendar-plus me-2"></i>
+              Pre-booking
+            </Button>
+            <Button
+              variant="success"
+              onClick={() => setShowForm(true)}
+              className="px-4 py-2 fw-medium shadow-sm"
+            >
+              <i className="ti ti-plus me-2"></i>
+              {vegetables.length === 0 ? "Add First Product" : "Add Product"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile Layout */}
+        <div className="d-lg-none">
+          <div className="d-flex align-items-center justify-content-between mb-3">
+            <h1 className="h3 mb-0 text-dark fw-bold">
+              <i className="ti ti-package me-2 text-success"></i>
+              My Products
+            </h1>
+            {vegetables.length > 0 && (
+              <Badge
+                bg="primary"
+                className="px-2 py-1 rounded-pill fw-medium small"
               >
-                <i className="ti ti-calendar-plus me-2"></i>
-                <span className="d-none d-md-inline">🌱 Pre-booking</span>
-                <span className="d-md-none">🌱 Pre-book</span>
-              </Button>
-              <Button
-                variant="success"
-                onClick={() => setShowForm(true)}
-                className="px-4 py-2 fw-semibold shadow-sm"
-              >
-                <i className="ti ti-plus me-2"></i>
-                <span className="d-none d-sm-inline">
-                  {vegetables.length === 0
-                    ? "Add Your First Product"
-                    : "Add New Product"}
-                </span>
-                <span className="d-sm-none">
-                  {vegetables.length === 0 ? "Add First" : "Add New"}
-                </span>
-              </Button>
-            </div>
-          </Col>
-        </Row>
+                {vegetables.length}
+              </Badge>
+            )}
+          </div>
+
+          <p className="text-muted mb-3 small">
+            {vegetables.length === 0
+              ? "Start your natural farming business"
+              : "Manage your product listings"}
+          </p>
+
+          {/* Mobile Action Buttons */}
+          <div className="d-flex gap-2">
+            <Button
+              variant="outline-success"
+              onClick={() => router.push("/add-prebooking-product")}
+              className="px-3 py-2 fw-medium border-2 flex-fill"
+              title="Create advance order products"
+            >
+              <i className="ti ti-calendar-plus me-1"></i>
+              Pre-book
+            </Button>
+            <Button
+              variant="success"
+              onClick={() => setShowForm(true)}
+              className="px-3 py-2 fw-medium shadow-sm flex-fill"
+            >
+              <i className="ti ti-plus me-1"></i>
+              {vegetables.length === 0 ? "Add First" : "Add New"}
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Search and Filter Controls - Only show when there are products */}
@@ -352,10 +398,84 @@ export default function VegetableManagement() {
                       </small>
                     </td>
                     <td>{getCategoryBadge(vegetable.category)}</td>
-                    <td>
-                      <i className="ti ti-map-pin me-1 text-muted"></i>
-                      {vegetable.location || (
-                        <span className="text-muted">Not specified</span>
+                    <td style={{ maxWidth: "200px" }}>
+                      {vegetable.location ? (
+                        <div
+                          className="d-flex align-items-center"
+                          style={{ minWidth: 0 }}
+                        >
+                          <i className="ti ti-map-pin me-1 text-muted flex-shrink-0"></i>
+                          <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                            {isMapLink(vegetable.location) ? (
+                              <OverlayTrigger
+                                placement="top"
+                                overlay={
+                                  <Tooltip
+                                    id={`location-tooltip-${vegetable.id}`}
+                                  >
+                                    Click to open location in map:{" "}
+                                    {vegetable.location}
+                                  </Tooltip>
+                                }
+                              >
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  className="p-0 text-decoration-none text-success fw-medium text-start"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    openMapLink(vegetable.location);
+                                  }}
+                                  style={{
+                                    fontSize: "0.875rem",
+                                    lineHeight: "1.2",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    maxWidth: "100%",
+                                  }}
+                                >
+                                  {getLocationDisplayText(
+                                    vegetable.location,
+                                    true
+                                  )}
+                                  <i className="ti ti-external-link ms-1 small"></i>
+                                </Button>
+                              </OverlayTrigger>
+                            ) : (
+                              <OverlayTrigger
+                                placement="top"
+                                overlay={
+                                  <Tooltip
+                                    id={`location-text-tooltip-${vegetable.id}`}
+                                  >
+                                    {vegetable.location}
+                                  </Tooltip>
+                                }
+                              >
+                                <span
+                                  className="text-muted"
+                                  style={{
+                                    fontSize: "0.875rem",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    display: "block",
+                                    cursor: "help",
+                                  }}
+                                >
+                                  {vegetable.location}
+                                </span>
+                              </OverlayTrigger>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="d-flex align-items-center">
+                          <i className="ti ti-map-pin me-1 text-muted"></i>
+                          <span className="text-muted">Not specified</span>
+                        </div>
                       )}
                     </td>
                     <td>
@@ -409,47 +529,89 @@ export default function VegetableManagement() {
           </Table>
         </div>
       ) : (
-        <Card className="shadow-sm">
-          <Card.Body className="text-center py-5 px-3">
+        <Card className="shadow-sm border-0">
+          <Card.Body className="text-center py-5 px-4">
             <div className="mb-4">
               <div
-                className="bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center mb-4"
-                style={{ width: "80px", height: "80px" }}
+                className="bg-success bg-opacity-10 rounded-circle mx-auto d-flex align-items-center justify-content-center mb-4"
+                style={{ width: "100px", height: "100px" }}
               >
                 <i
                   className="ti ti-package text-success"
-                  style={{ fontSize: "2.5rem" }}
+                  style={{ fontSize: "3rem" }}
                 ></i>
               </div>
             </div>
-            <h5 className="text-dark mb-3">No products added yet</h5>
+            <h4 className="text-dark mb-3 fw-bold">No products added yet</h4>
             <p
-              className="text-muted mb-4 mx-auto"
-              style={{ maxWidth: "400px" }}
+              className="text-muted mb-4 mx-auto lead"
+              style={{ maxWidth: "500px" }}
             >
               Start selling your fresh, natural products by adding your first
-              item to the marketplace. It only takes a few minutes!
+              item to the marketplace. It only takes a few minutes to get
+              started!
             </p>
             <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center mb-4">
               <Button
                 variant="success"
                 size="lg"
                 onClick={() => setShowForm(true)}
-                className="px-4 py-2"
+                className="px-5 py-3 fw-medium shadow-sm"
               >
                 <i className="ti ti-plus me-2"></i>
                 Add Your First Product
               </Button>
-              <Button variant="outline-primary" size="lg" className="px-4 py-2">
+              <Button
+                variant="outline-primary"
+                size="lg"
+                className="px-4 py-3 fw-medium border-2"
+              >
                 <i className="ti ti-help me-2"></i>
                 How it works
               </Button>
             </div>
-            <div className="mt-4 pt-3 border-top">
-              <small className="text-muted px-3">
-                💡 <strong>Tips:</strong> Add high-quality photos, detailed
-                descriptions, and competitive pricing to attract more buyers
-              </small>
+            <div className="mt-5 pt-4 border-top">
+              <div className="row g-4 text-start">
+                <div className="col-md-4">
+                  <div className="d-flex align-items-start">
+                    <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-3 flex-shrink-0">
+                      <i className="ti ti-camera text-primary"></i>
+                    </div>
+                    <div>
+                      <h6 className="mb-1 fw-bold">Quality Photos</h6>
+                      <small className="text-muted">
+                        Add clear, high-quality images
+                      </small>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-4">
+                  <div className="d-flex align-items-start">
+                    <div className="bg-warning bg-opacity-10 rounded-circle p-2 me-3 flex-shrink-0">
+                      <i className="ti ti-file-text text-warning"></i>
+                    </div>
+                    <div>
+                      <h6 className="mb-1 fw-bold">Detailed Info</h6>
+                      <small className="text-muted">
+                        Write compelling descriptions
+                      </small>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-4">
+                  <div className="d-flex align-items-start">
+                    <div className="bg-success bg-opacity-10 rounded-circle p-2 me-3 flex-shrink-0">
+                      <i className="ti ti-currency-rupee text-success"></i>
+                    </div>
+                    <div>
+                      <h6 className="mb-1 fw-bold">Fair Pricing</h6>
+                      <small className="text-muted">
+                        Set competitive market prices
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </Card.Body>
         </Card>
