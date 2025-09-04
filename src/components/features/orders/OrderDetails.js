@@ -2,6 +2,7 @@
 
 import { Card, Table } from "react-bootstrap";
 import UserAvatar from "@/components/common/UserAvatar";
+import LocationLink from "@/components/common/LocationLink";
 import WhatsAppActions from "./WhatsAppActions";
 import OrderPaymentSection from "./OrderPaymentSection";
 
@@ -68,7 +69,13 @@ export default function OrderDetails({ order }) {
             </Card.Header>
             <Card.Body>
               <h6>Delivery Address</h6>
-              <p className="mb-3">{order.delivery_address}</p>
+              <div className="mb-3">
+                <LocationLink
+                  location={order.delivery_address}
+                  fallbackRoute="/users"
+                  className="d-block"
+                />
+              </div>
 
               <h6>Contact Number</h6>
               <p className="mb-0">{order.contact_number}</p>
@@ -93,9 +100,13 @@ export default function OrderDetails({ order }) {
                   <h6 className="mb-1">
                     {order.seller?.name || "Unknown Seller"}
                   </h6>
-                  <p className="mb-0 text-muted">
-                    {order.seller?.location || "Location not available"}
-                  </p>
+                  <div className="mb-0">
+                    <LocationLink
+                      location={order.seller?.location}
+                      fallbackRoute={`/users/${order.seller?.id}/listings`}
+                      className="d-block"
+                    />
+                  </div>
                 </div>
               </div>
 

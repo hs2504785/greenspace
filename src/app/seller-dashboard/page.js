@@ -14,6 +14,7 @@ import { useSellerOrders } from "@/hooks/useSellerOrders";
 import SellerGuard from "@/components/common/SellerGuard";
 import SearchInput from "@/components/common/SearchInput";
 import ClearFiltersButton from "@/components/common/ClearFiltersButton";
+import LocationLink from "@/components/common/LocationLink";
 import React, {
   useState,
   useCallback,
@@ -107,9 +108,14 @@ function SellerOrderCard({ order, onUpdateStatus }) {
             {order.delivery_address && (
               <div className="small text-muted mb-1">
                 <i className="ti-location-pin me-1"></i>
-                {order.delivery_address.length > 25
-                  ? order.delivery_address.substring(0, 25) + "..."
-                  : order.delivery_address}
+                <LocationLink
+                  location={order.delivery_address}
+                  fallbackRoute="/users"
+                  variant="link"
+                  size="sm"
+                  className="text-muted"
+                  style={{ fontSize: "0.875rem" }}
+                />
               </div>
             )}
             {(order.buyer?.whatsapp_number || order.buyer?.phone_number) && (

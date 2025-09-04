@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, Badge, Button, ProgressBar } from "react-bootstrap";
+import LocationLink from "@/components/common/LocationLink";
 
 export default function ChatOrderTracker({
   order,
@@ -224,7 +225,15 @@ export default function ChatOrderTracker({
                 border: "1px solid #e9ecef",
               }}
             >
-              📍 {order.delivery_address}
+              📍{" "}
+              <LocationLink
+                location={order.delivery_address}
+                fallbackRoute="/users"
+                variant="link"
+                size="sm"
+                className="text-muted"
+                style={{ fontSize: "12px" }}
+              />
             </div>
           </div>
         )}

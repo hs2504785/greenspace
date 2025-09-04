@@ -2,6 +2,7 @@
 
 import { Card, Table, Badge, Button } from "react-bootstrap";
 import UserAvatar from "@/components/common/UserAvatar";
+import LocationLink from "@/components/common/LocationLink";
 import InfoNotice from "@/components/common/InfoNotice";
 
 export default function GuestOrderDetails({ guestOrder }) {
@@ -133,7 +134,13 @@ export default function GuestOrderDetails({ guestOrder }) {
               )}
 
               <h6>Delivery Address</h6>
-              <p className="mb-0">{guestOrder.guest_address}</p>
+              <div className="mb-0">
+                <LocationLink
+                  location={guestOrder.guest_address}
+                  fallbackRoute="/users"
+                  className="d-block"
+                />
+              </div>
             </Card.Body>
           </Card>
         </div>
@@ -156,9 +163,13 @@ export default function GuestOrderDetails({ guestOrder }) {
                   <h6 className="mb-1">
                     {guestOrder.seller?.name || "Unknown Seller"}
                   </h6>
-                  <p className="mb-0 text-muted">
-                    {guestOrder.seller?.location || "Location not available"}
-                  </p>
+                  <div className="mb-0">
+                    <LocationLink
+                      location={guestOrder.seller?.location}
+                      fallbackRoute={`/users/${guestOrder.seller?.id}/listings`}
+                      className="d-block"
+                    />
+                  </div>
                 </div>
               </div>
 
