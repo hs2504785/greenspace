@@ -9,8 +9,62 @@
     top: 0;
     left: 25px;
     height: 100%;
-    width: 2px;
+    width: 3px;
     background: #e9ecef;
+    border-radius: 2px;
+  }
+
+  // Dynamic progress line based on order status
+  &.progress-pending::before {
+    background: #e9ecef; // No progress yet, just placed
+  }
+
+  &.progress-pending-payment::before {
+    background: #e9ecef; // No progress yet, waiting for payment
+  }
+
+  &.progress-payment-received::before {
+    background: linear-gradient(
+      to bottom,
+      #ffc107 0%,
+      #ffc107 16%,
+      #e9ecef 16%,
+      #e9ecef 100%
+    ); // Pending completed
+  }
+
+  &.progress-confirmed::before {
+    background: linear-gradient(
+      to bottom,
+      #28a745 0%,
+      #28a745 33%,
+      #e9ecef 33%,
+      #e9ecef 100%
+    ); // Payment completed
+  }
+
+  &.progress-processing::before {
+    background: linear-gradient(
+      to bottom,
+      #28a745 0%,
+      #28a745 50%,
+      #e9ecef 50%,
+      #e9ecef 100%
+    ); // Confirmed completed
+  }
+
+  &.progress-shipped::before {
+    background: linear-gradient(
+      to bottom,
+      #28a745 0%,
+      #28a745 66%,
+      #e9ecef 66%,
+      #e9ecef 100%
+    ); // Processing completed
+  }
+
+  &.progress-delivered::before {
+    background: #28a745; // All steps completed
   }
 
   .timeline-item {
@@ -37,9 +91,23 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 1);
 
       i {
         margin: 0;
+        transition: transform 0.2s ease;
+        display: block;
+        line-height: 1;
+      }
+
+      &:hover {
+        transform: scale(1.05);
+
+        i {
+          transform: scale(1.1);
+        }
       }
     }
 
@@ -48,30 +116,98 @@
       opacity: 0.7;
     }
 
+    // Active status (current step)
     &.active {
+      .timeline-content {
+        opacity: 1;
+        font-weight: 600;
+        color: var(--bs-primary);
+      }
+
+      .timeline-icon {
+        width: 38px;
+        height: 38px;
+        left: 6px;
+        top: -4px;
+        font-size: 18px;
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 1), 0 0 0 6px currentColor;
+        animation: pulse 2s infinite;
+
+        i {
+          font-weight: bold;
+        }
+      }
+    }
+
+    // Past completed statuses
+    &.past {
       .timeline-content {
         opacity: 1;
         font-weight: 500;
       }
 
       .timeline-icon {
-        width: 34px;
-        height: 34px;
-        left: 8px;
-        top: -2px;
-        font-size: 16px;
-        box-shadow: 0 0 0 3px rgba(255, 255, 255, 1), 0 0 0 5px currentColor;
+        width: 30px;
+        height: 30px;
+        left: 10px;
+        top: 0;
+        font-size: 14px;
+        opacity: 1;
+        filter: none;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 1);
+
+        i {
+          font-weight: 600;
+        }
       }
     }
 
-    &.past {
+    // Future statuses (not yet reached)
+    &.future {
       .timeline-content {
-        opacity: 1;
+        opacity: 0.5;
+        color: #6c757d;
       }
 
       .timeline-icon {
+        width: 30px;
+        height: 30px;
+        left: 10px;
+        top: 0;
+        font-size: 14px;
+        opacity: 0.4;
+        background: #dee2e6 !important;
+        color: #6c757d !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 1);
+
+        i {
+          opacity: 0.6;
+        }
+      }
+    }
+
+    // Special styling for completed payment status
+    &.completed-payment {
+      .timeline-content {
+        opacity: 1;
+        font-weight: 600;
+        color: var(--bs-success);
+      }
+
+      .timeline-icon {
+        width: 30px;
+        height: 30px;
+        left: 10px;
+        top: 0;
+        font-size: 14px;
         opacity: 1;
         filter: none;
+        background: var(--bs-success) !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 1);
+
+        i {
+          font-weight: bold;
+        }
       }
     }
 
@@ -97,33 +233,17 @@
         }
       }
     }
+  }
 
-    // Future statuses (not yet reached)
-    &.future {
-      .timeline-content {
-        opacity: 0.4;
-      }
-
-      .timeline-icon {
-        opacity: 0.3;
-        background: #6c757d !important;
-        filter: grayscale(1);
-      }
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 1), 0 0 0 6px currentColor;
     }
-
-    // Special styling for completed payment status
-    &.completed-payment {
-      .timeline-content {
-        opacity: 1;
-        font-weight: 600;
-      }
-
-      .timeline-icon {
-        opacity: 1;
-        filter: none;
-        box-shadow: 0 0 0 2px rgba(255, 255, 255, 1),
-          0 0 0 4px var(--bs-success);
-      }
+    50% {
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 1), 0 0 0 8px currentColor;
+    }
+    100% {
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 1), 0 0 0 6px currentColor;
     }
   }
 }

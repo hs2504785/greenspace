@@ -10,7 +10,7 @@ import { generateOrderStatusMessage, openWhatsApp } from "@/utils/whatsapp";
 const STATUS_FLOW = {
   pending: {
     next: "confirmed",
-    icon: "ti-timer",
+    icon: "ti-time",
     color: "warning",
     description: "Order placed and waiting for payment",
   },
@@ -24,31 +24,31 @@ const STATUS_FLOW = {
     next: "confirmed",
     icon: "ti-check",
     color: "success",
-    description: "Payment received - waiting for seller confirmation",
+    description: "Payment successful - waiting for seller confirmation",
   },
   confirmed: {
     next: "processing",
-    icon: "ti-check",
+    icon: "ti-check-box",
     color: "info",
     description: "Order confirmed by seller",
   },
   processing: {
     next: "shipped",
-    icon: "ti-reload",
+    icon: "ti-package",
     color: "primary",
-    description: "Order is being prepared",
+    description: "Your fresh produce is being prepared",
   },
   shipped: {
     next: "delivered",
     icon: "ti-truck",
     color: "secondary",
-    description: "Order is out for delivery",
+    description: "Order is on the way to you",
   },
   delivered: {
     next: null,
-    icon: "ti-package",
+    icon: "ti-home",
     color: "success",
-    description: "Order has been delivered",
+    description: "Order delivered successfully",
   },
   cancelled: {
     next: null,
@@ -58,7 +58,7 @@ const STATUS_FLOW = {
   },
 };
 
-export default function OrderTimeline({ order }) {
+export default function OrderTimeline({ order, onStatusUpdate }) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(order.status);
@@ -85,6 +85,11 @@ export default function OrderTimeline({ order }) {
       } catch (whatsappError) {
         console.warn("WhatsApp message generation failed:", whatsappError);
         // Don't break the status update if WhatsApp fails
+      }
+
+      // Notify parent component to refresh order data
+      if (onStatusUpdate) {
+        onStatusUpdate();
       }
     } catch (error) {
       console.error("Error updating order status:", error);
@@ -176,7 +181,10 @@ export default function OrderTimeline({ order }) {
           </div>
           <div className="timeline-content">
             <h6 className="mb-1">
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+              {status === "payment_received"
+                ? "Payment Successful"
+                : status.charAt(0).toUpperCase() +
+                  status.slice(1).replace("_", " ")}
             </h6>
             <p className="mb-0 small text-muted">
               {getTimelineDescription(
@@ -186,6 +194,14 @@ export default function OrderTimeline({ order }) {
                 isFreeOrder
               )}
             </p>
+            {state === "future" && (
+              <small
+                className="text-muted"
+                style={{ fontSize: "11px", opacity: 0.7 }}
+              >
+                {getEstimatedTime(status)}
+              </small>
+            )}
             {state === "active" && canUpdateStatus && (
               <Button
                 variant={`outline-${statusConfig.color}`}
@@ -226,7 +242,9 @@ export default function OrderTimeline({ order }) {
         Order Timeline
       </Card.Header>
       <Card.Body>
-        <div className="timeline">{getTimelineItems()}</div>
+        <div className={`timeline progress-${currentStatus}`}>
+          {getTimelineItems()}
+        </div>
       </Card.Body>
     </Card>
   );
@@ -243,6 +261,16 @@ function getStatusWeight(status) {
     cancelled: -1,
   };
   return weights[status] || 0;
+}
+
+function getEstimatedTime(status) {
+  const estimatedTimes = {
+    confirmed: "Usually within 2-4 hours",
+    processing: "1-2 days for preparation",
+    shipped: "Same day or next day delivery",
+    delivered: "Delivered to your doorstep",
+  };
+  return estimatedTimes[status] || "";
 }
 
 function getTimelineDescription(

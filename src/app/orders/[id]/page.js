@@ -11,7 +11,7 @@ export default function OrderDetailsPage() {
   const params = useParams();
   console.log("Order ID from params:", params.id); // For debugging
 
-  const { order, loading, error } = useOrder(params.id);
+  const { order, loading, error, refreshOrder } = useOrder(params.id);
 
   if (loading) {
     return (
@@ -51,7 +51,7 @@ export default function OrderDetailsPage() {
           <OrderDetails order={order} />
         </Col>
         <Col lg={4}>
-          <OrderTimeline order={order} />
+          <OrderTimeline order={order} onStatusUpdate={refreshOrder} />
         </Col>
       </Row>
     </Container>
@@ -64,7 +64,7 @@ function OrderStatusBadge({ status, order }) {
   const styles = {
     pending: {
       bg: isFreeOrder ? "success" : "warning",
-      icon: isFreeOrder ? "ti-check" : "ti-timer",
+      icon: isFreeOrder ? "ti-check" : "ti-time",
       text: isFreeOrder ? "Payment Received" : "Pending Payment",
     },
     pending_payment: {
@@ -77,10 +77,10 @@ function OrderStatusBadge({ status, order }) {
       icon: "ti-check",
       text: "Payment Received",
     },
-    confirmed: { bg: "info", icon: "ti-check", text: "Confirmed" },
-    processing: { bg: "primary", icon: "ti-reload", text: "Processing" },
+    confirmed: { bg: "info", icon: "ti-check-box", text: "Confirmed" },
+    processing: { bg: "primary", icon: "ti-package", text: "Processing" },
     shipped: { bg: "secondary", icon: "ti-truck", text: "Shipped" },
-    delivered: { bg: "success", icon: "ti-package", text: "Delivered" },
+    delivered: { bg: "success", icon: "ti-home", text: "Delivered" },
     cancelled: { bg: "danger", icon: "ti-close", text: "Cancelled" },
   };
 

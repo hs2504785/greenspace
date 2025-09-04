@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import OrderService from "@/services/OrderService";
 import toastService from "@/utils/toastService";
@@ -93,5 +93,46 @@ export function useOrder(orderId) {
     setOrder(null);
   }, [orderId]);
 
-  return { order, loading, error };
+  const refreshOrder = useCallback(async () => {
+    if (!orderId) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      console.log("Refreshing order:", orderId);
+      const data = await OrderService.getOrderById(orderId);
+
+      if (!data) {
+        setError("Order not found");
+        return;
+      }
+
+      // Skip permission check for mock data
+      if (!supabase) {
+        setOrder(data);
+        return;
+      }
+
+      // Check permissions if we have a session
+      if (session?.user?.id) {
+        if (
+          data.user_id !== session.user.id &&
+          data.seller_id !== session.user.id
+        ) {
+          setError("You do not have permission to view this order");
+          return;
+        }
+      }
+
+      setOrder(data);
+    } catch (err) {
+      console.error("Error refreshing order:", err);
+      setError("Failed to refresh order details");
+    } finally {
+      setLoading(false);
+    }
+  }, [orderId, session?.user?.id]);
+
+  return { order, loading, error, refreshOrder };
 }

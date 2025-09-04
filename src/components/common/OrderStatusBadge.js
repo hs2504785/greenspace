@@ -52,7 +52,7 @@ export default function OrderStatusBadge({ status, isGuestOrder = false }) {
       pending: {
         bg: "warning",
         text: "Pending",
-        icon: "ti-clock",
+        icon: "ti-time",
       },
       payment_received: {
         bg: "success",
@@ -62,7 +62,7 @@ export default function OrderStatusBadge({ status, isGuestOrder = false }) {
       confirmed: {
         bg: "primary",
         text: "Confirmed",
-        icon: "ti-check",
+        icon: "ti-check-box",
       },
       processing: {
         bg: "info",
@@ -77,7 +77,7 @@ export default function OrderStatusBadge({ status, isGuestOrder = false }) {
       delivered: {
         bg: "success",
         text: "Delivered",
-        icon: "ti-check-box",
+        icon: "ti-home",
       },
       cancelled: {
         bg: "danger",
