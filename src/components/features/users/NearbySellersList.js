@@ -341,7 +341,12 @@ export default function NearbySellersList({
         </Card>
       ) : (
         <Card className="shadow-sm">
-          <Table responsive hover className="mb-0">
+          <Table
+            responsive
+            hover
+            className="mb-0 align-middle"
+            style={{ "--bs-table-hover-bg": "rgba(0,0,0,0.02)" }}
+          >
             <thead className="table-light">
               <tr>
                 <th>Member</th>
@@ -356,7 +361,7 @@ export default function NearbySellersList({
               {/* Nearby Sellers (with location) */}
               {nearbySellers.map((seller) => (
                 <tr key={seller.id}>
-                  <td>
+                  <td className="py-3">
                     <UserProfilePopover user={seller}>
                       <div className="d-flex align-items-center">
                         <UserAvatar
@@ -368,19 +373,19 @@ export default function NearbySellersList({
                           className="me-3 flex-shrink-0"
                         />
                         <div className="min-w-0">
-                          <div className="d-flex align-items-center gap-2 mb-1">
+                          <div className="d-flex align-items-center gap-2 mb-2">
                             <div className="fw-bold text-truncate fs-6 text-primary">
                               {seller.name}
                             </div>
                           </div>
-                          <small className="text-muted">
+                          <small className="text-muted mt-1">
                             {seller.farm_name || "Community Member"}
                           </small>
                         </div>
                       </div>
                     </UserProfilePopover>
                   </td>
-                  <td className="align-middle">
+                  <td className="align-middle py-3">
                     {seller.distance !== null ? (
                       <div className="d-flex align-items-center">
                         {seller.distance < 1 ? (
@@ -434,7 +439,7 @@ export default function NearbySellersList({
                       <span className="text-muted small">N/A</span>
                     )}
                   </td>
-                  <td className="align-middle">
+                  <td className="align-middle py-3">
                     <div className="d-flex align-items-center gap-2">
                       <span className="fw-semibold text-primary">
                         {seller.product_count}
@@ -442,7 +447,7 @@ export default function NearbySellersList({
                       <small className="text-muted">products</small>
                     </div>
                   </td>
-                  <td className="align-middle">
+                  <td className="align-middle py-3">
                     {seller.average_rating > 0 ? (
                       <Badge bg="warning" className="small">
                         ⭐ {seller.average_rating.toFixed(1)}
@@ -451,7 +456,10 @@ export default function NearbySellersList({
                       <span className="text-muted small">No ratings</span>
                     )}
                   </td>
-                  <td className="align-middle" style={{ maxWidth: "200px" }}>
+                  <td
+                    className="align-middle py-3"
+                    style={{ maxWidth: "200px" }}
+                  >
                     <small className="text-muted">
                       {seller.location ? (
                         isMapLink(seller.location) ? (
@@ -515,7 +523,7 @@ export default function NearbySellersList({
                       )}
                     </small>
                   </td>
-                  <td className="align-middle text-end">
+                  <td className="align-middle text-end py-3">
                     <div className="d-flex gap-1 justify-content-end">
                       <Button
                         variant={
@@ -564,7 +572,7 @@ export default function NearbySellersList({
                   </tr>
                   {sellersWithoutLocation.map((seller) => (
                     <tr key={seller.id}>
-                      <td>
+                      <td className="py-3">
                         <UserProfilePopover user={seller}>
                           <div className="d-flex align-items-center">
                             <UserAvatar
@@ -588,7 +596,7 @@ export default function NearbySellersList({
                           </div>
                         </UserProfilePopover>
                       </td>
-                      <td>
+                      <td className="py-3">
                         <span
                           className="text-muted small"
                           title="Location format not supported for distance calculation"
@@ -597,7 +605,7 @@ export default function NearbySellersList({
                           Can't calculate
                         </span>
                       </td>
-                      <td>
+                      <td className="py-3">
                         <div className="d-flex align-items-center gap-2">
                           <span className="fw-semibold text-primary">
                             {seller.product_count}
@@ -605,7 +613,7 @@ export default function NearbySellersList({
                           <small className="text-muted">products</small>
                         </div>
                       </td>
-                      <td>
+                      <td className="py-3">
                         {seller.average_rating > 0 ? (
                           <Badge bg="warning" className="small">
                             ⭐ {seller.average_rating.toFixed(1)}
@@ -614,12 +622,12 @@ export default function NearbySellersList({
                           <span className="text-muted small">No ratings</span>
                         )}
                       </td>
-                      <td>
+                      <td className="py-3">
                         <small className="text-muted">
                           Location not specified
                         </small>
                       </td>
-                      <td className="text-end">
+                      <td className="text-end py-3">
                         <div className="d-flex gap-1 justify-content-end">
                           <Button
                             variant={

@@ -20,6 +20,7 @@ import PreBookingService from "@/services/PreBookingService";
 import toastService from "@/utils/toastService";
 import UserAvatar from "../../common/UserAvatar";
 import EmptyState from "../../common/EmptyState";
+import { isMapLink, getLocationDisplayText } from "@/utils/locationUtils";
 
 export default function MyPreBookings() {
   const [activeView, setActiveView] = useState("active");
@@ -244,18 +245,63 @@ export default function MyPreBookings() {
                               <h6 className="mb-1">
                                 {prebooking.vegetable_name}
                               </h6>
-                              <div className="small text-muted d-flex align-items-center">
-                                <UserAvatar
-                                  user={prebooking.seller}
-                                  size={16}
-                                  className="me-1"
-                                />
-                                <span>
-                                  {prebooking.seller?.name || "Seller"}
-                                </span>
-                                <span className="mx-2">•</span>
-                                <i className="ti-location-pin me-1"></i>
-                                <span>{prebooking.seller?.location}</span>
+                              <div className="small text-muted">
+                                <div className="d-flex align-items-center mb-1">
+                                  <UserAvatar
+                                    user={prebooking.seller}
+                                    size={16}
+                                    className="me-1"
+                                  />
+                                  <span>
+                                    {prebooking.seller?.name || "Seller"}
+                                  </span>
+                                </div>
+                                {prebooking.seller?.location && (
+                                  <div className="d-flex align-items-start">
+                                    <i className="ti-location-pin me-1 mt-1 flex-shrink-0"></i>
+                                    <div
+                                      className="flex-grow-1"
+                                      style={{
+                                        lineHeight: "1.3",
+                                        display: "-webkit-box",
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: "vertical",
+                                        overflow: "hidden",
+                                        wordBreak: "break-word",
+                                      }}
+                                    >
+                                      {isMapLink(prebooking.seller.location) ? (
+                                        <Button
+                                          variant="link"
+                                          size="sm"
+                                          className="p-0 text-decoration-none text-success fw-medium text-start"
+                                          style={{
+                                            fontSize: "inherit",
+                                            lineHeight: "inherit",
+                                            whiteSpace: "normal",
+                                            textAlign: "left",
+                                          }}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.open(
+                                              prebooking.seller.location,
+                                              "_blank"
+                                            );
+                                          }}
+                                        >
+                                          {getLocationDisplayText(
+                                            prebooking.seller.location
+                                          )}
+                                          <i className="ti ti-external-link ms-1 small"></i>
+                                        </Button>
+                                      ) : (
+                                        <span>
+                                          {prebooking.seller.location}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
                             <Badge bg={statusInfo.bg}>{statusInfo.text}</Badge>

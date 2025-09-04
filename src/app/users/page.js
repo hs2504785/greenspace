@@ -230,7 +230,11 @@ export default function PublicUsersPage() {
             {/* All Members and Consumers Table */}
             <Card className="shadow-sm hover-shadow feature-card">
               <div className="table-responsive">
-                <Table hover className="mb-0 align-middle">
+                <Table
+                  hover
+                  className="mb-0 align-middle"
+                  style={{ "--bs-table-hover-bg": "rgba(0,0,0,0.02)" }}
+                >
                   <thead className="table-light">
                     <tr>
                       <th
@@ -282,7 +286,7 @@ export default function PublicUsersPage() {
                     {filteredUsers.length > 0 ? (
                       filteredUsers.map((user) => (
                         <tr key={user.id}>
-                          <td className="ps-3">
+                          <td className="ps-3 py-3">
                             <UserProfilePopover user={user}>
                               <div className="d-flex align-items-center">
                                 <UserAvatar
@@ -294,7 +298,7 @@ export default function PublicUsersPage() {
                                   className="me-3 flex-shrink-0"
                                 />
                                 <div className="min-w-0">
-                                  <div className="d-flex align-items-center gap-2 mb-1">
+                                  <div className="d-flex align-items-center gap-2 mb-2">
                                     <div className="fw-bold text-truncate fs-6 text-primary">
                                       {user.name}
                                     </div>
@@ -309,14 +313,14 @@ export default function PublicUsersPage() {
                                       </Badge>
                                     )}
                                   </div>
-                                  <small className="text-muted">
+                                  <small className="text-muted mt-1">
                                     Community Member • Click for details
                                   </small>
                                 </div>
                               </div>
                             </UserProfilePopover>
                           </td>
-                          <td style={{ maxWidth: "250px" }}>
+                          <td className="py-3" style={{ maxWidth: "250px" }}>
                             {user.location ? (
                               <div
                                 className="d-flex align-items-start"
@@ -440,7 +444,7 @@ export default function PublicUsersPage() {
                               </div>
                             )}
                           </td>
-                          <td>
+                          <td className="py-3">
                             <div>
                               <small className="text-muted d-block">
                                 {new Date(user.created_at).toLocaleDateString(
@@ -474,7 +478,7 @@ export default function PublicUsersPage() {
                               </small>
                             </div>
                           </td>
-                          <td className="text-center">
+                          <td className="text-center py-3">
                             <div className="d-flex flex-column gap-1">
                               <Button
                                 variant={
