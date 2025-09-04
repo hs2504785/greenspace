@@ -784,13 +784,29 @@ export default function CheckoutForm({
                           onClick={handleUpiPayment}
                         >
                           <Card.Body className="text-center p-4">
-                            <i
-                              className="ti-mobile text-success mb-3"
-                              style={{ fontSize: "2.5rem" }}
-                            ></i>
-                            <h6 className="text-success mb-2">Pay with UPI</h6>
+                            <div className="d-flex justify-content-center align-items-center mb-3">
+                              <img
+                                src="/images/gpay.svg"
+                                alt="Google Pay"
+                                width="32"
+                                height="32"
+                                className="me-2"
+                              />
+                              <img
+                                src="/images/bhim.svg"
+                                alt="BHIM UPI"
+                                width="32"
+                                height="32"
+                                className="me-2"
+                              />
+                              <i
+                                className="ti-qrcode text-success"
+                                style={{ fontSize: "2rem" }}
+                              ></i>
+                            </div>
+                            <h6 className="text-success mb-2">UPI Payment</h6>
                             <p className="text-muted small mb-2">
-                              Complete order with QR code payment
+                              GPay, BHIM, PhonePe & QR code
                             </p>
                             <Badge bg="success" className="mt-1">
                               Instant & Complete

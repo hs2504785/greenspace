@@ -597,54 +597,104 @@ export default function UpiQrPayment({
                   </div>
                 </div>
 
-                {/* UPI App Buttons - Google Pay & BHIM Only */}
-                <div className="mb-3 payment-section">
-                  <small className="text-muted d-block mb-2">
-                    <i className="ti-mobile me-1"></i>
-                    Quick pay with your UPI app:
-                  </small>
-                  <div className="row g-2 justify-content-center">
-                    <div className="col-6 col-md-4">
-                      <Button
-                        variant="outline-primary"
-                        className="w-100 d-flex align-items-center justify-content-center"
+                {/* UPI App Buttons - Enhanced with better visual hierarchy */}
+                <div className="mb-4 payment-section">
+                  <div className="text-center mb-3">
+                    <h6 className="text-primary mb-1">
+                      <i className="ti-zap me-1"></i>
+                      Quick Pay Options
+                    </h6>
+                    <small className="text-muted">
+                      Tap to open your preferred UPI app
+                    </small>
+                  </div>
+
+                  <div className="row g-3 justify-content-center">
+                    <div className="col-6 col-md-5">
+                      <div
+                        className="payment-app-card border border-primary rounded-3 p-3 text-center shadow-sm bg-light"
+                        style={{
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          background:
+                            "linear-gradient(135deg, #e3f2fd 0%, #f1f8e9 100%)",
+                          borderColor: "#4285f4 !important",
+                        }}
                         onClick={() => openUpiApp("gpay")}
-                        size="sm"
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = "translateY(-2px)";
+                          e.target.style.boxShadow =
+                            "0 4px 12px rgba(66, 133, 244, 0.2)";
+                          e.target.style.background =
+                            "linear-gradient(135deg, #bbdefb 0%, #dcedc8 100%)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = "translateY(0)";
+                          e.target.style.boxShadow =
+                            "0 2px 4px rgba(0,0,0,0.1)";
+                          e.target.style.background =
+                            "linear-gradient(135deg, #e3f2fd 0%, #f1f8e9 100%)";
+                        }}
                       >
                         <img
                           src="/images/gpay.svg"
                           alt="Google Pay"
-                          width="20"
-                          height="20"
-                          className="me-1"
+                          width="32"
+                          height="32"
+                          className="mb-2"
                         />
-                        <span className="d-none d-sm-inline">Google Pay</span>
-                        <span className="d-sm-none">GPay</span>
-                      </Button>
+                        <div className="text-primary fw-bold small">
+                          Google Pay
+                        </div>
+                        <div className="text-muted small">Instant Payment</div>
+                      </div>
                     </div>
-                    <div className="col-6 col-md-4">
-                      <Button
-                        variant="outline-warning"
-                        className="w-100 d-flex align-items-center justify-content-center"
+
+                    <div className="col-6 col-md-5">
+                      <div
+                        className="payment-app-card border border-warning rounded-3 p-3 text-center shadow-sm bg-light"
+                        style={{
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          background:
+                            "linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%)",
+                          borderColor: "#ff9800 !important",
+                        }}
                         onClick={() => openUpiApp("bhim")}
-                        size="sm"
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = "translateY(-2px)";
+                          e.target.style.boxShadow =
+                            "0 4px 12px rgba(255, 152, 0, 0.2)";
+                          e.target.style.background =
+                            "linear-gradient(135deg, #ffe0b2 0%, #f8bbd9 100%)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = "translateY(0)";
+                          e.target.style.boxShadow =
+                            "0 2px 4px rgba(0,0,0,0.1)";
+                          e.target.style.background =
+                            "linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%)";
+                        }}
                       >
                         <img
                           src="/images/bhim.svg"
                           alt="BHIM UPI"
-                          width="20"
-                          height="20"
-                          className="me-1"
+                          width="32"
+                          height="32"
+                          className="mb-2"
                         />
-                        <span className="d-none d-sm-inline">BHIM UPI</span>
-                        <span className="d-sm-none">BHIM</span>
-                      </Button>
+                        <div className="text-warning fw-bold small">
+                          BHIM UPI
+                        </div>
+                        <div className="text-muted small">Secure Payment</div>
+                      </div>
                     </div>
                   </div>
-                  <div className="mt-2">
-                    <small className="text-info">
-                      <i className="ti-info-alt me-1"></i>
-                      If app doesn't open, scan the QR code manually
+
+                  <div className="text-center mt-3">
+                    <small className="text-muted">
+                      <i className="ti-info-circle me-1"></i>
+                      Or scan the QR code with any UPI app
                     </small>
                   </div>
                 </div>

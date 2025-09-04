@@ -190,10 +190,23 @@ export default function OrderPaymentSection({ order }) {
                   <Button
                     variant="success"
                     onClick={handleUpiPayment}
-                    className="mb-2"
+                    className="mb-2 d-flex align-items-center justify-content-center"
                   >
-                    <i className="ti-mobile me-2"></i>
-                    Pay with UPI
+                    <img
+                      src="/images/gpay.svg"
+                      alt="GPay"
+                      width="20"
+                      height="20"
+                      className="me-1"
+                    />
+                    <img
+                      src="/images/bhim.svg"
+                      alt="BHIM"
+                      width="20"
+                      height="20"
+                      className="me-2"
+                    />
+                    UPI Payment
                   </Button>
                   <Button
                     variant="outline-warning"
