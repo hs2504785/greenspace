@@ -635,71 +635,23 @@ Your order is confirmed and will be processed shortly!`,
                 if (needsAddress)
                   orderRequest += `\nAddress: BHEL Hyderabad 502032`;
               } else {
-                // We have all info, create order immediately
+                // We have all info, show confirmation before placing order
                 console.log(
-                  "🚀 All user info available, creating order immediately..."
+                  "✅ All user info available, showing order confirmation..."
                 );
 
-                try {
-                  const orderResponse = await fetch(
-                    getApiUrl("/api/ai/orders/create", req),
-                    {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Cookie: req.headers.get("cookie") || "",
-                      },
-                      body: JSON.stringify({
-                        vegetable_id: product.id,
-                        seller_id:
-                          product.seller?.id ||
-                          "0e13a58b-a5e2-4ed3-9c69-9634c7413550",
-                        quantity: quantity,
-                        unit_price: product.price.replace("₹", ""),
-                        total_amount: totalAmount,
-                        delivery_address: user.location,
-                        contact_number: user.whatsapp_number || user.phone,
-                        product_name: product.name,
-                      }),
-                    }
-                  );
+                orderRequest += `\n\n**Your Details:**
+📱 **Mobile**: ${user.whatsapp_number || user.phone}
+📍 **Address**: ${user.location}
 
-                  if (orderResponse.ok) {
-                    const orderData = await orderResponse.json();
-                    return new Response(
-                      `🎉 **Order Placed Successfully!**
+**💳 Payment**: Pay Later Option
 
-**Order Details:**
-- **Order ID**: ${orderData.order_id}
-- **Product**: ${product.name}
-- **Quantity**: ${quantity}kg
-- **Unit Price**: ₹${product.price.replace("₹", "")}
-- **Total Amount**: ₹${totalAmount}
-- **Status**: Confirmed ✅
-- **Payment**: Pay Later Option
-- **Mobile**: ${user.whatsapp_number || user.phone}
-- **Address**: ${user.location}
+---
 
-🔗 **[Track Your Order](${orderData.order_url})**
+**Please confirm your order by replying:**
 
-✅ Seller will be notified via WhatsApp
-✅ You'll get order updates on ${user.whatsapp_number || user.phone}
-
-Thank you for shopping with Arya Natural Farms! 🌱`,
-                      {
-                        headers: { "Content-Type": "text/plain" },
-                      }
-                    );
-                  } else {
-                    throw new Error("Order creation failed");
-                  }
-                } catch (immediateOrderError) {
-                  console.error(
-                    "❌ Immediate order creation error:",
-                    immediateOrderError
-                  );
-                  orderRequest += `\n\n⚠️ There was an issue creating your order automatically. Please provide the missing details above to complete your order.`;
-                }
+✅ **"Yes"** to confirm order
+❌ **"No"** to cancel`;
               }
 
               // Store product info for this session (we'll extract it later)
@@ -733,6 +685,125 @@ Thank you for shopping with Arya Natural Farms! 🌱`,
           }
         );
       }
+    }
+
+    // Check for order confirmation (yes/no responses)
+    const isOrderConfirmation =
+      lastUserMessage?.content
+        ?.toLowerCase()
+        .match(
+          /^(yes|y|confirm|yes.*confirm.*order|confirm.*order|ok|okay|place.*order)$/i
+        ) ||
+      lastUserMessage?.content?.toLowerCase().includes("yes, confirm order");
+
+    if (
+      isOrderConfirmation &&
+      global.pendingOrder &&
+      Date.now() - global.pendingOrder.timestamp < 300000
+    ) {
+      // 5 minute timeout
+      console.log("✅ Order confirmation received, placing order...");
+
+      try {
+        const pending = global.pendingOrder;
+        const orderResponse = await fetch(
+          getApiUrl("/api/ai/orders/create", req),
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Cookie: req.headers.get("cookie") || "",
+            },
+            body: JSON.stringify({
+              vegetable_id: pending.product.id,
+              seller_id:
+                pending.product.seller?.id ||
+                "0e13a58b-a5e2-4ed3-9c69-9634c7413550",
+              quantity: pending.quantity,
+              unit_price: pending.product.price.replace("₹", ""),
+              total_amount: pending.totalAmount,
+              delivery_address: user.location,
+              contact_number: user.whatsapp_number || user.phone,
+              product_name: pending.product.name,
+            }),
+          }
+        );
+
+        if (orderResponse.ok) {
+          const orderData = await orderResponse.json();
+
+          // Clear pending order
+          global.pendingOrder = null;
+
+          return new Response(
+            `🎉 **Order Placed Successfully!**
+
+**Order Details:**
+- **Order ID**: ${orderData.order_id}
+- **Product**: ${pending.product.name}
+- **Quantity**: ${pending.quantity}kg
+- **Unit Price**: ₹${pending.product.price.replace("₹", "")}
+- **Total Amount**: ₹${pending.totalAmount}
+- **Status**: Confirmed ✅
+- **Payment**: Pay Later Option
+- **Mobile**: ${user.whatsapp_number || user.phone}
+- **Address**: ${user.location}
+
+🔗 **[Track Your Order](${orderData.order_url})**
+
+✅ Seller will be notified via WhatsApp
+✅ You'll get order updates on ${user.whatsapp_number || user.phone}
+
+Thank you for shopping with Arya Natural Farms! 🌱`,
+            {
+              headers: { "Content-Type": "text/plain" },
+            }
+          );
+        } else {
+          throw new Error("Order creation failed");
+        }
+      } catch (confirmationOrderError) {
+        console.error(
+          "❌ Confirmation order creation error:",
+          confirmationOrderError
+        );
+        return new Response(
+          "Sorry, I couldn't process your order confirmation right now. Please try again or contact support.",
+          {
+            headers: { "Content-Type": "text/plain" },
+          }
+        );
+      }
+    }
+
+    // Check for order cancellation (no responses)
+    const isOrderCancellation = lastUserMessage?.content
+      ?.toLowerCase()
+      .match(/^(no|n|cancel|cancel.*order|not.*now|maybe.*later)$/i);
+
+    if (
+      isOrderCancellation &&
+      global.pendingOrder &&
+      Date.now() - global.pendingOrder.timestamp < 300000
+    ) {
+      // 5 minute timeout
+      console.log("❌ Order cancelled by user");
+
+      // Clear pending order
+      global.pendingOrder = null;
+
+      return new Response(
+        `❌ **Order Cancelled**
+
+No worries! Your order has been cancelled. 
+
+Feel free to browse our products anytime or say "buy [product name]" when you're ready to order.
+
+Is there anything else I can help you with? 😊`,
+        {
+          headers: { "Content-Type": "text/plain" },
+        }
+      );
     }
 
     // Check for order completion with contact details (more flexible)
