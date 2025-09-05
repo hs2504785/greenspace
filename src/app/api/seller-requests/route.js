@@ -128,7 +128,7 @@ export async function GET(request) {
       .select(
         `
         *,
-        user:users(id, name, email, phone, whatsapp_number)
+        user:users!seller_requests_user_id_fkey(id, name, email, phone, whatsapp_number)
       `
       )
       .order("created_at", { ascending: false });

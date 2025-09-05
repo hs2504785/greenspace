@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { Button, Card, Form, Alert, Badge } from "react-bootstrap";
 import ReactMarkdown from "react-markdown";
 import InteractiveProductCard from "./InteractiveProductCard";
-
 import ChatOrderTracker from "./ChatOrderTracker";
 import toastService from "@/utils/toastService";
 
@@ -23,23 +22,30 @@ export default function AIChatAssistant({ user }) {
     id: "welcome",
     role: "assistant",
     content: mobile
-      ? `🌱 **Hello! I'm your AI assistant!**
+      ? `🌱 **Hello! I'm your Enhanced AI Assistant!**
 
-**What would you like to know?**`
-      : `🌱 **Hello! I'm your AI assistant!**
+**🚀 New Features Available:**
+- 🌾 Find nearby verified sellers & farms
+- 📅 Seasonal farming recommendations  
+- 🎯 Smart wishlist with price alerts
+- 🛒 Instant orders with pay later option
 
-I can help you with:
+**What would you like to explore?**`
+      : `🌱 **Hello! I'm your Enhanced AI Assistant!**
 
-- 🥬 Finding fresh vegetables & checking prices
-- 💳 Payment help (UPI, GPay, PhonePe, Paytm)  
-- 📦 Order tracking and status updates
-- 🌱 Farming tips and gardening advice
-- 📍 Local produce availability
-- 🛒 Shopping assistance and recommendations
+**🚀 7 Powerful Features Now Available:**
 
-I have access to real product data and can help you find, buy, and track orders!
+- 🔍 **Smart Product Search** - Find vegetables with price & location filters
+- 🌾 **Seller Discovery** - Find verified farms and sellers near you
+- 📅 **Seasonal Guide** - Get seasonal vegetables & planting advice
+- 🎯 **Smart Wishlist** - Save items with price alerts & notifications
+- 🛒 **Instant Orders** - Buy with pay later option, flexible payment
+- 📦 **Order Tracking** - Real-time status updates & delivery info
+- 💰 **Payment Help** - UPI guidance & troubleshooting support
 
-**What would you like to know?**`,
+I have access to real-time data and can help you discover, buy, and track everything!
+
+**Try asking: "Find organic farmers near me" or "What vegetables are in season?"**`,
   });
 
   const [messages, setMessages] = useState([getWelcomeMessage(false)]);
@@ -162,12 +168,14 @@ I have access to real product data and can help you find, buy, and track orders!
   }, [showQuickActions]);
 
   const quickActions = [
-    "🥬 Show available products",
-    "🛒 View my cart",
-    "💳 How to pay with UPI?",
-    "📦 Track my order",
+    "🔍 Find organic farmers near me",
     "🌱 What vegetables are in season?",
-    "🚀 Quick buy tomatoes",
+    "🎯 Show my wishlist",
+    "🛒 Buy 2kg tomatoes",
+    "📦 Track my order",
+    "💳 How to pay with UPI?",
+    "🥬 Show available products",
+    "📋 View all features guide",
   ];
 
   // Shopping action handlers
@@ -286,6 +294,15 @@ I have access to real product data and can help you find, buy, and track orders!
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
+  };
+
+  const handleQuickCommand = (command) => {
+    setInputValue(command);
+    // Automatically submit the command
+    setTimeout(() => {
+      const fakeEvent = { preventDefault: () => {} };
+      handleSubmitMessage(fakeEvent);
+    }, 100);
   };
 
   const sendMessage = async (messageContent) => {
@@ -516,6 +533,59 @@ I have access to real product data and can help you find, buy, and track orders!
   const handleQuickAction = (action) => {
     if (action === "🛒 View my cart") {
       handleViewCart();
+    } else if (action === "📋 View all features guide") {
+      // Show features guide as a message
+      const featuresGuide = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: `🤖 **Complete AI Chat Features Guide**
+
+**🚀 7 Powerful Features Available:**
+
+**🔍 Smart Product Search**
+- "Find organic tomatoes under ₹50"
+- "Show vegetables in Delhi"
+- "Search for onions near me"
+
+**🌾 Seller Discovery** 
+- "Find organic farmers near me"
+- "Show sellers within 5km"
+- "Who sells tomatoes in my area?"
+
+**📅 Seasonal Assistant**
+- "What vegetables are in season now?"
+- "What should I plant this month?"
+- "Best vegetables for winter"
+
+**🎯 Smart Wishlist**
+- "Add organic tomatoes to my wishlist"
+- "Show my wishlist"
+- "Remove onions from wishlist"
+
+**🛒 Instant Orders (Pay Later)**
+- "Buy 2kg tomatoes"
+- "Order organic onions"
+- "I want to buy carrots"
+
+**📦 Order Tracking**
+- "Track my order #ABC123"
+- "Check my recent orders"
+- "What's my order status?"
+
+**💰 Payment Help**
+- "How do I pay with UPI?"
+- "Payment failed, what to do?"
+- "Which UPI apps work?"
+
+**💡 Pro Tips:**
+- Be specific with location and budget
+- Use natural language - I understand context
+- Try the quick actions above for instant access
+
+**Just type your question naturally - I'm here to help! 🌱**`,
+        type: "text",
+      };
+      setMessages((prev) => [...prev, featuresGuide]);
     } else {
       sendMessage(action);
     }
@@ -932,7 +1002,7 @@ I have access to real product data and can help you find, buy, and track orders!
                       letterSpacing: "0.5px",
                     }}
                   >
-                    💡 Quick Actions
+                    🚀 Enhanced AI Features
                   </small>
                 </div>
                 <div className="d-flex flex-column">
