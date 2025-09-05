@@ -279,7 +279,7 @@ const REJECTED_TOPICS = [
  * @param {string} message - User message to validate
  * @returns {boolean} - True if farming-related, false otherwise
  */
-export function isFarmingRelated(message) {
+function isFarmingRelated(message) {
   if (!message || typeof message !== "string") {
     return false;
   }
@@ -308,7 +308,7 @@ export function isFarmingRelated(message) {
  * @param {Array} messages - Array of conversation messages
  * @returns {boolean} - True if conversation is farming-focused
  */
-export function isConversationFarmingFocused(messages) {
+function isConversationFarmingFocused(messages) {
   if (!messages || messages.length === 0) {
     return true; // Allow initial conversation
   }
@@ -331,7 +331,7 @@ export function isConversationFarmingFocused(messages) {
  * @param {string} userMessage - The off-topic message
  * @returns {string} - Polite rejection response
  */
-export function generateRejectionMessage(userMessage) {
+function generateRejectionMessage(userMessage) {
   const responses = [
     "🌱 I'm specialized in helping with farming, vegetables, and agricultural questions. Could you ask me something related to farming, crops, or our marketplace?",
 
@@ -352,7 +352,7 @@ export function generateRejectionMessage(userMessage) {
  * @param {string} message - User message
  * @returns {Object} - Analysis result with confidence score
  */
-export function analyzeMessageTopic(message) {
+function analyzeMessageTopic(message) {
   const lowerMessage = message.toLowerCase();
 
   // Calculate farming relevance score
@@ -415,7 +415,7 @@ export function analyzeMessageTopic(message) {
  * @param {string} response - AI generated response
  * @returns {boolean} - True if response is appropriate
  */
-export function validateResponse(response) {
+function validateResponse(response) {
   if (!response) return false;
 
   const lowerResponse = response.toLowerCase();
@@ -442,6 +442,16 @@ export function validateResponse(response) {
   return hasFarmingContent || isPoliteRejection;
 }
 
+// Export individual functions for ES modules
+export {
+  isFarmingRelated,
+  isConversationFarmingFocused,
+  generateRejectionMessage,
+  analyzeMessageTopic,
+  validateResponse,
+};
+
+// Default export for compatibility
 export default {
   isFarmingRelated,
   isConversationFarmingFocused,

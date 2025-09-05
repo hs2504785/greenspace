@@ -560,8 +560,8 @@ Your order is confirmed and will be processed shortly!`,
 ⚠️ CRITICAL: Do NOT use any other product information - ONLY the data below!`;
 
     // Check if this is a buy command and handle it specially
-    const lastUserMessage = validMessages[validMessages.length - 1];
-    const isBuyCommand = lastUserMessage?.content
+    const currentUserMessage = validMessages[validMessages.length - 1];
+    const isBuyCommand = currentUserMessage?.content
       ?.toLowerCase()
       .match(/buy\s+(.+)/);
 
