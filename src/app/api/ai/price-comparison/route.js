@@ -9,13 +9,6 @@ export async function GET(request) {
     const category = searchParams.get("category");
     const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
 
-    console.log("💰 AI Price Comparison:", {
-      productName,
-      location,
-      category,
-      limit,
-    });
-
     if (!supabase) {
       throw new Error("Database not available");
     }
@@ -72,8 +65,6 @@ export async function GET(request) {
       console.error("Database error:", error);
       throw new Error(error.message);
     }
-
-    console.log("💰 Products found for comparison:", products?.length || 0);
 
     // Calculate price statistics
     const prices = products?.map((p) => parseFloat(p.price)) || [];
@@ -164,7 +155,7 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    console.error("❌ Price comparison API error:", error);
+    console.error("Price comparison API error:", error);
     return NextResponse.json(
       {
         success: false,

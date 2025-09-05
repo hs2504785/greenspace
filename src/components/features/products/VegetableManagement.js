@@ -116,14 +116,8 @@ export default function VegetableManagement() {
         return;
       }
 
-      console.log("Loading vegetables for user:", {
-        id: session.user.id,
-        email: session.user.email,
-      });
-
       // Always use the session user ID
       const data = await vegetableService.getVegetablesByOwner(session.user.id);
-      console.log("Loaded vegetables:", data);
       setVegetables(data || []);
     } catch (error) {
       toastService.error("Failed to load products");

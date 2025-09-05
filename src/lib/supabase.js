@@ -3,19 +3,6 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Enhanced debug logging for production troubleshooting
-console.log("🔧 Supabase Configuration Debug:", {
-  hasUrl: !!supabaseUrl,
-  hasKey: !!supabaseAnonKey,
-  urlStartsWith: supabaseUrl ? supabaseUrl.substring(0, 30) + "..." : "not set",
-  keyStartsWith: supabaseAnonKey
-    ? supabaseAnonKey.substring(0, 10) + "..."
-    : "not set",
-  keyLength: supabaseAnonKey?.length || 0,
-  nodeEnv: process.env.NODE_ENV,
-  isServer: typeof window === "undefined",
-});
-
 let supabaseInstance = null;
 
 try {
@@ -42,21 +29,13 @@ try {
         },
       },
     });
-
-    console.log("✅ Supabase client created successfully");
-
-    // Test connection on server side
-    if (typeof window === "undefined") {
-      console.log("🔍 Testing Supabase connection...");
-      // We'll test this in the API routes
-    }
   } else {
     const missing = [];
     if (!supabaseUrl) missing.push("NEXT_PUBLIC_SUPABASE_URL");
     if (!supabaseAnonKey) missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
 
     console.error(
-      "❌ Missing Supabase environment variables:",
+      "Missing Supabase environment variables:",
       missing.join(", ")
     );
     throw new Error(

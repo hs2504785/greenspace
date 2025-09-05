@@ -56,12 +56,6 @@ export async function POST(request) {
 
     if (error) {
       console.error("Error creating seller request:", error);
-      console.error("Error details:", {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint,
-      });
 
       // If table doesn't exist, provide helpful error message
       if (
@@ -154,12 +148,6 @@ export async function GET(request) {
 
     if (error) {
       console.error("Error fetching seller requests:", error);
-      console.error("Error details:", {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint,
-      });
 
       // If table doesn't exist, return empty array instead of error
       if (
@@ -167,9 +155,6 @@ export async function GET(request) {
         error.message?.includes("relation") ||
         error.message?.includes("does not exist")
       ) {
-        console.warn(
-          "⚠️ seller_requests table doesn't exist yet, returning empty array"
-        );
         return NextResponse.json([]);
       }
 

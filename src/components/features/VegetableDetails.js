@@ -109,10 +109,6 @@ export default function VegetableDetails({ vegetable }) {
     }
   })();
 
-  // Debug: Log the image arrays for troubleshooting
-  console.log("🔍 DEBUG - Original images:", vegetable.images);
-  console.log("🔍 DEBUG - Unique images:", uniqueImages);
-
   // Helper function to check if a string is a valid URL
   const isValidUrl = (string) => {
     try {

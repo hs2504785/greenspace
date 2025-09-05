@@ -18,14 +18,6 @@ class PaymentService {
    */
   async getSellerPaymentMethods(sellerId) {
     try {
-      console.log("🔍 getSellerPaymentMethods called with sellerId:", sellerId);
-      console.log("🔍 sellerId type:", typeof sellerId);
-      console.log("🔍 sellerId is undefined check:", sellerId === undefined);
-      console.log(
-        "🔍 sellerId is 'undefined' string check:",
-        sellerId === "undefined"
-      );
-
       // Check if sellerId is valid
       if (!sellerId || sellerId === "undefined" || sellerId === undefined) {
         console.warn(
@@ -66,27 +58,12 @@ class PaymentService {
    */
   async createUpiQRForOrder(orderData, orderType = "regular") {
     try {
-      console.log("🔍 Creating UPI QR for order:", orderData.id);
-      console.log("🔍 Full orderData received:", orderData);
-      console.log("🔍 orderData.seller_id:", orderData.seller_id);
-      console.log("🔍 orderData.sellerId:", orderData.sellerId);
-      console.log(
-        "🔍 Extracted sellerId:",
-        orderData.seller_id || orderData.sellerId
-      );
-
       // Get seller's UPI payment method
       const extractedSellerId = orderData.seller_id || orderData.sellerId;
-      console.log(
-        "🔍 Final extractedSellerId for getSellerPaymentMethods:",
-        extractedSellerId
-      );
 
       const sellerPaymentMethods = await this.getSellerPaymentMethods(
         extractedSellerId
       );
-
-      console.log("💳 Found payment methods:", sellerPaymentMethods.length);
 
       const upiMethod = sellerPaymentMethods.find(
         (method) => method.method_type === "upi" && method.is_active
@@ -105,17 +82,6 @@ class PaymentService {
           method_type: "upi",
           is_active: true,
         };
-
-        console.log(
-          "✅ Using fallback UPI method:",
-          fallbackUpiMethod.display_name
-        );
-
-        // Add alert to confirm fallback is working
-        if (typeof window !== "undefined") {
-          console.log("🚨 FALLBACK ACTIVATED - Check console for details");
-          console.log("🚨 PAYMENT SERVICE VERSION 2.0 - FALLBACK DEBUGGING");
-        }
 
         // Use fallback method instead of throwing error
         try {
@@ -427,7 +393,6 @@ class PaymentService {
       }
 
       const url = `${this.baseApiUrl}/transactions?${params}`;
-      console.log("🔍 Fetching pending payment verifications from:", url);
 
       const response = await fetch(url, {
         method: "GET",
@@ -436,9 +401,6 @@ class PaymentService {
         },
         credentials: "same-origin",
       });
-
-      console.log("📡 Response status:", response.status);
-      console.log("📡 Response ok:", response.ok);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -460,7 +422,6 @@ class PaymentService {
       }
 
       const result = await response.json();
-      console.log("✅ API Response:", result);
       return result.transactions || [];
     } catch (error) {
       console.error("Error fetching pending payment verifications:", error);

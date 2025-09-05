@@ -26,50 +26,29 @@ export default function ProfilePage() {
     async function fetchUserProfile() {
       if (session?.user?.email) {
         // ✅ Check for email instead of ID
-        console.log("Fetching user profile for email:", session.user.email);
         try {
           const response = await fetch("/api/users/profile");
           const data = await response.json();
 
-          console.log("Profile API response:", data); // ✅ Added better logging
-
           if (data.user?.whatsapp_number) {
-            console.log(
-              "Setting WhatsApp number from profile:",
-              data.user.whatsapp_number
-            );
             setWhatsappNumber(data.user.whatsapp_number);
           } else {
-            console.log("No WhatsApp number found in profile data");
             setWhatsappNumber(""); // ✅ Ensure field is empty if no data
           }
 
           if (data.user?.whatsapp_store_link) {
-            console.log(
-              "Setting WhatsApp store link from profile:",
-              data.user.whatsapp_store_link
-            );
             setWhatsappStoreLink(data.user.whatsapp_store_link);
           } else {
-            console.log("No WhatsApp store link found in profile data");
             setWhatsappStoreLink("");
           }
 
           if (data.user?.location) {
-            console.log("Setting location from profile:", data.user.location);
             setLocation(data.user.location);
           } else {
-            console.log("No location found in profile data");
             setLocation(""); // ✅ Ensure field is empty if no data
           }
 
           // Set privacy preferences from API response
-          console.log("Setting privacy preferences from profile:", {
-            show_email_publicly: data.user?.show_email_publicly,
-            show_phone_publicly: data.user?.show_phone_publicly,
-            show_whatsapp_publicly: data.user?.show_whatsapp_publicly,
-            profile_public: data.user?.profile_public,
-          });
 
           setShowEmailPublicly(Boolean(data.user?.show_email_publicly));
           setShowPhonePublicly(Boolean(data.user?.show_phone_publicly));
@@ -79,7 +58,6 @@ export default function ProfilePage() {
           console.error("Failed to fetch user profile:", error);
         }
       } else {
-        console.log("No session or email found, skipping profile fetch");
       }
     }
 
@@ -161,17 +139,6 @@ export default function ProfilePage() {
         }
       }
     }
-
-    console.log("Submitting profile update:", {
-      whatsappNumber,
-      location,
-      coordinates: finalCoordinates,
-      showEmailPublicly,
-      showPhonePublicly,
-      showWhatsappPublicly,
-      profilePublic,
-      sessionUser: session?.user,
-    });
 
     try {
       const response = await fetch("/api/users/profile", {

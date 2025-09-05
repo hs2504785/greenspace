@@ -36,10 +36,6 @@ export default function SellerRequestsPage() {
         credentials: "same-origin",
       });
 
-      console.log("📡 API Response:", {
-        status: response.status,
-        ok: response.ok,
-      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -49,11 +45,6 @@ export default function SellerRequestsPage() {
 
       const data = await response.json();
 
-      console.log("📋 Debug - Fetched seller requests:", {
-        count: data?.length || 0,
-        sampleRequest: data?.[0],
-        sampleUserInfo: data?.[0]?.user,
-      });
 
       setRequests(data || []);
     } catch (error) {

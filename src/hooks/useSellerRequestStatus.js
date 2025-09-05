@@ -22,42 +22,18 @@ export default function useSellerRequestStatus() {
       setLoading(true);
       setError(null);
 
-      console.log(
-        "🔍 useSellerRequestStatus: Fetching for user:",
-        session.user.id
-      );
-
       const response = await fetch(
         `/api/seller-requests?userId=${session.user.id}`
       );
 
-      console.log("🔍 useSellerRequestStatus: API Response:", {
-        ok: response.ok,
-        status: response.status,
-        url: response.url,
-      });
-
       if (response.ok) {
         const requests = await response.json();
-        console.log("🔍 useSellerRequestStatus: Received requests:", {
-          count: requests.length,
-          requests: requests,
-          latestRequest: requests[0],
-        });
 
         if (requests.length > 0) {
           // Get the latest request
           const latestRequest = requests[0];
-          console.log("🔍 useSellerRequestStatus: Setting latest request:", {
-            id: latestRequest.id,
-            status: latestRequest.status,
-            user_id: latestRequest.user_id,
-          });
           setSellerRequest(latestRequest);
         } else {
-          console.log(
-            "🔍 useSellerRequestStatus: No requests found, setting null"
-          );
           setSellerRequest(null);
         }
       } else {
@@ -92,9 +68,7 @@ export default function useSellerRequestStatus() {
   };
 
   // Debug logging for return values
-  React.useEffect(() => {
-    console.log("🔍 useSellerRequestStatus: Return values:", returnValue);
-  }, [sellerRequest, loading, error]);
+  React.useEffect(() => {}, [sellerRequest, loading, error]);
 
   return returnValue;
 }

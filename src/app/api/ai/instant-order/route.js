@@ -6,13 +6,6 @@ export async function POST(request) {
     const { userId, itemName, quantity, maxPrice, userPhone, userLocation } =
       await request.json();
 
-    console.log("🛒 AI Instant Order:", {
-      userId,
-      itemName,
-      quantity,
-      maxPrice,
-    });
-
     if (!itemName) {
       return NextResponse.json(
         { success: false, error: "Item name is required" },
@@ -154,7 +147,7 @@ export async function POST(request) {
 
     return NextResponse.json(orderResponse);
   } catch (error) {
-    console.error("❌ Instant order error:", error);
+    console.error("Instant order error:", error);
     return NextResponse.json(
       {
         success: false,

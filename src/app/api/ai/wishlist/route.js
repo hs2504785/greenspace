@@ -13,8 +13,6 @@ export async function GET(request) {
       );
     }
 
-    console.log("🔍 AI Wishlist Get:", { userId });
-
     const { data: wishlist, error } = await supabase
       .from("user_wishlist")
       .select("*")
@@ -31,7 +29,7 @@ export async function GET(request) {
       count: wishlist?.length || 0,
     });
   } catch (error) {
-    console.error("❌ Wishlist get error:", error);
+    console.error("Wishlist get error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -54,8 +52,6 @@ export async function POST(request) {
         { status: 400 }
       );
     }
-
-    console.log("🔍 AI Wishlist Action:", { userId, action, itemName });
 
     if (action === "add") {
       // Check if item already exists
@@ -118,7 +114,7 @@ export async function POST(request) {
       );
     }
   } catch (error) {
-    console.error("❌ Wishlist action error:", error);
+    console.error("Wishlist action error:", error);
     return NextResponse.json(
       {
         success: false,

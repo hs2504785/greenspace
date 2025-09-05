@@ -33,27 +33,6 @@ export default function ProfileDropdown({ user }) {
     isRejected,
   } = useSellerRequestStatus();
 
-  // Debug logging for seller request status
-  React.useEffect(() => {
-    console.log("🔍 ProfileDropdown Debug:", {
-      sellerRequest,
-      requestLoading,
-      hasPendingRequest,
-      isRejected,
-      sellerRequestStatus: sellerRequest?.status,
-      isSeller,
-      isAdmin,
-      loading,
-    });
-  }, [
-    sellerRequest,
-    requestLoading,
-    hasPendingRequest,
-    isRejected,
-    isSeller,
-    isAdmin,
-    loading,
-  ]);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
 
   const handleSignOut = async () => {

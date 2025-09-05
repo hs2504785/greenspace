@@ -74,22 +74,15 @@ I have access to real-time data and can help you discover, buy, and track everyt
     const fetchUserProfile = async () => {
       if (user?.id) {
         try {
-          console.log("🔄 Fetching complete user profile for AI chat...");
           const response = await fetch("/api/users/profile");
           if (response.ok) {
             const data = await response.json();
-            console.log("✅ User profile fetched:", {
-              phone: data.user?.whatsapp_number,
-              location: data.user?.location,
-              name: data.user?.name,
-            });
             setFullUserProfile(data.user);
           } else {
-            console.warn("⚠️ Failed to fetch user profile, using session data");
             setFullUserProfile(user);
           }
         } catch (error) {
-          console.error("❌ Error fetching user profile:", error);
+          console.error("Error fetching user profile:", error);
           setFullUserProfile(user);
         }
       } else {

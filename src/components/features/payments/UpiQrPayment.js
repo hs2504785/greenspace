@@ -18,31 +18,6 @@ export default function UpiQrPayment({
   orderType = "regular",
   onPaymentComplete,
 }) {
-  console.log("🚨🚨🚨 UPI COMPONENT v4.0 - SUPER VISIBLE PROPS DEBUG");
-  console.log("🔍 Component props:", {
-    show,
-    orderData,
-    orderType,
-    orderDataType: typeof orderData,
-    orderDataKeys: orderData ? Object.keys(orderData) : "NULL_OR_UNDEFINED",
-  });
-
-  // TRACE THE CALL STACK TO IDENTIFY PARENT COMPONENT
-  console.log("🕵️‍♀️ UPI COMPONENT CALL STACK TRACE:");
-  console.trace("UPI Component rendered from:");
-
-  // SUPER VISIBLE ALERT FOR DEBUGGING
-  if (typeof window !== "undefined" && orderData) {
-    console.log(
-      "🔥🔥🔥 UPI ALERT: Received orderData with total_amount:",
-      orderData.total_amount
-    );
-    console.log(
-      "🔥🔥🔥 UPI ALERT: Received orderData with seller_id:",
-      orderData.seller_id
-    );
-  }
-
   const [loading, setLoading] = useState(false);
   const [qrData, setQrData] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -55,40 +30,13 @@ export default function UpiQrPayment({
     }
   }, [show, orderData]);
 
-  // Test static QR loading
-  useEffect(() => {
-    if (show) {
-      console.log("🎯 Payment Modal opened for order:", orderData?.id);
-      console.log(
-        "💰 Order amount:",
-        orderData?.total_amount || orderData?.total
-      );
-    }
-  }, [show]);
-
   const generateQrCode = async () => {
     setLoading(true);
 
-    console.log("🚨 UPI EMERGENCY DEBUG v3.0 - FULL TRACE");
-    console.log("🔍 Raw orderData type:", typeof orderData);
-    console.log("🔍 Raw orderData value:", orderData);
-    console.log("🔍 OrderData stringify:", JSON.stringify(orderData, null, 2));
-    console.log("🔍 OrderData is null?", orderData === null);
-    console.log("🔍 OrderData is undefined?", orderData === undefined);
-
     // Validate orderData first
-    console.log("🔍 UPI Component received orderData:", {
-      id: orderData?.id,
-      total_amount: orderData?.total_amount,
-      total: orderData?.total,
-      seller_id: orderData?.seller_id,
-      allKeys: Object.keys(orderData || {}),
-      allValues: Object.entries(orderData || {}),
-      fullOrderData: orderData,
-    });
 
     if (!orderData || !orderData.id) {
-      console.error("❌ Invalid orderData received:", orderData);
+      console.error("Invalid orderData received:", orderData);
       toastService.error("Order data is missing. Please try again.");
       setLoading(false);
       return;

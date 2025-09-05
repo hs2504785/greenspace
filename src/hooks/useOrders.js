@@ -20,7 +20,6 @@ export function useOrders(initialFilters = {}) {
   const fetchOrders = useCallback(async () => {
     try {
       if (!session?.user?.id) {
-        console.warn("No user ID in session");
         setOrders([]);
         setLoading(false);
         return;
@@ -29,7 +28,6 @@ export function useOrders(initialFilters = {}) {
       setLoading(true);
       setError(null);
 
-      console.log("Fetching orders for user:", session.user.id);
       let data = await OrderService.getOrdersByUser(session.user.id);
 
       // Apply filters
@@ -87,7 +85,6 @@ export function useOrders(initialFilters = {}) {
         }
       }
 
-      console.log("Filtered orders:", data?.length || 0);
       setOrders(data || []);
     } catch (err) {
       console.error("Error fetching orders:", err);

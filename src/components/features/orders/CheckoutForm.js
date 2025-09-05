@@ -25,14 +25,6 @@ export default function CheckoutForm({
   total,
   onSuccess,
 }) {
-  console.log("🚨 CHECKOUT COMPONENT - Props received:", {
-    show,
-    cartItems,
-    seller,
-    total,
-    totalType: typeof total,
-    cartItemsLength: cartItems?.length,
-  });
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState("details"); // "details" or "payment"

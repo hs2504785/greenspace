@@ -31,9 +31,6 @@ export default function Home() {
   // Listen for ANY order events to refresh product listings (AI + Manual)
   useEffect(() => {
     const handleOrderEvent = (eventType) => {
-      console.log(
-        `🔄 ${eventType} event received - refreshing vegetable listings...`
-      );
       refresh();
     };
 
@@ -43,10 +40,6 @@ export default function Home() {
     const handleProductsUpdated = () => handleOrderEvent("Products updated");
 
     if (typeof window !== "undefined") {
-      console.log(
-        "🎧 Setting up ALL order event listeners for vegetable refresh..."
-      );
-
       // Listen for all possible order events
       window.addEventListener("order-created", handleOrderCreated); // Manual & AI orders
       window.addEventListener("ai-order-created", handleAIOrderCreated); // AI orders

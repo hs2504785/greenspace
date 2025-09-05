@@ -11,7 +11,6 @@ class OrderService extends ApiBaseService {
 
   async getOrdersByUser(userId) {
     try {
-      console.log("🔍 Fetching orders for user:", userId);
       if (!supabase) throw new Error("Supabase not initialized");
 
       const { data, error } = await supabase
@@ -41,19 +40,6 @@ class OrderService extends ApiBaseService {
         throw error;
       }
 
-      console.log("✅ Orders fetched successfully:", data?.length || 0);
-      if (data && data.length > 0) {
-        console.log(
-          "📋 Order IDs found:",
-          data.map((order) => order.id)
-        );
-        console.log(
-          "👤 Order user_ids:",
-          data.map((order) => order.user_id)
-        );
-      } else {
-        console.log("📭 No orders found for user:", userId);
-      }
       return data || [];
     } catch (error) {
       console.error("Error in getOrdersByUser:", error);

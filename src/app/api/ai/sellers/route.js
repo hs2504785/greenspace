@@ -9,13 +9,6 @@ export async function GET(request) {
     const farmingMethod = searchParams.get("farmingMethod");
     const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
 
-    console.log("🔍 AI Seller Search:", {
-      location,
-      radius,
-      farmingMethod,
-      limit,
-    });
-
     if (!supabase) {
       throw new Error("Database not available");
     }
@@ -82,9 +75,6 @@ export async function GET(request) {
 
     if (error) {
       console.error("Database error:", error);
-      console.log(
-        "🔄 Falling back to simple user query without seller_requests"
-      );
 
       // Fallback: Just get users with vegetables (sellers)
       const { data: fallbackSellers, error: fallbackError } = await supabase
@@ -163,8 +153,6 @@ export async function GET(request) {
         note: "Using fallback seller data",
       });
     }
-
-    console.log("📋 Sellers found:", sellers?.length || 0);
 
     // Format sellers for AI consumption
     const formattedSellers =

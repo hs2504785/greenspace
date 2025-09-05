@@ -23,20 +23,9 @@ export async function POST(req) {
       return new Response("AI service not configured", { status: 503 });
     }
 
-    console.log("✅ Smart AI Chat - Messages received:", messages?.length || 0);
-    console.log("👤 User context:", {
-      id: user?.id,
-      email: user?.email,
-      role: user?.role,
-      phone: user?.whatsapp_number || user?.phone,
-      location: user?.location,
-    });
-    console.log("🔧 First few messages:", messages?.slice(0, 3));
-
     // Check for empty messages that could cause API errors
     const validMessages =
       messages?.filter((m) => m?.content && m?.content.trim()) || [];
-    console.log("🔍 Valid messages after filtering:", validMessages.length);
 
     if (validMessages.length === 0) {
       console.error("❌ No valid messages found");
@@ -47,7 +36,6 @@ export async function POST(req) {
     const lastUserMessage = validMessages[validMessages.length - 1];
     if (lastUserMessage?.role === "user") {
       const topicAnalysis = analyzeMessageTopic(lastUserMessage.content);
-      console.log("🔍 Topic Analysis:", topicAnalysis);
 
       // Check if current message is farming-related
       if (!topicAnalysis.isFarmingRelated) {
@@ -55,7 +43,6 @@ export async function POST(req) {
         const conversationFocused = isConversationFarmingFocused(validMessages);
 
         if (!conversationFocused) {
-          console.log("🚫 Off-topic question detected, sending rejection");
           const rejectionMessage = generateRejectionMessage(
             lastUserMessage.content
           );
@@ -210,7 +197,6 @@ Remember: Always use your tools when customers ask about products, orders, or ne
               "/api/ai/products",
               req
             )}?${searchParams}`;
-            console.log("🔗 AI Chat calling products API:", apiUrl);
 
             const response = await fetch(apiUrl, {
               method: "GET",
@@ -222,7 +208,6 @@ Remember: Always use your tools when customers ask about products, orders, or ne
             }
 
             const data = await response.json();
-            console.log("🔍 Product search results:", data.count);
 
             return {
               success: data.success,
@@ -292,7 +277,6 @@ Remember: Always use your tools when customers ask about products, orders, or ne
             }
 
             const data = await response.json();
-            console.log("📦 Order tracking results:", data);
 
             return data;
           } catch (error) {
@@ -414,8 +398,6 @@ Remember: Always use your tools when customers ask about products, orders, or ne
 
             const orderData = await orderResponse.json();
             const order = orderData.order;
-
-            console.log("🛒 Instant order created:", order);
 
             return {
               success: true,
@@ -566,8 +548,6 @@ Your order is confirmed and will be processed shortly!`,
       .match(/buy\s+(.+)/);
 
     if (isBuyCommand) {
-      console.log("🛒 Detected buy command:", isBuyCommand[1]);
-
       // Extract item name and quantity
       const itemText = isBuyCommand[1].trim();
       const quantityMatch = itemText.match(/(\d+)\s*kg\s+(.+)/);
@@ -578,8 +558,6 @@ Your order is confirmed and will be processed shortly!`,
         quantity = parseInt(quantityMatch[1]);
         itemName = quantityMatch[2];
       }
-
-      console.log("🛒 Processing order:", { itemName, quantity });
 
       try {
         // Get all products first (search API has issues)
@@ -685,9 +663,6 @@ Your order is confirmed and will be processed shortly!`,
                   orderRequest += `\nAddress: BHEL Hyderabad 502032`;
               } else {
                 // We have all info, show confirmation before placing order
-                console.log(
-                  "✅ All user info available, showing order confirmation..."
-                );
 
                 orderRequest += `\n\n**Your Details:**
 📱 **Mobile**: ${user.whatsapp_number || user.phone}
@@ -726,7 +701,7 @@ Your order is confirmed and will be processed shortly!`,
           }
         );
       } catch (orderError) {
-        console.error("❌ Order creation error:", orderError);
+        console.error("Order creation error:", orderError);
         return new Response(
           "Sorry, I couldn't process your order right now. Please try again.",
           {
@@ -751,7 +726,6 @@ Your order is confirmed and will be processed shortly!`,
       Date.now() - global.pendingOrder.timestamp < 300000
     ) {
       // 5 minute timeout
-      console.log("✅ Order confirmation received, placing order...");
 
       try {
         const pending = global.pendingOrder;
@@ -813,7 +787,7 @@ Thank you for shopping with Arya Natural Farms! 🌱`,
         }
       } catch (confirmationOrderError) {
         console.error(
-          "❌ Confirmation order creation error:",
+          "Confirmation order creation error:",
           confirmationOrderError
         );
         return new Response(
@@ -836,7 +810,6 @@ Thank you for shopping with Arya Natural Farms! 🌱`,
       Date.now() - global.pendingOrder.timestamp < 300000
     ) {
       // 5 minute timeout
-      console.log("❌ Order cancelled by user");
 
       // Clear pending order
       global.pendingOrder = null;
@@ -862,8 +835,6 @@ Is there anything else I can help you with? 😊`,
         lastUserMessage?.content?.toLowerCase().includes("address:"));
 
     if (isOrderCompletion) {
-      console.log("📱 Contact details provided, creating order...");
-
       try {
         const userContent = lastUserMessage.content;
 
@@ -931,11 +902,6 @@ Is there anything else I can help you with? 😊`,
           productName = productMatch[1].trim();
           quantity = quantityMatch ? parseInt(quantityMatch[1]) : 1;
           unitPrice = parseFloat(priceMatch[1]);
-          console.log("📦 Using product details from message:", {
-            productName,
-            quantity,
-            unitPrice,
-          });
         } else if (
           global.pendingOrder &&
           Date.now() - global.pendingOrder.timestamp < 300000
@@ -947,21 +913,10 @@ Is there anything else I can help you with? 😊`,
           unitPrice = parseFloat(pending.product.price.replace("₹", ""));
           vegetableId = pending.product.id;
           sellerId = pending.product.seller?.id || sellerId;
-          console.log("📦 Using pending order details:", {
-            productName,
-            quantity,
-            unitPrice,
-            vegetableId,
-          });
         }
 
         // If we don't have vegetableId from pending order, try to find it in database
         if (!vegetableId) {
-          console.log(
-            "🔍 Searching for vegetable ID for product:",
-            productName
-          );
-
           const productsResponse = await fetch(
             `${getApiUrl("/api/ai/products", req)}?query=${encodeURIComponent(
               productName
@@ -982,18 +937,11 @@ Is there anything else I can help you with? 😊`,
               const product = productsData.products[0];
               vegetableId = product.id;
               sellerId = product.seller?.id || sellerId;
-              console.log("✅ Found vegetable in database:", {
-                id: vegetableId,
-                name: product.name,
-              });
             }
           }
 
           // Final fallback - find any available product
           if (!vegetableId) {
-            console.log(
-              "🔄 No specific product found, using any available product..."
-            );
             const fallbackResponse = await fetch(
               `${getApiUrl("/api/ai/products", req)}?limit=1`,
               {
@@ -1013,10 +961,6 @@ Is there anything else I can help you with? 😊`,
                 vegetableId = fallbackProduct.id;
                 sellerId = fallbackProduct.seller?.id || sellerId;
                 productName = fallbackProduct.name; // Update to actual available product
-                console.log("✅ Using fallback product:", {
-                  id: vegetableId,
-                  name: productName,
-                });
               }
             }
           }
@@ -1031,17 +975,6 @@ Is there anything else I can help you with? 😊`,
 
         // Create order using the new AI orders API that properly saves to database
         const totalAmount = unitPrice * quantity;
-
-        console.log("🛒 Creating order with details:", {
-          vegetableId,
-          sellerId,
-          quantity,
-          unitPrice,
-          totalAmount,
-          productName,
-          mobile,
-          address,
-        });
 
         const orderResponse = await fetch(
           getApiUrl("/api/ai/orders/create", req),
@@ -1099,7 +1032,7 @@ Thank you for shopping with GreenSpace! 🌱`;
           throw new Error("Order creation failed");
         }
       } catch (error) {
-        console.error("❌ Order creation error:", error);
+        console.error("Order creation error:", error);
         return new Response(
           "Sorry, I couldn't process your order right now. Please try again or contact support.",
           {
@@ -1110,16 +1043,6 @@ Thank you for shopping with GreenSpace! 🌱`;
     }
 
     // Normal AI response for non-buy commands
-    console.log(
-      "🤖 Sending to AI with",
-      validMessages.length,
-      "valid messages"
-    );
-    console.log(
-      "📝 Messages being sent:",
-      JSON.stringify(validMessages, null, 2)
-    );
-    console.log("🛠 Fetching real-time product data from database...");
 
     // Fetch real products before responding
     let currentProducts = [];
@@ -1136,23 +1059,10 @@ Thank you for shopping with GreenSpace! 🌱`;
         const productsData = await productsResponse.json();
         if (productsData.success && productsData.products) {
           currentProducts = productsData.products;
-          console.log(
-            "✅ Fetched",
-            currentProducts.length,
-            "products from database"
-          );
-          console.log(
-            "📦 Products:",
-            currentProducts
-              .map(
-                (p) => `${p.name}: ${p.quantity || 0} kg (${p.availability})`
-              )
-              .join(", ")
-          );
         }
       }
     } catch (error) {
-      console.error("❌ Error fetching products:", error);
+      console.error("Error fetching products:", error);
     }
 
     // Calculate exact numbers for AI
@@ -1198,16 +1108,8 @@ USE THESE EXACT NUMBERS IN YOUR RESPONSE!
 `
         : "\n\nNo products currently available in inventory.";
 
-    // Debug: Show what's being sent to AI
+    // Send full system prompt to AI
     const fullSystemPrompt = enhancedSystemPrompt + productsInfo;
-    console.log("🧠 System prompt being sent to AI:");
-    console.log("📊 Products section:", productsInfo);
-    console.log("📈 Total products in prompt:", currentProducts.length);
-    console.log("🔢 Calculated stats:", {
-      totalProducts,
-      availableProducts,
-      outOfStockProducts,
-    });
 
     const result = await streamText({
       model: google("gemini-1.5-flash", {
@@ -1220,10 +1122,9 @@ USE THESE EXACT NUMBERS IN YOUR RESPONSE!
       temperature: 0.7,
     });
 
-    console.log("✅ AI Response received");
     return result.toTextStreamResponse();
   } catch (error) {
-    console.error("❌ Smart AI Chat error:", error);
+    console.error("Smart AI Chat error:", error);
     return new Response(
       JSON.stringify({
         error: "AI service temporarily unavailable. Please try again.",

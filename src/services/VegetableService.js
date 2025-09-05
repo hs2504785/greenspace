@@ -146,8 +146,6 @@ class VegetableService extends ApiBaseService {
 
   async getVegetablesByOwner(ownerId) {
     try {
-      console.log("🔍 Fetching vegetables for ownerId:", ownerId);
-
       if (!ownerId) {
         console.warn("No ownerId provided");
         return [];
@@ -187,7 +185,6 @@ class VegetableService extends ApiBaseService {
           owner: ownerError ? null : ownerData,
         }));
 
-        console.log("✅ Found vegetables:", vegetablesWithOwner.length);
         return vegetablesWithOwner;
       } catch (ownerFetchError) {
         console.warn(

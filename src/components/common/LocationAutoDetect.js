@@ -28,12 +28,6 @@ const LocationAutoDetect = ({
   useEffect(() => {
     // Check if geolocation is supported
     setHasGeolocationSupport("geolocation" in navigator);
-    console.log("🔧 LocationAutoDetect initialized:", {
-      name,
-      disabled,
-      hasValue: !!value,
-      geolocationSupported: "geolocation" in navigator,
-    });
   }, [name, disabled, value]);
 
   const detectLocation = async () => {
@@ -311,12 +305,6 @@ const LocationAutoDetect = ({
   const handleInputChange = (e) => {
     const inputValue = e.target.value;
 
-    console.log("🔄 LocationAutoDetect input change:", {
-      name: name,
-      value: inputValue,
-      disabled: disabled || isDetecting,
-    });
-
     // Clear error when user starts typing
     if (error) setError(null);
     // Clear auto-detected state when user manually edits
@@ -328,7 +316,6 @@ const LocationAutoDetect = ({
     // Try to extract coordinates from the input (for Google Maps URLs)
     const extractedCoords = extractCoordinates(inputValue);
     if (extractedCoords) {
-      console.log("🎯 Extracted coordinates from input:", extractedCoords);
       setCoordinates(extractedCoords);
       setLocationAccuracy(10); // High accuracy for extracted coordinates
 

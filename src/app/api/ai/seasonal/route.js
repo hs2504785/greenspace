@@ -7,8 +7,6 @@ export async function GET(request) {
     const location = searchParams.get("location") || "India";
     const type = searchParams.get("type") || "both"; // vegetables, planting, both
 
-    console.log("🌱 AI Seasonal Search:", { month, location, type });
-
     // Seasonal data for Indian agriculture
     const seasonalData = {
       // Winter (December - February)
@@ -256,7 +254,7 @@ export async function GET(request) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("❌ Seasonal data error:", error);
+    console.error("Seasonal data error:", error);
     return NextResponse.json(
       {
         success: false,

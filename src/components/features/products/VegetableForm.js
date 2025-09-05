@@ -99,10 +99,6 @@ export default function VegetableForm({
           ...prev,
           location: data.user.location,
         }));
-        console.log(
-          "Pre-filled location from user profile:",
-          data.user.location
-        );
       }
     } catch (error) {
       console.error("Failed to fetch user default location:", error);

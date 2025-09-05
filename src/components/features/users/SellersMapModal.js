@@ -12,8 +12,6 @@ export default function SellersMapModal({
   sellers = [],
   currentLocation = null,
 }) {
-  // Debug log to check if currentLocation is being passed
-  console.log("SellersMapModal - currentLocation:", currentLocation);
   const mapRef = useRef(null);
   const [map, setMap] = useState(null);
   const [markers, setMarkers] = useState([]);
@@ -95,7 +93,6 @@ export default function SellersMapModal({
               accuracy: position.coords.accuracy,
             };
             setLocalCurrentLocation(newLocation);
-            console.log("Location detected:", newLocation);
             setLocationLoading(false);
 
             // The useEffect will automatically update markers when localCurrentLocation changes
@@ -201,13 +198,8 @@ export default function SellersMapModal({
 
       // Track map usage
       const newUsage = mapsUsageService.incrementUsage();
-      console.log(
-        `📊 Map loaded. Usage: ${newUsage}/${mapsUsageService.DAILY_LIMIT}`
-      );
 
       setMap(mapInstance);
-
-      console.log("Map initialized successfully");
 
       // Update markers after map is set - pass mapInstance directly
       setTimeout(() => {
@@ -235,8 +227,6 @@ export default function SellersMapModal({
 
     // Add current location marker if available
     if (localCurrentLocation) {
-      console.log("Adding current location marker:", localCurrentLocation);
-
       // Create a simple blue circle marker for current location
       const currentLocationMarker = new window.google.maps.Marker({
         position: {
@@ -294,8 +284,6 @@ export default function SellersMapModal({
           localCurrentLocation.lon
         )
       );
-
-      console.log("Current location marker added successfully");
     }
 
     sellers.forEach((seller, index) => {

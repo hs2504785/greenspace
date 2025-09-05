@@ -17,13 +17,6 @@ export default function PaymentVerificationPage() {
   useEffect(() => {
     if (status === "loading" || roleLoading) return;
 
-    console.log("🔍 Payment verification access check:", {
-      status,
-      userRole,
-      userId: session?.user?.id,
-      userEmail: session?.user?.email,
-    });
-
     if (status === "unauthenticated") {
       toastService.error("Please sign in to access payment verification");
       router.push("/login");
@@ -36,10 +29,8 @@ export default function PaymentVerificationPage() {
       userRole === "admin" ||
       userRole === "superadmin"
     ) {
-      console.log("✅ Access granted for role:", userRole);
       setIsAuthorized(true);
     } else {
-      console.log("❌ Access denied for role:", userRole);
       toastService.error(
         "Access denied. Only sellers and admins can verify payments."
       );

@@ -29,21 +29,12 @@ export default function BecomeSellerPage() {
         `/api/seller-requests?userId=${session.user.id}`
       );
 
-      console.log("📡 API Response:", {
-        status: response.status,
-        ok: response.ok,
-        url: response.url,
-      });
-
       if (response.ok) {
         const requests = await response.json();
-        console.log("📋 Found requests:", requests);
 
         if (requests.length > 0) {
-          console.log("✅ Setting existing request:", requests[0]);
           setExistingRequest(requests[0]); // Get the latest request
         } else {
-          console.log("❌ No existing requests found");
         }
       } else {
         console.error("❌ API Error:", response.status, response.statusText);
