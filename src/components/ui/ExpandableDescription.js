@@ -98,7 +98,7 @@ export default function ExpandableDescription({
         onScroll={handleScroll}
       >
         <p
-          className="text-muted lead mb-2"
+          className="text-dark lead mb-2"
           style={{
             lineHeight: "1.6",
             marginBottom: shouldTruncate ? "0.5rem" : "0",
@@ -106,38 +106,31 @@ export default function ExpandableDescription({
             opacity: 1,
             transition: "opacity 0.3s ease-in-out",
             paddingRight: isExpanded ? "0.5rem" : "0", // Space for scrollbar
+            color: "#495057", // Better readability than text-muted
+            fontSize: "1.1rem", // Slightly larger for better readability
           }}
         >
           {displayText}
           {!isExpanded && shouldTruncate && (
-            <span
-              className="text-muted fade-ellipsis"
-              style={{
-                background:
-                  "linear-gradient(to right, transparent, rgba(248, 249, 250, 0.8) 50%)",
-                paddingLeft: "0.5rem",
-                animation: "fadeIn 0.3s ease-in-out",
-              }}
-            >
-              ...
-            </span>
+            <span className="text-muted">...</span>
           )}
         </p>
       </div>
 
       {shouldTruncate && (
         <div className="mt-2">
-          <div className="d-flex align-items-center">
+          <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2">
             <Button
               variant={isExpanded ? "success" : "outline-success"}
               size="sm"
-              className="read-more-btn d-inline-flex align-items-center"
+              className="read-more-btn d-inline-flex align-items-center flex-shrink-0"
               style={{
-                fontSize: "0.8rem",
+                fontSize: "0.85rem",
                 fontWeight: "500",
-                padding: "0.25rem 0.75rem",
+                padding: "0.4rem 1rem",
                 borderRadius: "20px",
                 transition: "all 0.2s ease-in-out",
+                minWidth: "100px",
               }}
               onClick={() => setIsExpanded(!isExpanded)}
             >
@@ -155,13 +148,13 @@ export default function ExpandableDescription({
                     className="ti-angle-down me-1"
                     style={{ fontSize: "0.9rem" }}
                   ></i>
-                  Read More
+                  Show More
                 </>
               )}
             </Button>
 
             {/* Reading info indicators */}
-            <div className="d-flex align-items-center ms-2 gap-2">
+            <div className="d-flex flex-wrap align-items-center gap-2 text-nowrap">
               <small className="text-muted" style={{ fontSize: "0.75rem" }}>
                 {isExpanded
                   ? `${description.length} characters`

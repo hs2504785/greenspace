@@ -51,28 +51,25 @@ a.text-decoration-none {
         background: rgba(0, 0, 0, 0.3);
       }
     }
+  }
 
-    // Fade effect at bottom when scrollable and not at bottom
-    &::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 20px;
-      background: linear-gradient(
-        to bottom,
-        transparent,
-        rgba(248, 249, 250, 0.9)
-      );
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
+  // Mobile responsive improvements
+  @media (max-width: 576px) {
+    .d-flex.flex-column.flex-sm-row {
+      gap: 0.75rem !important;
     }
 
-    // Show fade effect only when there's more content below
-    &[data-show-bottom-fade="true"]::after {
-      opacity: 1;
+    .read-more-btn {
+      width: 100% !important;
+      justify-content: center !important;
+    }
+
+    .d-flex.flex-wrap {
+      font-size: 0.7rem !important;
+
+      small {
+        font-size: 0.65rem !important;
+      }
     }
   }
 
@@ -89,27 +86,90 @@ a.text-decoration-none {
   }
 
   .fade-ellipsis {
-    position: relative;
-
-    &::before {
-      content: "";
-      position: absolute;
-      left: -20px;
-      top: 0;
-      width: 20px;
-      height: 100%;
-      background: linear-gradient(
-        to right,
-        transparent,
-        rgba(248, 249, 250, 0.9)
-      );
-      pointer-events: none;
-    }
+    // Removed fade effect to prevent background issues
   }
 
   // Smooth text transitions
   p {
     transition: all 0.4s ease-in-out;
+  }
+}
+
+// Offcanvas Description Component Styles
+.offcanvas-description-panel {
+  .offcanvas-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+
+    .offcanvas-title {
+      color: #28a745 !important;
+    }
+
+    .btn-close {
+      background-size: 1.2em;
+      opacity: 0.7;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .description-content {
+    // Better text rendering
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    // Better paragraph spacing
+    p {
+      margin-bottom: 1rem;
+    }
+
+    // Handle long words
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  // Mobile specific styles
+  @media (max-width: 768px) {
+    &.offcanvas-bottom {
+      border-top-left-radius: 1rem;
+      border-top-right-radius: 1rem;
+
+      .offcanvas-header {
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
+        padding: 1rem 1.5rem 0.75rem;
+
+        &::before {
+          content: "";
+          position: absolute;
+          top: 0.5rem;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 2rem;
+          height: 0.25rem;
+          background: #dee2e6;
+          border-radius: 0.125rem;
+        }
+      }
+    }
+  }
+
+  // Desktop specific styles
+  @media (min-width: 769px) {
+    &.offcanvas-end {
+      width: 500px;
+      max-width: 90vw;
+    }
+  }
+
+  // Tablet specific styles
+  @media (min-width: 576px) and (max-width: 768px) {
+    &.offcanvas-bottom {
+      height: 90vh;
+      max-height: 90vh;
+    }
   }
 }
 

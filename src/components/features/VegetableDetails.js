@@ -18,6 +18,7 @@ import { useSession } from "next-auth/react";
 import { checkCartForSimilarFreeItems } from "@/utils/freeItemValidation";
 import UserAvatar from "../common/UserAvatar";
 import ExpandableDescription from "../ui/ExpandableDescription";
+import OffcanvasDescription from "../ui/OffcanvasDescription";
 import toastService from "@/utils/toastService";
 
 // Helper function removed - using direct logic below for better debugging
@@ -736,12 +737,12 @@ export default function VegetableDetails({ vegetable }) {
             </div>
 
             {/* Description */}
-            <div className="mb-4">
-              <ExpandableDescription
+            <div className="mb-4 px-1">
+              <OffcanvasDescription
                 description={vegetable.description}
+                title={vegetable.name}
                 maxLines={3}
                 charactersPerLine={85}
-                maxExpandedHeight={250}
               />
             </div>
 
