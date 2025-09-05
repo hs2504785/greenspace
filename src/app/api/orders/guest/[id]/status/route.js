@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/options";
 import { supabase } from "@/lib/supabase";
+import VegetableService from "@/services/VegetableService";
 
 export async function PATCH(request, { params }) {
   try {
@@ -53,10 +54,10 @@ export async function PATCH(request, { params }) {
       );
     }
 
-    // First, verify the user is the seller for this order
+    // First, verify the user is the seller for this order and get current status
     const { data: order, error: fetchError } = await supabase
       .from("guest_orders")
-      .select("seller_id")
+      .select("seller_id, status")
       .eq("id", id)
       .single();
 
@@ -82,6 +83,20 @@ export async function PATCH(request, { params }) {
           status: 403,
           headers: { "Content-Type": "application/json" },
         }
+      );
+    }
+
+    // Check if we need to restore inventory (when cancelling an order for the first time)
+    const shouldRestoreInventory =
+      status === "cancelled" && order.status !== "cancelled";
+
+    if (shouldRestoreInventory) {
+      console.log(
+        `🔄 Guest order is being cancelled (from ${order.status} to ${status}), will restore inventory after status update`
+      );
+    } else if (status === "cancelled" && order.status === "cancelled") {
+      console.log(
+        "ℹ️ Guest order is already cancelled, skipping inventory restoration"
       );
     }
 
@@ -117,6 +132,27 @@ export async function PATCH(request, { params }) {
     }
 
     console.log("✅ Guest order status updated:", updatedOrder.id);
+
+    // Restore inventory if order was cancelled
+    if (shouldRestoreInventory && updatedOrder) {
+      try {
+        console.log("🔄 Restoring inventory for cancelled guest order...");
+        await VegetableService.restoreQuantitiesAfterCancellation(id, "guest");
+        console.log(
+          "✅ Successfully restored inventory for cancelled guest order"
+        );
+      } catch (inventoryError) {
+        console.error(
+          "⚠️ Error restoring inventory for cancelled guest order:",
+          inventoryError
+        );
+        // Don't fail the order status update if inventory restoration fails
+        // Log the error but continue with order status completion
+        console.log(
+          "📝 Guest order status updated successfully but inventory restoration failed"
+        );
+      }
+    }
 
     return new Response(
       JSON.stringify({

@@ -297,6 +297,33 @@ class OrderService extends ApiBaseService {
       if (!supabase) throw new Error("Supabase not initialized");
       console.log("✅ OrderService Update Step 3: Supabase client available");
 
+      // Get current order status to check if it's already cancelled
+      let currentStatus = null;
+      try {
+        const { data: currentOrder } = await supabase
+          .from("orders")
+          .select("status")
+          .eq("id", id)
+          .single();
+        currentStatus = currentOrder?.status;
+      } catch (error) {
+        console.warn("Could not fetch current order status:", error);
+      }
+
+      // Check if we need to restore inventory (when cancelling an order for the first time)
+      const shouldRestoreInventory =
+        status === "cancelled" && currentStatus !== "cancelled";
+
+      if (shouldRestoreInventory) {
+        console.log(
+          `🔄 Order is being cancelled (from ${currentStatus} to ${status}), will restore inventory after status update`
+        );
+      } else if (status === "cancelled" && currentStatus === "cancelled") {
+        console.log(
+          "ℹ️ Order is already cancelled, skipping inventory restoration"
+        );
+      }
+
       const updateData = {
         status,
         updated_at: new Date().toISOString(),
@@ -361,6 +388,29 @@ class OrderService extends ApiBaseService {
       console.log(
         "✅ OrderService Update Step 6: Successfully updated order status"
       );
+
+      // Restore inventory if order was cancelled
+      if (shouldRestoreInventory && data) {
+        try {
+          console.log("🔄 Restoring inventory for cancelled order...");
+          await VegetableService.restoreQuantitiesAfterCancellation(
+            id,
+            "regular"
+          );
+          console.log("✅ Successfully restored inventory for cancelled order");
+        } catch (inventoryError) {
+          console.error(
+            "⚠️ Error restoring inventory for cancelled order:",
+            inventoryError
+          );
+          // Don't fail the order status update if inventory restoration fails
+          // Log the error but continue with order status completion
+          console.log(
+            "📝 Order status updated successfully but inventory restoration failed"
+          );
+        }
+      }
+
       return data;
     } catch (error) {
       console.log("💥 Error in updateOrderStatus - DETAILED DEBUG:", {

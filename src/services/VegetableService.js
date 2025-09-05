@@ -975,6 +975,165 @@ class VegetableService extends ApiBaseService {
       throw error;
     }
   }
+
+  /**
+   * Restore product quantities when an order is cancelled
+   * @param {string} orderId - The order ID to restore quantities for
+   * @param {string} orderType - 'regular' or 'guest'
+   */
+  async restoreQuantitiesAfterCancellation(orderId, orderType = "regular") {
+    try {
+      console.log(
+        `🔄 Starting quantity restoration for cancelled ${orderType} order: ${orderId}`
+      );
+
+      if (!supabase) throw new Error("Supabase not initialized");
+
+      // Use admin client to ensure permissions
+      const adminClient = createSupabaseClient();
+
+      let orderItems = [];
+
+      if (orderType === "regular") {
+        // Get order items from order_items table for regular orders
+        const { data: items, error: itemsError } = await adminClient
+          .from("order_items")
+          .select("vegetable_id, quantity")
+          .eq("order_id", orderId);
+
+        if (itemsError) {
+          console.error(
+            `❌ Error fetching order items for order ${orderId}:`,
+            itemsError
+          );
+          throw itemsError;
+        }
+
+        console.log(
+          `📦 Found ${items?.length || 0} regular order items:`,
+          items
+        );
+
+        orderItems =
+          items?.map((item) => ({
+            id: item.vegetable_id,
+            quantity: item.quantity,
+          })) || [];
+      } else if (orderType === "guest") {
+        // Get order items from guest_orders.order_items JSONB field
+        const { data: guestOrder, error: guestError } = await adminClient
+          .from("guest_orders")
+          .select("order_items")
+          .eq("id", orderId)
+          .single();
+
+        if (guestError) {
+          console.error(
+            `❌ Error fetching guest order ${orderId}:`,
+            guestError
+          );
+          throw guestError;
+        }
+
+        orderItems = guestOrder?.order_items || [];
+      }
+
+      if (!orderItems || orderItems.length === 0) {
+        console.log(`ℹ️ No items found for ${orderType} order ${orderId}`);
+        return true;
+      }
+
+      console.log(
+        `📋 Found ${orderItems.length} items to restore:`,
+        JSON.stringify(orderItems, null, 2)
+      );
+
+      // Process each item to restore quantities
+      for (const item of orderItems) {
+        // For regular orders: item has vegetable_id field
+        // For guest orders: item has id field (which is the vegetable ID)
+        const vegetableId = item.vegetable_id || item.id;
+        const quantityToRestore = item.quantity;
+
+        if (!vegetableId || !quantityToRestore || quantityToRestore <= 0) {
+          console.warn("⚠️ Skipping invalid order item:", item);
+          continue;
+        }
+
+        console.log(
+          `📦 Processing vegetable ${vegetableId}, restoring ${quantityToRestore}`
+        );
+
+        // First, get current quantity
+        const { data: currentVeg, error: fetchError } = await adminClient
+          .from(this.tableName)
+          .select("id, name, quantity")
+          .eq("id", vegetableId)
+          .single();
+
+        if (fetchError) {
+          console.error(
+            `❌ Error fetching vegetable ${vegetableId}:`,
+            fetchError
+          );
+          continue; // Continue with other items
+        }
+
+        if (!currentVeg) {
+          console.warn(`⚠️ Vegetable ${vegetableId} not found, skipping`);
+          continue;
+        }
+
+        const currentQuantity = currentVeg.quantity || 0;
+        const newQuantity = currentQuantity + quantityToRestore;
+
+        console.log(
+          `📊 Restoring ${currentVeg.name}: ${currentQuantity} → ${newQuantity} (+${quantityToRestore})`
+        );
+
+        // Update the quantity
+        const { data: updatedVeg, error: updateError } = await adminClient
+          .from(this.tableName)
+          .update({
+            quantity: newQuantity,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", vegetableId)
+          .select("id, name, quantity")
+          .single();
+
+        if (updateError) {
+          console.error(
+            `❌ Error restoring quantity for vegetable ${vegetableId}:`,
+            updateError
+          );
+          console.error(
+            `❌ Full error details:`,
+            JSON.stringify(updateError, null, 2)
+          );
+          // Continue with other items instead of failing completely
+          continue;
+        }
+
+        if (!updatedVeg) {
+          console.error(
+            `❌ No updated vegetable data returned for ${vegetableId}`
+          );
+          continue;
+        }
+
+        console.log(
+          `✅ Successfully restored ${updatedVeg.name} quantity to ${updatedVeg.quantity}`
+        );
+      }
+
+      console.log("✅ Finished restoring all vegetable quantities");
+      return true;
+    } catch (error) {
+      console.error("❌ Error in restoreQuantitiesAfterCancellation:", error);
+      throw error;
+    }
+  }
 }
 
 export default new VegetableService();
