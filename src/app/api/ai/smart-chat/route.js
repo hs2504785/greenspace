@@ -2,6 +2,13 @@ import { google } from "@ai-sdk/google";
 import { streamText, tool } from "ai";
 import { z } from "zod";
 import { getBaseUrl, getApiUrl } from "@/utils/urlUtils";
+import {
+  isFarmingRelated,
+  isConversationFarmingFocused,
+  generateRejectionMessage,
+  analyzeMessageTopic,
+  validateResponse,
+} from "@/utils/aiGuardrails";
 
 export async function POST(req) {
   try {
@@ -36,7 +43,49 @@ export async function POST(req) {
       return new Response("No valid messages provided", { status: 400 });
     }
 
-    const systemPrompt = `You are Arya Natural Farms AI, an intelligent assistant for a fresh vegetable marketplace connecting local farmers with consumers in India.
+    // 🛡️ GUARDRAILS: Check if the conversation is farming-related
+    const lastUserMessage = validMessages[validMessages.length - 1];
+    if (lastUserMessage?.role === "user") {
+      const topicAnalysis = analyzeMessageTopic(lastUserMessage.content);
+      console.log("🔍 Topic Analysis:", topicAnalysis);
+
+      // Check if current message is farming-related
+      if (!topicAnalysis.isFarmingRelated) {
+        // Also check conversation context
+        const conversationFocused = isConversationFarmingFocused(validMessages);
+
+        if (!conversationFocused) {
+          console.log("🚫 Off-topic question detected, sending rejection");
+          const rejectionMessage = generateRejectionMessage(
+            lastUserMessage.content
+          );
+
+          // Return rejection as a streaming response to match expected format
+          return new Response(
+            new ReadableStream({
+              start(controller) {
+                controller.enqueue(new TextEncoder().encode(rejectionMessage));
+                controller.close();
+              },
+            }),
+            {
+              headers: {
+                "Content-Type": "text/plain; charset=utf-8",
+                "Transfer-Encoding": "chunked",
+              },
+            }
+          );
+        }
+      }
+    }
+
+    const systemPrompt = `You are Arya Natural Farms AI, an intelligent assistant EXCLUSIVELY for farming, agriculture, and vegetable marketplace topics.
+
+🚨 STRICT TOPIC RESTRICTIONS:
+- ONLY answer questions about: farming, agriculture, vegetables, crops, gardening, plant care, soil, irrigation, fertilizers, pesticides, organic farming, seasonal advice, marketplace orders, payments (UPI), and delivery
+- NEVER answer questions about: technology, entertainment, politics, personal advice, health/medical, education, travel, cooking recipes, or any non-farming topics
+- If asked about non-farming topics, politely redirect to farming questions
+- Always stay focused on agricultural and marketplace assistance
 
 CONTEXT:
 - User: ${user?.email || "Guest"} (${user?.role || "guest"})
