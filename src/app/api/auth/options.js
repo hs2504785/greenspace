@@ -107,7 +107,6 @@ export const authOptions = {
     async jwt({ token, user, account }) {
       // On initial sign in, add user information to token
       if (user) {
-        console.log("🔄 JWT callback - storing user in token:", user);
         token.id = user.id;
         token.role = user.role;
         token.phone = user.phone;
@@ -148,12 +147,6 @@ export const authOptions = {
             .eq("email", user.email)
             .single();
 
-          console.log("📥 User lookup result:", {
-            existingUser,
-            fetchError: fetchError?.message,
-            errorCode: fetchError?.code,
-          });
-
           if (fetchError && fetchError.code !== "PGRST116") {
             console.error("❌ Error checking user:", fetchError);
             console.warn(
@@ -164,14 +157,6 @@ export const authOptions = {
 
           // If user doesn't exist, create them
           if (!existingUser) {
-            console.log("👤 User not found, creating new user:", {
-              email: user.email,
-              name: user.name,
-              avatar_url: user.image,
-              provider: account.provider,
-              role: "buyer",
-            });
-
             const { data: newUser, error: insertError } = await supabase
               .from("users")
               .insert([
@@ -188,21 +173,13 @@ export const authOptions = {
 
             if (insertError) {
               console.error("❌ Error creating user:", insertError);
-              console.error("📊 Insert error details:", {
-                code: insertError.code,
-                message: insertError.message,
-                details: insertError.details,
-                hint: insertError.hint,
-              });
               console.warn(
                 "⚠️ Failed to create user in database, but allowing sign-in to prevent AccessDenied"
               );
               return true; // Don't block auth due to database creation failure
             } else {
-              console.log("✅ Successfully created user:", newUser);
             }
           } else {
-            console.log("✅ User already exists:", existingUser);
           }
         }
 
@@ -213,65 +190,36 @@ export const authOptions = {
       }
     },
     async session({ session, token }) {
-      console.log(
-        "🔄 Session callback triggered for user:",
-        session?.user?.email
-      );
-      console.log("🔍 Token data:", { id: token?.id, email: token?.email });
-
       if (!supabase) {
-        console.log("⚠️ No supabase, returning session as-is");
         return session;
       }
 
       try {
         // For Google users, search by email
         if (session.user?.email) {
-          console.log("📧 Searching for user by email:", session.user.email);
-
           const { data: userData, error } = await supabase
             .from("users")
             .select("*")
             .eq("email", session.user.email)
             .single();
 
-          console.log("📥 Database query result:", { userData, error });
-
           if (!error && userData) {
-            console.log("✅ Found user in database:", userData.id);
             // Populate session with database user data
             session.user.id = userData.id;
             session.user.role = userData.role || "buyer";
             session.user.phone = userData.phone;
             session.user.whatsappNumber = userData.whatsapp_number;
             session.user.location = userData.location;
-
-            console.log("✅ Session populated with user data:", {
-              id: session.user.id,
-              email: session.user.email,
-              role: session.user.role,
-            });
           } else {
-            console.log(
-              "❌ User not found in database - should have been created in signIn callback"
-            );
             // Don't create user here - it should be created in signIn callback
             // Just use basic session data
             session.user.role = "buyer";
           }
         } else {
-          console.log("❌ No email in session user");
         }
       } catch (error) {
         console.error("💥 Session callback error:", error);
       }
-
-      console.log("🎯 Final session being returned:", {
-        hasUser: !!session.user,
-        hasId: !!session.user?.id,
-        email: session.user?.email,
-        id: session.user?.id,
-      });
 
       return session;
     },

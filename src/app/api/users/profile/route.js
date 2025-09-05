@@ -15,11 +15,6 @@ export async function GET(request) {
 
     const supabase = createSupabaseClient();
 
-    console.log("Initial session:", {
-      id: session.user.id,
-      email: session.user.email,
-    });
-
     // First find or create user
     let userId = session.user.id;
 
@@ -64,14 +59,10 @@ export async function GET(request) {
         }
 
         userId = newUser.id;
-        console.log("Created new user:", newUser);
       }
     }
 
-    console.log("Using user ID:", userId);
-
     // Get user profile
-    console.log("Fetching user profile for ID:", userId);
 
     // Try to get user data, handling case where whatsapp_store_link column might not exist yet
     let user, error;
@@ -104,8 +95,6 @@ export async function GET(request) {
         user.whatsapp_store_link = null; // Add missing field
       }
     }
-
-    console.log("Fetch result:", { user, error });
 
     if (error) {
       console.error("Error fetching user profile:", error);
@@ -144,11 +133,6 @@ export async function PATCH(request) {
 
     const supabase = createSupabaseClient();
 
-    console.log("Initial session:", {
-      id: session.user.id,
-      email: session.user.email,
-    });
-
     // First find or create user
     let userId = session.user.id;
 
@@ -193,11 +177,8 @@ export async function PATCH(request) {
         }
 
         userId = newUser.id;
-        console.log("Created new user:", newUser);
       }
     }
-
-    console.log("Using user ID:", userId);
 
     const data = await request.json();
     console.log("Received request data:", data);
