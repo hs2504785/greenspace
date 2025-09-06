@@ -8,6 +8,13 @@ export async function POST(request) {
   try {
     const body = await request.json();
     console.log("🤖 AI Order Creation Request:", body);
+    console.log("🍪 Request headers:", {
+      cookie: request.headers.get("cookie") ? "present" : "missing",
+      authorization: request.headers.get("authorization")
+        ? "present"
+        : "missing",
+      userAgent: request.headers.get("user-agent"),
+    });
 
     // Get user session
     const session = await getServerSession(authOptions);
@@ -17,6 +24,7 @@ export async function POST(request) {
       userId: session?.user?.id,
       userEmail: session?.user?.email,
       userName: session?.user?.name,
+      userRole: session?.user?.role,
     });
 
     if (!body.vegetable_id || !body.seller_id) {
@@ -46,6 +54,10 @@ export async function POST(request) {
     console.log("🔍 Order items for quantity update:", orderData.items);
 
     // Use the same OrderService.createOrder() method as manual checkout
+    console.log(
+      "🔄 About to call OrderService.createOrder with:",
+      JSON.stringify(orderData, null, 2)
+    );
     const order = await OrderService.createOrder(orderData);
 
     console.log("✅ AI Order created successfully:", order.id);

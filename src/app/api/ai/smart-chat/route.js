@@ -736,6 +736,22 @@ Your order is confirmed and will be processed shortly!`,
 
       try {
         const pending = global.pendingOrder;
+        console.log("🔄 Processing order confirmation with pending order:", {
+          productId: pending.product.id,
+          productName: pending.product.name,
+          quantity: pending.quantity,
+          price: pending.product.price,
+          sellerId: pending.product.seller?.id || pending.product.seller_id,
+          totalAmount: pending.totalAmount,
+          userLocation: user.location,
+          userPhone: user.whatsapp_number || user.phone,
+        });
+
+        console.log("🍪 Smart-chat forwarding cookies:", {
+          hasCookies: !!req.headers.get("cookie"),
+          cookieLength: req.headers.get("cookie")?.length || 0,
+        });
+
         const orderResponse = await fetch(
           getApiUrl("/api/ai/orders/create", req),
           {
@@ -748,9 +764,13 @@ Your order is confirmed and will be processed shortly!`,
               vegetable_id: pending.product.id,
               seller_id:
                 pending.product.seller?.id ||
+                pending.product.seller_id ||
                 "0e13a58b-a5e2-4ed3-9c69-9634c7413550",
               quantity: pending.quantity,
-              unit_price: pending.product.price.replace("₹", ""),
+              unit_price:
+                typeof pending.product.price === "string"
+                  ? pending.product.price.replace("₹", "")
+                  : pending.product.price,
               total_amount: pending.totalAmount,
               delivery_address: user.location,
               contact_number: user.whatsapp_number || user.phone,
@@ -761,6 +781,7 @@ Your order is confirmed and will be processed shortly!`,
 
         if (orderResponse.ok) {
           const orderData = await orderResponse.json();
+          console.log("✅ Order created successfully:", orderData);
 
           // Clear pending order
           global.pendingOrder = null;
@@ -790,7 +811,15 @@ Thank you for shopping with Arya Natural Farms! 🌱`,
             }
           );
         } else {
-          throw new Error("Order creation failed");
+          const errorData = await orderResponse.text();
+          console.error("❌ Order creation failed:", {
+            status: orderResponse.status,
+            statusText: orderResponse.statusText,
+            error: errorData,
+          });
+          throw new Error(
+            `Order creation failed: ${orderResponse.status} - ${errorData}`
+          );
         }
       } catch (confirmationOrderError) {
         console.error(
