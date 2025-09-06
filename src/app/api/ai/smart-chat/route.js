@@ -393,6 +393,7 @@ Remember: Always use your tools when customers ask about products, orders, or ne
                     product.seller?.id ||
                     product.seller_id ||
                     product.owner_id ||
+                    user?.id || // Use current user as fallback
                     "0e13a58b-a5e2-4ed3-9c69-9634c7413550",
                   quantity: quantity,
                   unit_price: product.price,
@@ -765,6 +766,7 @@ Your order is confirmed and will be processed shortly!`,
           pending.product.seller?.id ||
           pending.product.seller_id ||
           pending.product.owner_id ||
+          user?.id || // Use the current user as fallback (superadmin)
           "0e13a58b-a5e2-4ed3-9c69-9634c7413550";
 
         console.log("🔍 Seller ID resolution debug:", {
@@ -789,12 +791,7 @@ Your order is confirmed and will be processed shortly!`,
             },
             body: JSON.stringify({
               vegetable_id: pending.product.id,
-              seller_id:
-                pending.product.owner?.id ||
-                pending.product.seller?.id ||
-                pending.product.seller_id ||
-                pending.product.owner_id ||
-                "0e13a58b-a5e2-4ed3-9c69-9634c7413550",
+              seller_id: resolvedSellerId,
               quantity: pending.quantity,
               unit_price:
                 typeof pending.product.price === "string"
