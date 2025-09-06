@@ -140,9 +140,11 @@ You have access to powerful tools to help customers:
 3. 🛒 INSTANT ORDER (instant_order):
    - Place immediate orders for customers
    - Works with "buy [item]" commands  
+   - IMPORTANT: Extract quantity from user message (e.g., "buy 2kg tomatoes" = quantity: 2)
+   - Parse patterns like "2kg", "3 kg", "buy 5kg", "order 1.5kg"
    - Creates order instantly with "pay later" option
    - Returns formatted order details with tracking URL
-   - Example: "buy tomatoes" → displays complete order confirmation with URL
+   - Example: "buy 2kg tomatoes" → displays complete order confirmation with 2kg quantity
    - ALWAYS show the full order details returned by the tool
 
 4. 💰 PAYMENT GUIDANCE (get_payment_info):
@@ -153,15 +155,19 @@ You have access to powerful tools to help customers:
 
 SMART ORDER WORKFLOW:
 When customers say "buy [item]" or similar:
-1. Show order summary with product details
-2. Check user profile for existing phone (${
+1. FIRST: Parse quantity from user message accurately
+   - "buy 2kg tomatoes" → quantity: 2, item: "tomatoes"
+   - "order 3 kg onions" → quantity: 3, item: "onions"
+   - "buy tomatoes" → quantity: 1 (default), item: "tomatoes"
+2. Show order summary with product details and correct quantity
+3. Check user profile for existing phone (${
       user?.whatsapp_number || user?.phone || "not available"
     }) and location (${user?.location || "not available"})
-3. If user has complete profile info: Create order immediately
-4. If missing info: Ask only for what's needed in simple format
-5. Use format: "Mobile: 7799111008" or "Address: BHEL Hyderabad 502032"
-6. Don't ask for product/quantity/price again - you already know this
-7. Show order confirmation with tracking URL
+4. If user has complete profile info: Create order immediately
+5. If missing info: Ask only for what's needed in simple format
+6. Use format: "Mobile: 7799111008" or "Address: BHEL Hyderabad 502032"
+7. Don't ask for product/quantity/price again - you already know this
+8. Show order confirmation with tracking URL
 
 IMPORTANT RULES:
 - NEVER mention email confirmations or checking email
@@ -293,18 +299,19 @@ Remember: Always use your tools when customers ask about products, orders, or ne
 
       instant_order: tool({
         description:
-          "Create an instant order for customers who want to buy products immediately. Use this when customers say 'buy [item]' or similar purchase commands. Returns formatted order details that should be displayed directly to the customer.",
+          "Create an instant order for customers who want to buy products immediately. Use this when customers say 'buy [item]' or similar purchase commands. IMPORTANT: Always extract the quantity from the user's message - if they say 'buy 2kg tomatoes', set quantity to 2, not 1. Returns formatted order details that should be displayed directly to the customer.",
         parameters: {
           type: "object",
           properties: {
             item_name: {
               type: "string",
               description:
-                "Name of the product/vegetable to order (e.g., tomatoes, onions)",
+                "Name of the product/vegetable to order (extract from user message, e.g., 'tomatoes' from 'buy 2kg tomatoes')",
             },
             quantity: {
               type: "number",
-              description: "Quantity in kg (defaults to 1 if not specified)",
+              description:
+                "Quantity in kg (extract from user message: '2kg' = 2, '3 kg' = 3, '1.5kg' = 1.5, defaults to 1 if not specified)",
               optional: true,
             },
           },

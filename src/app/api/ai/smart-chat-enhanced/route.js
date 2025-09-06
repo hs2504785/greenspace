@@ -118,8 +118,10 @@ You have access to powerful tools to help customers:
 6. 🛒 INSTANT ORDER (instant_order):
    - Place immediate orders with "pay later" option
    - Works with "buy [item]" commands  
+   - IMPORTANT: Extract quantity from user message (e.g., "buy 2kg tomatoes" = quantity: 2)
+   - Parse patterns like "2kg", "3 kg", "buy 5kg", "order 1.5kg"
    - Creates order instantly with tracking URL
-   - Example: "buy 2kg tomatoes" → displays complete order confirmation
+   - Example: "buy 2kg tomatoes" → displays complete order confirmation with 2kg quantity
 
 7. 💰 PAYMENT GUIDANCE (get_payment_info):
    - Explain UPI payment process
@@ -152,6 +154,11 @@ SMART COMMAND RECOGNITION:
 - "what's in season" / "seasonal vegetables" → use seasonal_recommendations  
 - "add to wishlist" / "save for later" → use manage_wishlist
 - "buy [item]" / "order [item]" → use instant_order
+  * CRITICAL: Parse quantity from user message accurately
+  * "buy 2kg tomatoes" → itemName: "tomatoes", quantity: 2
+  * "order 3 kg onions" → itemName: "onions", quantity: 3
+  * "buy 1.5kg potatoes" → itemName: "potatoes", quantity: 1.5
+  * "buy tomatoes" → itemName: "tomatoes", quantity: 1 (default)
 - "track order" / "order status" → use track_order
 - "payment help" / "UPI issue" → use get_payment_info
 - "search [product]" / "find [product]" → use search_products
@@ -462,12 +469,19 @@ Always use your tools when customers ask questions - don't guess or provide gene
 
         instant_order: tool({
           description:
-            "Create an instant order for customers who want to buy products immediately. Use this when customers say 'buy [item]' or similar purchase commands.",
+            "Create an instant order for customers who want to buy products immediately. Use this when customers say 'buy [item]' or similar purchase commands. IMPORTANT: Always extract the quantity from the user's message - if they say 'buy 2kg tomatoes', set quantity to 2, not 1.",
           parameters: z.object({
             itemName: z
               .string()
-              .describe("Name of the product/vegetable to order"),
-            quantity: z.number().default(1).describe("Quantity to order in kg"),
+              .describe(
+                "Name of the product/vegetable to order (extract from user message, e.g., 'tomatoes' from 'buy 2kg tomatoes')"
+              ),
+            quantity: z
+              .number()
+              .default(1)
+              .describe(
+                "Quantity to order in kg (extract from user message: '2kg' = 2, '3 kg' = 3, '1.5kg' = 1.5, default = 1)"
+              ),
             maxPrice: z.number().optional().describe("Maximum price per kg"),
           }),
           execute: async ({ itemName, quantity, maxPrice }) => {
