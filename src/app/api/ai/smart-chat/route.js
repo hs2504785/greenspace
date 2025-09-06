@@ -760,6 +760,25 @@ Your order is confirmed and will be processed shortly!`,
           cookieLength: req.headers.get("cookie")?.length || 0,
         });
 
+        const resolvedSellerId =
+          pending.product.owner?.id ||
+          pending.product.seller?.id ||
+          pending.product.seller_id ||
+          pending.product.owner_id ||
+          "0e13a58b-a5e2-4ed3-9c69-9634c7413550";
+
+        console.log("🔍 Seller ID resolution debug:", {
+          "product.owner?.id": pending.product.owner?.id,
+          "product.seller?.id": pending.product.seller?.id,
+          "product.seller_id": pending.product.seller_id,
+          "product.owner_id": pending.product.owner_id,
+          resolved: resolvedSellerId,
+          productStructure: Object.keys(pending.product),
+          ownerStructure: pending.product.owner
+            ? Object.keys(pending.product.owner)
+            : "no owner",
+        });
+
         const orderResponse = await fetch(
           getApiUrl("/api/ai/orders/create", req),
           {
@@ -826,6 +845,17 @@ Thank you for shopping with Arya Natural Farms! 🌱`,
             status: orderResponse.status,
             statusText: orderResponse.statusText,
             error: errorData,
+            url: getApiUrl("/api/ai/orders/create", req),
+            requestBody: {
+              vegetable_id: pending.product.id,
+              seller_id: resolvedSellerId,
+              quantity: pending.quantity,
+              unit_price:
+                typeof pending.product.price === "string"
+                  ? pending.product.price.replace("₹", "")
+                  : pending.product.price,
+              total_amount: pending.totalAmount,
+            },
           });
           throw new Error(
             `Order creation failed: ${orderResponse.status} - ${errorData}`
