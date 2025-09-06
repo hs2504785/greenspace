@@ -58,8 +58,8 @@ const SearchInput = forwardRef(function SearchInput(
 
   return (
     <Form onSubmit={handleSubmit} className={className}>
-      <InputGroup size={size}>
-        <InputGroup.Text className="bg-white border-end-0">
+      <InputGroup size={size} className="search-input-group">
+        <InputGroup.Text className="search-input-prefix">
           <i className="ti-search text-muted"></i>
         </InputGroup.Text>
         <Form.Control
@@ -70,11 +70,11 @@ const SearchInput = forwardRef(function SearchInput(
           onChange={onChange}
           onKeyDown={handleKeyDown}
           disabled={disabled}
-          className={`${value ? "border-end-0" : ""} border-start-0 ps-2`}
+          className={`search-input-control ${value ? "has-clear-btn" : ""}`}
         />
         {value && onClear && (
           <InputGroup.Text
-            className="bg-white border-start-0 cursor-pointer"
+            className="search-input-clear"
             onClick={handleClear}
             role="button"
             tabIndex={0}

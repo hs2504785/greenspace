@@ -7,6 +7,7 @@ import { signOut } from "next-auth/react";
 import UserAvatar from "./UserAvatar";
 import useUserRole from "@/hooks/useUserRole";
 import useSellerRequestStatus from "@/hooks/useSellerRequestStatus";
+import { getUserDisplayInfo, getRoleBadge } from "@/utils/userDisplayUtils";
 
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
   <div
@@ -35,6 +36,10 @@ export default function ProfileDropdown({ user }) {
 
   const [isSigningOut, setIsSigningOut] = React.useState(false);
 
+  // Get display information using utility functions
+  const displayInfo = getUserDisplayInfo(user, { maxEmailLength: 18 });
+  const roleBadge = getRoleBadge({ isSeller, isAdmin, isSuperAdmin, loading });
+
   const handleSignOut = async () => {
     if (isSigningOut) return; // Prevent multiple signout calls
 
@@ -52,14 +57,36 @@ export default function ProfileDropdown({ user }) {
         <UserAvatar user={user} size={36} />
         <div
           className="d-flex flex-column me-1 user-name"
-          style={{ lineHeight: "1.2" }}
+          style={{ lineHeight: "1.2", minWidth: 0 }}
         >
-          <strong style={{ fontSize: "0.95rem" }}>
-            {user?.name?.split(" ")[0] || "User"}
-          </strong>
-          <small className="text-muted" style={{ fontSize: "0.75rem" }}>
-            {user?.email}
-          </small>
+          <div className="d-flex align-items-center gap-1">
+            <strong style={{ fontSize: "0.95rem", whiteSpace: "nowrap" }}>
+              {displayInfo.name}
+            </strong>
+            {roleBadge && (
+              <span
+                className={`badge bg-${roleBadge.color} rounded-pill`}
+                style={{ fontSize: "0.6rem", padding: "2px 6px" }}
+              >
+                {roleBadge.text}
+              </span>
+            )}
+          </div>
+          {displayInfo.subtitle && (
+            <small
+              className="text-muted"
+              style={{
+                fontSize: "0.75rem",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                maxWidth: "140px",
+              }}
+              title={user?.email} // Show full email on hover
+            >
+              {displayInfo.subtitle}
+            </small>
+          )}
         </div>
       </Dropdown.Toggle>
 

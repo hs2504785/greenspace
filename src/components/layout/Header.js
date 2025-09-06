@@ -17,6 +17,7 @@ import { usePathname } from "next/navigation";
 import ProfileDropdown from "@/components/common/ProfileDropdown";
 import { useCart } from "@/context/CartContext";
 import SearchInput from "@/components/common/SearchInput";
+import SearchSection from "@/components/common/SearchSection";
 import useUserRole from "@/hooks/useUserRole";
 import GoogleLoginModal from "@/components/auth/GoogleLoginModal";
 
@@ -95,6 +96,52 @@ export default function Header() {
         new CustomEvent("vegetable-search", { detail: { query: "" } })
       );
     }
+  };
+
+  // Handle filter button click
+  const handleFilterClick = () => {
+    const getFilterEvent = () => {
+      if (pathname === "/prebooking-marketplace") {
+        return "toggle-prebooking-filters";
+      } else if (pathname === "/" || pathname.startsWith("/?")) {
+        return "toggle-vegetable-filters";
+      } else if (
+        pathname === "/farm-dashboard" ||
+        pathname === "/farm-layout-fullscreen"
+      ) {
+        return "toggle-farm-filters";
+      }
+      return null;
+    };
+
+    const filterEvent = getFilterEvent();
+    if (filterEvent) {
+      window.dispatchEvent(new CustomEvent(filterEvent));
+    }
+  };
+
+  // Handle cart button click
+  const handleCartClick = () => {
+    window.dispatchEvent(new CustomEvent("toggle-cart"));
+  };
+
+  // Get search placeholder based on current page
+  const getSearchPlaceholder = () => {
+    if (pathname === "/prebooking-marketplace") {
+      return "Search pre-booking products...";
+    }
+    return "Search vegetables...";
+  };
+
+  // Check if filters should be shown
+  const shouldShowFilters = () => {
+    return (
+      pathname === "/" ||
+      pathname.startsWith("/?") ||
+      pathname === "/prebooking-marketplace" ||
+      pathname === "/farm-dashboard" ||
+      pathname === "/farm-layout-fullscreen"
+    );
   };
 
   return (
@@ -312,134 +359,21 @@ export default function Header() {
       {(pathname === "/" ||
         pathname.startsWith("/?") ||
         pathname === "/prebooking-marketplace") && (
-        <div className="search-section d-lg-none">
-          <Container>
-            <div className="py-3">
-              {/* Mobile Search Section - shown below header on mobile */}
-              <div className="w-100">
-                <div className="d-flex align-items-center gap-2">
-                  {/* Search input takes most space */}
-                  <div className="flex-grow-1">
-                    <SearchInput
-                      value={searchValue}
-                      onChange={handleSearchChange}
-                      onSubmit={handleSearchSubmit}
-                      onClear={handleSearchClear}
-                      placeholder={
-                        pathname === "/prebooking-marketplace"
-                          ? "Search pre-booking products..."
-                          : "Search vegetables..."
-                      }
-                      className="w-100"
-                    />
-                  </div>
-
-                  {/* Filter and Cart buttons moved to search section on mobile */}
-                  <div className="d-flex align-items-center gap-2">
-                    {/* Filter button */}
-                    {(() => {
-                      const getFilterConfig = () => {
-                        if (pathname === "/prebooking-marketplace") {
-                          return {
-                            tooltip: "Filter pre-booking products",
-                            event: "toggle-prebooking-filters",
-                          };
-                        } else if (
-                          pathname === "/" ||
-                          pathname.startsWith("/?")
-                        ) {
-                          return {
-                            tooltip: "Filter & Sort vegetables",
-                            event: "toggle-vegetable-filters",
-                          };
-                        } else if (
-                          pathname === "/farm-dashboard" ||
-                          pathname === "/farm-layout-fullscreen"
-                        ) {
-                          return {
-                            tooltip: "Farm layout options",
-                            event: "toggle-farm-filters",
-                          };
-                        }
-                        return null;
-                      };
-
-                      const filterConfig = getFilterConfig();
-                      if (!filterConfig) return null;
-
-                      return (
-                        <OverlayTrigger
-                          placement="bottom"
-                          overlay={
-                            <Tooltip id="filter-tooltip-mobile">
-                              {filterConfig.tooltip}
-                            </Tooltip>
-                          }
-                        >
-                          <Button
-                            variant="outline-success"
-                            size="sm"
-                            onClick={() =>
-                              window.dispatchEvent(
-                                new CustomEvent(filterConfig.event)
-                              )
-                            }
-                            className="p-2"
-                          >
-                            <i
-                              className="ti-filter"
-                              style={{ fontSize: "1rem" }}
-                            ></i>
-                          </Button>
-                        </OverlayTrigger>
-                      );
-                    })()}
-
-                    {/* Cart button */}
-                    <OverlayTrigger
-                      placement="bottom"
-                      overlay={
-                        <Tooltip id="cart-tooltip-mobile">
-                          Shopping Cart
-                          {items.length > 0 ? ` (${items.length} items)` : ""}
-                        </Tooltip>
-                      }
-                    >
-                      <Button
-                        variant="outline-success"
-                        size="sm"
-                        onClick={() =>
-                          window.dispatchEvent(new CustomEvent("toggle-cart"))
-                        }
-                        className="p-2 position-relative"
-                      >
-                        <i
-                          className="ti-shopping-cart"
-                          style={{ fontSize: "1rem" }}
-                        ></i>
-                        {items.length > 0 && (
-                          <div
-                            className="position-absolute bg-success text-white rounded-circle d-flex align-items-center justify-content-center"
-                            style={{
-                              top: "-8px",
-                              right: "-8px",
-                              width: "16px",
-                              height: "16px",
-                              fontSize: "0.6rem",
-                              fontWeight: "600",
-                            }}
-                          >
-                            {items.length}
-                          </div>
-                        )}
-                      </Button>
-                    </OverlayTrigger>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Container>
-        </div>
+        <SearchSection
+          searchValue={searchValue}
+          onSearchChange={handleSearchChange}
+          onSearchSubmit={handleSearchSubmit}
+          onSearchClear={handleSearchClear}
+          placeholder={getSearchPlaceholder()}
+          showFilters={shouldShowFilters()}
+          onFilterClick={handleFilterClick}
+          showCart={true}
+          onCartClick={handleCartClick}
+          cartItemCount={items.length}
+          className="d-lg-none"
+          sticky={true}
+          compact={false}
+        />
       )}
 
       {/* Navigation Menu using Bootstrap Offcanvas - available on all screens */}
