@@ -10,6 +10,7 @@ import PlantTreeModal from "@/components/farm/PlantTreeModal";
 import { getTreeType } from "@/utils/treeTypeClassifier";
 import AdminGuard from "@/components/common/AdminGuard";
 import EnhancedTreeDetailsModal from "@/components/modals/EnhancedTreeDetailsModal";
+import TreeHistoryModal from "@/components/modals/TreeHistoryModal";
 import FarmLayoutFilters from "@/components/features/farm/FarmLayoutFilters";
 
 // Note: Tree types are now loaded from database dynamically
@@ -21,6 +22,7 @@ export default function FarmLayoutFullscreenPage() {
   const [loading, setLoading] = useState(true);
   const [showPlantModal, setShowPlantModal] = useState(false);
   const [showTreeModal, setShowTreeModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [selectedTree, setSelectedTree] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -135,6 +137,12 @@ export default function FarmLayoutFullscreenPage() {
       setShowPlantModal(true);
     }
   }, []); // No dependencies - functions are stable
+
+  const handleTreeHistoryClick = useCallback((tree, position) => {
+    setSelectedPosition(position);
+    setSelectedTree(tree);
+    setShowHistoryModal(true);
+  }, []);
 
   const generateUniquTreeCode = useCallback(() => {
     // Use tree codes from database
@@ -400,6 +408,7 @@ export default function FarmLayoutFullscreenPage() {
                 farmFilters.selectedLayout?.id || selectedLayout?.id
               }
               onTreeClick={handleTreeClick}
+              onTreeHistoryClick={handleTreeHistoryClick}
               showExpandButtons={farmFilters.showExpandButtons}
               showHeader={false}
               zoom={farmFilters.zoom || zoom}
@@ -448,6 +457,14 @@ export default function FarmLayoutFullscreenPage() {
           }}
           farmId={farmId}
           layoutId={selectedLayout?.id}
+        />
+
+        {/* Tree History Modal */}
+        <TreeHistoryModal
+          show={showHistoryModal}
+          onHide={() => setShowHistoryModal(false)}
+          selectedTree={selectedTree}
+          selectedPosition={selectedPosition}
         />
 
         {/* Farm Layout Filters */}

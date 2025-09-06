@@ -13,6 +13,7 @@ import {
 } from "react-bootstrap";
 import { toast } from "react-hot-toast";
 import EditTreeModal from "./EditTreeModal";
+import TreeHistoryModal from "./TreeHistoryModal";
 
 const EnhancedTreeDetailsModal = ({
   show,
@@ -26,6 +27,7 @@ const EnhancedTreeDetailsModal = ({
 }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const statusOptions = [
@@ -282,6 +284,18 @@ const EnhancedTreeDetailsModal = ({
         <div className="d-flex gap-2">
           <OverlayTrigger
             placement="top"
+            overlay={<Tooltip>View growth history with photos</Tooltip>}
+          >
+            <Button
+              variant="outline-success"
+              size="sm"
+              onClick={() => setShowHistoryModal(true)}
+            >
+              <i className="ti-camera"></i>
+            </Button>
+          </OverlayTrigger>
+          <OverlayTrigger
+            placement="top"
             overlay={<Tooltip>Water reminder</Tooltip>}
           >
             <Button variant="outline-info" size="sm">
@@ -388,6 +402,14 @@ const EnhancedTreeDetailsModal = ({
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Tree History Modal */}
+      <TreeHistoryModal
+        show={showHistoryModal}
+        onHide={() => setShowHistoryModal(false)}
+        selectedTree={selectedTree}
+        selectedPosition={selectedPosition}
+      />
     </Modal>
   );
 };

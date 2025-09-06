@@ -160,6 +160,40 @@
   transform: translate(-50%, -50%) scale(1.1);
 }
 
+/* **Tree with History - enhanced tree node with history access** */
+.treeWithHistory {
+  position: relative;
+}
+
+.historyIcon {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
+  background: rgba(40, 167, 69, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 1001;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.treeWithHistory:hover .historyIcon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.historyIcon:hover {
+  background: rgba(40, 167, 69, 1);
+  transform: scale(1.2) !important;
+}
+
 /* **Smart Planting Guides - 3ft intervals only** */
 .plantingGuide {
   cursor: pointer;

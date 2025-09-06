@@ -13,6 +13,7 @@ const PureCSSGridFarm = memo(
   ({
     farmId,
     onTreeClick,
+    onTreeHistoryClick,
     selectedLayoutId = null,
     showExpandButtons = true,
     showHeader = true,
@@ -210,7 +211,7 @@ const PureCSSGridFarm = memo(
             return (
               <div
                 key={`tree-position-${pos.id}`}
-                className={styles.plantedTree}
+                className={`${styles.plantedTree} ${styles.treeWithHistory}`}
                 style={{
                   position: "absolute",
                   left: `${absoluteX * 24}px`, // Perfect alignment with 24px grid lines
@@ -252,9 +253,41 @@ const PureCSSGridFarm = memo(
                       )
                     ]
                   }
-                  title={`${tree.code} - ${tree.name}`}
+                  title={`${tree.code} - ${tree.name}\nClick to view details • Right-click for history`}
                 >
                   {tree.code}
+                </div>
+
+                {/* History Icon - appears on hover */}
+                <div
+                  className={styles.historyIcon}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Trigger history modal directly
+                    const treePosition = {
+                      ...pos,
+                      tree_id: tree.id,
+                      trees: tree,
+                      name: tree.name,
+                      code: tree.code,
+                      category: tree.category,
+                      season: tree.season,
+                      years_to_fruit: tree.years_to_fruit,
+                      mature_height: tree.mature_height,
+                      description: tree.description,
+                    };
+                    // Use the history callback if provided
+                    if (onTreeHistoryClick) {
+                      onTreeHistoryClick(treePosition, {
+                        x: pos.grid_x,
+                        y: pos.grid_y,
+                        blockIndex: pos.block_index,
+                      });
+                    }
+                  }}
+                  title="View tree growth history"
+                >
+                  📸
                 </div>
               </div>
             );
