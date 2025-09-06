@@ -1292,9 +1292,13 @@ I have access to real-time data and can help you discover, buy, and track everyt
                                     e.preventDefault();
                                     if (
                                       href &&
-                                      href.startsWith(
+                                      (href.startsWith(
                                         "http://localhost:3000/orders/"
-                                      )
+                                      ) ||
+                                        href.startsWith(
+                                          "https://aryanaturalfarms.vercel.app/orders/"
+                                        ) ||
+                                        href.includes("/orders/"))
                                     ) {
                                       window.open(href, "_blank");
                                     }
