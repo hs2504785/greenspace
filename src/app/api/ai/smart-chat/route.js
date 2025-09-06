@@ -389,7 +389,11 @@ Remember: Always use your tools when customers ask about products, orders, or ne
                 body: JSON.stringify({
                   vegetable_id: product.id,
                   seller_id:
-                    product.seller_id || "0e13a58b-a5e2-4ed3-9c69-9634c7413550",
+                    product.owner?.id ||
+                    product.seller?.id ||
+                    product.seller_id ||
+                    product.owner_id ||
+                    "0e13a58b-a5e2-4ed3-9c69-9634c7413550",
                   quantity: quantity,
                   unit_price: product.price,
                   total_amount: totalAmount,
@@ -741,7 +745,11 @@ Your order is confirmed and will be processed shortly!`,
           productName: pending.product.name,
           quantity: pending.quantity,
           price: pending.product.price,
-          sellerId: pending.product.seller?.id || pending.product.seller_id,
+          sellerId:
+            pending.product.owner?.id ||
+            pending.product.seller?.id ||
+            pending.product.seller_id ||
+            pending.product.owner_id,
           totalAmount: pending.totalAmount,
           userLocation: user.location,
           userPhone: user.whatsapp_number || user.phone,
@@ -763,8 +771,10 @@ Your order is confirmed and will be processed shortly!`,
             body: JSON.stringify({
               vegetable_id: pending.product.id,
               seller_id:
+                pending.product.owner?.id ||
                 pending.product.seller?.id ||
                 pending.product.seller_id ||
+                pending.product.owner_id ||
                 "0e13a58b-a5e2-4ed3-9c69-9634c7413550",
               quantity: pending.quantity,
               unit_price:
