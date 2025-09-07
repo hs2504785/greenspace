@@ -52,7 +52,7 @@ export default function ProfileDropdown({ user }) {
     }
   };
   return (
-    <Dropdown align="end">
+    <Dropdown align="end" drop="down" autoClose="outside">
       <Dropdown.Toggle as={CustomToggle}>
         <UserAvatar user={user} size={36} />
         <div
@@ -90,7 +90,15 @@ export default function ProfileDropdown({ user }) {
         </div>
       </Dropdown.Toggle>
 
-      <Dropdown.Menu className="shadow-sm" style={{ minWidth: "220px" }}>
+      <Dropdown.Menu
+        className="shadow-sm profile-dropdown-menu"
+        style={{
+          minWidth: "220px",
+          maxHeight: "80vh",
+          overflowY: "auto",
+          overflowX: "hidden",
+        }}
+      >
         {/* Personal Section */}
         <div className="px-3 py-2 border-bottom bg-light">
           <small className="text-muted fw-semibold">PERSONAL</small>

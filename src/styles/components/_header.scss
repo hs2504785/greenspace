@@ -132,6 +132,59 @@
     padding: 0;
     overflow: hidden;
 
+    // Enhanced scrolling for profile dropdown
+    &.profile-dropdown-menu {
+      max-height: 80vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+
+      // Custom scrollbar styling
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 3px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba(76, 175, 80, 0.3);
+        border-radius: 3px;
+
+        &:hover {
+          background: rgba(76, 175, 80, 0.5);
+        }
+      }
+
+      // Firefox scrollbar styling
+      scrollbar-width: thin;
+      scrollbar-color: rgba(76, 175, 80, 0.3) rgba(0, 0, 0, 0.05);
+
+      // Ensure dropdown doesn't go off-screen
+      @media (max-height: 600px) {
+        max-height: 60vh;
+      }
+
+      @media (max-height: 400px) {
+        max-height: 50vh;
+      }
+
+      // Mobile responsive adjustments
+      @media (max-width: 576px) {
+        max-height: 70vh;
+        min-width: 200px;
+        margin-right: -10px; // Adjust for mobile edge spacing
+      }
+
+      // Very small screens
+      @media (max-width: 400px) {
+        max-height: 65vh;
+        min-width: 180px;
+        margin-right: -15px;
+      }
+    }
+
     // Section headers
     .bg-light {
       background-color: #f8f9fa !important;
