@@ -436,6 +436,17 @@ export default function Header() {
             </Nav.Link>
             <Nav.Link
               as={Link}
+              href="/seven-layer-forest"
+              className={`mobile-nav-link ${
+                isActive("/seven-layer-forest") ? "active-nav-item" : ""
+              }`}
+              onClick={handleLinkClick}
+            >
+              <i className="ti-layout-grid3 me-2 text-success"></i>
+              7-Layer Forest
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
               href="/why-join-us"
               className={`mobile-nav-link ${
                 isActive("/why-join-us") ? "active-nav-item" : ""

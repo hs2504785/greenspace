@@ -1,0 +1,168 @@
+/* Seven Layer Grid Styles */
+
+.gridContainer {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.grid {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  aspect-ratio: 1;
+  background: #fff;
+  border: 2px solid #28a745;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.gridCell {
+  position: relative;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gridCell:hover {
+  transform: scale(1.1);
+  z-index: 10;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.normalLayer {
+  opacity: 1;
+}
+
+.selectedLayer {
+  opacity: 1;
+  animation: pulse 2s infinite;
+}
+
+.dimmedLayer {
+  opacity: 0.3;
+}
+
+.cellContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.tinyDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.layerBadge {
+  transition: all 0.3s ease;
+  border-radius: 8px !important;
+}
+
+.layerBadge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .gridContainer {
+    padding: 10px;
+    max-width: 100%;
+  }
+
+  .grid {
+    gap: 1px;
+  }
+
+  .gridCell {
+    min-height: 15px;
+  }
+
+  .cellContent svg {
+    width: 8px !important;
+    height: 8px !important;
+  }
+
+  .tinyDot {
+    width: 3px;
+    height: 3px;
+  }
+}
+
+@media (max-width: 576px) {
+  .gridContainer {
+    padding: 5px;
+  }
+
+  .gridCell {
+    min-height: 12px;
+  }
+
+  .cellContent svg {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  .tinyDot {
+    width: 2px;
+    height: 2px;
+  }
+}
+
+/* Animation for selected layer */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+/* Layer-specific styling enhancements */
+.gridCell[data-layer="1"] {
+  border: 1px solid rgba(45, 80, 22, 0.3);
+}
+
+.gridCell[data-layer="2"] {
+  border: 1px solid rgba(74, 124, 89, 0.3);
+}
+
+.gridCell[data-layer="3"] {
+  border: 1px solid rgba(127, 176, 105, 0.3);
+}
+
+.gridCell[data-layer="4"] {
+  border: 1px solid rgba(167, 201, 87, 0.3);
+}
+
+.gridCell[data-layer="5"] {
+  border: 1px solid rgba(201, 226, 101, 0.3);
+}
+
+.gridCell[data-layer="6"] {
+  border: 1px solid rgba(244, 162, 97, 0.3);
+}
+
+.gridCell[data-layer="7"] {
+  border: 1px solid rgba(231, 111, 81, 0.3);
+}

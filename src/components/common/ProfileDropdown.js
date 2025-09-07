@@ -289,6 +289,10 @@ export default function ProfileDropdown({ user }) {
               <i className="ti-palette me-2 text-warning"></i>
               Tree Management
             </Dropdown.Item>
+            <Dropdown.Item as={Link} href="/seven-layer-forest">
+              <i className="ti-layout-grid3 me-2 text-success"></i>
+              7-Layer Forest Guide
+            </Dropdown.Item>
             {/* Seller Requests */}
             {(isAdmin || isSuperAdmin) && (
               <Dropdown.Item as={Link} href="/admin/seller-requests">

@@ -1,0 +1,448 @@
+/* Seven Layer Visual Explanation Styles */
+
+.crossSection {
+  position: relative;
+  width: 100%;
+  height: 600px;
+  background: linear-gradient(
+    to bottom,
+    #f8f9fa 0%,
+    #f8f9fa 15%,
+    #90ee90 15%,
+    #90ee90 70%,
+    #8b4513 70%,
+    #8b4513 100%
+  );
+  border: 2px solid #28a745;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 20px 0;
+}
+
+/* Interactive Highlighting Effects - Only highlight selected, don't dim others */
+
+.highlighted {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(40, 167, 69, 0.9), 0 0 40px rgba(40, 167, 69, 0.7),
+    0 0 60px rgba(40, 167, 69, 0.5);
+  border: 3px solid #28a745 !important;
+  z-index: 100 !important;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.highlighted::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border: 2px solid rgba(40, 167, 69, 0.6);
+  border-radius: inherit;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
+}
+
+.layerVisualization {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 15%;
+  background: linear-gradient(135deg, #2d5016 0%, #4a7c59 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-bottom: 2px solid #fff;
+}
+
+.layerInfo {
+  color: white;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.canopyContainer {
+  position: absolute;
+  top: 10%;
+  left: 0;
+  right: 0;
+  height: 60%;
+}
+
+/* All Trees Container - positioned at ground level */
+.treesContainer {
+  position: absolute;
+  bottom: 30%; /* Positioned at ground level */
+  left: 0;
+  right: 0;
+  height: 55%; /* Increased height since we removed sky layer */
+  display: flex;
+  align-items: flex-end; /* Align all trees to bottom (ground level) */
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+/* Big Trees (Overstory) */
+.bigTree {
+  width: 70px;
+  height: 140px; /* Tallest trees */
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.bigTree:hover:not(.highlighted) {
+  transform: scale(1.02);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(40, 167, 69, 0.5);
+}
+
+/* Medium Tree (Understory) */
+.mediumTree {
+  width: 55px;
+  height: 100px; /* Medium height */
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.mediumTree:hover:not(.highlighted) {
+  transform: scale(1.02);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(40, 167, 69, 0.5);
+}
+
+/* Small Trees (Shrub Layer) */
+.smallTree {
+  width: 40px;
+  height: 70px; /* Smallest height */
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.smallTree:hover:not(.highlighted) {
+  transform: scale(1.02);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(40, 167, 69, 0.5);
+}
+
+/* Vine Layer */
+.vineLayer {
+  position: absolute;
+  bottom: 40%; /* Position to overlap with trees */
+  left: 0;
+  right: 0;
+  height: 30%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 15px;
+  pointer-events: none;
+  z-index: 10; /* Above trees but below sky */
+}
+
+.vine {
+  width: 50px;
+  height: 60px;
+  border: 3px solid #f4a261;
+  border-radius: 25px 25px 8px 8px;
+  background: rgba(244, 162, 97, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  pointer-events: all;
+  box-shadow: 0 2px 6px rgba(244, 162, 97, 0.4);
+  backdrop-filter: blur(2px);
+  position: relative;
+}
+
+.vine:hover:not(.highlighted) {
+  transform: scale(1.03);
+  background: rgba(244, 162, 97, 0.4);
+  border-color: #28a745;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.vine::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(to bottom, transparent, #f4a261);
+  border-radius: 1px;
+}
+
+.vine::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: 8px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #f4a261;
+  border-radius: 50%;
+  background: rgba(244, 162, 97, 0.2);
+}
+
+.vineLeft {
+  margin-left: 5px;
+}
+
+.vineCenter {
+  /* Center vine on medium tree */
+}
+
+.vineRight {
+  margin-right: 5px;
+}
+
+.vineLabel {
+  font-size: 10px;
+  color: white;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.treeLabel {
+  font-size: 10px;
+  color: white;
+  font-weight: bold;
+  margin-top: 2px;
+}
+
+/* Ground Line */
+.groundLine {
+  position: absolute;
+  top: 70%;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #8b4513;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Herbaceous Layer */
+.herbaceousLayer {
+  position: absolute;
+  top: 70%;
+  left: 0;
+  right: 0;
+  height: 8%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.herbaceousLayer:hover {
+  transform: scaleY(1.1);
+}
+
+/* Ground Cover Layer */
+.groundCoverLayer {
+  position: absolute;
+  top: 78%;
+  left: 0;
+  right: 0;
+  height: 5%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.groundCoverLayer:hover {
+  transform: scaleY(1.2);
+}
+
+/* Soil Line */
+.soilLine {
+  position: absolute;
+  top: 83%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #654321;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Root Layer */
+.rootLayer {
+  position: absolute;
+  top: 85%;
+  left: 0;
+  right: 0;
+  height: 15%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, #e76f51, #d4461c);
+}
+
+.rootLayer:hover {
+  transform: scaleY(1.1);
+}
+
+.layerContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.layerText {
+  font-size: 12px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Measurement Scale */
+.measurementScale {
+  position: absolute;
+  bottom: -30px;
+  left: 0;
+  right: 0;
+  height: 25px;
+  display: flex;
+  align-items: center;
+}
+
+.scaleMarker {
+  position: absolute;
+  font-size: 12px;
+  font-weight: bold;
+  color: #28a745;
+  transform: translateX(-50%);
+}
+
+.scaleMarker::before {
+  content: "";
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 15px;
+  background: #28a745;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .crossSection {
+    height: 400px;
+  }
+
+  .treesContainer {
+    padding: 0 5px;
+  }
+
+  .bigTree {
+    width: 50px;
+    height: 100px;
+  }
+
+  .mediumTree {
+    width: 40px;
+    height: 75px;
+  }
+
+  .smallTree {
+    width: 30px;
+    height: 50px;
+  }
+
+  .vine {
+    width: 40px;
+    height: 45px;
+    border-width: 2px;
+  }
+
+  .layerText,
+  .vineLabel,
+  .treeLabel {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 576px) {
+  .crossSection {
+    height: 300px;
+  }
+
+  .treesContainer {
+    padding: 0 2px;
+  }
+
+  .bigTree {
+    width: 35px;
+    height: 70px;
+  }
+
+  .mediumTree {
+    width: 28px;
+    height: 55px;
+  }
+
+  .smallTree {
+    width: 22px;
+    height: 40px;
+  }
+
+  .vine {
+    width: 30px;
+    height: 35px;
+    border-width: 2px;
+  }
+
+  .layerText,
+  .vineLabel,
+  .treeLabel {
+    font-size: 8px;
+  }
+}
