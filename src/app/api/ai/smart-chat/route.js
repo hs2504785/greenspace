@@ -299,7 +299,7 @@ Remember: Always use your tools when customers ask about products, orders, or ne
 
       instant_order: tool({
         description:
-          "Create an instant order for customers who want to buy products immediately. Use this when customers say 'buy [item]' or similar purchase commands. IMPORTANT: Always extract the quantity from the user's message - if they say 'buy 2kg tomatoes', set quantity to 2, not 1. Returns formatted order details that should be displayed directly to the customer.",
+          "Create an instant order for customers who want to buy products immediately. Use this when customers say 'buy [item]' or similar purchase commands. CRITICAL: Always extract the quantity from the user's message by scanning for numbers followed by 'kg' anywhere in the message - if they say 'buy 2kg tomatoes' or 'buy natural jaggery 4kg', extract the correct quantity. Returns formatted order details that should be displayed directly to the customer.",
         parameters: {
           type: "object",
           properties: {
@@ -311,7 +311,7 @@ Remember: Always use your tools when customers ask about products, orders, or ne
             quantity: {
               type: "number",
               description:
-                "Quantity in kg (extract from user message: '2kg' = 2, '3 kg' = 3, '1.5kg' = 1.5, defaults to 1 if not specified)",
+                "Quantity in kg. CRITICAL: Extract from user message by finding numbers followed by 'kg' anywhere in the message. Examples: '2kg' = 2, '3 kg' = 3, '1.5kg' = 1.5, 'natural jaggery 4kg' = 4, 'buy tomatoes 5kg' = 5. Defaults to 1 if not specified.",
               optional: true,
             },
           },
@@ -562,13 +562,22 @@ Your order is confirmed and will be processed shortly!`,
     if (isBuyCommand) {
       // Extract item name and quantity
       const itemText = isBuyCommand[1].trim();
-      const quantityMatch = itemText.match(/(\d+)\s*kg\s+(.+)/);
+
+      // Try to match quantity before product name: "2kg tomatoes"
+      let quantityMatch = itemText.match(/(\d+(?:\.\d+)?)\s*kg\s+(.+)/);
       let quantity = 1;
       let itemName = itemText;
 
       if (quantityMatch) {
-        quantity = parseInt(quantityMatch[1]);
+        quantity = parseFloat(quantityMatch[1]);
         itemName = quantityMatch[2];
+      } else {
+        // Try to match quantity after product name: "natural jaggery 4kg"
+        quantityMatch = itemText.match(/(.+?)\s+(\d+(?:\.\d+)?)\s*kg/);
+        if (quantityMatch) {
+          quantity = parseFloat(quantityMatch[2]);
+          itemName = quantityMatch[1];
+        }
       }
 
       try {
@@ -913,7 +922,7 @@ Is there anything else I can help you with? 😊`,
 
         // Extract product details if provided in new format
         const productMatch = userContent.match(/product:\s*(.+?)(?:\n|$)/i);
-        const quantityMatch = userContent.match(/quantity:\s*(\d+)/i);
+        const quantityMatch = userContent.match(/quantity:\s*(\d+(?:\.\d+)?)/i);
         const priceMatch = userContent.match(/price:\s*([0-9.]+)/i);
 
         // Extract mobile and address (flexible - use user profile if not provided)
@@ -973,7 +982,7 @@ Is there anything else I can help you with? 😊`,
 
         if (productMatch && priceMatch) {
           productName = productMatch[1].trim();
-          quantity = quantityMatch ? parseInt(quantityMatch[1]) : 1;
+          quantity = quantityMatch ? parseFloat(quantityMatch[1]) : 1;
           unitPrice = parseFloat(priceMatch[1]);
         } else if (
           global.pendingOrder &&

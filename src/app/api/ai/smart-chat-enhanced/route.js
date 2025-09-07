@@ -118,10 +118,11 @@ You have access to powerful tools to help customers:
 6. 🛒 INSTANT ORDER (instant_order):
    - Place immediate orders with "pay later" option
    - Works with "buy [item]" commands  
-   - IMPORTANT: Extract quantity from user message (e.g., "buy 2kg tomatoes" = quantity: 2)
-   - Parse patterns like "2kg", "3 kg", "buy 5kg", "order 1.5kg"
+   - CRITICAL: Extract quantity from user message accurately - look for numbers followed by "kg" anywhere in the message
+   - Parse patterns: "2kg", "3 kg", "buy 5kg", "order 1.5kg", "buy tomatoes 4kg", "natural jaggery 4kg"
+   - Quantity can appear before OR after the product name
    - Creates order instantly with tracking URL
-   - Example: "buy 2kg tomatoes" → displays complete order confirmation with 2kg quantity
+   - Example: "buy 2kg tomatoes" → quantity: 2, "buy natural jaggery 4kg" → quantity: 4
 
 7. 💰 PAYMENT GUIDANCE (get_payment_info):
    - Explain UPI payment process
@@ -154,10 +155,12 @@ SMART COMMAND RECOGNITION:
 - "what's in season" / "seasonal vegetables" → use seasonal_recommendations  
 - "add to wishlist" / "save for later" → use manage_wishlist
 - "buy [item]" / "order [item]" → use instant_order
-  * CRITICAL: Parse quantity from user message accurately
+  * CRITICAL: Parse quantity from user message accurately - scan entire message for numbers + "kg"
   * "buy 2kg tomatoes" → itemName: "tomatoes", quantity: 2
   * "order 3 kg onions" → itemName: "onions", quantity: 3
   * "buy 1.5kg potatoes" → itemName: "potatoes", quantity: 1.5
+  * "buy natural jaggery 4kg" → itemName: "natural jaggery", quantity: 4
+  * "buy tomatoes 5kg" → itemName: "tomatoes", quantity: 5
   * "buy tomatoes" → itemName: "tomatoes", quantity: 1 (default)
 - "track order" / "order status" → use track_order
 - "payment help" / "UPI issue" → use get_payment_info
@@ -480,7 +483,7 @@ Always use your tools when customers ask questions - don't guess or provide gene
               .number()
               .default(1)
               .describe(
-                "Quantity to order in kg (extract from user message: '2kg' = 2, '3 kg' = 3, '1.5kg' = 1.5, default = 1)"
+                "Quantity to order in kg. CRITICAL: Extract from user message by finding numbers followed by 'kg' anywhere in the message. Examples: '2kg' = 2, '3 kg' = 3, '1.5kg' = 1.5, 'natural jaggery 4kg' = 4, 'buy tomatoes 5kg' = 5. Default = 1 if no quantity found."
               ),
             maxPrice: z.number().optional().describe("Maximum price per kg"),
           }),
