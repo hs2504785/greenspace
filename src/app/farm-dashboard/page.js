@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import {
   Container,
@@ -23,7 +23,8 @@ export default function FarmDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showTreeModal, setShowTreeModal] = useState(false);
   const [selectedTree, setSelectedTree] = useState(null);
-  const [varietyFilter, setVarietyFilter] = useState(null); // For filtering by specific variety
+  const [varietyFilter, setVarietyFilter] = useState(null);
+  const [expandedRows, setExpandedRows] = useState(new Set()); // For filtering by specific variety
 
   // Get user ID from authentication - works for any admin/superadmin
   const [farmId, setFarmId] = useState(null);
@@ -214,6 +215,10 @@ export default function FarmDashboardPage() {
               (pos) => pos.status === "diseased"
             );
             break;
+          case "variety":
+            // When filtering by variety/tree type, show all statuses
+            matchingPositions = tree.tree_positions;
+            break;
           case "all":
           default:
             // For "all" view, exclude healthy trees - only show trees needing attention
@@ -225,6 +230,11 @@ export default function FarmDashboardPage() {
         // If variety filter is active, further filter positions by variety
         if (varietyFilter) {
           matchingPositions = matchingPositions.filter((pos) => {
+            // If variety is null, show all varieties for this tree type
+            if (varietyFilter.variety === null) {
+              return tree.name === varietyFilter.treeName;
+            }
+            // Otherwise, filter by specific variety
             return (
               tree.name === varietyFilter.treeName &&
               (pos.variety || "Standard") === varietyFilter.variety
@@ -273,6 +283,44 @@ export default function FarmDashboardPage() {
     }
   };
 
+  const toggleRowExpansion = (index) => {
+    const newExpandedRows = new Set(expandedRows);
+    if (newExpandedRows.has(index)) {
+      newExpandedRows.delete(index);
+    } else {
+      newExpandedRows.add(index);
+    }
+    setExpandedRows(newExpandedRows);
+  };
+
+  const getDetailedTreesForGroup = (group) => {
+    // Get all trees with positions for this group
+    const detailedTrees = [];
+
+    trees.forEach((tree) => {
+      if (
+        tree.name === group.name &&
+        tree.tree_positions &&
+        tree.tree_positions.length > 0
+      ) {
+        tree.tree_positions.forEach((position) => {
+          detailedTrees.push({
+            ...tree,
+            position: position,
+            variety: position.variety || "Standard",
+            plantingDate: position.planting_date || tree.planting_date,
+            status: position.status || "healthy",
+            location: `Block ${position.block_index + 1}, Grid (${
+              position.grid_x
+            }, ${position.grid_y})`,
+          });
+        });
+      }
+    });
+
+    return detailedTrees.sort((a, b) => a.variety.localeCompare(b.variety));
+  };
+
   const getStatusBadge = (status) => {
     const statusMap = {
       healthy: { bg: "success", text: "🌱 Healthy", icon: "ti-heart" },
@@ -307,8 +355,10 @@ export default function FarmDashboardPage() {
             <div>
               <h6 className="mb-1 text-primary">
                 <i className="ti-filter me-2"></i>
-                Filtered by: {varietyFilter?.treeName} -{" "}
-                {varietyFilter?.variety}
+                Filtered by: {varietyFilter?.treeName}
+                {varietyFilter?.variety
+                  ? ` - ${varietyFilter.variety}`
+                  : " (All Varieties)"}
               </h6>
               <small className="text-muted">
                 Showing {filteredData.length} tree
@@ -458,6 +508,36 @@ export default function FarmDashboardPage() {
 
   return (
     <AdminGuard requiredRole="admin">
+      <style jsx>{`
+        .table tbody tr:hover {
+          background-color: transparent !important;
+        }
+        .collapse-toggle {
+          background-color: transparent !important;
+          border: 1px solid #dee2e6 !important;
+          color: #6c757d !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+        .collapse-toggle:hover {
+          background-color: #f8f9fa !important;
+          border-color: #adb5bd !important;
+          color: #495057 !important;
+        }
+        .collapse-toggle:focus {
+          box-shadow: none !important;
+        }
+        .table th {
+          font-weight: 600;
+          font-size: 0.9rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .table tbody tr:last-child td {
+          border-bottom: none;
+        }
+      `}</style>
       <Container fluid className="pb-4">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <div>
@@ -637,92 +717,171 @@ export default function FarmDashboardPage() {
                 Detailed breakdown of planted trees by type and variety
               </small>
             </Card.Header>
-            <Card.Body>
-              <Row className="g-3">
-                {getTreeVarietyGroups().map((group, index) => (
-                  <Col md={4} lg={3} key={index}>
-                    <Card className="h-100 border border-success border-opacity-25 bg-light bg-opacity-50">
-                      <Card.Body className="p-3">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <div className="d-flex align-items-center gap-2">
+            <Card.Body className="p-0">
+              <div className="table-responsive">
+                <table className="table table-hover mb-0">
+                  <thead className="table-light">
+                    <tr>
+                      <th className="border-0 ps-4">Tree Type</th>
+                      <th className="border-0 text-center">Code</th>
+                      <th className="border-0 text-center">Total Count</th>
+                      <th className="border-0 text-center">Varieties</th>
+                      <th className="border-0 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getTreeVarietyGroups().map((group, index) => (
+                      <React.Fragment key={index}>
+                        {/* Main Tree Type Row */}
+                        <tr className="tree-type-row">
+                          <td className="ps-4 py-3">
+                            <div className="d-flex align-items-center gap-2">
+                              <button
+                                className="btn btn-sm p-1 collapse-toggle"
+                                type="button"
+                                style={{ width: "24px", height: "24px" }}
+                                onClick={() => toggleRowExpansion(index)}
+                              >
+                                <i
+                                  className={
+                                    expandedRows.has(index)
+                                      ? "ti-minus"
+                                      : "ti-plus"
+                                  }
+                                  style={{ fontSize: "12px" }}
+                                ></i>
+                              </button>
+                              <h6 className="mb-0 text-success fw-bold">
+                                {group.name}
+                              </h6>
+                            </div>
+                          </td>
+                          <td className="text-center py-3">
                             <Badge bg="success" className="fs-6">
                               {group.code}
                             </Badge>
-                            <h6 className="mb-0 text-success fw-bold">
-                              {group.name}
-                            </h6>
-                          </div>
-                          <Badge bg="primary" pill>
-                            {group.totalCount}
-                          </Badge>
-                        </div>
+                          </td>
+                          <td className="text-center py-3">
+                            <Badge bg="primary" pill className="fs-6">
+                              {group.totalCount}
+                            </Badge>
+                          </td>
+                          <td className="text-center py-3">
+                            <span className="text-muted">
+                              {Object.keys(group.varieties).length} varieties
+                            </span>
+                          </td>
+                          <td className="text-center py-3">
+                            <Button
+                              variant="outline-success"
+                              size="sm"
+                              onClick={() => {
+                                setVarietyFilter({
+                                  treeName: group.name,
+                                  variety: null,
+                                });
+                                setActiveView("variety");
+                              }}
+                            >
+                              <i className="ti-filter me-1"></i>
+                              View All
+                            </Button>
+                          </td>
+                        </tr>
 
-                        <div className="varieties-list">
-                          {Object.entries(group.varieties).map(
-                            ([variety, count]) => (
-                              <div
-                                key={variety}
-                                className={`d-flex justify-content-between align-items-center py-1 border-bottom border-light variety-item ${
-                                  varietyFilter &&
-                                  varietyFilter.treeName === group.name &&
-                                  varietyFilter.variety === variety
-                                    ? "bg-primary bg-opacity-10 border-primary"
-                                    : ""
-                                }`}
-                                style={{
-                                  cursor: "pointer",
-                                  borderRadius: "4px",
-                                  transition: "all 0.2s ease",
-                                }}
-                                onClick={() =>
-                                  handleVarietyFilter(group.name, variety)
-                                }
-                                onMouseEnter={(e) => {
-                                  if (
-                                    !varietyFilter ||
-                                    varietyFilter.treeName !== group.name ||
-                                    varietyFilter.variety !== variety
-                                  ) {
-                                    e.target.style.backgroundColor =
-                                      "rgba(0,123,255,0.05)";
-                                  }
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (
-                                    !varietyFilter ||
-                                    varietyFilter.treeName !== group.name ||
-                                    varietyFilter.variety !== variety
-                                  ) {
-                                    e.target.style.backgroundColor =
-                                      "transparent";
-                                  }
-                                }}
-                              >
-                                <span className="small text-muted">
-                                  {variety}
-                                </span>
-                                <Badge
-                                  bg={
-                                    varietyFilter &&
-                                    varietyFilter.treeName === group.name &&
-                                    varietyFilter.variety === variety
-                                      ? "primary"
-                                      : "secondary"
-                                  }
-                                  pill
-                                  className="small"
-                                >
-                                  {count}
-                                </Badge>
+                        {/* Collapsible Detailed Trees Row */}
+                        {expandedRows.has(index) && (
+                          <tr>
+                            <td colSpan="5" className="p-0 border-0">
+                              <div className="bg-light bg-opacity-50 p-3 border-top">
+                                <div className="row g-2">
+                                  {getDetailedTreesForGroup(group).map(
+                                    (tree, treeIndex) => (
+                                      <div
+                                        key={`${tree.id}-${tree.position.id}`}
+                                        className="col-md-6 col-lg-4"
+                                      >
+                                        <div className="card border-0 shadow-sm h-100">
+                                          <div className="card-body p-3">
+                                            <div className="d-flex justify-content-between align-items-start mb-2">
+                                              <div>
+                                                <h6 className="mb-1 text-success fw-bold">
+                                                  {tree.variety}
+                                                </h6>
+                                                <small className="text-muted">
+                                                  {tree.location}
+                                                </small>
+                                              </div>
+                                              <Badge
+                                                bg={
+                                                  tree.status === "healthy"
+                                                    ? "success"
+                                                    : tree.status === "fruiting"
+                                                    ? "warning"
+                                                    : "danger"
+                                                }
+                                              >
+                                                {tree.status}
+                                              </Badge>
+                                            </div>
+
+                                            <div className="mb-2">
+                                              <small className="text-muted d-block">
+                                                <i className="ti-calendar me-1"></i>
+                                                Planted:{" "}
+                                                {tree.plantingDate
+                                                  ? new Date(
+                                                      tree.plantingDate
+                                                    ).toLocaleDateString()
+                                                  : "Not specified"}
+                                              </small>
+                                            </div>
+
+                                            {tree.description && (
+                                              <div className="mb-2">
+                                                <small className="text-muted">
+                                                  {tree.description.length > 60
+                                                    ? tree.description.substring(
+                                                        0,
+                                                        60
+                                                      ) + "..."
+                                                    : tree.description}
+                                                </small>
+                                              </div>
+                                            )}
+
+                                            <div className="d-flex justify-content-between align-items-center mt-2">
+                                              <small className="text-muted">
+                                                <i className="ti-target me-1"></i>
+                                                {tree.category}
+                                              </small>
+                                              <Button
+                                                variant="outline-primary"
+                                                size="sm"
+                                                onClick={() => {
+                                                  setSelectedTree(tree);
+                                                  setShowTreeModal(true);
+                                                }}
+                                              >
+                                                <i className="ti-eye me-1"></i>
+                                                View
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
                               </div>
-                            )
-                          )}
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </Card.Body>
           </Card>
         )}
