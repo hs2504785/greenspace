@@ -28,6 +28,7 @@ export default function VegetableDetails({ vegetable }) {
   const { addToCart, items } = useCart();
   const { data: session } = useSession();
   const [quantity, setQuantity] = useState(1);
+  const [localQuantityInput, setLocalQuantityInput] = useState("");
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   // Helper function to group image variants into logical images
@@ -269,7 +270,6 @@ export default function VegetableDetails({ vegetable }) {
       message
     )}`;
 
-    console.log("Opening WhatsApp URL:", whatsappUrl);
     window.open(whatsappUrl, "_blank");
   };
 
@@ -293,10 +293,6 @@ export default function VegetableDetails({ vegetable }) {
         );
         return;
       }
-
-      console.log("Adding to cart - Vegetable:", vegetable);
-      console.log("Owner details:", vegetable.owner);
-      console.log("WhatsApp number:", vegetable.owner?.whatsapp_number);
 
       const result = await addToCart(
         {
@@ -476,9 +472,6 @@ export default function VegetableDetails({ vegetable }) {
                 <Carousel
                   activeIndex={selectedImageIndex}
                   onSelect={(selectedIndex) => {
-                    console.log(
-                      `🎠 Carousel changed: ${selectedImageIndex} → ${selectedIndex}`
-                    );
                     setSelectedImageIndex(selectedIndex);
                   }}
                   interval={null}
@@ -641,7 +634,6 @@ export default function VegetableDetails({ vegetable }) {
                       cursor: "pointer",
                     }}
                     onClick={() => {
-                      console.log(`🖱️ Thumbnail clicked: index ${index}`);
                       setSelectedImageIndex(index);
                     }}
                   >
@@ -886,15 +878,54 @@ export default function VegetableDetails({ vegetable }) {
                 <div className="d-flex align-items-center mb-3">
                   <Form.Control
                     type="number"
-                    value={quantity}
+                    value={
+                      localQuantityInput !== "" ? localQuantityInput : quantity
+                    }
                     onChange={(e) => {
-                      const newQuantity = Math.max(
-                        1,
-                        parseInt(e.target.value) || 1
-                      );
-                      // Limit quantity to what's actually available considering cart
+                      const inputValue = e.target.value;
+
+                      // Always update local state to allow typing/deleting
+                      setLocalQuantityInput(inputValue);
+
+                      // If empty, don't validate yet - wait for onBlur
+                      if (inputValue === "") {
+                        return;
+                      }
+
+                      const newQuantity = parseInt(inputValue);
+
+                      // Only validate and update if it's a valid number
+                      if (!isNaN(newQuantity) && newQuantity >= 1) {
+                        // Limit quantity to what's actually available considering cart
+                        const maxAllowedQuantity = Math.max(
+                          1,
+                          remainingQuantity
+                        );
+                        if (newQuantity <= maxAllowedQuantity) {
+                          setQuantity(newQuantity);
+                          setLocalQuantityInput(""); // Clear local state since it's now in sync
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const inputValue = e.target.value;
+
+                      // If empty or invalid, reset to current quantity
+                      if (
+                        inputValue === "" ||
+                        parseInt(inputValue) < 1 ||
+                        isNaN(parseInt(inputValue))
+                      ) {
+                        setLocalQuantityInput("");
+                        return;
+                      }
+
+                      // Ensure the final value is valid and update quantity
+                      const finalQuantity = parseInt(inputValue);
                       const maxAllowedQuantity = Math.max(1, remainingQuantity);
-                      setQuantity(Math.min(newQuantity, maxAllowedQuantity));
+
+                      setQuantity(Math.min(finalQuantity, maxAllowedQuantity));
+                      setLocalQuantityInput("");
                     }}
                     min="1"
                     max={Math.max(1, remainingQuantity)}

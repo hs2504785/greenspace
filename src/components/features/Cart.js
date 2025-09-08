@@ -18,6 +18,7 @@ export default function Cart() {
   const [show, setShow] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showGuestForm, setShowGuestForm] = useState(false);
+  const [localQuantities, setLocalQuantities] = useState({});
   const [guestOrderLoading, setGuestOrderLoading] = useState(false);
 
   const {
@@ -32,6 +33,30 @@ export default function Cart() {
   } = useCart();
   const { data: session } = useSession();
   const router = useRouter();
+
+  // Helper function to get the display value for quantity input
+  const getQuantityDisplayValue = (itemId, actualQuantity) => {
+    return localQuantities[itemId] !== undefined
+      ? localQuantities[itemId]
+      : actualQuantity;
+  };
+
+  // Helper function to update local quantity state
+  const updateLocalQuantity = (itemId, value) => {
+    setLocalQuantities((prev) => ({
+      ...prev,
+      [itemId]: value,
+    }));
+  };
+
+  // Helper function to clear local quantity state
+  const clearLocalQuantity = (itemId) => {
+    setLocalQuantities((prev) => {
+      const newState = { ...prev };
+      delete newState[itemId];
+      return newState;
+    });
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -53,9 +78,6 @@ export default function Cart() {
   const handleShow = () => setShow(true);
 
   const handleWhatsAppOrder = () => {
-    console.log("Current Seller:", currentSeller);
-    console.log("WhatsApp number:", currentSeller?.whatsapp_number);
-
     if (!currentSeller?.whatsapp_number) {
       toastService.error("WhatsApp number not available for this seller");
       return;
@@ -261,35 +283,82 @@ export default function Cart() {
                       <Form.Control
                         type="number"
                         min="1"
-                        max={item.availableQuantity || 1}
-                        value={item.quantity}
+                        max={
+                          item.availableQuantity !== undefined &&
+                          item.availableQuantity !== null
+                            ? item.availableQuantity
+                            : 999
+                        }
+                        value={getQuantityDisplayValue(item.id, item.quantity)}
                         onChange={(e) => {
-                          const newQuantity = parseInt(e.target.value);
-                          const maxAllowed = item.availableQuantity || 1;
+                          const inputValue = e.target.value;
 
-                          if (isNaN(newQuantity) || newQuantity < 1) {
+                          // Always update local state to allow typing/deleting
+                          updateLocalQuantity(item.id, inputValue);
+
+                          // If empty, don't validate yet - wait for onBlur
+                          if (inputValue === "") {
                             return;
                           }
 
-                          if (newQuantity > maxAllowed) {
-                            toastService.error(
-                              `Maximum ${maxAllowed} ${
-                                item.unit || "kg"
-                              } available for this item`
-                            );
+                          const newQuantity = parseInt(inputValue);
+                          const maxAllowed =
+                            item.availableQuantity !== undefined &&
+                            item.availableQuantity !== null
+                              ? item.availableQuantity
+                              : 999;
+
+                          // Only validate and update cart if it's a valid number
+                          if (!isNaN(newQuantity) && newQuantity >= 1) {
+                            if (newQuantity <= maxAllowed) {
+                              clearError(); // Clear any previous errors
+                              updateQuantity(item.id, newQuantity);
+                              clearLocalQuantity(item.id); // Clear local state since it's now in sync
+                            } else {
+                              toastService.error(
+                                `Maximum ${maxAllowed} ${
+                                  item.unit || "kg"
+                                } available for this item`
+                              );
+                            }
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const inputValue = e.target.value;
+
+                          // If empty or invalid, reset to current cart quantity
+                          if (
+                            inputValue === "" ||
+                            parseInt(inputValue) < 1 ||
+                            isNaN(parseInt(inputValue))
+                          ) {
+                            clearLocalQuantity(item.id);
                             return;
                           }
 
-                          clearError(); // Clear any previous errors
-                          updateQuantity(item.id, newQuantity);
+                          // Ensure the final value is valid and update cart
+                          const finalQuantity = parseInt(inputValue);
+                          const maxAllowed =
+                            item.availableQuantity !== undefined &&
+                            item.availableQuantity !== null
+                              ? item.availableQuantity
+                              : 999;
+
+                          if (finalQuantity <= maxAllowed) {
+                            updateQuantity(item.id, finalQuantity);
+                          }
+                          clearLocalQuantity(item.id);
                         }}
                         style={{ width: "80px" }}
                         title={
                           item.price === 0
                             ? undefined
-                            : `Maximum ${item.availableQuantity || 1} ${
-                                item.unit || "kg"
-                              } available`
+                            : `Maximum ${
+                                item.availableQuantity !== undefined &&
+                                item.availableQuantity !== null
+                                  ? item.availableQuantity
+                                  : "unlimited"
+                              } ${item.unit || "kg"} available`
                         }
                       />
                       <div className="text-end">

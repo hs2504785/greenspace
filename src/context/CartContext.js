@@ -23,7 +23,10 @@ function cartReducer(state, action) {
         ...action.payload,
         total: action.payload.price * action.payload.quantity,
         availableQuantity:
-          action.payload.availableQuantity || action.payload.quantity || 1,
+          action.payload.availableQuantity !== undefined &&
+          action.payload.availableQuantity !== null
+            ? action.payload.availableQuantity
+            : action.payload.quantity || 1,
       };
 
       // If cart is empty, set the current seller
@@ -81,10 +84,13 @@ function cartReducer(state, action) {
               quantity: newQuantity,
               total: newQuantity * item.price,
               availableQuantity:
-                action.payload.availableQuantity ||
-                item.availableQuantity ||
-                item.quantity ||
-                1,
+                action.payload.availableQuantity !== undefined &&
+                action.payload.availableQuantity !== null
+                  ? action.payload.availableQuantity
+                  : item.availableQuantity !== undefined &&
+                    item.availableQuantity !== null
+                  ? item.availableQuantity
+                  : item.quantity || 1,
             };
           }
           return item;
@@ -114,9 +120,13 @@ function cartReducer(state, action) {
       );
 
       if (itemToUpdate) {
-        const maxAllowed = itemToUpdate.availableQuantity || 1;
+        const maxAllowed =
+          itemToUpdate.availableQuantity !== undefined &&
+          itemToUpdate.availableQuantity !== null
+            ? itemToUpdate.availableQuantity
+            : 999;
 
-        if (action.payload.quantity > maxAllowed) {
+        if (maxAllowed !== 999 && action.payload.quantity > maxAllowed) {
           return {
             ...state,
             error: `Maximum ${maxAllowed} ${
@@ -213,8 +223,6 @@ export function CartProvider({ children }) {
       //     // Continue with adding to cart if history check fails
       //   }
       // }
-
-      console.log("[DEBUG] Adding to cart:", item.name, "Price:", item.price);
 
       // Pre-validate before dispatching
       // Check if cart is not empty and item is from different seller
