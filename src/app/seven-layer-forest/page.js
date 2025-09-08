@@ -17,7 +17,7 @@ import { FaTree, FaLeaf, FaSeedling, FaInfoCircle } from "react-icons/fa";
 import SevenLayerGrid from "@/components/farm/SevenLayerGrid";
 import TreeDetailModal from "@/components/farm/TreeDetailModal";
 import LayerExplanation from "@/components/farm/LayerExplanation";
-import SevenLayerVisualExplanation from "@/components/farm/SevenLayerVisualExplanation";
+import InteractiveGridLayerGuide from "@/components/farm/InteractiveGridLayerGuide";
 
 export default function SevenLayerForestPage() {
   const [selectedTree, setSelectedTree] = useState(null);
@@ -160,7 +160,7 @@ export default function SevenLayerForestPage() {
               <FaTree className="text-success me-3" size={48} />
               <div>
                 <h1 className="display-4 fw-bold text-success mb-0">
-                  7-Layer Fruit Forest
+                  7-Layer Food Forest
                 </h1>
                 <p className="lead text-muted mb-0">
                   Maximize productivity with nature's vertical farming approach
@@ -196,14 +196,15 @@ export default function SevenLayerForestPage() {
               <Card className="border-0 shadow-sm mt-3">
                 <Card.Body>
                   <h3 className="text-success mb-3">
-                    What is a 7-Layer Forest?
+                    What is a 7-Layer Food Forest?
                   </h3>
                   <p className="lead">
-                    A 7-layer forest garden mimics natural forest ecosystems by
+                    A 7-layer food forest mimics natural forest ecosystems by
                     creating multiple vertical layers of productive plants. This
                     approach maximizes space utilization, creates beneficial
-                    plant relationships, and produces food at every level from
-                    the forest floor to the canopy.
+                    plant relationships, and produces diverse food - fruits,
+                    vegetables, herbs, roots, and more - at every level from the
+                    forest floor to the canopy.
                   </p>
 
                   <Row className="mt-4">
@@ -224,7 +225,8 @@ export default function SevenLayerForestPage() {
                         </li>
                         <li className="mb-2">
                           <FaLeaf className="text-success me-2" />
-                          Diverse food production
+                          Diverse food production (fruits, vegetables, herbs,
+                          roots)
                         </li>
                         <li className="mb-2">
                           <FaLeaf className="text-success me-2" />
@@ -263,15 +265,15 @@ export default function SevenLayerForestPage() {
             </Tab>
 
             <Tab
-              eventKey="visual-explanation"
+              eventKey="grid-guide"
               title={
                 <span>
-                  <FaTree className="me-2" />
-                  Cross-Section View
+                  <FaInfoCircle className="me-2" />
+                  Grid Layout Guide
                 </span>
               }
             >
-              <SevenLayerVisualExplanation />
+              <InteractiveGridLayerGuide />
             </Tab>
 
             <Tab
@@ -319,7 +321,7 @@ export default function SevenLayerForestPage() {
               <Card className="border-0 shadow-sm mt-3">
                 <Card.Body>
                   <h3 className="text-success mb-4">
-                    7-Layer Forest Management
+                    7-Layer Food Forest Management
                   </h3>
 
                   <Row>

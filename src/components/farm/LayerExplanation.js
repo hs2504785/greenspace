@@ -21,10 +21,41 @@ import {
   FaLightbulb,
   FaTint,
   FaBug,
+  FaAppleAlt,
+  FaLemon,
 } from "react-icons/fa";
 
 const LayerExplanation = ({ sevenLayerData, trees, onTreeClick }) => {
   const [expandedLayer, setExpandedLayer] = useState(null);
+
+  // Function to get plant emoji icon and color
+  const getPlantIcon = (plantName) => {
+    const plant = plantName.toLowerCase();
+    if (plant.includes("mango")) return { icon: "🥭", color: "#FF6B35" };
+    if (plant.includes("jackfruit")) return { icon: "🍈", color: "#8B4513" };
+    if (plant.includes("cashew")) return { icon: "🌰", color: "#D2691E" };
+    if (plant.includes("coconut")) return { icon: "🥥", color: "#8B4513" };
+    if (plant.includes("pomegranate")) return { icon: "🌱", color: "#DC143C" };
+    if (plant.includes("guava")) return { icon: "🍃", color: "#228B22" };
+    if (plant.includes("apple")) return { icon: "🍎", color: "#FF0000" };
+    if (plant.includes("pear")) return { icon: "🍐", color: "#B8860B" };
+    if (plant.includes("cherry")) return { icon: "🍒", color: "#DC143C" };
+    if (plant.includes("grapes")) return { icon: "🍇", color: "#800080" };
+    if (plant.includes("passion")) return { icon: "🍇", color: "#FF4500" };
+    if (plant.includes("beans")) return { icon: "🫘", color: "#228B22" };
+    if (plant.includes("pepper")) return { icon: "🌶️", color: "#FF6347" };
+    if (plant.includes("sweet potato")) return { icon: "🍠", color: "#FF8C00" };
+    if (plant.includes("ginger")) return { icon: "🫚", color: "#DAA520" };
+    if (plant.includes("turmeric")) return { icon: "🌶️", color: "#B8860B" };
+    if (plant.includes("strawberry")) return { icon: "🍓", color: "#FF69B4" };
+    if (plant.includes("mint")) return { icon: "🌿", color: "#006400" };
+    if (plant.includes("moringa")) return { icon: "🌿", color: "#32CD32" };
+    if (plant.includes("spice")) return { icon: "🌿", color: "#8B4513" };
+    if (plant.includes("herb")) return { icon: "🌿", color: "#228B22" };
+    if (plant.includes("lemon")) return { icon: "🍋", color: "#DAA520" };
+    // Default icon for other plants
+    return { icon: "🌱", color: "#228B22" };
+  };
 
   const getLayerIcon = (layerNum) => {
     const icons = {
@@ -175,7 +206,7 @@ const LayerExplanation = ({ sevenLayerData, trees, onTreeClick }) => {
                       {layerInfo.description}
                     </p>
                   </div>
-                  <Badge bg="secondary" className="ms-2">
+                  <Badge bg="secondary" className="ms-4 me-3">
                     {layerInfo.examples.length} plant types
                   </Badge>
                 </div>
@@ -197,25 +228,39 @@ const LayerExplanation = ({ sevenLayerData, trees, onTreeClick }) => {
                               Recommended Plants:
                             </h6>
                             <div className="d-flex flex-wrap gap-2 mb-3">
-                              {layerInfo.examples.map((plant, idx) => (
-                                <Badge
-                                  key={idx}
-                                  bg="success"
-                                  className="p-2 cursor-pointer"
-                                  onClick={() => {
-                                    const matchingTree = availableTrees.find(
-                                      (tree) =>
-                                        tree.name
-                                          .toLowerCase()
-                                          .includes(plant.toLowerCase())
-                                    );
-                                    if (matchingTree) onTreeClick(matchingTree);
-                                  }}
-                                  style={{ cursor: "pointer" }}
-                                >
-                                  {plant}
-                                </Badge>
-                              ))}
+                              {layerInfo.examples.map((plant, idx) => {
+                                const plantInfo = getPlantIcon(plant);
+                                return (
+                                  <Badge
+                                    key={idx}
+                                    bg="outline-success"
+                                    className="p-2 cursor-pointer d-flex align-items-center gap-1"
+                                    onClick={() => {
+                                      const matchingTree = availableTrees.find(
+                                        (tree) =>
+                                          tree.name
+                                            .toLowerCase()
+                                            .includes(plant.toLowerCase())
+                                      );
+                                      if (matchingTree)
+                                        onTreeClick(matchingTree);
+                                    }}
+                                    style={{
+                                      cursor: "pointer",
+                                      border: `2px solid ${plantInfo.color}`,
+                                      color: plantInfo.color,
+                                      backgroundColor: "transparent",
+                                      fontSize: "0.875rem",
+                                      fontWeight: "500",
+                                    }}
+                                  >
+                                    <span style={{ fontSize: "16px" }}>
+                                      {plantInfo.icon}
+                                    </span>
+                                    {plant}
+                                  </Badge>
+                                );
+                              })}
                             </div>
 
                             {availableTrees.length > 0 && (

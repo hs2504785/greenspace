@@ -1,0 +1,234 @@
+.gridSvg {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.gridPoint {
+  transition: all 0.2s ease;
+  transform-origin: center;
+  stroke-width: 2 !important; /* Ensure consistent thickness */
+}
+
+.gridPoint:hover {
+  filter: brightness(1.2) saturate(1.3);
+  stroke-width: 3 !important;
+  stroke: #28a745 !important;
+}
+
+.layerNumber {
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+/* Hover effect for the entire group */
+g:hover .gridPoint {
+  filter: brightness(1.2) saturate(1.3);
+  stroke-width: 3 !important;
+  stroke: #28a745 !important;
+}
+
+g:hover .layerNumber {
+  fill: #28a745;
+  font-size: 14px;
+}
+
+/* Selected state should override hover */
+.gridPoint[stroke-width="4"] {
+  stroke-width: 4 !important;
+}
+
+/* Vine layer indicators */
+.vineLayerBadge {
+  transition: all 0.2s ease;
+}
+
+.vineLayerText {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Hover effects for vine indicators */
+g:hover .vineLayerBadge {
+  fill: #e76f51;
+}
+
+g:hover .vineLayerText {
+  fill: white;
+}
+
+/* Root layer indicators */
+.rootPoint {
+  transition: all 0.2s ease;
+  stroke-width: 2 !important;
+}
+
+.rootPoint:hover {
+  filter: brightness(1.2) saturate(1.3);
+  stroke-width: 3 !important;
+  stroke: #28a745 !important;
+}
+
+.rootNumber {
+  transition: all 0.2s ease;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Hover effects for root indicators */
+g:hover .rootPoint {
+  filter: brightness(1.2) saturate(1.3);
+  stroke-width: 3 !important;
+  stroke: #28a745 !important;
+}
+
+g:hover .rootNumber {
+  fill: #28a745;
+}
+
+/* Layer highlighting effects */
+.highlighted {
+  animation: pulse 2s infinite;
+}
+
+.highlighted circle {
+  stroke-width: 4 !important;
+  stroke: #28a745 !important;
+  filter: brightness(1.2) saturate(1.3);
+}
+
+.highlighted text {
+  fill: #28a745 !important;
+  font-weight: bold;
+}
+
+/* Highlight vine badges when Layer 6 is selected - keep original colors for readability */
+.highlighted .vineLayerBadge {
+  stroke: #28a745 !important;
+  stroke-width: 3 !important;
+  animation: pulse 2s infinite;
+  opacity: 1 !important; /* Override any dimming */
+  fill: #f4a261 !important; /* Ensure original orange color */
+}
+
+.highlighted .vineLayerText {
+  fill: white !important; /* Keep white text for readability */
+  font-weight: bold;
+  opacity: 1 !important; /* Override any dimming */
+}
+
+/* Special highlighting for vine badges only - keep them bright and original */
+.vineHighlighted .vineLayerBadge {
+  stroke: #28a745 !important;
+  stroke-width: 3 !important;
+  animation: pulse 2s infinite;
+  opacity: 1 !important;
+  fill: #f4a261 !important; /* Original bright orange color */
+  filter: brightness(1.1) saturate(1.2) !important; /* Subtle enhancement */
+}
+
+.vineHighlighted .vineLayerText {
+  fill: white !important;
+  font-weight: bold;
+  opacity: 1 !important;
+}
+
+/* Force vine badges to stay bright even when parent is dimmed */
+.vineHighlighted {
+  opacity: 1 !important;
+}
+
+/* Independent vine layer indicators - completely separate from trees */
+.vinePoint {
+  transition: all 0.2s ease;
+  stroke-width: 2 !important;
+  pointer-events: auto; /* Ensure vine badges capture their own events */
+  z-index: 10; /* Higher z-index than trees */
+}
+
+.vinePoint:hover {
+  filter: brightness(1.2) saturate(1.3);
+  stroke-width: 3 !important;
+  stroke: #28a745 !important;
+}
+
+.vineNumber {
+  transition: all 0.2s ease;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Hover effects for independent vine indicators */
+g:hover .vinePoint {
+  filter: brightness(1.2) saturate(1.3);
+  stroke-width: 3 !important;
+  stroke: #28a745 !important;
+}
+
+g:hover .vineNumber {
+  fill: #28a745;
+}
+
+/* Highlighting for independent vine layer */
+.vineHighlighted .vinePoint {
+  stroke: #28a745 !important;
+  stroke-width: 3 !important;
+  animation: pulse 2s infinite;
+  filter: brightness(1.1) saturate(1.2) !important;
+}
+
+.vineHighlighted .vineNumber {
+  fill: white !important;
+  font-weight: bold;
+}
+
+.dimmed {
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
+}
+
+.layerItem {
+  transition: all 0.2s ease;
+}
+
+.layerItem:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  transform: translateX(2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .gridSvg {
+    width: 100%;
+    height: auto;
+  }
+}
+
+/* Animation for selected positions */
+.gridPoint[stroke="#28a745"] {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    stroke-width: 3;
+  }
+  50% {
+    stroke-width: 5;
+  }
+  100% {
+    stroke-width: 3;
+  }
+}
