@@ -148,12 +148,48 @@ const InteractiveGridLayerGuide = () => {
     },
     7: {
       name: "Root Layer (Underground)",
-      description: "Root vegetables and tubers",
+      description: "Root vegetables and tubers growing underground",
       color: "#e76f51",
-      examples: ["Sweet potato", "Ginger", "Turmeric"],
+      examples: [
+        "Sweet potato",
+        "Ginger",
+        "Turmeric",
+        "Carrot",
+        "Radish",
+        "Groundnuts",
+      ],
       positions: "Underground throughout",
       icon: <FaCarrot size={16} />,
       gridPositions: ["Underground at all available positions"],
+      spacing: "2-4 ft apart",
+      plantingDepth: "1-6 inches depending on variety",
+      soilRequirements: "Loose, well-drained soil",
+      sunRequirements: "Partial to full sun (for foliage)",
+      waterNeeds: "Consistent moisture",
+      harvestTime: "2-6 months depending on variety",
+      benefits: [
+        "Soil aeration",
+        "Nutrient storage",
+        "Underground harvest",
+        "Soil structure improvement",
+        "Natural tillage",
+      ],
+      managementTips: [
+        "Ensure loose soil for proper root development",
+        "Harvest before roots become woody",
+        "Succession planting for continuous harvest",
+        "Companion plant with surface crops",
+      ],
+      companionPlants: [
+        "Works well under all tree layers",
+        "Compatible with ground cover",
+      ],
+      seasonalCare: {
+        spring: "Plant warm-season varieties (sweet potato, ginger)",
+        summer: "Maintain soil moisture, weed control",
+        autumn: "Plant cool-season varieties (carrot, radish)",
+        winter: "Harvest and storage preparation",
+      },
     },
   };
 
@@ -226,6 +262,8 @@ const InteractiveGridLayerGuide = () => {
         label: "Root Layer (Underground)",
         size: "root",
       });
+      // Also open off-canvas for Layer 7
+      handlePositionDetails(sevenLayers[7], { x, y });
     } else {
       // For other positions, show general ground cover/root options
       setSelectedPosition({
@@ -356,7 +394,9 @@ const InteractiveGridLayerGuide = () => {
               }
               className={styles.gridPoint}
               onClick={() => {
-                if (positionData) {
+                if (layerNumber === 7) {
+                  handlePositionDetails(sevenLayers[7], { x, y });
+                } else if (positionData) {
                   handlePositionDetails(sevenLayers[positionData.primary], {
                     x,
                     y,
@@ -648,56 +688,58 @@ const InteractiveGridLayerGuide = () => {
                   <h6 className="mb-0">7-Layer Legend</h6>
                 </Card.Header>
                 <Card.Body>
-                  {Object.entries(sevenLayers).map(([layerId, layer]) => (
-                    <div
-                      key={layerId}
-                      className={`d-flex align-items-center mb-2 p-2 rounded ${styles.layerItem}`}
-                      style={{
-                        backgroundColor:
-                          selectedLayer === parseInt(layerId)
-                            ? `${layer.color}20`
-                            : "transparent",
-                        border:
-                          selectedLayer === parseInt(layerId)
-                            ? `2px solid ${layer.color}`
-                            : "1px solid #e0e0e0",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleLayerClick(parseInt(layerId))}
-                    >
+                  {Object.entries(sevenLayers).map(([layerId, layer]) => {
+                    return (
                       <div
-                        className="me-2"
+                        key={layerId}
+                        className={`d-flex align-items-center mb-2 p-2 rounded ${styles.layerItem}`}
                         style={{
-                          width: "20px",
-                          height: "20px",
-                          backgroundColor: layer.color,
-                          borderRadius: "50%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
+                          backgroundColor:
+                            selectedLayer === parseInt(layerId)
+                              ? `${layer.color}20`
+                              : "transparent",
+                          border:
+                            selectedLayer === parseInt(layerId)
+                              ? `2px solid ${layer.color}`
+                              : "1px solid #e0e0e0",
+                          cursor: "pointer",
                         }}
+                        onClick={() => handleLayerClick(parseInt(layerId))}
                       >
-                        <span
+                        <div
+                          className="me-2"
                           style={{
-                            color: "white",
-                            fontSize: "10px",
-                            fontWeight: "bold",
+                            width: "20px",
+                            height: "20px",
+                            backgroundColor: layer.color,
+                            borderRadius: "50%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
-                          {layerId}
-                        </span>
+                          <span
+                            style={{
+                              color: "white",
+                              fontSize: "10px",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {layerId}
+                          </span>
+                        </div>
+                        <div>
+                          <small className="fw-bold">
+                            {layer.name.split("(")[0]}
+                          </small>
+                          <br />
+                          <small className="text-muted">
+                            {layer.examples.slice(0, 2).join(", ")}
+                          </small>
+                        </div>
                       </div>
-                      <div>
-                        <small className="fw-bold">
-                          {layer.name.split("(")[0]}
-                        </small>
-                        <br />
-                        <small className="text-muted">
-                          {layer.examples.slice(0, 2).join(", ")}
-                        </small>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </Card.Body>
               </Card>
             </Col>

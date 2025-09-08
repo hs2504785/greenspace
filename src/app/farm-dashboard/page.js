@@ -14,6 +14,7 @@ import {
 import { toast } from "react-hot-toast";
 import AdminGuard from "@/components/common/AdminGuard";
 import EnhancedTreeDetailsModal from "@/components/modals/EnhancedTreeDetailsModal";
+import InteractiveGridLayerGuide from "@/components/farm/InteractiveGridLayerGuide";
 
 export default function FarmDashboardPage() {
   const [activeView, setActiveView] = useState("all");
@@ -887,7 +888,26 @@ export default function FarmDashboardPage() {
         )}
 
         {/* Content based on selected tile */}
-        {renderContent()}
+        <Row>
+          <Col lg={8}>{renderContent()}</Col>
+          <Col lg={4}>
+            {/* Layer Guide Sidebar */}
+            <Card className="border-0 shadow-sm">
+              <Card.Header className="bg-light border-0">
+                <h5 className="mb-0">
+                  <i className="ti-layers text-success me-2"></i>
+                  7-Layer Forest Guide
+                </h5>
+                <small className="text-muted">
+                  Click on layer icons to explore planting options
+                </small>
+              </Card.Header>
+              <Card.Body className="p-0">
+                <InteractiveGridLayerGuide />
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
 
         {/* Enhanced Tree Details Modal */}
         <EnhancedTreeDetailsModal
