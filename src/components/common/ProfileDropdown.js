@@ -35,6 +35,7 @@ export default function ProfileDropdown({ user }) {
   } = useSellerRequestStatus();
 
   const [isSigningOut, setIsSigningOut] = React.useState(false);
+  const [showDropdown, setShowDropdown] = React.useState(false);
 
   // Get display information using utility functions
   const displayInfo = getUserDisplayInfo(user, { maxEmailLength: 18 });
@@ -45,14 +46,24 @@ export default function ProfileDropdown({ user }) {
 
     try {
       setIsSigningOut(true);
+      setShowDropdown(false); // Close dropdown before signing out
       await signOut({ callbackUrl: "/login", redirect: true });
     } catch (error) {
       console.error("Signout error:", error);
       setIsSigningOut(false);
     }
   };
+
+  const handleDropdownItemClick = () => {
+    setShowDropdown(false);
+  };
   return (
-    <Dropdown align="end" drop="down" autoClose="outside">
+    <Dropdown
+      align="end"
+      drop="down"
+      show={showDropdown}
+      onToggle={setShowDropdown}
+    >
       <Dropdown.Toggle as={CustomToggle}>
         <UserAvatar user={user} size={36} />
         <div
@@ -103,11 +114,19 @@ export default function ProfileDropdown({ user }) {
         <div className="px-3 py-2 border-bottom bg-light">
           <small className="text-muted fw-semibold">PERSONAL</small>
         </div>
-        <Dropdown.Item as={Link} href="/profile">
+        <Dropdown.Item
+          as={Link}
+          href="/profile"
+          onClick={handleDropdownItemClick}
+        >
           <i className="ti ti-user me-2 text-primary"></i>
           Profile
         </Dropdown.Item>
-        <Dropdown.Item as={Link} href="/notifications">
+        <Dropdown.Item
+          as={Link}
+          href="/notifications"
+          onClick={handleDropdownItemClick}
+        >
           <i className="ti ti-bell me-2 text-info"></i>
           Notifications
         </Dropdown.Item>
@@ -191,6 +210,7 @@ export default function ProfileDropdown({ user }) {
                 href="/become-seller"
                 className="py-3 border border-danger border-opacity-25 rounded mx-2 mb-2"
                 style={{ backgroundColor: "rgba(220, 53, 69, 0.05)" }}
+                onClick={handleDropdownItemClick}
               >
                 <div className="d-flex align-items-center">
                   <span
@@ -224,6 +244,7 @@ export default function ProfileDropdown({ user }) {
                 href="/become-seller"
                 className="py-3 border border-success border-opacity-25 rounded mx-2 mb-2"
                 style={{ backgroundColor: "rgba(25, 135, 84, 0.05)" }}
+                onClick={handleDropdownItemClick}
               >
                 <div className="d-flex align-items-center">
                   <span
@@ -260,19 +281,35 @@ export default function ProfileDropdown({ user }) {
             <div className="px-3 py-2 border-bottom bg-light mt-2">
               <small className="text-muted fw-semibold">BUSINESS</small>
             </div>
-            <Dropdown.Item as={Link} href="/products-management">
+            <Dropdown.Item
+              as={Link}
+              href="/products-management"
+              onClick={handleDropdownItemClick}
+            >
               <i className="ti-package me-2 text-warning"></i>
               My Products
             </Dropdown.Item>
-            <Dropdown.Item as={Link} href="/seller-dashboard">
+            <Dropdown.Item
+              as={Link}
+              href="/seller-dashboard"
+              onClick={handleDropdownItemClick}
+            >
               <i className="ti-dashboard me-2 text-success"></i>
               Orders Dashboard
             </Dropdown.Item>
-            <Dropdown.Item as={Link} href="/prebooking-dashboard">
+            <Dropdown.Item
+              as={Link}
+              href="/prebooking-dashboard"
+              onClick={handleDropdownItemClick}
+            >
               <i className="ti-calendar me-2 text-info"></i>
               Pre-Booking Dashboard
             </Dropdown.Item>
-            <Dropdown.Item as={Link} href="/payment-verification">
+            <Dropdown.Item
+              as={Link}
+              href="/payment-verification"
+              onClick={handleDropdownItemClick}
+            >
               <i className="ti-credit-card me-2 text-primary"></i>
               Payment Verification
             </Dropdown.Item>
@@ -285,27 +322,47 @@ export default function ProfileDropdown({ user }) {
             <div className="px-3 py-2 border-bottom bg-light mt-2">
               <small className="text-muted fw-semibold">ADMINISTRATION</small>
             </div>
-            <Dropdown.Item as={Link} href="/admin">
+            <Dropdown.Item
+              as={Link}
+              href="/admin"
+              onClick={handleDropdownItemClick}
+            >
               <i className="ti-dashboard me-2 text-danger"></i>
               Admin Dashboard
             </Dropdown.Item>
-            <Dropdown.Item as={Link} href="/farm-dashboard">
+            <Dropdown.Item
+              as={Link}
+              href="/farm-dashboard"
+              onClick={handleDropdownItemClick}
+            >
               <i className="ti-layout-grid3 me-2 text-success"></i>
               Farm Dashboard
             </Dropdown.Item>
-            <Dropdown.Item as={Link} href="/trees">
+            <Dropdown.Item
+              as={Link}
+              href="/trees"
+              onClick={handleDropdownItemClick}
+            >
               <i className="ti-palette me-2 text-warning"></i>
               Tree Management
             </Dropdown.Item>
             {/* Seller Requests */}
             {(isAdmin || isSuperAdmin) && (
-              <Dropdown.Item as={Link} href="/admin/seller-requests">
+              <Dropdown.Item
+                as={Link}
+                href="/admin/seller-requests"
+                onClick={handleDropdownItemClick}
+              >
                 <i className="ti-check me-2 text-warning"></i>
                 Seller Requests
               </Dropdown.Item>
             )}
             {isSuperAdmin && (
-              <Dropdown.Item as={Link} href="/admin/users">
+              <Dropdown.Item
+                as={Link}
+                href="/admin/users"
+                onClick={handleDropdownItemClick}
+              >
                 <i className="ti-settings me-2 text-danger"></i>
                 Manage Users
               </Dropdown.Item>

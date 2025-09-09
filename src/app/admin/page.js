@@ -4,8 +4,10 @@ import { Container, Row, Col, Card, Button, Badge } from "react-bootstrap";
 import Link from "next/link";
 import AdminGuard from "@/components/common/AdminGuard";
 import GoogleMapsUsageMonitor from "@/components/admin/GoogleMapsUsageMonitor";
+import useUserRole from "@/hooks/useUserRole";
 
 export default function AdminDashboard() {
+  const { isSuperAdmin } = useUserRole();
   return (
     <AdminGuard requiredRole="admin">
       <Container className="py-4">
@@ -43,24 +45,26 @@ export default function AdminDashboard() {
               </Card.Header>
               <Card.Body>
                 <div className="d-grid gap-2">
-                  <Link
-                    href="/admin/users"
-                    className="btn btn-outline-primary text-start"
-                  >
-                    <i className="ti-users me-2"></i>
-                    <span>
-                      <strong>Manage Users</strong>
-                      <br />
-                      <small className="text-muted">
-                        User accounts & roles
-                      </small>
-                    </span>
-                  </Link>
+                  {isSuperAdmin && (
+                    <Link
+                      href="/admin/users"
+                      className="btn btn-outline-primary text-start"
+                    >
+                      <i className="ti-users me-2"></i>
+                      <span>
+                        <strong>Manage Users</strong>
+                        <br />
+                        <small className="text-muted">
+                          User accounts & roles
+                        </small>
+                      </span>
+                    </Link>
+                  )}
                   <Link
                     href="/admin/seller-requests"
                     className="btn btn-outline-success text-start"
                   >
-                    <i className="ti-user-check me-2"></i>
+                    <i className="ti-clipboard me-2"></i>
                     <span>
                       <strong>Seller Requests</strong>
                       <br />
@@ -115,7 +119,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
                     <span>
-                      <i className="ti-robot me-2 text-info"></i>
+                      <i className="ti-light-bulb me-2 text-info"></i>
                       AI Assistant
                     </span>
                     <Badge bg="success">
