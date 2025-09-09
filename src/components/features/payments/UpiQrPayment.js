@@ -338,61 +338,56 @@ export default function UpiQrPayment({
           tr: transactionRef,
         });
 
-        // 🚨 SIMPLIFIED APPROACH: Use the exact same UPI string as QR code
-        // This eliminates any parameter encoding issues that cause "bank limit" errors
+        // 🚨 FIXED APPROACH: Use exact QR parameters to avoid encoding issues
         const directUpiString = qrData.upiString;
 
-        // For Google Pay, we'll use multiple fallback strategies
+        console.log("🔍 GPAY: Using exact QR UPI string:", directUpiString);
+
+        // For Google Pay, use the most reliable approach
         if (platform === "android") {
-          // Strategy 1: Direct UPI scheme (most compatible)
+          // Primary strategy: Direct UPI scheme (same as QR code)
           try {
             window.location.href = directUpiString;
-            console.log("✅ GPAY: Tried direct UPI scheme");
+            console.log("✅ GPAY: Opened with direct UPI scheme");
 
-            // Show immediate feedback
-            toastService.info("Opening Google Pay...");
+            toastService.info("Opening Google Pay...", { autoClose: 2000 });
 
-            // Fallback guidance after 3 seconds
+            // Provide guidance if app doesn't open
             setTimeout(() => {
               toastService.info(
                 "If Google Pay didn't open, please scan the QR code manually",
-                { autoClose: 6000 }
+                { autoClose: 5000 }
               );
             }, 3000);
 
             return;
           } catch (error) {
             console.error("❌ GPAY: Direct UPI scheme failed:", error);
-          }
 
-          // Strategy 2: Intent scheme as fallback
-          try {
-            const intentUrl =
-              directUpiString.replace("upi://pay?", "intent://pay?") +
-              "#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end";
+            // Fallback: Intent scheme
+            try {
+              const intentUrl =
+                directUpiString.replace("upi://pay?", "intent://pay?") +
+                "#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end";
 
-            const linkElement = document.createElement("a");
-            linkElement.href = intentUrl;
-            linkElement.style.display = "none";
-            document.body.appendChild(linkElement);
-            linkElement.click();
-            document.body.removeChild(linkElement);
-            console.log("✅ GPAY: Tried Intent scheme fallback");
-          } catch (error) {
-            console.error("❌ GPAY: Intent scheme failed:", error);
+              window.location.href = intentUrl;
+              console.log("✅ GPAY: Tried Intent scheme fallback");
+            } catch (intentError) {
+              console.error("❌ GPAY: Intent scheme also failed:", intentError);
+            }
           }
         } else if (platform === "ios") {
-          // iOS: Try direct UPI scheme first
+          // iOS: Direct UPI scheme
           try {
             window.location.href = directUpiString;
-            console.log("✅ GPAY: Tried iOS direct UPI");
+            console.log("✅ GPAY: Opened iOS Google Pay");
 
-            toastService.info("Opening Google Pay...");
+            toastService.info("Opening Google Pay...", { autoClose: 2000 });
 
             setTimeout(() => {
               toastService.info(
                 "If Google Pay didn't open, please scan the QR code manually",
-                { autoClose: 6000 }
+                { autoClose: 5000 }
               );
             }, 3000);
 
@@ -558,30 +553,29 @@ export default function UpiQrPayment({
                   </div>
 
                   <div className="row g-3 justify-content-center">
+                    {/* Google Pay - Rounded Card */}
                     <div className="col-6 col-md-5">
                       <div
-                        className="payment-app-card border border-primary rounded-3 p-3 text-center shadow-sm bg-light"
+                        className="payment-app-card border-2 rounded-3 p-3 text-center"
                         style={{
                           cursor: "pointer",
                           transition: "all 0.2s ease",
-                          background:
-                            "linear-gradient(135deg, #e3f2fd 0%, #f1f8e9 100%)",
-                          borderColor: "#4285f4 !important",
+                          backgroundColor: "#e3f2fd",
+                          borderColor: "#4285f4",
+                          border: "2px solid #4285f4",
                         }}
                         onClick={() => openUpiApp("gpay")}
                         onMouseEnter={(e) => {
                           e.target.style.transform = "translateY(-2px)";
                           e.target.style.boxShadow =
                             "0 4px 12px rgba(66, 133, 244, 0.2)";
-                          e.target.style.background =
-                            "linear-gradient(135deg, #bbdefb 0%, #dcedc8 100%)";
+                          e.target.style.backgroundColor = "#bbdefb";
                         }}
                         onMouseLeave={(e) => {
                           e.target.style.transform = "translateY(0)";
                           e.target.style.boxShadow =
                             "0 2px 4px rgba(0,0,0,0.1)";
-                          e.target.style.background =
-                            "linear-gradient(135deg, #e3f2fd 0%, #f1f8e9 100%)";
+                          e.target.style.backgroundColor = "#e3f2fd";
                         }}
                       >
                         <img
@@ -598,30 +592,30 @@ export default function UpiQrPayment({
                       </div>
                     </div>
 
+                    {/* BHIM UPI - Block Rectangle */}
                     <div className="col-6 col-md-5">
                       <div
-                        className="payment-app-card border border-warning rounded-3 p-3 text-center shadow-sm bg-light"
+                        className="payment-app-card border-2 p-3 text-center"
                         style={{
                           cursor: "pointer",
                           transition: "all 0.2s ease",
-                          background:
-                            "linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%)",
-                          borderColor: "#ff9800 !important",
+                          backgroundColor: "#fff3e0",
+                          borderColor: "#ff9800",
+                          border: "2px solid #ff9800",
+                          borderRadius: "8px", // Less rounded for block look
                         }}
                         onClick={() => openUpiApp("bhim")}
                         onMouseEnter={(e) => {
                           e.target.style.transform = "translateY(-2px)";
                           e.target.style.boxShadow =
                             "0 4px 12px rgba(255, 152, 0, 0.2)";
-                          e.target.style.background =
-                            "linear-gradient(135deg, #ffe0b2 0%, #f8bbd9 100%)";
+                          e.target.style.backgroundColor = "#ffe0b2";
                         }}
                         onMouseLeave={(e) => {
                           e.target.style.transform = "translateY(0)";
                           e.target.style.boxShadow =
                             "0 2px 4px rgba(0,0,0,0.1)";
-                          e.target.style.background =
-                            "linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%)";
+                          e.target.style.backgroundColor = "#fff3e0";
                         }}
                       >
                         <img
