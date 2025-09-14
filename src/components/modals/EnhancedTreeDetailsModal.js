@@ -13,7 +13,8 @@ import {
 } from "react-bootstrap";
 import { toast } from "react-hot-toast";
 import EditTreeModal from "./EditTreeModal";
-import TreeHistoryModal from "./TreeHistoryModal";
+import GPSCaptureModal from "../farm/GPSCaptureModal";
+import EnhancedTreeHistoryModal from "./EnhancedTreeHistoryModal";
 
 const EnhancedTreeDetailsModal = ({
   show,
@@ -28,6 +29,7 @@ const EnhancedTreeDetailsModal = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showGPSModal, setShowGPSModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const statusOptions = [
@@ -296,6 +298,18 @@ const EnhancedTreeDetailsModal = ({
           </OverlayTrigger>
           <OverlayTrigger
             placement="top"
+            overlay={<Tooltip>Add/Update GPS Location</Tooltip>}
+          >
+            <Button
+              variant="outline-primary"
+              size="sm"
+              onClick={() => setShowGPSModal(true)}
+            >
+              <i className="ti-location-pin"></i>
+            </Button>
+          </OverlayTrigger>
+          <OverlayTrigger
+            placement="top"
             overlay={<Tooltip>Water reminder</Tooltip>}
           >
             <Button variant="outline-info" size="sm">
@@ -403,12 +417,26 @@ const EnhancedTreeDetailsModal = ({
         </Modal.Footer>
       </Modal>
 
-      {/* Tree History Modal */}
-      <TreeHistoryModal
+      {/* Enhanced Tree History Modal */}
+      <EnhancedTreeHistoryModal
         show={showHistoryModal}
         onHide={() => setShowHistoryModal(false)}
         selectedTree={selectedTree}
         selectedPosition={selectedPosition}
+      />
+
+      {/* GPS Capture Modal */}
+      <GPSCaptureModal
+        show={showGPSModal}
+        onHide={() => setShowGPSModal(false)}
+        selectedTree={selectedTree}
+        selectedPosition={selectedPosition}
+        onLocationUpdated={(updatedPosition) => {
+          // Refresh the parent component with updated location data
+          if (onTreeUpdated) {
+            onTreeUpdated(updatedPosition, selectedPosition);
+          }
+        }}
       />
     </Modal>
   );

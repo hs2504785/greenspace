@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-// GET single tree position
+// GET single tree position with enhanced location data
 export async function GET(request, { params }) {
   try {
     const { id } = params;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Tree position ID is required" },
+        { status: 400 }
+      );
+    }
 
     const { data, error } = await supabase
       .from("tree_positions")
@@ -15,10 +22,11 @@ export async function GET(request, { params }) {
           id,
           code,
           name,
-          category,
-          season,
-          years_to_fruit,
-          mature_height,
+          description
+        ),
+        farm_layouts(
+          id,
+          name,
           description
         )
       `
@@ -38,7 +46,29 @@ export async function GET(request, { params }) {
       );
     }
 
-    return NextResponse.json(data);
+    // Add computed location metadata
+    const enhancedData = {
+      ...data,
+      location_type:
+        data.latitude && data.longitude ? "geotagged" : "grid_only",
+      location_precision: data.gps_accuracy
+        ? data.gps_accuracy < 5
+          ? "high"
+          : data.gps_accuracy < 15
+          ? "medium"
+          : "low"
+        : null,
+      coordinates_display:
+        data.latitude && data.longitude
+          ? `${parseFloat(data.latitude).toFixed(6)}°N, ${parseFloat(
+              data.longitude
+            ).toFixed(6)}°E`
+          : null,
+      grid_distance_meters:
+        Math.sqrt(Math.pow(data.grid_x, 2) + Math.pow(data.grid_y, 2)) * 0.3048, // 1 grid unit = 1 foot
+    };
+
+    return NextResponse.json(enhancedData);
   } catch (error) {
     console.error("Error in GET /api/tree-positions/[id]:", error);
     return NextResponse.json(
@@ -48,82 +78,73 @@ export async function GET(request, { params }) {
   }
 }
 
-// PATCH - Update tree position
+// PATCH - Update tree position with GPS coordinates
 export async function PATCH(request, { params }) {
   try {
     const { id } = params;
     const body = await request.json();
 
-    console.log("PATCH /api/tree-positions/[id] - ID:", id);
-    console.log("PATCH /api/tree-positions/[id] - Body:", body);
-
-    // First check if the tree position exists
-    const { data: existingPositions, error: fetchError } = await supabase
-      .from("tree_positions")
-      .select("id")
-      .eq("id", id);
-
-    if (fetchError) {
-      console.error("Error fetching tree position:", fetchError);
+    if (!id) {
       return NextResponse.json(
-        { error: `Database error: ${fetchError.message}` },
-        { status: 500 }
-      );
-    }
-
-    if (!existingPositions || existingPositions.length === 0) {
-      console.error("Tree position not found for ID:", id);
-      return NextResponse.json(
-        { error: "Tree position not found" },
-        { status: 404 }
-      );
-    }
-
-    // Test if the required columns exist by trying to select them
-    const { data: testColumns, error: columnError } = await supabase
-      .from("tree_positions")
-      .select("variety, status, planting_date, notes, updated_at")
-      .eq("id", id)
-      .limit(1);
-
-    if (columnError) {
-      console.error("Column check error:", columnError);
-      if (
-        columnError.message.includes("column") &&
-        columnError.message.includes("does not exist")
-      ) {
-        return NextResponse.json(
-          {
-            error:
-              "Database migration required! The tree_positions table is missing required columns (variety, status, planting_date, notes, updated_at). Please run the migration SQL from MIGRATION_INSTRUCTIONS.md",
-          },
-          { status: 500 }
-        );
-      }
-    }
-
-    const updateData = {};
-
-    // Only update fields that are provided
-    if (body.variety !== undefined) updateData.variety = body.variety;
-    if (body.status !== undefined) updateData.status = body.status;
-    if (body.planting_date !== undefined)
-      updateData.planting_date = body.planting_date;
-    if (body.notes !== undefined) updateData.notes = body.notes;
-
-    if (Object.keys(updateData).length === 0) {
-      return NextResponse.json(
-        { error: "No valid fields to update" },
+        { error: "Tree position ID is required" },
         { status: 400 }
       );
     }
 
-    // Add updated_at timestamp
+    const {
+      latitude,
+      longitude,
+      altitude,
+      gps_accuracy,
+      coordinate_source = "manual",
+      // Also allow updates to other fields
+      variety,
+      status,
+      planting_date,
+      notes,
+    } = body;
+
+    // Validate GPS coordinates if provided
+    if (latitude !== undefined || longitude !== undefined) {
+      if (latitude < -90 || latitude > 90) {
+        return NextResponse.json(
+          { error: "Latitude must be between -90 and 90 degrees" },
+          { status: 400 }
+        );
+      }
+      if (longitude < -180 || longitude > 180) {
+        return NextResponse.json(
+          { error: "Longitude must be between -180 and 180 degrees" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Build update object
+    const updateData = {};
+
+    // GPS coordinate fields
+    if (latitude !== undefined) updateData.latitude = latitude;
+    if (longitude !== undefined) updateData.longitude = longitude;
+    if (altitude !== undefined) updateData.altitude = altitude;
+    if (gps_accuracy !== undefined) updateData.gps_accuracy = gps_accuracy;
+    if (coordinate_source !== undefined)
+      updateData.coordinate_source = coordinate_source;
+
+    // Set coordinates_captured_at if GPS data is being updated
+    if (latitude !== undefined || longitude !== undefined) {
+      updateData.coordinates_captured_at = new Date().toISOString();
+    }
+
+    // Other fields
+    if (variety !== undefined) updateData.variety = variety;
+    if (status !== undefined) updateData.status = status;
+    if (planting_date !== undefined) updateData.planting_date = planting_date;
+    if (notes !== undefined) updateData.notes = notes;
+
+    // Always update the updated_at timestamp
     updateData.updated_at = new Date().toISOString();
 
-    console.log("Update data:", updateData);
-
-    // Try the update
     const { data, error } = await supabase
       .from("tree_positions")
       .update(updateData)
@@ -135,59 +156,25 @@ export async function PATCH(request, { params }) {
           id,
           code,
           name,
-          category,
-          season,
-          years_to_fruit,
-          mature_height,
           description
         )
       `
-      );
-
-    console.log("Update result - data:", data);
-    console.log("Update result - error:", error);
+      )
+      .single();
 
     if (error) {
       console.error("Error updating tree position:", error);
-
-      // Check if it's a column doesn't exist error
-      if (
-        error.message.includes("column") &&
-        error.message.includes("does not exist")
-      ) {
-        return NextResponse.json(
-          {
-            error:
-              "Database schema needs to be updated. Please run the migration to add tree position fields.",
-          },
-          { status: 500 }
-        );
-      }
-
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    if (!data || data.length === 0) {
-      console.error("No data returned after update for ID:", id);
-
-      // Let's try to fetch the record to see if it exists
-      const { data: checkData, error: checkError } = await supabase
-        .from("tree_positions")
-        .select("*")
-        .eq("id", id);
-
-      console.log("Check if record exists - data:", checkData);
-      console.log("Check if record exists - error:", checkError);
-
+    if (!data) {
       return NextResponse.json(
-        { error: "Tree position not found after update" },
+        { error: "Tree position not found" },
         { status: 404 }
       );
     }
 
-    console.log("Update successful, returning data:", data[0]);
-    // Return the first (and should be only) result
-    return NextResponse.json(data[0]);
+    return NextResponse.json(data);
   } catch (error) {
     console.error("Error in PATCH /api/tree-positions/[id]:", error);
     return NextResponse.json(
@@ -202,23 +189,21 @@ export async function DELETE(request, { params }) {
   try {
     const { id } = params;
 
-    const { data, error } = await supabase
+    if (!id) {
+      return NextResponse.json(
+        { error: "Tree position ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const { error } = await supabase
       .from("tree_positions")
       .delete()
-      .eq("id", id)
-      .select()
-      .single();
+      .eq("id", id);
 
     if (error) {
       console.error("Error deleting tree position:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    if (!data) {
-      return NextResponse.json(
-        { error: "Tree position not found" },
-        { status: 404 }
-      );
     }
 
     return NextResponse.json({ message: "Tree position deleted successfully" });
