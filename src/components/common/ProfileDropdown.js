@@ -340,7 +340,7 @@ export default function ProfileDropdown({ user }) {
             </Dropdown.Item>
             <Dropdown.Item
               as={Link}
-              href="/trees"
+              href="/tree-management"
               onClick={handleDropdownItemClick}
             >
               <i className="ti-palette me-2 text-warning"></i>

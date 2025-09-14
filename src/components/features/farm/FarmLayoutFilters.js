@@ -277,7 +277,7 @@ export default function FarmLayoutFilters({
               <Button
                 variant="outline-primary"
                 size="sm"
-                href="/trees"
+                href="/tree-management"
                 className="text-decoration-none"
               >
                 <i className="ti-plus me-2"></i>

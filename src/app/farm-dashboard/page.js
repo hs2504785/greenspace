@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import {
   Container,
@@ -407,7 +408,7 @@ export default function FarmDashboardPage() {
                       <i className="ti-tree text-success fs-1 d-block mb-3"></i>
                       <h5>No trees planted yet</h5>
                       <p>Start by planting your first tree in the farm.</p>
-                      <Button variant="success" href="/trees">
+                      <Button variant="success" href="/tree-management">
                         <i className="ti-plus me-2"></i>
                         Add Your First Tree
                       </Button>
@@ -470,13 +471,30 @@ export default function FarmDashboardPage() {
                         </Badge>
                         {getStatusBadge(tree.status)}
                       </div>
-                      <h6 className="card-title">{tree.name}</h6>
+                      <h6 className="card-title">
+                        <Link
+                          href={`/trees/${tree.id}`}
+                          className="text-decoration-none text-dark"
+                          title="View tree details"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {tree.name}
+                        </Link>
+                      </h6>
                       <p className="card-text text-muted small">
                         {tree.scientific_name}
                         {tree.variety && (
                           <>
                             <br />
-                            Variety: {tree.variety}
+                            Variety:{" "}
+                            <Link
+                              href={`/trees/${tree.positionId}?position=true`}
+                              className="text-decoration-none text-primary"
+                              title={`View ${tree.variety} variety details`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {tree.variety}
+                            </Link>
                           </>
                         )}
                       </p>
@@ -553,7 +571,7 @@ export default function FarmDashboardPage() {
               <i className="ti-fullscreen me-2"></i>
               Full Screen Layout
             </Button>
-            <Button variant="outline-secondary" href="/trees">
+            <Button variant="outline-secondary" href="/tree-management">
               <i className="ti-settings me-2"></i>
               Manage Trees
             </Button>
@@ -806,7 +824,13 @@ export default function FarmDashboardPage() {
                                             <div className="d-flex justify-content-between align-items-start mb-2">
                                               <div>
                                                 <h6 className="mb-1 text-success fw-bold">
-                                                  {tree.variety}
+                                                  <Link
+                                                    href={`/trees/${tree.position.id}?position=true`}
+                                                    className="text-decoration-none text-success"
+                                                    title={`View ${tree.variety} variety details`}
+                                                  >
+                                                    {tree.variety}
+                                                  </Link>
                                                 </h6>
                                                 <small className="text-muted">
                                                   {tree.location}
@@ -840,12 +864,25 @@ export default function FarmDashboardPage() {
                                             {tree.description && (
                                               <div className="mb-2">
                                                 <small className="text-muted">
-                                                  {tree.description.length > 60
+                                                  {tree.description.length > 40
                                                     ? tree.description.substring(
                                                         0,
-                                                        60
+                                                        40
                                                       ) + "..."
                                                     : tree.description}
+                                                  {tree.description.length >
+                                                    40 && (
+                                                    <>
+                                                      {" "}
+                                                      <Link
+                                                        href={`/trees/${tree.position.id}?position=true`}
+                                                        className="text-decoration-none text-primary small"
+                                                        title={`View full ${tree.variety} details`}
+                                                      >
+                                                        Full Details
+                                                      </Link>
+                                                    </>
+                                                  )}
                                                 </small>
                                               </div>
                                             )}
@@ -855,17 +892,14 @@ export default function FarmDashboardPage() {
                                                 <i className="ti-target me-1"></i>
                                                 {tree.category}
                                               </small>
-                                              <Button
-                                                variant="outline-primary"
-                                                size="sm"
-                                                onClick={() => {
-                                                  setSelectedTree(tree);
-                                                  setShowTreeModal(true);
-                                                }}
+                                              <Link
+                                                href={`/trees/${tree.position.id}?position=true`}
+                                                className="btn btn-outline-primary btn-sm text-decoration-none"
+                                                title={`View ${tree.variety} details`}
                                               >
                                                 <i className="ti-eye me-1"></i>
-                                                View
-                                              </Button>
+                                                View Details
+                                              </Link>
                                             </div>
                                           </div>
                                         </div>
