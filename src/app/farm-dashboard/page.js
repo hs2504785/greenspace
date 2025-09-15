@@ -451,7 +451,14 @@ export default function FarmDashboardPage() {
           ) : (
             <Row>
               {filteredData.map((tree) => (
-                <Col md={4} key={tree.id} className="mb-3">
+                <Col
+                  xs={12}
+                  sm={6}
+                  md={4}
+                  lg={3}
+                  key={tree.id}
+                  className="mb-3"
+                >
                   <Card
                     className="h-100 border shadow-sm rounded-3"
                     style={{
@@ -464,7 +471,7 @@ export default function FarmDashboardPage() {
                       setShowTreeModal(true);
                     }}
                   >
-                    <Card.Body>
+                    <Card.Body className="p-2 p-sm-3">
                       <div className="d-flex justify-content-between align-items-start mb-2">
                         <Badge bg="secondary" className="fs-6">
                           {tree.code}
@@ -545,6 +552,16 @@ export default function FarmDashboardPage() {
         }
         .collapse-toggle:focus {
           box-shadow: none !important;
+        }
+        /* Responsive card fixes */
+        @media (max-width: 576px) {
+          .card-body {
+            overflow-x: hidden !important;
+          }
+          .btn-sm {
+            font-size: 0.75rem !important;
+            padding: 0.25rem 0.5rem !important;
+          }
         }
         .table th {
           font-weight: 600;
@@ -817,10 +834,10 @@ export default function FarmDashboardPage() {
                                     (tree, treeIndex) => (
                                       <div
                                         key={`${tree.id}-${tree.position.id}`}
-                                        className="col-md-6 col-lg-4"
+                                        className="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3"
                                       >
                                         <div className="card border-0 shadow-sm h-100">
-                                          <div className="card-body p-3">
+                                          <div className="card-body p-2 p-sm-3">
                                             <div className="d-flex justify-content-between align-items-start mb-2">
                                               <div>
                                                 <h6 className="mb-1 text-success fw-bold">
@@ -828,6 +845,9 @@ export default function FarmDashboardPage() {
                                                     href={`/trees/${tree.position.id}?position=true`}
                                                     className="text-decoration-none text-success"
                                                     title={`View ${tree.variety} variety details`}
+                                                    onClick={(e) =>
+                                                      e.stopPropagation()
+                                                    }
                                                   >
                                                     {tree.variety}
                                                   </Link>
@@ -878,6 +898,9 @@ export default function FarmDashboardPage() {
                                                         href={`/trees/${tree.position.id}?position=true`}
                                                         className="text-decoration-none text-primary small"
                                                         title={`View full ${tree.variety} details`}
+                                                        onClick={(e) =>
+                                                          e.stopPropagation()
+                                                        }
                                                       >
                                                         Full Details
                                                       </Link>
@@ -887,19 +910,29 @@ export default function FarmDashboardPage() {
                                               </div>
                                             )}
 
-                                            <div className="d-flex justify-content-between align-items-center mt-2">
+                                            <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mt-2 gap-2">
                                               <small className="text-muted">
                                                 <i className="ti-target me-1"></i>
                                                 {tree.category}
                                               </small>
-                                              <Link
-                                                href={`/trees/${tree.position.id}?position=true`}
-                                                className="btn btn-outline-primary btn-sm text-decoration-none"
+                                              <button
+                                                type="button"
+                                                className="btn btn-outline-primary btn-sm flex-shrink-0"
                                                 title={`View ${tree.variety} details`}
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setSelectedTree(tree);
+                                                  setShowTreeModal(true);
+                                                }}
                                               >
                                                 <i className="ti-eye me-1"></i>
-                                                View Details
-                                              </Link>
+                                                <span className="d-none d-sm-inline">
+                                                  View Details
+                                                </span>
+                                                <span className="d-inline d-sm-none">
+                                                  Details
+                                                </span>
+                                              </button>
                                             </div>
                                           </div>
                                         </div>

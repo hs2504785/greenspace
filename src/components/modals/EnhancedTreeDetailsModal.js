@@ -201,9 +201,36 @@ const EnhancedTreeDetailsModal = ({
                 {selectedTree.description && (
                   <div>
                     <strong>Description:</strong>
-                    <p className="mb-0 mt-1 small text-muted">
-                      {selectedTree.description}
-                    </p>
+                    <div className="mt-1">
+                      {selectedTree.description.length > 180 ? (
+                        <>
+                          <p className="mb-1 text-dark">
+                            {selectedTree.description.substring(0, 180)}...
+                          </p>
+                          <a
+                            href={`/trees/${
+                              selectedTree.position?.id || selectedTree.id
+                            }?position=true`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-outline-primary btn-sm mt-2"
+                            style={{
+                              textDecoration: "none",
+                              borderRadius: "20px",
+                              fontSize: "0.75rem",
+                              fontWeight: "500",
+                            }}
+                          >
+                            <i className="ti-external-link me-1"></i>
+                            Full Details
+                          </a>
+                        </>
+                      ) : (
+                        <p className="mb-0 text-dark">
+                          {selectedTree.description}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
               </Card.Body>
