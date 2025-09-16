@@ -179,7 +179,24 @@ class OrderService extends ApiBaseService {
         throw orderError;
       }
 
-      const orderItems = orderData.items.map((item) => ({
+      // Separate internal and external products
+      const internalItems = [];
+      const externalItems = [];
+
+      orderData.items.forEach((item) => {
+        // Check if this is an external product (user sheet or external sheet)
+        if (
+          item.id.startsWith("user_sheet_") ||
+          item.id.startsWith("sheets_")
+        ) {
+          externalItems.push(item);
+        } else {
+          internalItems.push(item);
+        }
+      });
+
+      // Create order items for internal products (that exist in vegetables table)
+      const orderItems = internalItems.map((item) => ({
         order_id: order.id,
         vegetable_id: item.id,
         quantity: item.quantity,
@@ -187,30 +204,57 @@ class OrderService extends ApiBaseService {
         total_price: item.price * item.quantity,
       }));
 
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItems);
+      // For external products, we'll store them differently or skip for now
+      // TODO: Create a separate external_order_items table or store as JSON metadata
+
+      // Only insert order items if we have internal products
+      let itemsError = null;
+      if (orderItems.length > 0) {
+        const { error } = await supabase.from("order_items").insert(orderItems);
+        itemsError = error;
+      } else {
+        console.log("📋 No internal products to insert into order_items");
+      }
 
       if (itemsError) {
         console.error("Error creating order items:", itemsError);
         throw itemsError;
       }
 
-      // Update vegetable quantities after successful order creation
-      try {
-        console.log("🔄 Updating vegetable quantities after order creation...");
+      // Update vegetable quantities after successful order creation (only for internal products)
+      if (internalItems.length > 0) {
+        try {
+          console.log(
+            "🔄 Updating vegetable quantities after order creation..."
+          );
+          console.log(
+            "📋 Internal items to update:",
+            JSON.stringify(internalItems, null, 2)
+          );
+          await VegetableService.updateQuantitiesAfterOrder(internalItems);
+          console.log("✅ Vegetable quantities updated successfully");
+        } catch (quantityError) {
+          console.error(
+            "⚠️ Error updating vegetable quantities:",
+            quantityError
+          );
+          console.error("⚠️ Full error details:", quantityError.stack);
+          // Don't fail the order creation if quantity update fails
+          // Log the error but continue with order completion
+          console.log(
+            "📝 Order created successfully but quantity update failed"
+          );
+        }
+      } else {
+        console.log("📋 No internal products to update quantities for");
+      }
+
+      // Log external products for reference (they don't get stored in order_items yet)
+      if (externalItems.length > 0) {
         console.log(
-          "📋 Items to update:",
-          JSON.stringify(orderData.items, null, 2)
+          "📊 External products in order (not stored in order_items yet):"
         );
-        await VegetableService.updateQuantitiesAfterOrder(orderData.items);
-        console.log("✅ Vegetable quantities updated successfully");
-      } catch (quantityError) {
-        console.error("⚠️ Error updating vegetable quantities:", quantityError);
-        console.error("⚠️ Full error details:", quantityError.stack);
-        // Don't fail the order creation if quantity update fails
-        // Log the error but continue with order completion
-        console.log("📝 Order created successfully but quantity update failed");
+        console.log(JSON.stringify(externalItems, null, 2));
       }
 
       // Update user profile with location and contact info if they are empty

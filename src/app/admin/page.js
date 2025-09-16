@@ -4,6 +4,7 @@ import { Container, Row, Col, Card, Button, Badge } from "react-bootstrap";
 import Link from "next/link";
 import AdminGuard from "@/components/common/AdminGuard";
 import GoogleMapsUsageMonitor from "@/components/admin/GoogleMapsUsageMonitor";
+import GoogleSheetsUsageMonitor from "@/components/admin/GoogleSheetsUsageMonitor";
 import useUserRole from "@/hooks/useUserRole";
 
 export default function AdminDashboard() {
@@ -32,6 +33,11 @@ export default function AdminDashboard() {
           {/* Google Maps Usage Monitor */}
           <Col lg={8}>
             <GoogleMapsUsageMonitor />
+          </Col>
+
+          {/* Google Sheets Usage Monitor */}
+          <Col lg={8}>
+            <GoogleSheetsUsageMonitor />
           </Col>
 
           {/* Quick Actions */}

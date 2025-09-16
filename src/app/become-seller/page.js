@@ -1,288 +1,552 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import { useState, useEffect } from "react";
-import { Container, Alert, Card, Spinner } from "react-bootstrap";
-import NaturalFarmingSellerForm from "@/components/features/sellers/NaturalFarmingSellerForm";
-import Link from "next/link";
+import { useState } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Alert,
+  Button,
+  Form,
+  Modal,
+  Badge,
+} from "react-bootstrap";
+import {
+  FaGoogle,
+  FaDownload,
+  FaCopy,
+  FaCheck,
+  FaExternalLinkAlt,
+  FaUpload,
+  FaInfoCircle,
+} from "react-icons/fa";
 
 export default function BecomeSellerPage() {
-  const { data: session, status } = useSession();
-  const [existingRequest, setExistingRequest] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showInstructionsModal, setShowInstructionsModal] = useState(false);
+  const [copiedText, setCopiedText] = useState("");
+  const [validationResult, setValidationResult] = useState(null);
+  const [isValidating, setIsValidating] = useState(false);
 
-  useEffect(() => {
-    if (session) {
-      checkExistingRequest();
-    }
-  }, [session]);
+  // Template Google Sheets URL (you'll need to create this)
+  const templateSheetUrl =
+    "https://docs.google.com/spreadsheets/d/1EXAMPLE_TEMPLATE_ID/edit#gid=0";
 
-  const checkExistingRequest = async () => {
+  // Sample spreadsheet ID for validation
+  const sampleSpreadsheetId = "1EXAMPLE_SAMPLE_ID";
+
+  const handleCopyText = (text, identifier) => {
+    navigator.clipboard.writeText(text);
+    setCopiedText(identifier);
+    setTimeout(() => setCopiedText(""), 2000);
+  };
+
+  const validateSpreadsheet = async (spreadsheetId) => {
+    if (!spreadsheetId) return;
+
+    setIsValidating(true);
     try {
-      console.log("🔍 Checking for existing seller requests...", {
-        userId: session.user.id,
-        userEmail: session.user.email,
-      });
-
       const response = await fetch(
-        `/api/seller-requests?userId=${session.user.id}`
+        `/api/external-products?validate=true&spreadsheetId=${spreadsheetId}`
       );
-
-      if (response.ok) {
-        const requests = await response.json();
-
-        if (requests.length > 0) {
-          setExistingRequest(requests[0]); // Get the latest request
-        } else {
-        }
-      } else {
-        console.error("❌ API Error:", response.status, response.statusText);
-        const errorText = await response.text();
-        console.error("Error details:", errorText);
-      }
+      const data = await response.json();
+      setValidationResult(data);
     } catch (error) {
-      console.error("❌ Error checking existing request:", error);
+      setValidationResult({
+        success: false,
+        error: error.message,
+      });
     } finally {
-      setLoading(false);
+      setIsValidating(false);
     }
   };
 
-  const handleSuccess = () => {
-    // Redirect to success page
-    window.location.href = "/seller-application-submitted";
-  };
-
-  if (status === "loading" || loading) {
-    return (
-      <Container className="py-5 text-center">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-      </Container>
-    );
-  }
-
-  if (!session) {
-    redirect("/login");
-  }
-
-  // Check if user is already a seller
-  if (session.user?.role === "seller") {
-    return (
-      <Container className="py-5">
-        <Alert variant="info">
-          <Alert.Heading>🌱 You're Already a Seller!</Alert.Heading>
-          <p>
-            You have already been approved as a seller on our platform. You can
-            start adding your natural farming products right away.
-          </p>
-          <hr />
-          <div className="d-flex gap-2">
-            <Link href="/seller-dashboard" className="btn btn-primary">
-              Go to Seller Dashboard
-            </Link>
-            <Link
-              href="/products-management"
-              className="btn btn-outline-primary"
+  const TemplateInstructions = () => (
+    <Card className="mb-4 border-success">
+      <Card.Header className="bg-success text-white">
+        <h5 className="mb-0">
+          <FaGoogle className="me-2" />
+          How to Create Your Product Listing Sheet
+        </h5>
+      </Card.Header>
+      <Card.Body>
+        <div className="step-instructions">
+          <div className="mb-4">
+            <h6 className="text-success">Step 1: Copy Our Template</h6>
+            <p>
+              Start with our pre-made template that has all the right columns:
+            </p>
+            <Button
+              variant="success"
+              href={templateSheetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="me-2 mb-2"
             >
-              Manage Products
-            </Link>
+              <FaGoogle className="me-2" />
+              Open Template Sheet
+            </Button>
+            <Button
+              variant="outline-secondary"
+              onClick={() => setShowInstructionsModal(true)}
+              className="mb-2"
+            >
+              <FaInfoCircle className="me-2" />
+              Detailed Instructions
+            </Button>
           </div>
-        </Alert>
-      </Container>
-    );
-  }
 
-  // Check if user has a pending application
-  if (existingRequest) {
-    const getStatusInfo = (status) => {
-      switch (status) {
-        case "pending":
-          return {
-            variant: "warning",
-            title: "⏳ Application Under Review",
-            message:
-              "Your seller application has been submitted and is currently being reviewed by our team.",
-          };
-        case "under_review":
-          return {
-            variant: "info",
-            title: "🔍 Application Being Processed",
-            message:
-              "Our team is actively reviewing your application and farm documentation.",
-          };
-        case "basic_verified":
-        case "farm_verified":
-          return {
-            variant: "success",
-            title: "✅ Application Approved!",
-            message:
-              "Congratulations! Your seller application has been approved. Your account will be updated shortly.",
-          };
-        case "rejected":
-          return {
-            variant: "danger",
-            title: "❌ Application Not Approved",
-            message:
-              "Unfortunately, your application was not approved at this time.",
-          };
-        default:
-          return {
-            variant: "secondary",
-            title: "📋 Application Status",
-            message: "Your application status is being processed.",
-          };
-      }
+          <div className="mb-4">
+            <h6 className="text-success">Step 2: Make Your Own Copy</h6>
+            <ol>
+              <li>Click "File" → "Make a copy" in Google Sheets</li>
+              <li>Give your sheet a name like "My Farm Products"</li>
+              <li>Make sure it's set to "Anyone with the link can view"</li>
+            </ol>
+          </div>
+
+          <div className="mb-4">
+            <h6 className="text-success">Step 3: Add Your Products</h6>
+            <p>Fill in your products using these columns:</p>
+            <div className="table-responsive">
+              <table className="table table-sm table-bordered">
+                <thead className="table-light">
+                  <tr>
+                    <th>Column</th>
+                    <th>Required</th>
+                    <th>Example</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <strong>Name</strong>
+                    </td>
+                    <td>
+                      <Badge bg="danger">Required</Badge>
+                    </td>
+                    <td>Fresh Tomatoes</td>
+                    <td>Product name</td>
+                  </tr>
+                  <tr>
+                    <td>Description</td>
+                    <td>
+                      <Badge bg="secondary">Optional</Badge>
+                    </td>
+                    <td>Organic red tomatoes, freshly harvested</td>
+                    <td>Product details</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Price</strong>
+                    </td>
+                    <td>
+                      <Badge bg="danger">Required</Badge>
+                    </td>
+                    <td>50</td>
+                    <td>Price per unit (₹)</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Quantity</strong>
+                    </td>
+                    <td>
+                      <Badge bg="danger">Required</Badge>
+                    </td>
+                    <td>10</td>
+                    <td>Available quantity</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Category</strong>
+                    </td>
+                    <td>
+                      <Badge bg="danger">Required</Badge>
+                    </td>
+                    <td>Vegetables</td>
+                    <td>Vegetables, Fruits, Herbs, etc.</td>
+                  </tr>
+                  <tr>
+                    <td>Unit</td>
+                    <td>
+                      <Badge bg="secondary">Optional</Badge>
+                    </td>
+                    <td>kg</td>
+                    <td>kg, pieces, bundles, etc.</td>
+                  </tr>
+                  <tr>
+                    <td>Location</td>
+                    <td>
+                      <Badge bg="warning">Recommended</Badge>
+                    </td>
+                    <td>Hyderabad, Telangana</td>
+                    <td>Your city/area</td>
+                  </tr>
+                  <tr>
+                    <td>Images</td>
+                    <td>
+                      <Badge bg="secondary">Optional</Badge>
+                    </td>
+                    <td>https://example.com/image1.jpg</td>
+                    <td>Comma-separated URLs</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Contact Name</strong>
+                    </td>
+                    <td>
+                      <Badge bg="danger">Required</Badge>
+                    </td>
+                    <td>Ramesh Kumar</td>
+                    <td>Your name</td>
+                  </tr>
+                  <tr>
+                    <td>Contact Phone</td>
+                    <td>
+                      <Badge bg="warning">Recommended</Badge>
+                    </td>
+                    <td>9876543210</td>
+                    <td>Your phone number</td>
+                  </tr>
+                  <tr>
+                    <td>Contact WhatsApp</td>
+                    <td>
+                      <Badge bg="warning">Recommended</Badge>
+                    </td>
+                    <td>9876543210</td>
+                    <td>WhatsApp number</td>
+                  </tr>
+                  <tr>
+                    <td>Organic</td>
+                    <td>
+                      <Badge bg="secondary">Optional</Badge>
+                    </td>
+                    <td>Yes</td>
+                    <td>Yes/No or True/False</td>
+                  </tr>
+                  <tr>
+                    <td>Harvest Date</td>
+                    <td>
+                      <Badge bg="secondary">Optional</Badge>
+                    </td>
+                    <td>2025-09-15</td>
+                    <td>When harvested</td>
+                  </tr>
+                  <tr>
+                    <td>Notes</td>
+                    <td>
+                      <Badge bg="secondary">Optional</Badge>
+                    </td>
+                    <td>Available for pickup only</td>
+                    <td>Additional info</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <h6 className="text-success">Step 4: Share Your Sheet</h6>
+            <ol>
+              <li>Click the "Share" button in your Google Sheet</li>
+              <li>Change access to "Anyone with the link can view"</li>
+              <li>Copy the share link</li>
+              <li>Send us the link using the form below</li>
+            </ol>
+          </div>
+        </div>
+      </Card.Body>
+    </Card>
+  );
+
+  const ValidationForm = () => {
+    const [spreadsheetId, setSpreadsheetId] = useState("");
+
+    const extractSpreadsheetId = (url) => {
+      const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      return match ? match[1] : url;
     };
 
-    const statusInfo = getStatusInfo(existingRequest.status);
+    const handleValidate = () => {
+      const id = extractSpreadsheetId(spreadsheetId);
+      validateSpreadsheet(id);
+    };
 
     return (
-      <Container className="py-5">
-        <Card>
-          <Card.Header className="bg-primary text-white">
-            <h4 className="mb-0">🌱 Seller Application Status</h4>
-          </Card.Header>
-          <Card.Body>
-            <Alert variant={statusInfo.variant}>
-              <Alert.Heading>{statusInfo.title}</Alert.Heading>
-              <p>{statusInfo.message}</p>
+      <Card className="mb-4">
+        <Card.Header>
+          <h5 className="mb-0">
+            <FaCheck className="me-2" />
+            Test Your Google Sheet
+          </h5>
+        </Card.Header>
+        <Card.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Google Sheets URL or ID</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Paste your Google Sheets URL here..."
+                value={spreadsheetId}
+                onChange={(e) => setSpreadsheetId(e.target.value)}
+              />
+              <Form.Text className="text-muted">
+                You can paste the full URL or just the spreadsheet ID
+              </Form.Text>
+            </Form.Group>
+            <Button
+              variant="primary"
+              onClick={handleValidate}
+              disabled={!spreadsheetId || isValidating}
+            >
+              {isValidating ? "Validating..." : "Validate Sheet"}
+            </Button>
+          </Form>
 
-              {existingRequest.review_notes && (
-                <div className="mt-3">
-                  <strong>Review Notes:</strong>
-                  <div className="bg-light p-3 rounded mt-2">
-                    {existingRequest.review_notes}
-                  </div>
-                </div>
-              )}
-
-              <hr />
-
-              <div className="row">
-                <div className="col-md-6">
-                  <strong>Application Details:</strong>
-                  <ul className="mt-2">
-                    <li>
-                      Farm Name:{" "}
-                      {existingRequest.farm_name ||
-                        existingRequest.business_name}
-                    </li>
-                    <li>Location: {existingRequest.location}</li>
-                    <li>
-                      Submitted:{" "}
-                      {new Date(
-                        existingRequest.created_at
-                      ).toLocaleDateString()}
-                    </li>
-                    <li>
-                      Status:{" "}
-                      {existingRequest.verification_level ||
-                        existingRequest.status}
-                    </li>
-                  </ul>
-                </div>
-
-                {existingRequest.farming_methods && (
-                  <div className="col-md-6">
-                    <strong>Farming Methods:</strong>
-                    <div className="mt-2">
-                      {existingRequest.farming_methods.map((method) => (
-                        <span
-                          key={method}
-                          className="badge bg-success me-1 mb-1"
-                        >
-                          {method.replace("_", " ").toUpperCase()}
-                        </span>
-                      ))}
+          {validationResult && (
+            <Alert
+              variant={validationResult.success ? "success" : "danger"}
+              className="mt-3"
+            >
+              {validationResult.success ? (
+                <div>
+                  <h6>✅ Sheet looks good!</h6>
+                  {validationResult.validation?.isValid ? (
+                    <p>Your sheet structure is correct and ready to use.</p>
+                  ) : (
+                    <div>
+                      <p>Sheet structure needs some adjustments:</p>
+                      <ul>
+                        {validationResult.validation?.suggestions?.map(
+                          (suggestion, idx) => (
+                            <li key={idx}>{suggestion}</li>
+                          )
+                        )}
+                      </ul>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {existingRequest.status === "rejected" && (
-                <div className="mt-3">
-                  <p className="mb-0">
-                    <strong>
-                      You can submit a new application addressing the review
-                      feedback.
-                    </strong>
-                  </p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <h6>❌ Validation Failed</h6>
+                  <p>{validationResult.error}</p>
                 </div>
               )}
             </Alert>
-
-            {existingRequest.status === "rejected" ? (
-              <div className="text-center">
-                <button
-                  className="btn btn-primary"
-                  onClick={() => setExistingRequest(null)}
-                >
-                  Submit New Application
-                </button>
-              </div>
-            ) : (
-              <div className="text-center">
-                <Link href="/dashboard" className="btn btn-primary me-2">
-                  Go to Dashboard
-                </Link>
-                <Link href="/profile" className="btn btn-outline-primary">
-                  Update Profile
-                </Link>
-              </div>
-            )}
-          </Card.Body>
-        </Card>
-      </Container>
+          )}
+        </Card.Body>
+      </Card>
     );
-  }
+  };
 
-  // Show the seller application form
   return (
-    <Container className="pb-4">
-      <div className="text-center mb-4">
-        <h2 className="text-success">🌱 Join Our Natural Farming Community</h2>
-        <p className="lead text-muted">
-          Help buyers discover naturally grown, chemical-free produce from your
-          farm
-        </p>
-      </div>
+    <Container className="py-4">
+      <Row>
+        <Col lg={8} className="mx-auto">
+          <div className="text-center mb-5">
+            <h1 className="display-4 text-success mb-3">Become a Seller</h1>
+            <p className="lead">
+              Join our marketplace and start selling your fresh produce to local
+              customers. List your products using Google Sheets - it's simple
+              and free!
+            </p>
+          </div>
 
-      <Alert variant="info" className="mb-4">
-        <Alert.Heading>📋 Seller Application Process</Alert.Heading>
-        <p className="mb-0">
-          Complete this application to become a verified natural farming seller.
-          Our team will review your farming practices and documentation to
-          ensure quality standards for our community.
-        </p>
-        <hr />
-        <ul className="mb-0">
-          <li>
-            <strong>Step 1:</strong> Complete detailed application form
-          </li>
-          <li>
-            <strong>Step 2:</strong> Upload farm photos and documentation
-          </li>
-          <li>
-            <strong>Step 3:</strong> Admin review (1-3 business days)
-          </li>
-          <li>
-            <strong>Step 4:</strong> Start selling natural produce!
-          </li>
-        </ul>
-      </Alert>
+          <Alert variant="info" className="mb-4">
+            <FaInfoCircle className="me-2" />
+            <strong>No Registration Required!</strong> Simply create a Google
+            Sheet with your products and we'll automatically include them in our
+            marketplace. Update your sheet anytime to manage your inventory.
+          </Alert>
 
-      <NaturalFarmingSellerForm
-        onSuccess={handleSuccess}
-        userInfo={{
-          name: session.user.name,
-          email: session.user.email,
-          phone: session.user.phone_number || session.user.phone,
-          whatsapp_number: session.user.whatsapp_number,
-          location: session.user.location,
-        }}
-      />
+          <TemplateInstructions />
+          <ValidationForm />
+
+          {/* Benefits Section */}
+          <Card className="mb-4">
+            <Card.Header>
+              <h5 className="mb-0">Why Sell With Us?</h5>
+            </Card.Header>
+            <Card.Body>
+              <Row>
+                <Col md={6}>
+                  <ul className="list-unstyled">
+                    <li className="mb-2">
+                      ✅ <strong>Free to use</strong> - No registration fees
+                    </li>
+                    <li className="mb-2">
+                      ✅ <strong>Easy updates</strong> - Just edit your Google
+                      Sheet
+                    </li>
+                    <li className="mb-2">
+                      ✅ <strong>Reach local customers</strong> - Connect with
+                      nearby buyers
+                    </li>
+                    <li className="mb-2">
+                      ✅ <strong>No technical skills needed</strong> - Simple
+                      spreadsheet format
+                    </li>
+                  </ul>
+                </Col>
+                <Col md={6}>
+                  <ul className="list-unstyled">
+                    <li className="mb-2">
+                      ✅ <strong>Instant updates</strong> - Changes appear
+                      within minutes
+                    </li>
+                    <li className="mb-2">
+                      ✅ <strong>Mobile friendly</strong> - Customers can find
+                      you on any device
+                    </li>
+                    <li className="mb-2">
+                      ✅ <strong>Direct contact</strong> - Customers contact you
+                      directly
+                    </li>
+                    <li className="mb-2">
+                      ✅ <strong>Keep your data</strong> - You own your product
+                      information
+                    </li>
+                  </ul>
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
+
+          {/* Support Section */}
+          <Card className="mb-4 border-primary">
+            <Card.Header className="bg-primary text-white">
+              <h5 className="mb-0">Need Help?</h5>
+            </Card.Header>
+            <Card.Body>
+              <p>
+                We're here to help you get started! If you have any questions or
+                need assistance setting up your product sheet, please don't
+                hesitate to reach out.
+              </p>
+              <Button variant="primary" className="me-2">
+                Contact Support
+              </Button>
+              <Button variant="outline-primary">Watch Tutorial Video</Button>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Detailed Instructions Modal */}
+      <Modal
+        show={showInstructionsModal}
+        onHide={() => setShowInstructionsModal(false)}
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Detailed Setup Instructions</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="instructions-content">
+            <h6>Step-by-Step Setup Guide</h6>
+
+            <div className="mb-4">
+              <h6 className="text-primary">1. Create Your Google Sheet</h6>
+              <ol>
+                <li>
+                  Go to{" "}
+                  <a
+                    href="https://sheets.google.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Google Sheets
+                  </a>
+                </li>
+                <li>Click "Blank" to create a new spreadsheet</li>
+                <li>Name your sheet (e.g., "My Farm Products 2025")</li>
+              </ol>
+            </div>
+
+            <div className="mb-4">
+              <h6 className="text-primary">2. Set Up Your Columns</h6>
+              <p>
+                In the first row (header row), add these column names exactly as
+                shown:
+              </p>
+              <div className="bg-light p-3 rounded font-monospace">
+                Name | Description | Price | Quantity | Category | Unit |
+                Location | Images | Contact Name | Contact Phone | Contact
+                WhatsApp | Organic | Harvest Date | Notes
+              </div>
+              <Button
+                size="sm"
+                variant="outline-secondary"
+                onClick={() =>
+                  handleCopyText(
+                    "Name\tDescription\tPrice\tQuantity\tCategory\tUnit\tLocation\tImages\tContact Name\tContact Phone\tContact WhatsApp\tOrganic\tHarvest Date\tNotes",
+                    "headers"
+                  )
+                }
+                className="mt-2"
+              >
+                {copiedText === "headers" ? <FaCheck /> : <FaCopy />} Copy
+                Headers
+              </Button>
+            </div>
+
+            <div className="mb-4">
+              <h6 className="text-primary">3. Add Sample Data</h6>
+              <p>Here's an example row to get you started:</p>
+              <div className="table-responsive">
+                <table className="table table-sm table-bordered">
+                  <tbody>
+                    <tr>
+                      <td>Fresh Tomatoes</td>
+                      <td>Organic red tomatoes</td>
+                      <td>50</td>
+                      <td>10</td>
+                      <td>Vegetables</td>
+                      <td>kg</td>
+                      <td>Hyderabad</td>
+                      <td></td>
+                      <td>Your Name</td>
+                      <td>9876543210</td>
+                      <td>9876543210</td>
+                      <td>Yes</td>
+                      <td>2025-09-15</td>
+                      <td>Fresh harvest</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <h6 className="text-primary">4. Make It Public</h6>
+              <ol>
+                <li>Click the "Share" button (top right)</li>
+                <li>Under "General access", select "Anyone with the link"</li>
+                <li>Make sure it's set to "Viewer"</li>
+                <li>Click "Copy link"</li>
+              </ol>
+            </div>
+
+            <div className="mb-4">
+              <h6 className="text-primary">5. Test Your Sheet</h6>
+              <p>
+                Use the validation tool above to make sure everything is set up
+                correctly.
+              </p>
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowInstructionsModal(false)}
+          >
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 }

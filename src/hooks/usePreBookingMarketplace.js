@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import vegetableService from "@/services/VegetableService";
+import ClientVegetableService from "@/services/ClientVegetableService";
 
 export function usePreBookingMarketplace(initialFilters = {}) {
   const [products, setProducts] = useState([]);
@@ -28,12 +28,13 @@ export function usePreBookingMarketplace(initialFilters = {}) {
       setError(null);
 
       // Fetch all vegetables and filter to prebooking products
-      const data = await vegetableService.getAllVegetables();
+      const data = await ClientVegetableService.getAllVegetables();
 
       if (data && Array.isArray(data)) {
-        // Filter to only prebooking products
+        // Filter to only prebooking products from internal sources (exclude external sellers)
         const prebookingProducts = data.filter(
-          (product) => product.product_type === "prebooking"
+          (product) =>
+            product.product_type === "prebooking" && !product.is_external
         );
 
         setProducts(prebookingProducts);

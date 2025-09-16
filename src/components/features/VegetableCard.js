@@ -24,7 +24,19 @@ const isValidUrl = (str) => {
 
 // Helper function to group image variants into logical images
 const groupImageVariants = (images) => {
-  if (!images || images.length === 0) return [];
+  // Ensure images is an array
+  if (!images) return [];
+  if (!Array.isArray(images)) {
+    if (typeof images === "string") {
+      images = images
+        .split(",")
+        .map((url) => url.trim())
+        .filter((url) => url.length > 0);
+    } else {
+      return [];
+    }
+  }
+  if (images.length === 0) return [];
 
   // Group images by their base filename
   const grouped = {};
@@ -71,7 +83,20 @@ const groupImageVariants = (images) => {
 
 // Helper function to get the right image variant
 const getImageVariant = (images, variant = "medium") => {
-  if (!images || images.length === 0) return "";
+  // Ensure images is an array
+  if (!images) return "";
+  if (!Array.isArray(images)) {
+    // If images is a string, convert to array
+    if (typeof images === "string") {
+      images = images
+        .split(",")
+        .map((url) => url.trim())
+        .filter((url) => url.length > 0);
+    } else {
+      return "";
+    }
+  }
+  if (images.length === 0) return "";
 
   // First, look for the specific variant pattern (_variant.webp)
   const targetVariant = images.find((img) => {

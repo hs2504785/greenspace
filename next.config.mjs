@@ -6,6 +6,21 @@ const nextConfig = {
       "picsum.photos",
       "hnzykyyefjupdxbramup.supabase.co",
       "sjhbbmbjyqzmswlvzuyi.supabase.co",
+      // External seller image domains
+      "example.com",
+      "imgur.com",
+      "i.imgur.com",
+      "drive.google.com",
+      "lh3.googleusercontent.com",
+    ],
+    // For better security with external sellers, use remotePatterns
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+        port: "",
+        pathname: "**",
+      },
     ],
   },
 };

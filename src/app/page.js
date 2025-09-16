@@ -1,10 +1,12 @@
 "use client";
 
-import { useVegetables } from "@/hooks/useVegetables";
+import { useEnhancedVegetables } from "@/hooks/useEnhancedVegetables";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import VegetableFilterOffcanvas from "@/components/features/VegetableFilterOffcanvas";
 import VegetableResults from "@/components/features/VegetableResults";
+import { Alert, Button, Row, Col } from "react-bootstrap";
+import { FaSync, FaInfoCircle } from "react-icons/fa";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -15,11 +17,16 @@ export default function Home() {
     vegetables,
     loading,
     error,
-    totalCount,
+    stats,
     filters,
     updateFilters,
-    refresh,
-  } = useVegetables({ showFreeOnly });
+    refreshData,
+    refreshExternalData,
+    totalVegetables,
+    internalProducts,
+    externalProducts,
+    hasFilters,
+  } = useEnhancedVegetables({ showFreeOnly });
 
   // Update filter when URL parameter changes
   useEffect(() => {
@@ -31,7 +38,7 @@ export default function Home() {
   // Listen for ANY order events to refresh product listings (AI + Manual)
   useEffect(() => {
     const handleOrderEvent = (eventType) => {
-      refresh();
+      refreshData();
     };
 
     const handleOrderCreated = () => handleOrderEvent("Order created");
@@ -53,7 +60,7 @@ export default function Home() {
         window.removeEventListener("products-updated", handleProductsUpdated);
       };
     }
-  }, [refresh]);
+  }, [refreshData]);
 
   // Listen for filter toggle events from header
   useEffect(() => {
@@ -94,7 +101,19 @@ export default function Home() {
           vegetables={vegetables}
           loading={loading}
           error={error}
+          stats={stats}
         />
+
+        {/* Products Info Footer - Subtle stats at bottom */}
+        {externalProducts > 0 && vegetables.length > 0 && (
+          <div className="mt-4 p-3 bg-light rounded-3 text-center">
+            <small className="text-muted">
+              <FaInfoCircle className="me-1" />
+              Showing {totalVegetables} products ({internalProducts} from our
+              farmers + {externalProducts} from community sellers)
+            </small>
+          </div>
+        )}
       </div>
 
       {/* Filter Offcanvas */}
@@ -103,7 +122,8 @@ export default function Home() {
         onHide={() => setShowFilters(false)}
         filters={filters}
         onFilterChange={updateFilters}
-        totalCount={totalCount}
+        totalCount={totalVegetables}
+        stats={stats}
       />
     </>
   );
