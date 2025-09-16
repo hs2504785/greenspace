@@ -84,19 +84,30 @@ export const getTreeType = (
  * @returns {string} - CSS class name
  */
 export const getTreeTypeClass = (treeType) => {
+  let className;
   switch (treeType) {
     case "big":
-      return "treeCircleBig";
+      className = "treeCircleBig";
+      break;
     case "centerBig":
-      return "treeCircleCenterBig";
+      className = "treeCircleCenterBig";
+      break;
     case "medium":
-      return "treeCircleMedium";
+      className = "treeCircleMedium";
+      break;
     case "small":
-      return "treeCircle"; // Cyan for small trees
+      className = "treeCircle"; // Cyan for small trees
+      break;
+    case "default":
+      className = "treeCircleDefault"; // Minimal outlined circle
+      break;
     case "tiny":
     default:
-      return "treeCircleTiny"; // Smallest size for tiny trees
+      className = "treeCircleTiny"; // Smallest size for tiny trees
+      break;
   }
+
+  return className;
 };
 
 /**
@@ -131,9 +142,11 @@ export const getPlantingGuideClass = (
   gridY,
   blockWidth = 24,
   blockHeight = 24,
-  isEdge = false
+  isEdge = false,
+  customNodeType = null
 ) => {
-  const treeType = getTreeType(gridX, gridY, blockWidth, blockHeight);
+  const treeType =
+    customNodeType || getTreeType(gridX, gridY, blockWidth, blockHeight);
 
   if (isEdge) {
     switch (treeType) {
@@ -145,6 +158,8 @@ export const getPlantingGuideClass = (
         return "edgeGuideMedium";
       case "small":
         return "edgeGuide"; // Cyan for small trees
+      case "default":
+        return "edgeGuideDefault"; // Minimal guide for default
       case "tiny":
       default:
         return "edgeGuideTiny"; // Smallest for tiny trees
@@ -159,6 +174,8 @@ export const getPlantingGuideClass = (
         return "interiorGuideMedium";
       case "small":
         return "interiorGuide"; // Cyan for small trees
+      case "default":
+        return "interiorGuideDefault"; // Minimal guide for default
       case "tiny":
       default:
         return "interiorGuideTiny"; // Smallest for tiny trees

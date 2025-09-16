@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, memo, useCallback } from "react";
 import { Card, Button, Row, Col } from "react-bootstrap";
 import { toast } from "react-hot-toast";
 import styles from "./PureCSSGridFarm.module.css";
+import "./DefaultNodeOverride.css"; // Global CSS for default node override
 import {
   getTreeClassFromPosition,
   getPlantingGuideClass,
+  getTreeTypeClass,
+  getTreeType,
 } from "../../utils/treeTypeClassifier";
+import NodeTypeContextMenu from "./NodeTypeContextMenu";
 
 const PureCSSGridFarm = memo(
   ({
@@ -25,10 +29,105 @@ const PureCSSGridFarm = memo(
     const [loading, setLoading] = useState(true);
     const [internalZoom, setInternalZoom] = useState(1);
     const [showPlantingGuides, setShowPlantingGuides] = useState(true);
+    const [contextMenu, setContextMenu] = useState({
+      show: false,
+      x: 0,
+      y: 0,
+      position: null,
+    });
+    const [customNodeTypes, setCustomNodeTypes] = useState(new Map()); // blockIndex-x-y -> nodeType
 
     // Use external zoom if provided, otherwise use internal zoom
     const zoom = externalZoom !== undefined ? externalZoom : internalZoom;
     const setZoom = externalZoom !== undefined ? () => {} : setInternalZoom;
+
+    // Function to get the effective node type (custom or position-based)
+    const getEffectiveNodeType = (
+      blockIndex,
+      x,
+      y,
+      blockWidth = 24,
+      blockHeight = 24
+    ) => {
+      const positionKey = `${blockIndex}-${x}-${y}`;
+      const customType = customNodeTypes.get(positionKey);
+
+      if (customType) {
+        return customType;
+      }
+
+      // Fall back to position-based type
+      const positionBasedType = getTreeType(x, y, blockWidth, blockHeight);
+      return positionBasedType;
+    };
+
+    // Handle right-click context menu
+    const handleContextMenu = useCallback((e, blockIndex, x, y) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      setContextMenu({
+        show: true,
+        x: e.clientX,
+        y: e.clientY,
+        position: { blockIndex, x, y },
+      });
+    }, []);
+
+    // Handle node type change
+    const handleNodeTypeChange = useCallback(
+      async (newType) => {
+        if (!contextMenu.position || !layout) return;
+
+        const { blockIndex, x, y } = contextMenu.position;
+        const positionKey = `${blockIndex}-${x}-${y}`;
+
+        try {
+          // Save to database
+          const response = await fetch("/api/custom-node-types", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              layoutId: layout.id,
+              blockIndex,
+              gridX: x,
+              gridY: y,
+              nodeType: newType === "auto" ? null : newType,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to save custom node type");
+          }
+
+          // Update local state
+          setCustomNodeTypes((prev) => {
+            const newMap = new Map(prev);
+            if (newType === "auto") {
+              newMap.delete(positionKey);
+            } else {
+              newMap.set(positionKey, newType);
+            }
+            return newMap;
+          });
+
+          toast.success(
+            `Node type changed to ${newType === "auto" ? "Auto" : newType}!`
+          );
+        } catch (error) {
+          console.error("Error saving custom node type:", error);
+          toast.error("Failed to save node type change");
+        }
+      },
+      [contextMenu.position, layout]
+    );
+
+    // Close context menu
+    const closeContextMenu = useCallback(() => {
+      setContextMenu({ show: false, x: 0, y: 0, position: null });
+    }, []);
 
     useEffect(() => {
       if (selectedLayoutId) {
@@ -37,6 +136,50 @@ const PureCSSGridFarm = memo(
         fetchLayout();
       }
     }, [farmId, selectedLayoutId]);
+
+    // Close context menu on outside click
+    useEffect(() => {
+      if (!contextMenu.show) return;
+
+      const handleGlobalClick = () => {
+        closeContextMenu();
+      };
+
+      // Add a small delay to prevent immediate closing when the menu opens
+      const timeoutId = setTimeout(() => {
+        document.addEventListener("click", handleGlobalClick);
+      }, 100);
+
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener("click", handleGlobalClick);
+      };
+    }, [contextMenu.show, closeContextMenu]);
+
+    // Load custom node types from database
+    const loadCustomNodeTypes = async (layoutId) => {
+      try {
+        const response = await fetch(
+          `/api/custom-node-types?layoutId=${layoutId}`
+        );
+        if (!response.ok) throw new Error("Failed to fetch custom node types");
+
+        const data = await response.json();
+        const customTypes = data.customNodeTypes || {};
+
+        // Convert object to Map
+        const customNodeTypesMap = new Map();
+        Object.entries(customTypes).forEach(([key, value]) => {
+          customNodeTypesMap.set(key, value);
+        });
+
+        setCustomNodeTypes(customNodeTypesMap);
+      } catch (error) {
+        console.error("Error loading custom node types:", error);
+        // Don't show error toast for this as it's not critical
+        setCustomNodeTypes(new Map());
+      }
+    };
 
     // Refresh trees when refreshKey changes
     // refreshKey handled by parent - trees are passed as props
@@ -53,6 +196,7 @@ const PureCSSGridFarm = memo(
 
         if (activeLayout) {
           setLayout(activeLayout);
+          await loadCustomNodeTypes(activeLayout.id);
           setLoading(false);
         } else {
           createDefaultLayout();
@@ -95,6 +239,7 @@ const PureCSSGridFarm = memo(
         if (response.ok) {
           const newLayout = await response.json();
           setLayout(newLayout);
+          await loadCustomNodeTypes(newLayout.id);
           setLoading(false);
           toast.success("Default layout created!");
         }
@@ -244,50 +389,92 @@ const PureCSSGridFarm = memo(
               >
                 <div
                   className={
-                    styles[
-                      getTreeClassFromPosition(
-                        pos.grid_x,
-                        pos.grid_y,
-                        block.width,
-                        block.height
-                      )
-                    ]
+                    getEffectiveNodeType(
+                      pos.block_index,
+                      pos.grid_x,
+                      pos.grid_y,
+                      block.width,
+                      block.height
+                    ) === "default"
+                      ? "default-node-override"
+                      : styles[
+                          getTreeTypeClass(
+                            getEffectiveNodeType(
+                              pos.block_index,
+                              pos.grid_x,
+                              pos.grid_y,
+                              block.width,
+                              block.height
+                            )
+                          )
+                        ]
                   }
-                  title={`${tree.code} - ${tree.name}\nClick to view details • Right-click for history`}
+                  style={
+                    getEffectiveNodeType(
+                      pos.block_index,
+                      pos.grid_x,
+                      pos.grid_y,
+                      block.width,
+                      block.height
+                    ) === "default"
+                      ? {
+                          width: "12px",
+                          height: "12px",
+                          borderRadius: "50%",
+                          background: "transparent",
+                          color: "#6c757d",
+                          border: "1px solid #6c757d",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "6px",
+                          fontWeight: "normal",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          boxShadow: "none",
+                          zIndex: 10,
+                          position: "relative",
+                          userSelect: "none",
+                        }
+                      : {}
+                  }
+                  data-node-type={getEffectiveNodeType(
+                    pos.block_index,
+                    pos.grid_x,
+                    pos.grid_y,
+                    block.width,
+                    block.height
+                  )}
+                  data-css-class={getTreeTypeClass(
+                    getEffectiveNodeType(
+                      pos.block_index,
+                      pos.grid_x,
+                      pos.grid_y,
+                      block.width,
+                      block.height
+                    )
+                  )}
+                  title={`${tree.code} - ${tree.name}\nClick to view details`}
                 >
                   {tree.code}
                 </div>
 
-                {/* History Icon - appears on hover */}
+                {/* Single Action Icon - appears on hover */}
                 <div
-                  className={styles.historyIcon}
+                  className={styles.actionIcon}
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Trigger history modal directly
-                    const treePosition = {
-                      ...pos,
-                      tree_id: tree.id,
-                      trees: tree,
-                      name: tree.name,
-                      code: tree.code,
-                      category: tree.category,
-                      season: tree.season,
-                      years_to_fruit: tree.years_to_fruit,
-                      mature_height: tree.mature_height,
-                      description: tree.description,
-                    };
-                    // Use the history callback if provided
-                    if (onTreeHistoryClick) {
-                      onTreeHistoryClick(treePosition, {
-                        x: pos.grid_x,
-                        y: pos.grid_y,
-                        blockIndex: pos.block_index,
-                      });
-                    }
+                    // Trigger context menu which now includes both actions
+                    handleContextMenu(
+                      e,
+                      pos.block_index,
+                      pos.grid_x,
+                      pos.grid_y
+                    );
                   }}
-                  title="View tree growth history"
+                  title="Tree options"
                 >
-                  📸
+                  ⋯
                 </div>
               </div>
             );
@@ -326,10 +513,18 @@ const PureCSSGridFarm = memo(
                 const isEdge =
                   x === 0 || x === block.width || y === 0 || y === block.height;
 
+                const effectiveNodeType = getEffectiveNodeType(
+                  blockIndex,
+                  x,
+                  y,
+                  block.width,
+                  block.height
+                );
+
                 guides.push(
                   <div
-                    key={`guide-${blockIndex}-${x}-${y}`}
-                    className={styles.plantingGuide}
+                    key={`guide-${blockIndex}-${x}-${y}-${effectiveNodeType}`}
+                    className={`${styles.plantingGuide} ${styles.plantingGuideWithSettings}`}
                     style={{
                       position: "absolute",
                       left: `${absoluteX * 24}px`, // Perfect alignment with 24px grid lines
@@ -354,14 +549,27 @@ const PureCSSGridFarm = memo(
                             y,
                             block.width,
                             block.height,
-                            isEdge
+                            isEdge,
+                            effectiveNodeType
                           )
                         ]
                       }
                       title={`Plant tree at ${x}ft, ${y}ft ${
                         isEdge ? "(Edge - Shared)" : "(3ft Grid)"
-                      }`}
+                      }\nClick ⚙️ to change node type`}
                     />
+
+                    {/* Action Icon for planting guides */}
+                    <div
+                      className={styles.guideActionIcon}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleContextMenu(e, blockIndex, x, y);
+                      }}
+                      title="Node options"
+                    >
+                      ⋯
+                    </div>
                   </div>
                 );
               }
@@ -597,6 +805,12 @@ const PureCSSGridFarm = memo(
                     // Grid background is now handled in CSS module for proper visibility
                   }}
                   onClick={(e) => {
+                    // Close context menu if open
+                    if (contextMenu.show) {
+                      closeContextMenu();
+                      return;
+                    }
+
                     // **Single click handler for entire grid!**
                     const rect = e.currentTarget.getBoundingClientRect();
                     // Perfect 24px grid alignment for 1ft precision
@@ -727,6 +941,48 @@ const PureCSSGridFarm = memo(
             </div>
           </div>
         </Card.Body>
+
+        {/* Node Type Context Menu */}
+        <NodeTypeContextMenu
+          show={contextMenu.show}
+          x={contextMenu.x}
+          y={contextMenu.y}
+          currentType={
+            contextMenu.position
+              ? customNodeTypes.get(
+                  `${contextMenu.position.blockIndex}-${contextMenu.position.x}-${contextMenu.position.y}`
+                ) || "auto"
+              : "auto"
+          }
+          onTypeChange={handleNodeTypeChange}
+          onClose={closeContextMenu}
+          onGrowthHistoryClick={onTreeHistoryClick}
+          selectedTree={
+            contextMenu.position
+              ? (() => {
+                  // Find the actual tree data from the trees array
+                  for (const tree of trees) {
+                    const matchingPosition = tree.tree_positions?.find(
+                      (pos) =>
+                        pos.layout_id === layout.id &&
+                        pos.block_index === contextMenu.position.blockIndex &&
+                        pos.grid_x === contextMenu.position.x &&
+                        pos.grid_y === contextMenu.position.y
+                    );
+                    if (matchingPosition) {
+                      return {
+                        ...tree,
+                        tree_id: tree.id,
+                        position: matchingPosition,
+                      };
+                    }
+                  }
+                  return null;
+                })()
+              : null
+          }
+          selectedPosition={contextMenu.position}
+        />
       </Card>
     );
   }

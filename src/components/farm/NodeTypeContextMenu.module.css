@@ -1,0 +1,174 @@
+/* Node Type Context Menu Styles */
+
+.contextMenuOverlay {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2px);
+}
+
+.contextMenu {
+  animation: contextMenuAppear 0.2s ease-out;
+  transform-origin: top left;
+  font-size: 14px;
+  height: fit-content !important;
+  max-height: none !important;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes contextMenuAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.menuItem {
+  transition: none !important;
+  position: relative;
+  min-height: 32px;
+  border-radius: 0 !important;
+  margin: 0;
+}
+
+.menuItem:hover {
+  background-color: transparent !important;
+  transform: none;
+  box-shadow: none;
+  border-bottom: 1px solid #f8f9fa !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+.menuItem:focus {
+  box-shadow: none;
+  outline: none;
+  border-bottom: 1px solid #f8f9fa !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+.menuItem:active {
+  transform: none;
+  border-bottom: 1px solid #f8f9fa !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+/* Mobile-first responsive adjustments */
+@media (max-width: 768px) {
+  .contextMenu {
+    min-width: 160px;
+    max-width: 85vw;
+    font-size: 13px;
+  }
+
+  .menuItem {
+    padding: 8px 8px !important;
+    min-height: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contextMenu {
+    min-width: 140px;
+    max-width: 90vw;
+    font-size: 12px;
+  }
+
+  .menuItem {
+    padding: 10px 8px !important;
+    min-height: 40px; /* Touch-friendly size */
+  }
+
+  .contextMenuOverlay {
+    background: rgba(0, 0, 0, 0.2); /* Slightly darker for mobile */
+  }
+}
+
+@media (max-width: 360px) {
+  .contextMenu {
+    min-width: 130px;
+    max-width: 95vw;
+  }
+
+  .menuItem {
+    padding: 8px 6px !important;
+    min-height: 38px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .menuItem {
+    min-height: 44px; /* iOS recommended touch target */
+  }
+
+  .menuItem:hover {
+    transform: none; /* Disable hover transforms on touch devices */
+  }
+
+  .menuItem:active {
+    background-color: #e9ecef !important;
+    transform: scale(0.95);
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .contextMenu {
+    border-width: 0.5px;
+  }
+}
+
+/* Tree circle styling within menu items */
+.menuItem .treeCircle,
+.menuItem .treeCircleBig,
+.menuItem .treeCircleCenterBig,
+.menuItem .treeCircleMedium,
+.menuItem .treeCircleDefault,
+.menuItem .treeCircleTiny {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.menuItem:hover .treeCircle,
+.menuItem:hover .treeCircleBig,
+.menuItem:hover .treeCircleCenterBig,
+.menuItem:hover .treeCircleMedium,
+.menuItem:hover .treeCircleDefault,
+.menuItem:hover .treeCircleTiny {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transform: scale(0.75) !important; /* Slightly larger on hover */
+}
+
+/* Ensure proper spacing and alignment */
+.menuItem .fw-medium {
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* Growth history button styling */
+.menuItem[style*="color: #198754"],
+.menuItem[style*="color: #6c757d"]:last-child {
+  border: none !important;
+  margin-top: 0;
+}
+
+.menuItem[style*="color: #198754"]:hover,
+.menuItem[style*="color: #6c757d"]:last-child:hover {
+  border: none !important;
+}
+
+/* Menu circle styling */
+.menuCircle {
+  flex-shrink: 0;
+  transition: none;
+}
