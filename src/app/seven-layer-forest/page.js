@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Container,
   Row,
@@ -18,13 +19,35 @@ import SevenLayerGrid from "@/components/farm/SevenLayerGrid";
 import TreeDetailModal from "@/components/farm/TreeDetailModal";
 import LayerExplanation from "@/components/farm/LayerExplanation";
 import InteractiveGridLayerGuide from "@/components/farm/InteractiveGridLayerGuide";
+import ComprehensivePlantList from "@/components/farm/ComprehensivePlantList";
+import { ALL_SEVEN_LAYER_PLANTS, PLANT_TYPES } from "@/data/sevenLayerPlants";
 
 export default function SevenLayerForestPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedTree, setSelectedTree] = useState(null);
   const [showTreeModal, setShowTreeModal] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [activePlantDbTab, setActivePlantDbTab] = useState("layer1");
   const [trees, setTrees] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Handle URL parameters for direct linking
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    const layer = searchParams.get("layer");
+
+    if (tab) {
+      setActiveTab(tab);
+    }
+
+    if (layer) {
+      setActivePlantDbTab(`layer${layer}`);
+      if (tab !== "plant-database") {
+        setActiveTab("plant-database");
+      }
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchTrees();
@@ -49,12 +72,48 @@ export default function SevenLayerForestPage() {
     setShowTreeModal(true);
   };
 
+  // Function to navigate to specific layer in plant database
+  const navigateToLayer = (layerNumber) => {
+    const url = new URL(window.location);
+    url.searchParams.set("tab", "plant-database");
+    url.searchParams.set("layer", layerNumber);
+    router.push(url.pathname + url.search);
+
+    setActiveTab("plant-database");
+    setActivePlantDbTab(`layer${layerNumber}`);
+  };
+
+  // Function to handle tab changes with URL updates
+  const handleTabChange = (tabKey) => {
+    const url = new URL(window.location);
+    url.searchParams.set("tab", tabKey);
+    if (tabKey !== "plant-database") {
+      url.searchParams.delete("layer");
+    }
+    router.push(url.pathname + url.search);
+    setActiveTab(tabKey);
+  };
+
+  // Function to handle plant database tab changes
+  const handlePlantDbTabChange = (layerKey) => {
+    const layerNumber = layerKey.replace("layer", "");
+    const url = new URL(window.location);
+    url.searchParams.set("tab", "plant-database");
+    url.searchParams.set("layer", layerNumber);
+    router.push(url.pathname + url.search);
+    setActivePlantDbTab(layerKey);
+  };
+
   const sevenLayerData = {
     1: {
       name: "Canopy Layer (60-100+ ft)",
       description: "Large fruit and nut trees that form the main canopy",
       color: "#2d5016",
-      examples: ["Mango", "Jackfruit", "Avocado", "Cashew", "Mulberry"],
+      examples: ALL_SEVEN_LAYER_PLANTS.layer1
+        .slice(0, 8)
+        .map((plant) => plant.name),
+      allPlants: ALL_SEVEN_LAYER_PLANTS.layer1,
+      plantCount: ALL_SEVEN_LAYER_PLANTS.layer1.length,
       benefits: [
         "Primary fruit production",
         "Windbreak protection",
@@ -68,7 +127,11 @@ export default function SevenLayerForestPage() {
       name: "Sub-Canopy Layer (20-60 ft)",
       description: "Medium-sized fruit trees under the main canopy",
       color: "#4a7c59",
-      examples: ["Pomegranate", "Guava", "Apple", "Pear", "Litchi"],
+      examples: ALL_SEVEN_LAYER_PLANTS.layer2
+        .slice(0, 8)
+        .map((plant) => plant.name),
+      allPlants: ALL_SEVEN_LAYER_PLANTS.layer2,
+      plantCount: ALL_SEVEN_LAYER_PLANTS.layer2.length,
       benefits: [
         "Diverse fruit production",
         "Efficient space utilization",
@@ -82,7 +145,11 @@ export default function SevenLayerForestPage() {
       name: "Shrub Layer (3-20 ft)",
       description: "Berry bushes and small fruit trees",
       color: "#7fb069",
-      examples: ["Barbados Cherry", "Karonda", "Blueberry", "Miracle Fruit"],
+      examples: ALL_SEVEN_LAYER_PLANTS.layer3
+        .slice(0, 8)
+        .map((plant) => plant.name),
+      allPlants: ALL_SEVEN_LAYER_PLANTS.layer3,
+      plantCount: ALL_SEVEN_LAYER_PLANTS.layer3.length,
       benefits: [
         "Quick fruit production",
         "Ground cover",
@@ -96,7 +163,11 @@ export default function SevenLayerForestPage() {
       name: "Herbaceous Layer (1-3 ft)",
       description: "Non-woody perennial plants and herbs",
       color: "#a7c957",
-      examples: ["Moringa leaves", "Spice plants", "Medicinal herbs"],
+      examples: ALL_SEVEN_LAYER_PLANTS.layer4
+        .slice(0, 8)
+        .map((plant) => plant.name),
+      allPlants: ALL_SEVEN_LAYER_PLANTS.layer4,
+      plantCount: ALL_SEVEN_LAYER_PLANTS.layer4.length,
       benefits: [
         "Nutrient cycling",
         "Soil improvement",
@@ -110,7 +181,11 @@ export default function SevenLayerForestPage() {
       name: "Ground Cover Layer (0-1 ft)",
       description: "Low-growing plants that cover the soil",
       color: "#c9e265",
-      examples: ["Strawberry", "Mint", "Ground spices", "Living mulch"],
+      examples: ALL_SEVEN_LAYER_PLANTS.layer5
+        .slice(0, 8)
+        .map((plant) => plant.name),
+      allPlants: ALL_SEVEN_LAYER_PLANTS.layer5,
+      plantCount: ALL_SEVEN_LAYER_PLANTS.layer5.length,
       benefits: [
         "Soil protection",
         "Moisture retention",
@@ -124,7 +199,11 @@ export default function SevenLayerForestPage() {
       name: "Vine Layer (Climbing)",
       description: "Climbing plants that use trees for support",
       color: "#f4a261",
-      examples: ["Grapes", "Passion fruit", "Climbing beans", "Pepper vines"],
+      examples: ALL_SEVEN_LAYER_PLANTS.layer6
+        .slice(0, 8)
+        .map((plant) => plant.name),
+      allPlants: ALL_SEVEN_LAYER_PLANTS.layer6,
+      plantCount: ALL_SEVEN_LAYER_PLANTS.layer6.length,
       benefits: [
         "Vertical space utilization",
         "Additional fruit production",
@@ -138,7 +217,11 @@ export default function SevenLayerForestPage() {
       name: "Root Layer (Underground)",
       description: "Root vegetables and tubers growing underground",
       color: "#e76f51",
-      examples: ["Sweet potato", "Ginger", "Turmeric", "Groundnuts"],
+      examples: ALL_SEVEN_LAYER_PLANTS.layer7
+        .slice(0, 8)
+        .map((plant) => plant.name),
+      allPlants: ALL_SEVEN_LAYER_PLANTS.layer7,
+      plantCount: ALL_SEVEN_LAYER_PLANTS.layer7.length,
       benefits: [
         "Soil aeration",
         "Nutrient storage",
@@ -181,7 +264,7 @@ export default function SevenLayerForestPage() {
         <Col>
           <Tabs
             activeKey={activeTab}
-            onSelect={(k) => setActiveTab(k)}
+            onSelect={handleTabChange}
             className="nav-tabs-custom"
           >
             <Tab
@@ -273,7 +356,7 @@ export default function SevenLayerForestPage() {
                 </span>
               }
             >
-              <InteractiveGridLayerGuide />
+              <InteractiveGridLayerGuide navigateToLayer={navigateToLayer} />
             </Tab>
 
             <Tab
@@ -423,6 +506,54 @@ export default function SevenLayerForestPage() {
                   </Card>
                 </Card.Body>
               </Card>
+            </Tab>
+
+            <Tab
+              eventKey="plant-database"
+              title={
+                <span>
+                  <FaLeaf className="me-2" />
+                  Complete Plant Database
+                </span>
+              }
+            >
+              <div className="mt-3">
+                <Alert variant="info" className="mb-4">
+                  <FaInfoCircle className="me-2" />
+                  <strong>Comprehensive Plant Database:</strong> Explore all{" "}
+                  {Object.values(ALL_SEVEN_LAYER_PLANTS).reduce(
+                    (total, layer) => total + layer.length,
+                    0
+                  )}{" "}
+                  plants categorized by the 7-layer food forest system. Filter
+                  by type, region, category, or search for specific plants.
+                </Alert>
+
+                <Tabs
+                  activeKey={activePlantDbTab}
+                  onSelect={handlePlantDbTabChange}
+                  className="mb-3"
+                >
+                  {Object.entries(sevenLayerData).map(
+                    ([layerNum, layerData]) => (
+                      <Tab
+                        key={layerNum}
+                        eventKey={`layer${layerNum}`}
+                        title={
+                          <span style={{ color: layerData.color }}>
+                            Layer {layerNum} ({layerData.plantCount})
+                          </span>
+                        }
+                      >
+                        <ComprehensivePlantList
+                          layerData={layerData}
+                          layerNumber={layerNum}
+                        />
+                      </Tab>
+                    )
+                  )}
+                </Tabs>
+              </div>
             </Tab>
           </Tabs>
         </Col>

@@ -29,7 +29,7 @@ import {
 } from "react-icons/fa";
 import styles from "./InteractiveGridLayerGuide.module.css";
 
-const InteractiveGridLayerGuide = () => {
+const InteractiveGridLayerGuide = ({ navigateToLayer }) => {
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [selectedLayer, setSelectedLayer] = useState(null);
   const [showOffcanvas, setShowOffcanvas] = useState(false);
@@ -64,9 +64,39 @@ const InteractiveGridLayerGuide = () => {
     return { icon: "🌱", color: "#228B22" };
   };
 
+  // Helper function to get layer number from layer data
+  const getLayerNumber = (layerData) => {
+    if (!layerData) return 1;
+
+    // Check if layerData has a layerNumber property
+    if (layerData.layerNumber) return layerData.layerNumber;
+
+    // Extract from name
+    if (layerData.name) {
+      if (
+        layerData.name.includes("Overstory") ||
+        layerData.name.includes("Canopy")
+      )
+        return 1;
+      if (
+        layerData.name.includes("Understory") ||
+        layerData.name.includes("Sub-Canopy")
+      )
+        return 2;
+      if (layerData.name.includes("Shrub")) return 3;
+      if (layerData.name.includes("Herbaceous")) return 4;
+      if (layerData.name.includes("Ground Cover")) return 5;
+      if (layerData.name.includes("Vine")) return 6;
+      if (layerData.name.includes("Root")) return 7;
+    }
+
+    return 1; // Default
+  };
+
   // Define the 7 layers with their properties
   const sevenLayers = {
     1: {
+      layerNumber: 1,
       name: "Overstory Tree Layer (60-100+ ft)",
       description:
         "Large canopy trees - the forest ceiling that provides shade and structure for the entire system",
@@ -102,6 +132,7 @@ const InteractiveGridLayerGuide = () => {
       },
     },
     2: {
+      layerNumber: 2,
       name: "Understory Tree Layer (20-60 ft)",
       description: "Medium-sized fruit trees under the canopy",
       color: "#4a7c59",
@@ -111,6 +142,7 @@ const InteractiveGridLayerGuide = () => {
       gridPositions: ["(12,12)"],
     },
     3: {
+      layerNumber: 3,
       name: "Shrub Layer (3-20 ft)",
       description: "Berry bushes and small fruit trees",
       color: "#7fb069",
@@ -120,6 +152,7 @@ const InteractiveGridLayerGuide = () => {
       gridPositions: ["(6,12)", "(18,12)"],
     },
     4: {
+      layerNumber: 4,
       name: "Herbaceous Layer (1-3 ft)",
       description: "Non-woody perennial plants and herbs",
       color: "#a7c957",
@@ -129,6 +162,7 @@ const InteractiveGridLayerGuide = () => {
       gridPositions: ["Multiple positions between trees"],
     },
     5: {
+      layerNumber: 5,
       name: "Ground Cover Layer (0-1 ft)",
       description: "Low-growing plants covering the soil",
       color: "#c9e265",
@@ -138,6 +172,7 @@ const InteractiveGridLayerGuide = () => {
       gridPositions: ["Throughout 3ft wide beds"],
     },
     6: {
+      layerNumber: 6,
       name: "Vine Layer (Climbing)",
       description: "Climbing plants using trees for support",
       color: "#f4a261",
@@ -147,6 +182,7 @@ const InteractiveGridLayerGuide = () => {
       gridPositions: ["(0,12)", "(12,12)", "(24,12) - climbing on trees"],
     },
     7: {
+      layerNumber: 7,
       name: "Root Layer (Underground)",
       description: "Root vegetables and tubers growing underground",
       color: "#e76f51",
@@ -1289,6 +1325,25 @@ const InteractiveGridLayerGuide = () => {
                         </Badge>
                       );
                     })}
+                  </div>
+
+                  {/* View All Plants Button */}
+                  <div className="mt-3 d-grid">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={() => {
+                        const layerNumber = getLayerNumber(offcanvasData);
+
+                        if (navigateToLayer) {
+                          navigateToLayer(layerNumber);
+                          setShowOffcanvas(false);
+                        }
+                      }}
+                    >
+                      <FaSeedling className="me-2" />
+                      View All Plants for This Layer
+                    </Button>
                   </div>
                 </Card.Body>
               </Card>
