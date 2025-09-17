@@ -208,11 +208,34 @@ export default function DashboardPage() {
                 <Card.Body className="text-center">
                   <div className="mb-3">
                     <i
+                      className="ti-link text-info"
+                      style={{ fontSize: "2.5rem" }}
+                    ></i>
+                  </div>
+                  <Card.Title>Google Sheets</Card.Title>
+                  <Card.Text>
+                    Connect and manage Google Sheets product listings.
+                  </Card.Text>
+                  <Link
+                    href="/google-sheets-management"
+                    className="btn btn-info"
+                  >
+                    Manage Sheets
+                  </Link>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col md={6} lg={4} className="mb-4">
+              <Card className="h-100 border-0 shadow-sm">
+                <Card.Body className="text-center">
+                  <div className="mb-3">
+                    <i
                       className="ti-dashboard text-success"
                       style={{ fontSize: "2.5rem" }}
                     ></i>
                   </div>
-                  <Card.Title>📊 Orders Dashboard</Card.Title>
+                  <Card.Title>📈 Orders Dashboard</Card.Title>
                   <Card.Text>View and manage incoming orders.</Card.Text>
                   <Link href="/seller-dashboard" className="btn btn-success">
                     View Orders

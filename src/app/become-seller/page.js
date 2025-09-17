@@ -21,10 +21,15 @@ import {
   FaUpload,
   FaInfoCircle,
 } from "react-icons/fa";
+import GoogleDriveUrlConverter from "@/components/tools/GoogleDriveUrlConverter";
+import GoogleDriveFolderProcessor, {
+  FolderSharingInstructions,
+} from "@/components/tools/GoogleDriveFolderProcessor";
 
 export default function BecomeSellerPage() {
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
+  const [showImageGuideModal, setShowImageGuideModal] = useState(false);
   const [copiedText, setCopiedText] = useState("");
   const [validationResult, setValidationResult] = useState(null);
   const [isValidating, setIsValidating] = useState(false);
@@ -187,10 +192,23 @@ export default function BecomeSellerPage() {
                   <tr>
                     <td>Images</td>
                     <td>
-                      <Badge bg="secondary">Optional</Badge>
+                      <Badge bg="info">Google Drive</Badge>
                     </td>
-                    <td>https://example.com/image1.jpg</td>
-                    <td>Comma-separated URLs</td>
+                    <td>
+                      <small className="text-muted">
+                        Upload to Google Drive
+                        <br />
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="p-0"
+                          onClick={() => setShowImageGuideModal(true)}
+                        >
+                          📸 See Image Guide
+                        </Button>
+                      </small>
+                    </td>
+                    <td>Use Google Drive for free image hosting</td>
                   </tr>
                   <tr>
                     <td>
@@ -542,6 +560,113 @@ export default function BecomeSellerPage() {
           <Button
             variant="secondary"
             onClick={() => setShowInstructionsModal(false)}
+          >
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Image Guide Modal */}
+      <Modal
+        show={showImageGuideModal}
+        onHide={() => setShowImageGuideModal(false)}
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>📸 Google Drive Image Guide</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="mb-4">
+            <Alert variant="success">
+              <FaInfoCircle className="me-2" />
+              <strong>🎉 Simplified Approach!</strong> Share your folder once,
+              and all images inside automatically become accessible - no need to
+              share each image individually!
+            </Alert>
+          </div>
+
+          <div className="mb-4">
+            <h6 className="text-primary">Quick Steps:</h6>
+            <ol>
+              <li>
+                <strong>Create</strong> a "Product Images" folder in Google
+                Drive
+              </li>
+              <li>
+                <strong>Share the folder</strong> publicly ("Anyone with the
+                link can view") - <strong>ONE TIME ONLY!</strong>
+              </li>
+              <li>
+                <strong>Upload</strong> your product photos to this folder
+              </li>
+              <li>
+                <strong>Get image links</strong> (right-click → "Get link" -
+                inherits folder permissions)
+              </li>
+              <li>
+                <strong>Convert</strong> the sharing URL to a direct URL (use
+                tool below)
+              </li>
+              <li>
+                <strong>Add</strong> the direct URL to your Google Sheet
+              </li>
+            </ol>
+          </div>
+
+          <div className="mb-4">
+            <FolderSharingInstructions />
+          </div>
+
+          <div className="mb-4">
+            <h6 className="text-info">Step 1: Folder Setup Helper</h6>
+            <p className="text-muted small">
+              Analyze your Google Drive folder and get personalized
+              instructions:
+            </p>
+            <GoogleDriveFolderProcessor />
+          </div>
+
+          <div className="mb-4">
+            <h6 className="text-success">Step 2: URL Converter Tool</h6>
+            <p className="text-muted small">
+              Convert individual image URLs to direct URLs for your Google
+              Sheet:
+            </p>
+            <GoogleDriveUrlConverter />
+          </div>
+
+          <div className="border-top pt-3">
+            <h6 className="text-primary">Example Conversion:</h6>
+            <div className="mb-2">
+              <small className="text-muted">Original sharing URL:</small>
+              <code className="d-block small">
+                https://drive.google.com/file/d/1ABC123xyz/view?usp=sharing
+              </code>
+            </div>
+            <div className="text-center my-2">
+              <i className="text-primary">↓ Convert to ↓</i>
+            </div>
+            <div>
+              <small className="text-muted">
+                Direct URL (use this in your sheet):
+              </small>
+              <code className="d-block small text-success">
+                https://drive.google.com/uc?export=view&id=1ABC123xyz
+              </code>
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            href="/GOOGLE_DRIVE_IMAGE_GUIDE.md"
+            target="_blank"
+          >
+            📖 Full Guide
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => setShowImageGuideModal(false)}
           >
             Close
           </Button>

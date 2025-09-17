@@ -1,4 +1,8 @@
 import { google } from "googleapis";
+import {
+  parseImageString,
+  validateSellerImages,
+} from "@/utils/googleDriveImageUtils";
 
 class GoogleSheetsService {
   constructor() {
@@ -84,13 +88,27 @@ class GoogleSheetsService {
         );
       }
 
-      // Parse images (comma-separated URLs)
-      const imageUrls = images
-        ? images
-            .split(",")
-            .map((url) => url.trim())
-            .filter((url) => url)
-        : [];
+      // Parse and process images (comma-separated URLs with Google Drive support)
+      const imageUrls = parseImageString(images);
+
+      // Validate images and log any issues
+      if (images && images.trim()) {
+        const validation = validateSellerImages(imageUrls);
+
+        if (validation.warnings.length > 0) {
+          console.warn(
+            `⚠️ Row ${rowIndex + 1} image warnings:`,
+            validation.warnings
+          );
+        }
+
+        if (validation.invalid.length > 0) {
+          console.warn(
+            `❌ Row ${rowIndex + 1} invalid images:`,
+            validation.invalid
+          );
+        }
+      }
 
       // Generate unique ID for external products (using name + contact as identifier)
       const externalId = `sheets_${btoa(name + contactName + location).replace(

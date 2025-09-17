@@ -40,8 +40,6 @@ export default function VegetableManagement() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [sheetUrl, setSheetUrl] = useState("");
-  const [importLoading, setImportLoading] = useState(false);
 
   // Filter vegetables based on search term and category filter
   const filteredVegetables = vegetables.filter((vegetable) => {
@@ -106,43 +104,6 @@ export default function VegetableManagement() {
       setDeleteLoading(false);
       setShowDeleteModal(false);
       setSelectedVegetable(null);
-    }
-  };
-
-  const handleConnectToSheet = async () => {
-    if (!sheetUrl.trim()) {
-      toastService.error("Please enter a Google Sheets URL");
-      return;
-    }
-
-    setImportLoading(true);
-    try {
-      const response = await fetch("/api/connect-sheet-products", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ sheetUrl }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Connection failed");
-      }
-
-      toastService.success(
-        `Successfully connected! Found ${result.productsFound} products in your sheet.`
-      );
-
-      setSheetUrl("");
-      // Don't reload vegetables since we're not importing to database
-      // Instead, you might want to show the sheet products in a different view
-    } catch (error) {
-      console.error("Connection error:", error);
-      toastService.error(error.message || "Failed to connect to sheet");
-    } finally {
-      setImportLoading(false);
     }
   };
 
@@ -299,80 +260,38 @@ export default function VegetableManagement() {
         </div>
       </div>
 
-      {/* Google Sheets Import Section */}
-      <Card className="mb-4 border-success">
-        <Card.Header className="bg-info text-white py-2">
-          <h6 className="mb-0">
-            <i className="ti ti-link me-2"></i>
-            Connect to Google Sheets
-          </h6>
-        </Card.Header>
+      {/* Google Sheets Management Link */}
+      <Card className="mb-4 border-info">
         <Card.Body className="py-3">
-          <Row className="align-items-end">
-            <Col md={8}>
-              <Form.Group className="mb-0">
-                <Form.Label className="small text-muted mb-1">
-                  🔗 Connect your sheet (don't worry, products stay in your
-                  sheet):
-                </Form.Label>
-                <Form.Control
-                  type="url"
-                  placeholder="Paste your Google Sheets URL..."
-                  value={sheetUrl}
-                  onChange={(e) => setSheetUrl(e.target.value)}
-                  size="sm"
-                />
-                <div className="mt-2 d-flex gap-2 align-items-center">
-                  <Button
-                    variant="outline-info"
-                    size="sm"
-                    className="small py-1 px-2"
-                    onClick={() =>
-                      setSheetUrl(
-                        "https://docs.google.com/spreadsheets/d/1ylFr3y8jIVMr1QMFyu81SKDL-HouDaQMHCBRXpGHIU8/edit?usp=sharing"
-                      )
-                    }
-                  >
-                    📋 Use Shared Template
-                  </Button>
-                  <small className="text-muted">or create your own copy</small>
+          <Row className="align-items-center">
+            <Col>
+              <div className="d-flex align-items-center">
+                <div className="me-3">
+                  <i
+                    className="ti-link text-info"
+                    style={{ fontSize: "1.5rem" }}
+                  ></i>
                 </div>
-              </Form.Group>
+                <div>
+                  <h6 className="mb-1 text-info">Google Sheets Integration</h6>
+                  <small className="text-muted">
+                    Connect and manage your Google Sheets product listings
+                    separately
+                  </small>
+                </div>
+              </div>
             </Col>
-            <Col md={4}>
+            <Col xs="auto">
               <Button
                 variant="info"
                 size="sm"
-                onClick={handleConnectToSheet}
-                disabled={importLoading || !sheetUrl.trim()}
-                className="w-100"
+                onClick={() => router.push("/google-sheets-management")}
               >
-                {importLoading ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" />
-                    Connecting...
-                  </>
-                ) : (
-                  <>
-                    <i className="ti ti-link me-2"></i>
-                    Connect Sheet
-                  </>
-                )}
+                <i className="ti-external-link me-2"></i>
+                Manage Sheets
               </Button>
             </Col>
           </Row>
-          <div className="mt-2">
-            <small className="text-muted">
-              <a
-                href="https://docs.google.com/spreadsheets/d/1ylFr3y8jIVMr1QMFyu81SKDL-HouDaQMHCBRXpGHIU8/edit?usp=sharing"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-decoration-none"
-              >
-                📋 View Sample Template
-              </a>
-            </small>
-          </div>
         </Card.Body>
       </Card>
 

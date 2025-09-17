@@ -45,22 +45,22 @@ External Sellers → Google Sheets → Our API → Display on Website
 1. Create a new Google Sheet
 2. Set up the following columns in the first row:
 
-| Column           | Required | Example                     | Description                |
-| ---------------- | -------- | --------------------------- | -------------------------- |
-| Name             | ✅       | Fresh Tomatoes              | Product name               |
-| Description      | ⭕       | Organic red tomatoes        | Product description        |
-| Price            | ✅       | 50                          | Price in ₹                 |
-| Quantity         | ✅       | 10                          | Available quantity         |
-| Category         | ✅       | Vegetables                  | Product category           |
-| Unit             | ⭕       | kg                          | Unit of measurement        |
-| Location         | ⭕       | Hyderabad                   | Seller location            |
-| Images           | ⭕       | https://example.com/img.jpg | Comma-separated image URLs |
-| Contact Name     | ✅       | Ramesh Kumar                | Seller name                |
-| Contact Phone    | ⭕       | 9876543210                  | Phone number               |
-| Contact WhatsApp | ⭕       | 9876543210                  | WhatsApp number            |
-| Organic          | ⭕       | Yes                         | Yes/No                     |
-| Harvest Date     | ⭕       | 2025-09-15                  | Harvest date               |
-| Notes            | ⭕       | Available for pickup only   | Additional notes           |
+| Column           | Required | Example                                             | Description                |
+| ---------------- | -------- | --------------------------------------------------- | -------------------------- |
+| Name             | ✅       | Fresh Tomatoes                                      | Product name               |
+| Description      | ⭕       | Organic red tomatoes                                | Product description        |
+| Price            | ✅       | 50                                                  | Price in ₹                 |
+| Quantity         | ✅       | 10                                                  | Available quantity         |
+| Category         | ✅       | Vegetables                                          | Product category           |
+| Unit             | ⭕       | kg                                                  | Unit of measurement        |
+| Location         | ⭕       | Hyderabad                                           | Seller location            |
+| Images           | ⭕       | [See Image Guide](#image-storage-with-google-drive) | Comma-separated image URLs |
+| Contact Name     | ✅       | Ramesh Kumar                                        | Seller name                |
+| Contact Phone    | ⭕       | 9876543210                                          | Phone number               |
+| Contact WhatsApp | ⭕       | 9876543210                                          | WhatsApp number            |
+| Organic          | ⭕       | Yes                                                 | Yes/No                     |
+| Harvest Date     | ⭕       | 2025-09-15                                          | Harvest date               |
+| Notes            | ⭕       | Available for pickup only                           | Additional notes           |
 
 3. Make the sheet publicly viewable:
 
@@ -90,8 +90,56 @@ External Sellers → Google Sheets → Our API → Display on Website
 
 1. Copy the template spreadsheet
 2. Add their products following the format
-3. Make sure the sheet is publicly viewable
-4. Products will appear on the website within 5 minutes
+3. Upload product images to Google Drive (see [Image Storage Guide](#image-storage-with-google-drive))
+4. Make sure the sheet is publicly viewable
+5. Products will appear on the website within 5 minutes
+
+## Image Storage with Google Drive
+
+### Why Google Drive?
+
+✅ **Free Storage**: 15GB free with every Google account  
+✅ **Reliable**: Google's infrastructure ensures high uptime  
+✅ **Easy to Use**: Simple drag-and-drop interface  
+✅ **No Technical Skills**: No need for web hosting knowledge
+
+### Quick Image Setup (Simplified!)
+
+1. **Create a folder** in Google Drive called "Product Images"
+2. **Share the entire folder** once: Right-click folder → Share → "Anyone with the link can view"
+3. **Upload your product photos** to this folder (they inherit folder permissions automatically!)
+4. **For each image:** Right-click → "Get link" → Convert to direct URL (see below)
+5. **Add direct URLs** to your Google Sheet
+
+✅ **No need to share each image individually!** Folder sharing makes all images accessible automatically.
+
+### Converting Google Drive URLs
+
+**Original sharing URL:**
+
+```
+https://drive.google.com/file/d/1ABC123xyz/view?usp=sharing
+```
+
+**Convert to direct URL:**
+
+```
+https://drive.google.com/uc?export=view&id=1ABC123xyz
+```
+
+**Quick conversion:** Replace everything except the file ID (the part between `/d/` and `/view`) with `https://drive.google.com/uc?export=view&id=`
+
+### Multiple Images
+
+Separate multiple image URLs with commas:
+
+```
+https://drive.google.com/uc?export=view&id=1ABC123,https://drive.google.com/uc?export=view&id=1XYZ789
+```
+
+### 📖 Complete Guide
+
+For detailed step-by-step instructions with screenshots, see: **[Google Drive Image Guide](./GOOGLE_DRIVE_IMAGE_GUIDE.md)**
 
 ### For Administrators
 

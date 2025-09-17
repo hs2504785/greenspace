@@ -291,6 +291,14 @@ export default function ProfileDropdown({ user }) {
             </Dropdown.Item>
             <Dropdown.Item
               as={Link}
+              href="/google-sheets-management"
+              onClick={handleDropdownItemClick}
+            >
+              <i className="ti-link me-2 text-info"></i>
+              Google Sheets
+            </Dropdown.Item>
+            <Dropdown.Item
+              as={Link}
               href="/seller-dashboard"
               onClick={handleDropdownItemClick}
             >
@@ -312,6 +320,14 @@ export default function ProfileDropdown({ user }) {
             >
               <i className="ti-credit-card me-2 text-primary"></i>
               Payment Verification
+            </Dropdown.Item>
+            <Dropdown.Item
+              as={Link}
+              href="/tools/image-url-converter"
+              onClick={handleDropdownItemClick}
+            >
+              <i className="ti-link me-2 text-warning"></i>
+              Image URL Converter
             </Dropdown.Item>
           </>
         )}
