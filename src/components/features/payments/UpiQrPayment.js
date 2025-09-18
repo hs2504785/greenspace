@@ -9,6 +9,7 @@ import {
   getAppSpecificGuidance,
   handleBankLimitExceededError,
   checkUpiLimits,
+  detectGpayCompatibility,
 } from "@/utils/upiLimitHelper";
 
 export default function UpiQrPayment({
@@ -23,6 +24,7 @@ export default function UpiQrPayment({
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadStep, setUploadStep] = useState("qr"); // 'qr', 'upload', 'verification'
+  const [gpayCompatibility, setGpayCompatibility] = useState(null);
 
   useEffect(() => {
     if (show && orderData) {
@@ -122,6 +124,11 @@ export default function UpiQrPayment({
       };
 
       setQrData(fallbackQrData);
+
+      // Even for fallback, check GPay compatibility with amount 0 (will still detect platform issues)
+      const compatibility = detectGpayCompatibility(0, navigator.userAgent);
+      setGpayCompatibility(compatibility);
+
       setLoading(false);
       toastService.warning(
         "Order amount not found. Please enter amount manually in your UPI app."
@@ -151,6 +158,26 @@ export default function UpiQrPayment({
         ...qrResult,
         staticQrOnly: false,
       });
+
+      // Check GPay compatibility after successful QR generation
+      const compatibility = detectGpayCompatibility(
+        amount,
+        navigator.userAgent
+      );
+      setGpayCompatibility(compatibility);
+
+      // Show proactive warning if GPay is likely to fail
+      if (compatibility.hideGpay) {
+        toastService.info(
+          `💡 ${compatibility.warningMessage}. QR scanning is most reliable.`,
+          { autoClose: 8000 }
+        );
+      } else if (compatibility.warningMessage && amount < 200) {
+        // Show subtle warning for small amounts even if we're showing GPay
+        toastService.info(`ℹ️ ${compatibility.warningMessage}`, {
+          autoClose: 6000,
+        });
+      }
     } catch (error) {
       console.error("❌ Dynamic QR generation failed:", error);
       if (error.message.includes("database may need migration")) {
@@ -374,6 +401,16 @@ export default function UpiQrPayment({
               console.log("✅ GPAY: Tried Intent scheme fallback");
             } catch (intentError) {
               console.error("❌ GPAY: Intent scheme also failed:", intentError);
+
+              // Show specific error with limit exceeded context
+              const limitGuidance = handleBankLimitExceededError(
+                parseFloat(amount),
+                "Google Pay"
+              );
+              toastService.error(
+                `Google Pay failed to open. ${limitGuidance.primaryMessage}\n\n💡 ${limitGuidance.recommendedAction}`,
+                { autoClose: 10000 }
+              );
             }
           }
         } else if (platform === "ios") {
@@ -550,50 +587,100 @@ export default function UpiQrPayment({
                     <small className="text-muted">
                       Tap to open your preferred UPI app
                     </small>
+                    {gpayCompatibility?.hideGpay && (
+                      <div className="mt-2 p-2 bg-light rounded">
+                        <small className="text-info">
+                          <i className="ti-info-circle me-1"></i>
+                          {gpayCompatibility.warningMessage}
+                        </small>
+                      </div>
+                    )}
                   </div>
 
                   <div className="row g-3 justify-content-center">
-                    {/* Google Pay - Rounded Card */}
-                    <div className="col-6 col-md-5">
-                      <div
-                        className="payment-app-card border-2 rounded-3 p-3 text-center"
-                        style={{
-                          cursor: "pointer",
-                          transition: "all 0.2s ease",
-                          backgroundColor: "#e3f2fd",
-                          borderColor: "#4285f4",
-                          border: "2px solid #4285f4",
-                        }}
-                        onClick={() => openUpiApp("gpay")}
-                        onMouseEnter={(e) => {
-                          e.target.style.transform = "translateY(-2px)";
-                          e.target.style.boxShadow =
-                            "0 4px 12px rgba(66, 133, 244, 0.2)";
-                          e.target.style.backgroundColor = "#bbdefb";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.transform = "translateY(0)";
-                          e.target.style.boxShadow =
-                            "0 2px 4px rgba(0,0,0,0.1)";
-                          e.target.style.backgroundColor = "#e3f2fd";
-                        }}
-                      >
-                        <img
-                          src="/images/gpay.svg"
-                          alt="Google Pay"
-                          width="32"
-                          height="32"
-                          className="mb-2"
-                        />
-                        <div className="text-primary fw-bold small">
-                          Google Pay
+                    {/* Google Pay - Conditionally rendered based on compatibility */}
+                    {!gpayCompatibility?.hideGpay && (
+                      <div className="col-6 col-md-5">
+                        <div
+                          className="payment-app-card border-2 rounded-3 p-3 text-center"
+                          style={{
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                            backgroundColor:
+                              gpayCompatibility?.compatibility === "fair"
+                                ? "#fff8e1"
+                                : "#e3f2fd",
+                            borderColor:
+                              gpayCompatibility?.compatibility === "fair"
+                                ? "#ffa000"
+                                : "#4285f4",
+                            border: `2px solid ${
+                              gpayCompatibility?.compatibility === "fair"
+                                ? "#ffa000"
+                                : "#4285f4"
+                            }`,
+                          }}
+                          onClick={() => openUpiApp("gpay")}
+                          onMouseEnter={(e) => {
+                            e.target.style.transform = "translateY(-2px)";
+                            e.target.style.boxShadow =
+                              gpayCompatibility?.compatibility === "fair"
+                                ? "0 4px 12px rgba(255, 160, 0, 0.2)"
+                                : "0 4px 12px rgba(66, 133, 244, 0.2)";
+                            e.target.style.backgroundColor =
+                              gpayCompatibility?.compatibility === "fair"
+                                ? "#ffecb3"
+                                : "#bbdefb";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = "translateY(0)";
+                            e.target.style.boxShadow =
+                              "0 2px 4px rgba(0,0,0,0.1)";
+                            e.target.style.backgroundColor =
+                              gpayCompatibility?.compatibility === "fair"
+                                ? "#fff8e1"
+                                : "#e3f2fd";
+                          }}
+                        >
+                          <img
+                            src="/images/gpay.svg"
+                            alt="Google Pay"
+                            width="32"
+                            height="32"
+                            className="mb-2"
+                          />
+                          <div
+                            className={`fw-bold small ${
+                              gpayCompatibility?.compatibility === "fair"
+                                ? "text-warning"
+                                : "text-primary"
+                            }`}
+                          >
+                            Google Pay
+                          </div>
+                          <div className="text-muted small">
+                            {gpayCompatibility?.compatibility === "fair"
+                              ? "May Have Issues"
+                              : "Instant Payment"}
+                          </div>
+                          {gpayCompatibility?.warningMessage && (
+                            <div
+                              className="text-warning"
+                              style={{ fontSize: "10px" }}
+                            >
+                              <i className="ti-alert-triangle"></i>
+                            </div>
+                          )}
                         </div>
-                        <div className="text-muted small">Instant Payment</div>
                       </div>
-                    </div>
+                    )}
 
-                    {/* BHIM UPI - Block Rectangle */}
-                    <div className="col-6 col-md-5">
+                    {/* BHIM UPI - Block Rectangle - Adjust width when GPay is hidden */}
+                    <div
+                      className={`col-6 ${
+                        gpayCompatibility?.hideGpay ? "col-md-6" : "col-md-5"
+                      }`}
+                    >
                       <div
                         className="payment-app-card border-2 p-3 text-center"
                         style={{
@@ -638,6 +725,15 @@ export default function UpiQrPayment({
                       <i className="ti-info-circle me-1"></i>
                       Or scan the QR code with any UPI app
                     </small>
+                    {gpayCompatibility?.hideGpay && (
+                      <div className="mt-2">
+                        <small className="text-info">
+                          <i className="ti-lightbulb me-1"></i>
+                          Google Pay hidden due to compatibility issues - QR
+                          scanning works perfectly!
+                        </small>
+                      </div>
+                    )}
                   </div>
                 </div>
 

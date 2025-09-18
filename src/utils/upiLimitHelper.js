@@ -205,6 +205,69 @@ export function getAppSpecificGuidance(app, amount) {
 }
 
 /**
+ * Detect if GPay is likely to fail for this user/device combination
+ * @param {number} amount - Transaction amount
+ * @param {string} userAgent - Browser user agent string
+ * @returns {Object} GPay compatibility assessment
+ */
+export function detectGpayCompatibility(amount, userAgent) {
+  const isAndroid = /android/i.test(userAgent);
+  const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+  const isMobile = isAndroid || isIOS;
+
+  // GPay is more problematic on certain conditions
+  const riskFactors = {
+    smallAmount: amount < 500, // Small amounts often trigger false limit errors
+    isDesktop: !isMobile, // Desktop users can't use deep links effectively
+    isOldAndroid: isAndroid && /Android [1-6]\./.test(userAgent), // Older Android versions
+    webView: /wv/.test(userAgent), // WebView context has more restrictions
+  };
+
+  const riskScore = Object.values(riskFactors).filter(Boolean).length;
+  const isHighRisk = riskScore >= 2; // 2 or more risk factors
+
+  let compatibility = "good";
+  let hideGpay = false;
+  let warningMessage = "";
+
+  if (isHighRisk) {
+    compatibility = "poor";
+    hideGpay = true;
+
+    if (riskFactors.smallAmount && riskFactors.isDesktop) {
+      warningMessage = `For ₹${amount} on desktop, scan QR code directly`;
+    } else if (riskFactors.smallAmount) {
+      warningMessage = `Small amount payments often work better with QR scan`;
+    } else if (riskFactors.isDesktop) {
+      warningMessage = `Desktop users should scan QR code with mobile UPI app`;
+    } else {
+      warningMessage = `GPay may have compatibility issues - try QR scan`;
+    }
+  } else if (riskScore === 1) {
+    compatibility = "fair";
+    hideGpay = false; // Show but with warning
+
+    if (riskFactors.smallAmount) {
+      warningMessage = `Small amounts sometimes trigger false "limit exceeded" errors`;
+    } else if (riskFactors.isDesktop) {
+      warningMessage = `Use mobile device for app-to-app payment`;
+    }
+  }
+
+  return {
+    compatible: compatibility === "good",
+    riskFactors,
+    riskScore,
+    compatibility,
+    hideGpay,
+    warningMessage,
+    recommendedAction: hideGpay
+      ? "Use QR code scanning instead"
+      : "Try GPay button, fallback to QR scan if needed",
+  };
+}
+
+/**
  * Handle the specific "bank limit exceeded" error that occurs even with small amounts
  * This is usually a UPI string formatting issue, not an actual limit problem
  * @param {number} amount - Transaction amount
@@ -274,4 +337,5 @@ export default {
   getUpiLimitDisplay,
   getAppSpecificGuidance,
   handleBankLimitExceededError,
+  detectGpayCompatibility,
 };
