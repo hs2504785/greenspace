@@ -315,6 +315,14 @@ export default function ProfileDropdown({ user }) {
             </Dropdown.Item>
             <Dropdown.Item
               as={Link}
+              href="/farm-visits/manage"
+              onClick={handleDropdownItemClick}
+            >
+              <i className="ti-location-pin me-2 text-success"></i>
+              Farm Visit Management
+            </Dropdown.Item>
+            <Dropdown.Item
+              as={Link}
               href="/payment-verification"
               onClick={handleDropdownItemClick}
             >
@@ -361,6 +369,14 @@ export default function ProfileDropdown({ user }) {
             >
               <i className="ti-palette me-2 text-warning"></i>
               Tree Management
+            </Dropdown.Item>
+            <Dropdown.Item
+              as={Link}
+              href="/farm-visits/manage"
+              onClick={handleDropdownItemClick}
+            >
+              <i className="ti-calendar me-2 text-info"></i>
+              Farm Visit Management
             </Dropdown.Item>
             {/* Seller Requests */}
             {(isAdmin || isSuperAdmin) && (

@@ -447,6 +447,17 @@ export default function Header() {
             </Nav.Link>
             <Nav.Link
               as={Link}
+              href="/farm-visits"
+              className={`mobile-nav-link ${
+                isActive("/farm-visits") ? "active-nav-item" : ""
+              }`}
+              onClick={handleLinkClick}
+            >
+              <i className="ti-location-pin me-2 text-info"></i>
+              Farm Visits
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
               href="/why-join-us"
               className={`mobile-nav-link ${
                 isActive("/why-join-us") ? "active-nav-item" : ""
@@ -472,6 +483,17 @@ export default function Header() {
                 >
                   <i className="ti-bookmark me-2 text-success"></i>
                   My Pre-Bookings
+                </Nav.Link>
+                <Nav.Link
+                  as={Link}
+                  href="/my-visits"
+                  className={`mobile-nav-link ${
+                    isActive("/my-visits") ? "active-nav-item" : ""
+                  }`}
+                  onClick={handleLinkClick}
+                >
+                  <i className="ti-calendar me-2 text-info"></i>
+                  My Farm Visits
                 </Nav.Link>
                 <Nav.Link
                   as={Link}
