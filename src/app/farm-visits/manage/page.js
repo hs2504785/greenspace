@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import toastService from "@/utils/toastService";
 import DeleteConfirmationModal from "@/components/common/DeleteConfirmationModal";
+import FarmVisitWhatsAppActions from "@/components/features/farm-visits/WhatsAppActions";
 
 export default function ManageFarmVisitsPage() {
   const { data: session, status } = useSession();
@@ -35,6 +36,7 @@ export default function ManageFarmVisitsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [slotToDelete, setSlotToDelete] = useState(null);
+  const [farmDetails, setFarmDetails] = useState(null);
 
   // Form states
   const [requestForm, setRequestForm] = useState({
@@ -61,6 +63,7 @@ export default function ManageFarmVisitsPage() {
     if (session) {
       fetchRequests();
       fetchAvailability();
+      fetchFarmDetails();
     }
   }, [session]);
 
@@ -102,6 +105,28 @@ export default function ManageFarmVisitsPage() {
     }
   };
 
+  const fetchFarmDetails = async () => {
+    try {
+      if (session?.user?.role === "seller") {
+        // Fetch seller's farm profile
+        const response = await fetch(`/api/sellers/${session.user.id}/profile`);
+        const data = await response.json();
+
+        if (response.ok) {
+          setFarmDetails(data.profile);
+        }
+      } else if (
+        session?.user?.role === "admin" ||
+        session?.user?.role === "superadmin"
+      ) {
+        // For admins, we'll fetch farm details when viewing specific requests
+        // This will be handled in the openRequestModal function
+      }
+    } catch (err) {
+      console.error("Failed to fetch farm details:", err);
+    }
+  };
+
   const updateRequest = async (e) => {
     e.preventDefault();
     try {
@@ -119,6 +144,17 @@ export default function ManageFarmVisitsPage() {
 
       if (response.ok) {
         toastService.success("Request updated successfully!");
+
+        // WhatsApp messages are now sent automatically by the server
+        if (
+          requestForm.status === "approved" ||
+          requestForm.status === "rejected"
+        ) {
+          toastService.success(
+            `WhatsApp ${requestForm.status} message sent automatically to visitor`
+          );
+        }
+
         setShowRequestModal(false);
         await fetchRequests();
         resetRequestForm();
@@ -248,13 +284,34 @@ export default function ManageFarmVisitsPage() {
     setSelectedAvailability(null);
   };
 
-  const openRequestModal = (request) => {
+  const openRequestModal = async (request) => {
     setSelectedRequest(request);
     setRequestForm({
       status: request.status,
       admin_notes: request.admin_notes || "",
       rejection_reason: request.rejection_reason || "",
     });
+
+    // Fetch farm details for admin users
+    if (
+      (session?.user?.role === "admin" ||
+        session?.user?.role === "superadmin") &&
+      request.seller_id
+    ) {
+      try {
+        const response = await fetch(
+          `/api/sellers/${request.seller_id}/profile`
+        );
+        const data = await response.json();
+
+        if (response.ok) {
+          setFarmDetails(data.profile);
+        }
+      } catch (err) {
+        console.error("Failed to fetch seller farm details:", err);
+      }
+    }
+
     setShowRequestModal(true);
   };
 
@@ -342,7 +399,7 @@ export default function ManageFarmVisitsPage() {
 
   return (
     <>
-      <Container className="py-4">
+      <Container>
         {/* Header */}
         <Row className="mb-4">
           <Col>
@@ -406,24 +463,67 @@ export default function ManageFarmVisitsPage() {
                         </p>
                       </div>
                     ) : (
-                      <div className="table-responsive">
+                      <div
+                        className="table-responsive"
+                        style={{ overflow: "visible" }}
+                      >
                         <Table
                           hover
-                          className="mb-0 bg-white rounded-3 shadow-sm overflow-hidden"
+                          className="mb-0 bg-white rounded-3 shadow-sm"
                           style={{
                             "--bs-table-hover-bg": "rgba(0, 0, 0, 0.075)",
+                            minWidth: "1200px", // Ensure horizontal scroll when needed
                           }}
                         >
                           <thead className="table-light">
                             <tr>
-                              <th className="border-0 ps-3">Visitor</th>
-                              <th className="border-0">Date & Time</th>
-                              <th className="border-0">Guests</th>
-                              <th className="border-0">Status</th>
-                              <th className="border-0">Purpose</th>
+                              <th
+                                className="border-0 ps-3"
+                                style={{ minWidth: "180px" }}
+                              >
+                                Visitor
+                              </th>
+                              <th
+                                className="border-0"
+                                style={{ minWidth: "160px" }}
+                              >
+                                Date & Time
+                              </th>
                               <th
                                 className="border-0 text-center"
-                                style={{ width: "120px" }}
+                                style={{ minWidth: "80px" }}
+                              >
+                                Guests
+                              </th>
+                              <th
+                                className="border-0 text-center"
+                                style={{ minWidth: "100px" }}
+                              >
+                                Status
+                              </th>
+                              <th
+                                className="border-0"
+                                style={{ minWidth: "200px" }}
+                              >
+                                Purpose
+                              </th>
+                              <th
+                                className="border-0"
+                                style={{ minWidth: "120px" }}
+                              >
+                                Phone
+                              </th>
+                              {session.user.role === "admin" && (
+                                <th
+                                  className="border-0"
+                                  style={{ minWidth: "120px" }}
+                                >
+                                  User
+                                </th>
+                              )}
+                              <th
+                                className="border-0 text-center"
+                                style={{ minWidth: "200px" }}
                               >
                                 Actions
                               </th>
@@ -432,66 +532,92 @@ export default function ManageFarmVisitsPage() {
                           <tbody>
                             {requests.map((request) => (
                               <tr key={request.id} className="align-middle">
-                                <td>
-                                  <div>
-                                    <strong>{request.visitor_name}</strong>
-                                    <br />
-                                    <small className="text-muted">
-                                      {request.visitor_phone}
-                                    </small>
-                                    {session.user.role === "admin" &&
-                                      request.user?.name && (
-                                        <>
-                                          <br />
-                                          <small className="text-info">
-                                            User: {request.user.name}
-                                          </small>
-                                        </>
-                                      )}
-                                  </div>
+                                <td className="text-nowrap">
+                                  <strong>{request.visitor_name}</strong>
                                 </td>
-                                <td>
+                                <td className="text-nowrap">
                                   <div>
                                     {formatDate(request.requested_date)}
-                                    <br />
-                                    <small>
-                                      {formatTime(request.requested_time_start)}{" "}
-                                      - {formatTime(request.requested_time_end)}
-                                    </small>
                                   </div>
+                                  <small className="text-muted">
+                                    {formatTime(request.requested_time_start)} -{" "}
+                                    {formatTime(request.requested_time_end)}
+                                  </small>
                                 </td>
-                                <td>
+                                <td className="text-center">
                                   <Badge bg="light" text="dark">
                                     <i className="ti-user me-1"></i>
                                     {request.number_of_visitors}
                                   </Badge>
                                 </td>
-                                <td>
+                                <td className="text-center">
                                   <Badge bg={getStatusColor(request.status)}>
                                     {request.status}
                                   </Badge>
                                 </td>
                                 <td>
-                                  {request.purpose ? (
-                                    <span title={request.purpose}>
-                                      {request.purpose.substring(0, 50)}
-                                      {request.purpose.length > 50 && "..."}
-                                    </span>
-                                  ) : (
-                                    <span className="text-muted">-</span>
-                                  )}
+                                  <div
+                                    className="text-truncate"
+                                    style={{ maxWidth: "180px" }}
+                                    title={
+                                      request.purpose || "No purpose specified"
+                                    }
+                                  >
+                                    {request.purpose || (
+                                      <span className="text-muted">-</span>
+                                    )}
+                                  </div>
                                 </td>
+                                <td className="text-nowrap">
+                                  <small className="text-muted d-flex align-items-center">
+                                    <img
+                                      src="/images/WhatsApp.svg"
+                                      alt="WhatsApp"
+                                      width="14"
+                                      height="14"
+                                      className="me-1"
+                                    />
+                                    {request.visitor_phone}
+                                  </small>
+                                </td>
+                                {session.user.role === "admin" && (
+                                  <td className="text-nowrap">
+                                    {request.user?.name ? (
+                                      <small className="text-info">
+                                        {request.user.name}
+                                      </small>
+                                    ) : (
+                                      <span className="text-muted">-</span>
+                                    )}
+                                  </td>
+                                )}
                                 <td>
-                                  <div className="d-flex gap-1 justify-content-center">
+                                  <div className="d-flex gap-1 justify-content-center align-items-center flex-nowrap">
                                     <button
                                       type="button"
-                                      className="btn btn-link text-info p-1 border-0"
+                                      className="btn btn-outline-info btn-sm"
                                       onClick={() => openRequestModal(request)}
                                       title="View request details"
-                                      style={{ width: "32px", height: "32px" }}
                                     >
-                                      <i className="ti ti-eye"></i>
+                                      <i className="ti-eye"></i>
                                     </button>
+
+                                    {/* WhatsApp Actions for approved/rejected requests */}
+                                    {(request.status === "approved" ||
+                                      request.status === "rejected" ||
+                                      request.status === "completed") &&
+                                      request.visitor_phone && (
+                                        <FarmVisitWhatsAppActions
+                                          request={request}
+                                          farmDetails={farmDetails}
+                                          userRole={session?.user?.role}
+                                          onMessageSent={(type, phone) => {
+                                            toastService.success(
+                                              `WhatsApp ${type} message sent`
+                                            );
+                                          }}
+                                        />
+                                      )}
                                   </div>
                                 </td>
                               </tr>
@@ -782,6 +908,35 @@ export default function ManageFarmVisitsPage() {
                       />
                     </Form.Group>
                   )}
+
+                  {/* WhatsApp Messaging Info */}
+                  {(requestForm.status === "approved" ||
+                    requestForm.status === "rejected") &&
+                    selectedRequest?.visitor_phone && (
+                      <div className="mt-4 p-3 bg-success bg-opacity-10 border border-success border-opacity-25 rounded">
+                        <div className="d-flex align-items-center mb-2">
+                          <i className="ti-check-box text-success me-2"></i>
+                          <strong className="text-success">
+                            Automatic WhatsApp Notification
+                          </strong>
+                        </div>
+                        <small className="text-muted d-block d-flex align-items-start">
+                          <img
+                            src="/images/WhatsApp.svg"
+                            alt="WhatsApp"
+                            width="14"
+                            height="14"
+                            className="me-1 mt-1"
+                          />
+                          <span>
+                            A WhatsApp {requestForm.status} message with
+                            complete location details, contact information, and
+                            Google Maps link will be sent automatically to:{" "}
+                            {selectedRequest.visitor_phone}
+                          </span>
+                        </small>
+                      </div>
+                    )}
                 </>
               )}
             </Modal.Body>

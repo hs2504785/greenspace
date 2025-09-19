@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseClient } from "@/utils/supabaseAuth";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/options";
+import { sendFarmVisitWhatsAppMessage } from "@/services/WhatsAppService";
 
 // GET - Fetch farm visit requests
 export async function GET(request) {
@@ -241,7 +242,13 @@ export async function PUT(request) {
       .from("farm_visit_requests")
       .update(updateData)
       .eq("id", id)
-      .select()
+      .select(
+        `
+        *,
+        user:users!farm_visit_requests_user_id_fkey(id, name, email, phone_number, whatsapp_number),
+        seller:users!farm_visit_requests_seller_id_fkey(id, name, email, phone_number, whatsapp_number)
+      `
+      )
       .single();
 
     if (error) {
@@ -250,6 +257,16 @@ export async function PUT(request) {
         { error: "Failed to update visit request" },
         { status: 500 }
       );
+    }
+
+    // Send automatic WhatsApp message for approved/rejected requests
+    if (status === "approved" || status === "rejected") {
+      try {
+        await sendFarmVisitWhatsAppMessage(data, status);
+      } catch (whatsappError) {
+        console.error("WhatsApp message failed:", whatsappError);
+        // Don't fail the entire request if WhatsApp fails
+      }
     }
 
     return NextResponse.json({

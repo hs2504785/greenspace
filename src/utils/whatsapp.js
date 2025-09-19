@@ -174,9 +174,161 @@ export function generateExistingOrderMessage(order) {
   return `📋 *Order Information*\n\n${orderSection}${itemsMessage}${totalMessage}\n\n_Regarding the above order details._`;
 }
 
+// Farm Visit WhatsApp Messages
+export function generateFarmVisitApprovalMessage(
+  request,
+  farmDetails,
+  adminNotes = ""
+) {
+  if (!request) {
+    console.warn("WhatsApp: No farm visit request data provided");
+    return "";
+  }
+
+  const visitDate = new Date(request.requested_date).toLocaleDateString(
+    "en-IN",
+    {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }
+  );
+
+  const startTime = formatTime12Hour(request.requested_time_start);
+  const endTime = formatTime12Hour(request.requested_time_end);
+
+  const farmName = farmDetails?.farm_name || farmDetails?.name || "Our Farm";
+  const farmLocation =
+    farmDetails?.location ||
+    farmDetails?.address ||
+    "Farm location will be shared";
+  const farmPhone =
+    farmDetails?.phone_number ||
+    farmDetails?.whatsapp_number ||
+    "Contact number will be shared";
+
+  let message = `🎉 *Farm Visit Approved!*\n\n`;
+  message += `Hello ${request.visitor_name},\n\n`;
+  message += `Great news! Your farm visit request has been approved.\n\n`;
+
+  message += `*📅 Visit Details:*\n`;
+  message += `🏡 Farm: ${farmName}\n`;
+  message += `📅 Date: ${visitDate}\n`;
+  message += `⏰ Time: ${startTime} - ${endTime}\n`;
+  message += `👥 Visitors: ${request.number_of_visitors}\n\n`;
+
+  if (request.purpose) {
+    message += `*🎯 Purpose:* ${request.purpose}\n\n`;
+  }
+
+  message += `*📍 Location Details:*\n${farmLocation}\n\n`;
+  message += `*📞 Farm Contact:* ${farmPhone}\n\n`;
+
+  if (adminNotes) {
+    message += `*📝 Special Instructions:*\n${adminNotes}\n\n`;
+  }
+
+  message += `*Important Notes:*\n`;
+  message += `• Please arrive on time\n`;
+  message += `• Carry a valid ID\n`;
+  message += `• Wear comfortable clothing and closed shoes\n`;
+  message += `• Follow farm safety guidelines\n\n`;
+
+  message += `We're excited to welcome you to our farm! 🌱\n\n`;
+  message += `If you have any questions, please contact us directly.`;
+
+  return message;
+}
+
+export function generateFarmVisitRejectionMessage(
+  request,
+  rejectionReason = ""
+) {
+  if (!request) {
+    console.warn("WhatsApp: No farm visit request data provided");
+    return "";
+  }
+
+  const visitDate = new Date(request.requested_date).toLocaleDateString(
+    "en-IN",
+    {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }
+  );
+
+  let message = `😔 *Farm Visit Request Update*\n\n`;
+  message += `Hello ${request.visitor_name},\n\n`;
+  message += `We regret to inform you that your farm visit request for ${visitDate} cannot be accommodated at this time.\n\n`;
+
+  if (rejectionReason) {
+    message += `*Reason:* ${rejectionReason}\n\n`;
+  }
+
+  message += `We encourage you to:\n`;
+  message += `• Check our available dates and submit a new request\n`;
+  message += `• Contact us directly for alternative arrangements\n`;
+  message += `• Follow our updates for new availability\n\n`;
+
+  message += `Thank you for your interest in visiting our farm. We hope to welcome you soon! 🌱`;
+
+  return message;
+}
+
+export function generateFarmVisitCompletedMessage(request, farmDetails) {
+  if (!request) {
+    console.warn("WhatsApp: No farm visit request data provided");
+    return "";
+  }
+
+  const farmName = farmDetails?.farm_name || farmDetails?.name || "Our Farm";
+
+  let message = `🌟 *Thank You for Visiting!*\n\n`;
+  message += `Hello ${request.visitor_name},\n\n`;
+  message += `Thank you for visiting ${farmName} today! We hope you enjoyed your farm experience.\n\n`;
+
+  message += `*Your feedback matters to us:*\n`;
+  message += `• How was your visit experience?\n`;
+  message += `• What did you learn or enjoy most?\n`;
+  message += `• Any suggestions for improvement?\n\n`;
+
+  message += `*Stay Connected:*\n`;
+  message += `• Follow us for farm updates\n`;
+  message += `• Book future visits\n`;
+  message += `• Refer friends and family\n\n`;
+
+  message += `We'd love to welcome you back soon! 🚜🌱`;
+
+  return message;
+}
+
+// Helper function to format time in 12-hour format
+function formatTime12Hour(timeString) {
+  if (!timeString) return "";
+
+  const [hours, minutes] = timeString.split(":");
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+
+  return `${displayHour}:${minutes} ${ampm}`;
+}
+
 export function openWhatsApp(phoneNumber, message) {
-  const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
-    message
+  // Clean the message to avoid encoding issues
+  const cleanMessage = message
+    .replace(/[^\x00-\x7F\n\r]/g, "") // Remove non-ASCII characters but keep newlines
+    .replace(/[ \t]+/g, " ") // Replace multiple spaces/tabs with single space
+    .trim();
+
+  // Clean phone number
+  const cleanPhoneNumber = phoneNumber.replace(/\D/g, "");
+
+  const url = `https://wa.me/${cleanPhoneNumber}?text=${encodeURIComponent(
+    cleanMessage
   )}`;
   window.open(url, "_blank");
 }
