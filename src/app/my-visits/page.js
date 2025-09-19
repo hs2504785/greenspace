@@ -153,34 +153,34 @@ export default function MyVisitsPage() {
   }
 
   return (
-    <Container className="py-4">
+    <Container className="pb-4">
       {/* Header */}
-      <Row className="mb-4">
+      <Row className="mb-3">
         <Col>
-          <div className="d-flex flex-column flex-lg-row justify-content-between align-items-start">
-            <div className="flex-grow-1 mb-3 mb-lg-0">
-              <h1 className="text-success mb-2">
-                <i
-                  className="ti-calendar me-2"
-                  style={{ fontSize: "32px" }}
-                ></i>
-                My Farm Visit Requests
-              </h1>
-              <p className="text-muted">
+          <div className="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center">
+            <div className="flex-grow-1 mb-2 mb-lg-0">
+              <div className="d-flex align-items-center mb-1">
+                <h1 className="text-success mb-0 me-2">
+                  <i
+                    className="ti-calendar me-2"
+                    style={{ fontSize: "32px" }}
+                  ></i>
+                  My Farm Visit Requests
+                </h1>
+              </div>
+              <p className="text-muted mb-0 small">
                 Track and manage your farm visit requests
               </p>
             </div>
-            <div className="d-flex justify-content-end align-self-stretch align-self-lg-start">
+            <div className="d-flex justify-content-start justify-content-lg-end">
               <Button
                 as={Link}
                 href="/farm-visits"
                 variant="success"
                 className="d-flex align-items-center justify-content-center text-nowrap"
-                style={{ minWidth: "180px" }}
               >
                 <i className="ti-plus me-2"></i>
-                <span className="d-none d-md-inline">Request New Visit</span>
-                <span className="d-md-none">New Visit</span>
+                Request New Visit
               </Button>
             </div>
           </div>
@@ -408,8 +408,38 @@ export default function MyVisitsPage() {
               {/* Request Details */}
               {selectedRequest.purpose && (
                 <div className="mb-3">
-                  <h6>Purpose of Visit</h6>
-                  <p className="text-muted">{selectedRequest.purpose}</p>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <h6 className="mb-0">Purpose of Visit</h6>
+                    {(selectedRequest?.seller?.phone ||
+                      selectedRequest?.seller?.whatsapp_number) && (
+                      <Button
+                        variant="success"
+                        size="sm"
+                        onClick={() => {
+                          const phoneNumber =
+                            selectedRequest.seller.whatsapp_number ||
+                            selectedRequest.seller.phone;
+                          const message = encodeURIComponent(
+                            `Hi! Regarding my farm visit request for ${selectedRequest.availability?.date}. ${selectedRequest.purpose}`
+                          );
+                          window.open(
+                            `https://wa.me/${phoneNumber.replace(
+                              /\D/g,
+                              ""
+                            )}?text=${message}`,
+                            "_blank"
+                          );
+                        }}
+                        className="d-flex align-items-center"
+                      >
+                        <i className="ti-brand-whatsapp me-1"></i>
+                        WhatsApp Farmer
+                      </Button>
+                    )}
+                  </div>
+                  <div className="p-3 bg-light rounded">
+                    <p className="text-muted mb-0">{selectedRequest.purpose}</p>
+                  </div>
                 </div>
               )}
 
@@ -418,15 +448,6 @@ export default function MyVisitsPage() {
                   <h6>Special Requirements</h6>
                   <p className="text-muted">
                     {selectedRequest.special_requirements}
-                  </p>
-                </div>
-              )}
-
-              {selectedRequest.message_to_farmer && (
-                <div className="mb-3">
-                  <h6>Message to Farmer</h6>
-                  <p className="text-muted">
-                    {selectedRequest.message_to_farmer}
                   </p>
                 </div>
               )}

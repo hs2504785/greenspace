@@ -57,10 +57,8 @@ export async function GET(request) {
         query = query.eq("seller_farm_profiles.garden_visit_enabled", true);
       }
     } else {
-      // Show both if no specific type requested
-      query = query.or(
-        "seller_farm_profiles.visit_booking_enabled.eq.true,seller_farm_profiles.garden_visit_enabled.eq.true"
-      );
+      // Show both if no specific type requested - we'll filter after the query
+      // Just ensure they have a farm profile for now
     }
 
     if (location) {
@@ -79,17 +77,26 @@ export async function GET(request) {
 
     let farmsData = sellers || [];
 
+    // Filter farms that have visit booking enabled (if no specific visit type was requested)
+    if (!visitType) {
+      farmsData = farmsData.filter((farm) => {
+        const profile = farm.seller_farm_profiles;
+        return (
+          profile &&
+          (profile.visit_booking_enabled || profile.garden_visit_enabled)
+        );
+      });
+    }
+
     // If hasAvailability is true, filter sellers who have future availability
     if (hasAvailability) {
       const today = new Date().toISOString().split("T")[0];
 
       let availabilityQuery = supabase
         .from("farm_visit_availability")
-        .select("seller_id")
+        .select("seller_id, current_bookings, max_visitors")
         .eq("is_available", true)
-        .gte("date", today)
-        .lt("current_bookings", "max_visitors");
-
+        .gte("date", today);
       // Filter by visit type if specified
       if (visitType) {
         availabilityQuery = availabilityQuery.eq("visit_type", visitType);
@@ -99,7 +106,11 @@ export async function GET(request) {
         await availabilityQuery;
 
       if (!availabilityError && availabilityData) {
-        const sellersWithAvailability = availabilityData.map(
+        // Filter slots that have space available
+        const availableSlotsWithSpace = availabilityData.filter(
+          (slot) => slot.current_bookings < slot.max_visitors
+        );
+        const sellersWithAvailability = availableSlotsWithSpace.map(
           (item) => item.seller_id
         );
         farmsData = farmsData.filter((farm) =>
@@ -115,12 +126,10 @@ export async function GET(request) {
 
       let countQuery = supabase
         .from("farm_visit_availability")
-        .select("seller_id, visit_type")
+        .select("seller_id, visit_type, current_bookings, max_visitors")
         .in("seller_id", farmIds)
         .eq("is_available", true)
-        .gte("date", today)
-        .lt("current_bookings", "max_visitors");
-
+        .gte("date", today);
       // Apply same filters for counting
       if (visitType) {
         countQuery = countQuery.eq("visit_type", visitType);
@@ -129,13 +138,18 @@ export async function GET(request) {
       const { data: availabilityCounts, error: countError } = await countQuery;
 
       if (!countError && availabilityCounts) {
+        // Filter slots that have space available
+        const availableSlotsWithSpace = availabilityCounts.filter(
+          (slot) => slot.current_bookings < slot.max_visitors
+        );
+
         const countMap = {};
-        availabilityCounts.forEach((item) => {
+        availableSlotsWithSpace.forEach((item) => {
           countMap[item.seller_id] = (countMap[item.seller_id] || 0) + 1;
         });
 
         farmsData = farmsData.map((farm) => {
-          const farmAvailability = availabilityCounts.filter(
+          const farmAvailability = availableSlotsWithSpace.filter(
             (item) => item.seller_id === farm.id
           );
           const visitTypes = [
@@ -186,7 +200,7 @@ export async function POST(request) {
         phone,
         location,
         role,
-        seller_farm_profiles (
+        seller_farm_profiles!inner (
           id,
           farm_name,
           farm_story,
@@ -206,7 +220,7 @@ export async function POST(request) {
           farm_gallery_urls,
           profile_verified
         ),
-        seller_verification_badges (
+        seller_verification_badges!seller_verification_badges_seller_id_fkey (
           id,
           badge_type,
           badge_name,
@@ -217,6 +231,7 @@ export async function POST(request) {
       )
       .eq("id", farmId)
       .in("role", ["seller", "admin", "superadmin"])
+      .eq("seller_farm_profiles.public_profile", true)
       .single();
 
     if (farmError || !farm) {
@@ -236,7 +251,6 @@ export async function POST(request) {
       .eq("is_available", true)
       .gte("date", today)
       .lte("date", thirtyDaysLater)
-      .lt("current_bookings", "max_visitors")
       .order("date", { ascending: true })
       .order("start_time", { ascending: true });
 

@@ -150,8 +150,8 @@ export async function POST(request) {
         visitor_name: formData.visitor_name,
         visitor_phone: formData.visitor_phone,
         visitor_email: formData.visitor_email || session.user.email,
-        purpose: formData.purpose,
-        special_requirements: formData.special_requirements,
+        purpose: formData.message_to_farmer, // Using consolidated message for purpose
+        special_requirements: "", // No longer used - consolidated into message
         message_to_farmer: formData.message_to_farmer,
         status: "pending",
       })

@@ -16,6 +16,7 @@ import {
 } from "react-bootstrap";
 // Using Themify icons instead of lucide-react
 import Link from "next/link";
+import toastService from "@/utils/toastService";
 
 export default function FarmVisitsPage() {
   const { data: session, status } = useSession();
@@ -25,10 +26,12 @@ export default function FarmVisitsPage() {
   const [selectedFarm, setSelectedFarm] = useState(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
     location: "",
     hasAvailability: true,
-    visitType: "", // farm, garden, or "" for both
+    visitType: "", // farm, garden, or "" for both - default to all types
   });
 
   // Request form state
@@ -38,25 +41,86 @@ export default function FarmVisitsPage() {
     visitor_name: "",
     visitor_phone: "",
     visitor_email: "",
-    purpose: "",
-    special_requirements: "",
-    message_to_farmer: "",
+    message_to_farmer:
+      "Hi! I'm interested in learning about organic farming practices and would love to see your composting setup.",
   });
 
   useEffect(() => {
     fetchFarms();
   }, [searchFilters]);
 
+  // Fetch user profile data (with caching)
   useEffect(() => {
-    if (session?.user) {
-      setRequestForm((prev) => ({
-        ...prev,
-        visitor_name: session.user.name || "",
-        visitor_email: session.user.email || "",
-        visitor_phone: session.user.phone || "",
-      }));
-    }
-  }, [session]);
+    const fetchAndFillUserData = async () => {
+      if (session?.user && !profileLoaded) {
+        try {
+          console.log("🔍 Fetching fresh profile data...");
+          const response = await fetch("/api/users/profile");
+          if (response.ok) {
+            const data = await response.json();
+            console.log("🔍 Profile API response:", data);
+
+            setUserProfile(data.user);
+            setProfileLoaded(true);
+
+            const phoneNumber =
+              data.user?.whatsapp_number ||
+              session.user.phone ||
+              session.user.whatsappNumber ||
+              session.user.whatsapp_number ||
+              "";
+
+            console.log(
+              "🔍 Phone number from profile:",
+              data.user?.whatsapp_number
+            );
+            console.log("🔍 Final phone number used:", phoneNumber);
+
+            setRequestForm((prev) => ({
+              ...prev,
+              visitor_name: session.user.name || "",
+              visitor_email: session.user.email || "",
+              visitor_phone: phoneNumber,
+            }));
+          } else {
+            console.log("🔍 Profile API failed, using session fallback");
+            // Fallback to session data
+            const phoneNumber =
+              session.user.phone ||
+              session.user.whatsappNumber ||
+              session.user.whatsapp_number ||
+              "";
+
+            setRequestForm((prev) => ({
+              ...prev,
+              visitor_name: session.user.name || "",
+              visitor_email: session.user.email || "",
+              visitor_phone: phoneNumber,
+            }));
+            setProfileLoaded(true);
+          }
+        } catch (error) {
+          console.error("🔍 Error fetching profile:", error);
+          // Fallback to session data
+          const phoneNumber =
+            session.user.phone ||
+            session.user.whatsappNumber ||
+            session.user.whatsapp_number ||
+            "";
+
+          setRequestForm((prev) => ({
+            ...prev,
+            visitor_name: session.user.name || "",
+            visitor_email: session.user.email || "",
+            visitor_phone: phoneNumber,
+          }));
+          setProfileLoaded(true);
+        }
+      }
+    };
+
+    fetchAndFillUserData();
+  }, [session, profileLoaded]);
 
   const fetchFarms = async () => {
     try {
@@ -95,6 +159,25 @@ export default function FarmVisitsPage() {
 
       if (response.ok) {
         setSelectedFarm(data.farm);
+
+        // Auto-select first garden visit if available
+        if (data.farm?.availability?.length > 0) {
+          const gardenSlot = data.farm.availability.find(
+            (slot) => slot.visit_type === "garden"
+          );
+          const firstSlot = gardenSlot || data.farm.availability[0]; // Fallback to first slot if no garden
+
+          if (firstSlot) {
+            setRequestForm((prev) => ({
+              ...prev,
+              availability_id: firstSlot.id,
+              requested_date: firstSlot.date,
+              requested_time_start: firstSlot.start_time,
+              requested_time_end: firstSlot.end_time,
+            }));
+          }
+        }
+
         setShowRequestModal(true);
       } else {
         setError(data.error || "Failed to fetch farm details");
@@ -128,19 +211,25 @@ export default function FarmVisitsPage() {
       const data = await response.json();
 
       if (response.ok) {
-        alert(
+        toastService.success(
           "Farm visit request submitted successfully! The farmer will review and respond to your request."
         );
         setShowRequestModal(false);
+        const phoneNumber =
+          userProfile?.whatsapp_number ||
+          session.user.phone ||
+          session.user.whatsappNumber ||
+          session.user.whatsapp_number ||
+          "";
+
         setRequestForm({
           availability_id: "",
           number_of_visitors: 1,
           visitor_name: session.user.name || "",
-          visitor_phone: session.user.phone || "",
+          visitor_phone: phoneNumber,
           visitor_email: session.user.email || "",
-          purpose: "",
-          special_requirements: "",
-          message_to_farmer: "",
+          message_to_farmer:
+            "Hi! I'm interested in learning about organic farming practices and would love to see your composting setup.",
         });
       } else {
         setError(data.error || "Failed to submit request");
@@ -169,6 +258,14 @@ export default function FarmVisitsPage() {
     });
   };
 
+  const formatDateWithoutWeekday = (date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   if (status === "loading") {
     return (
       <Container
@@ -181,7 +278,7 @@ export default function FarmVisitsPage() {
   }
 
   return (
-    <Container className="py-4">
+    <Container>
       {/* Header */}
       <Row className="mb-4">
         <Col>
@@ -195,14 +292,13 @@ export default function FarmVisitsPage() {
                 Farm & Garden Visits
               </h1>
               <p className="lead text-muted">
-                Connect with local farmers and gardeners to visit their farms,
-                home gardens, terrace gardens, and urban growing spaces. Learn
-                about natural farming practices, see crops in their environment,
-                and build relationships with your food producers.
+                Connect with local farmers and gardeners to visit their farms
+                and growing spaces. Learn about natural farming practices and
+                build relationships with your food producers.
               </p>
             </div>
             {session && (
-              <div className="d-flex justify-content-end align-self-stretch align-self-lg-start">
+              <div className="d-flex justify-content-start justify-content-lg-end align-self-stretch align-self-lg-start">
                 <Button
                   as={Link}
                   href="/my-visits"
@@ -311,7 +407,7 @@ export default function FarmVisitsPage() {
 
       {/* Farms Grid */}
       {!loading && (
-        <Row>
+        <Row className="farms-section">
           {farms.length === 0 ? (
             <Col>
               <Card className="text-center py-5">
@@ -342,21 +438,35 @@ export default function FarmVisitsPage() {
                   <Card.Body className="d-flex flex-column">
                     <div className="mb-3">
                       <div className="d-flex justify-content-between align-items-start mb-2">
-                        <h5 className="card-title text-success mb-0">
-                          {farm.seller_farm_profiles?.[0]?.farm_name ||
-                            farm.name}
-                        </h5>
+                        <div className="d-flex align-items-center flex-wrap">
+                          <h5 className="card-title text-success mb-0 me-2">
+                            {farm.seller_farm_profiles?.[0]?.farm_name ||
+                              farm.name}
+                          </h5>
+                          {farm.location && (
+                            <div className="text-muted small">
+                              <i className="ti-location-pin me-1"></i>
+                              {farm.location.startsWith("http") ? (
+                                <a
+                                  href={farm.location}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-muted text-decoration-none"
+                                >
+                                  View Location
+                                </a>
+                              ) : (
+                                <span>{farm.location}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                         {farm.seller_farm_profiles?.[0]?.profile_verified && (
                           <Badge bg="success" className="ms-2">
                             <i className="ti-star me-1"></i>
                             Verified
                           </Badge>
                         )}
-                      </div>
-
-                      <div className="text-muted small mb-2">
-                        <i className="ti-location-pin me-1"></i>
-                        {farm.location}
                       </div>
 
                       {farm.seller_farm_profiles?.[0]?.farm_story && (
@@ -371,40 +481,77 @@ export default function FarmVisitsPage() {
                     </div>
 
                     <div className="mb-3">
-                      <Badge bg="light" text="dark" className="me-2">
-                        <i className="ti-user me-1"></i>
-                        {farm.available_slots_count || 0} available slots
-                      </Badge>
-
-                      {/* Visit Types Available */}
-                      {farm.available_visit_types?.includes("farm") && (
-                        <Badge bg="success" className="me-1">
-                          🚜 Farm
+                      {/* Availability Summary */}
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <Badge bg="light" text="dark" className="px-3 py-2">
+                          <i className="ti-calendar me-1"></i>
+                          <strong>
+                            {farm.available_slots_count || 0}
+                          </strong>{" "}
+                          available slots
                         </Badge>
-                      )}
-                      {farm.available_visit_types?.includes("garden") && (
-                        <Badge bg="info" className="me-1">
-                          🌱 Garden
-                        </Badge>
-                      )}
-
-                      {farm.seller_farm_profiles?.[0]?.garden_type && (
-                        <Badge bg="light" text="dark" className="me-1">
-                          {farm.seller_farm_profiles[0].garden_type.replace(
-                            "_",
-                            " "
+                        <div>
+                          {farm.available_visit_types?.includes("farm") && (
+                            <Badge bg="success" className="me-1">
+                              🚜 Farm
+                            </Badge>
                           )}
-                        </Badge>
+                          {farm.available_visit_types?.includes("garden") && (
+                            <Badge bg="info" className="me-1">
+                              🌱 Garden
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Quick Availability Preview */}
+                      {farm.available_slots_count > 0 && (
+                        <div className="bg-light rounded p-2 mb-2">
+                          <small className="text-muted d-block mb-1">
+                            <i className="ti-clock me-1"></i>
+                            <strong>Available Times:</strong>
+                          </small>
+                          <div className="d-flex flex-wrap gap-1">
+                            <Badge
+                              bg="outline-success"
+                              text="success"
+                              className="border border-success"
+                            >
+                              Today & upcoming
+                            </Badge>
+                            <Badge
+                              bg="outline-info"
+                              text="info"
+                              className="border border-info"
+                            >
+                              Multiple slots
+                            </Badge>
+                          </div>
+                        </div>
                       )}
 
-                      {farm.seller_farm_profiles?.[0]?.farm_type && (
-                        <Badge bg="outline-success" className="me-1">
-                          {farm.seller_farm_profiles[0].farm_type.replace(
-                            "_",
-                            " "
-                          )}
-                        </Badge>
-                      )}
+                      {/* Farm Type Badges */}
+                      <div className="d-flex flex-wrap gap-1">
+                        {farm.seller_farm_profiles?.[0]?.farm_type && (
+                          <Badge
+                            bg="outline-success"
+                            className="text-capitalize"
+                          >
+                            {farm.seller_farm_profiles[0].farm_type.replace(
+                              "_",
+                              " "
+                            )}
+                          </Badge>
+                        )}
+                        {farm.seller_farm_profiles?.[0]?.garden_type && (
+                          <Badge bg="outline-info" className="text-capitalize">
+                            {farm.seller_farm_profiles[0].garden_type.replace(
+                              "_",
+                              " "
+                            )}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
 
                     <div className="mt-auto">
@@ -441,75 +588,197 @@ export default function FarmVisitsPage() {
       {/* Request Modal */}
       <Modal
         show={showRequestModal}
-        onHide={() => setShowRequestModal(false)}
-        size="lg"
+        onHide={() => {
+          setShowRequestModal(false);
+          // Clear selection when modal closes
+          setRequestForm((prev) => ({
+            ...prev,
+            availability_id: "",
+            requested_date: "",
+            requested_time_start: "",
+            requested_time_end: "",
+          }));
+        }}
+        size="xl"
       >
         <Modal.Header closeButton>
-          <Modal.Title>
-            Request Farm Visit -{" "}
-            {selectedFarm?.seller_farm_profiles?.[0]?.farm_name}
-          </Modal.Title>
+          <div className="d-flex justify-content-between align-items-center w-100">
+            <Modal.Title>
+              <span className="text-muted">Request Visit</span>
+              <span className="mx-2">-</span>
+              <span className="text-success fw-bold">
+                {selectedFarm?.seller_farm_profiles?.[0]?.farm_name ||
+                  selectedFarm?.name}
+              </span>
+            </Modal.Title>
+            {selectedFarm?.location && (
+              <div className="me-3">
+                {selectedFarm.location.startsWith("http") ? (
+                  <a
+                    href={selectedFarm.location}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted text-decoration-none small"
+                  >
+                    <i className="ti-location-pin me-1"></i>
+                    View Location
+                  </a>
+                ) : (
+                  <small className="text-muted">
+                    <i className="ti-location-pin me-1"></i>
+                    {selectedFarm.location}
+                  </small>
+                )}
+              </div>
+            )}
+          </div>
         </Modal.Header>
 
         <Form onSubmit={submitRequest}>
           <Modal.Body>
             {selectedFarm && (
               <>
-                {/* Farm Info */}
-                <div className="mb-4 p-3 bg-light rounded">
-                  <h6>Farm Information</h6>
-                  <p className="mb-1">
-                    <strong>Farmer:</strong> {selectedFarm.name}
-                  </p>
-                  <p className="mb-1">
-                    <strong>Location:</strong> {selectedFarm.location}
-                  </p>
-                  {selectedFarm.seller_farm_profiles?.[0]
-                    ?.visit_contact_info && (
-                    <p className="mb-0">
-                      <strong>Visit Info:</strong>{" "}
-                      {selectedFarm.seller_farm_profiles[0].visit_contact_info}
-                    </p>
-                  )}
+                {/* Available Slots Table */}
+                <div className="mb-3">
+                  <div className="table-responsive">
+                    <table className="table table-hover table-sm">
+                      <thead className="table-light">
+                        <tr>
+                          <th width="10%">Select</th>
+                          <th width="20%">Date</th>
+                          <th width="20%">Time</th>
+                          <th width="15%">Type</th>
+                          <th width="15%">Capacity</th>
+                          <th width="10%">Price</th>
+                          <th width="10%">Activity</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedFarm.availability?.length > 0 ? (
+                          selectedFarm.availability.map((slot) => (
+                            <tr
+                              key={slot.id}
+                              className={
+                                requestForm.availability_id === slot.id
+                                  ? "table-success"
+                                  : ""
+                              }
+                              style={{ cursor: "pointer" }}
+                              onClick={() => {
+                                setRequestForm((prev) => ({
+                                  ...prev,
+                                  availability_id: slot.id,
+                                  requested_date: slot.date,
+                                  requested_time_start: slot.start_time,
+                                  requested_time_end: slot.end_time,
+                                }));
+                              }}
+                            >
+                              <td className="text-center align-middle">
+                                <Form.Check
+                                  type="radio"
+                                  name="availability_slot"
+                                  className="form-check-sm"
+                                  style={{
+                                    display: "inline-block",
+                                    margin: "0",
+                                  }}
+                                  checked={
+                                    requestForm.availability_id === slot.id
+                                  }
+                                  readOnly
+                                />
+                              </td>
+                              <td>
+                                <div>
+                                  <strong>
+                                    {formatDateWithoutWeekday(slot.date)}
+                                  </strong>
+                                  <br />
+                                  <small className="text-muted">
+                                    {new Date(slot.date).toLocaleDateString(
+                                      "en-US",
+                                      { weekday: "short" }
+                                    )}
+                                  </small>
+                                </div>
+                              </td>
+                              <td>
+                                <strong>
+                                  {formatTime(slot.start_time)} -{" "}
+                                  {formatTime(slot.end_time)}
+                                </strong>
+                              </td>
+                              <td>
+                                <span
+                                  className={`fw-bold ${
+                                    slot.visit_type === "farm"
+                                      ? "text-success"
+                                      : "text-info"
+                                  }`}
+                                >
+                                  {slot.visit_type === "farm"
+                                    ? "🚜 Farm"
+                                    : "🌱 Garden"}
+                                </span>
+                              </td>
+                              <td>
+                                <div>
+                                  <strong
+                                    className={
+                                      slot.current_bookings >= slot.max_visitors
+                                        ? "text-danger"
+                                        : "text-success"
+                                    }
+                                  >
+                                    {slot.current_bookings}/{slot.max_visitors}
+                                  </strong>
+                                  <br />
+                                  <small className="text-muted">
+                                    {slot.max_visitors - slot.current_bookings}{" "}
+                                    spots left
+                                  </small>
+                                </div>
+                              </td>
+                              <td>
+                                <strong>
+                                  {slot.price_per_person > 0
+                                    ? `₹${slot.price_per_person}`
+                                    : "Free"}
+                                </strong>
+                              </td>
+                              <td>
+                                <Badge bg="info" className="text-wrap">
+                                  {slot.activity_type?.replace("_", " ") ||
+                                    "Tour"}
+                                </Badge>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan="7"
+                              className="text-center text-muted py-3"
+                            >
+                              No available slots found
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-
-                {/* Available Slots */}
-                <Form.Group className="mb-3">
-                  <Form.Label>Select Time Slot *</Form.Label>
-                  <Form.Select
-                    required
-                    value={requestForm.availability_id}
-                    onChange={(e) => {
-                      const availability = selectedFarm.availability.find(
-                        (slot) => slot.id === e.target.value
-                      );
-                      setRequestForm((prev) => ({
-                        ...prev,
-                        availability_id: e.target.value,
-                        requested_date: availability?.date || "",
-                        requested_time_start: availability?.start_time || "",
-                        requested_time_end: availability?.end_time || "",
-                      }));
-                    }}
-                  >
-                    <option value="">Choose an available time slot</option>
-                    {selectedFarm.availability?.map((slot) => (
-                      <option key={slot.id} value={slot.id}>
-                        {formatDate(slot.date)} - {formatTime(slot.start_time)}{" "}
-                        to {formatTime(slot.end_time)}(
-                        {slot.max_visitors - slot.current_bookings} spots
-                        available)
-                        {slot.price_per_person > 0 &&
-                          ` - ₹${slot.price_per_person}/person`}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
 
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Number of Visitors *</Form.Label>
+                      <Form.Label
+                        className="fw-semibold text-dark mb-2"
+                        style={{ fontSize: "14px", letterSpacing: "0.5px" }}
+                      >
+                        Number of Visitors *
+                      </Form.Label>
                       <Form.Control
                         type="number"
                         min="1"
@@ -527,7 +796,12 @@ export default function FarmVisitsPage() {
                   </Col>
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Your Name *</Form.Label>
+                      <Form.Label
+                        className="fw-semibold text-dark mb-2"
+                        style={{ fontSize: "14px", letterSpacing: "0.5px" }}
+                      >
+                        Your Name *
+                      </Form.Label>
                       <Form.Control
                         type="text"
                         required
@@ -546,7 +820,12 @@ export default function FarmVisitsPage() {
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Phone Number *</Form.Label>
+                      <Form.Label
+                        className="fw-semibold text-dark mb-2"
+                        style={{ fontSize: "14px", letterSpacing: "0.5px" }}
+                      >
+                        Phone Number *
+                      </Form.Label>
                       <Form.Control
                         type="tel"
                         required
@@ -562,7 +841,12 @@ export default function FarmVisitsPage() {
                   </Col>
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Email</Form.Label>
+                      <Form.Label
+                        className="fw-semibold text-dark mb-2"
+                        style={{ fontSize: "14px", letterSpacing: "0.5px" }}
+                      >
+                        Email
+                      </Form.Label>
                       <Form.Control
                         type="email"
                         value={requestForm.visitor_email}
@@ -578,43 +862,17 @@ export default function FarmVisitsPage() {
                 </Row>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>Purpose of Visit</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={2}
-                    placeholder="Why do you want to visit this farm? (e.g., learning about natural farming, buying fresh produce, etc.)"
-                    value={requestForm.purpose}
-                    onChange={(e) =>
-                      setRequestForm((prev) => ({
-                        ...prev,
-                        purpose: e.target.value,
-                      }))
-                    }
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>Special Requirements</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={2}
-                    placeholder="Any special needs or accessibility requirements?"
-                    value={requestForm.special_requirements}
-                    onChange={(e) =>
-                      setRequestForm((prev) => ({
-                        ...prev,
-                        special_requirements: e.target.value,
-                      }))
-                    }
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>Message to Farmer</Form.Label>
+                  <Form.Label
+                    className="fw-semibold text-dark mb-2"
+                    style={{ fontSize: "14px", letterSpacing: "0.5px" }}
+                  >
+                    Message to Farmer
+                  </Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={3}
-                    placeholder="Any additional message or questions for the farmer?"
+                    maxLength={500}
+                    placeholder="Tell the farmer about your visit purpose, special needs, and any questions..."
                     value={requestForm.message_to_farmer}
                     onChange={(e) =>
                       setRequestForm((prev) => ({
@@ -623,6 +881,15 @@ export default function FarmVisitsPage() {
                       }))
                     }
                   />
+                  <div className="d-flex justify-content-between align-items-start">
+                    <Form.Text className="text-muted">
+                      <i className="ti-info-circle me-1"></i>
+                      Share your visit purpose and any special needs
+                    </Form.Text>
+                    <small className="text-muted">
+                      {requestForm.message_to_farmer.length}/500 characters
+                    </small>
+                  </div>
                 </Form.Group>
               </>
             )}
@@ -631,7 +898,17 @@ export default function FarmVisitsPage() {
           <Modal.Footer>
             <Button
               variant="secondary"
-              onClick={() => setShowRequestModal(false)}
+              onClick={() => {
+                setShowRequestModal(false);
+                // Clear selection when modal closes
+                setRequestForm((prev) => ({
+                  ...prev,
+                  availability_id: "",
+                  requested_date: "",
+                  requested_time_start: "",
+                  requested_time_end: "",
+                }));
+              }}
             >
               Cancel
             </Button>
