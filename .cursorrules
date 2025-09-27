@@ -1,0 +1,78 @@
+# Cursor Rules for Arya Natural Farms
+
+## Code Review Commands
+
+### @review
+Perform a comprehensive code review of the current file or selection:
+- Check for code quality issues
+- Identify potential bugs and security vulnerabilities
+- Suggest performance improvements
+- Verify adherence to React/Next.js best practices
+- Check for accessibility issues
+- Validate proper error handling
+- Review component structure and reusability
+
+### @review-security
+Focus specifically on security aspects:
+- Check for XSS vulnerabilities
+- Validate input sanitization
+- Review authentication and authorization
+- Check for sensitive data exposure
+- Validate API endpoint security
+
+### @review-performance
+Focus on performance optimization:
+- Identify unnecessary re-renders
+- Check for memory leaks
+- Review bundle size impact
+- Suggest code splitting opportunities
+- Validate image optimization
+- Check for unnecessary API calls
+
+### @review-accessibility
+Focus on accessibility compliance:
+- Check ARIA attributes
+- Validate semantic HTML
+- Review keyboard navigation
+- Check color contrast
+- Validate screen reader compatibility
+
+## Project-Specific Guidelines
+
+### Next.js Best Practices
+- Use App Router conventions
+- Implement proper SEO metadata
+- Utilize Server Components where appropriate
+- Follow proper data fetching patterns
+
+### React Best Practices
+- Use functional components with hooks
+- Implement proper error boundaries
+- Follow component composition patterns
+- Use proper key props for lists
+
+### Styling Guidelines
+- Use SCSS modules for component-specific styles
+- Follow BEM naming convention
+- Ensure responsive design
+- Maintain consistent spacing and typography
+
+### Database & API Guidelines
+- Use Supabase RLS policies properly
+- Implement proper error handling
+- Validate all inputs
+- Use TypeScript for API routes
+
+### Authentication & Security
+- Implement proper session management
+- Use NextAuth.js best practices
+- Validate user permissions
+- Sanitize all user inputs
+
+## Code Quality Standards
+- Maintain consistent code formatting
+- Use meaningful variable and function names
+- Write clear comments for complex logic
+- Keep functions small and focused
+- Follow DRY principles
+- Implement proper error handling
