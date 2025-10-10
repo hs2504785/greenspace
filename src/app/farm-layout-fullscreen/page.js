@@ -475,6 +475,12 @@ export default function FarmLayoutFullscreenPage() {
           onFilterChange={updateFarmFilters}
           layouts={layouts}
           stats={stats}
+          farmId={farmId}
+          onLayoutCreated={async (newLayout) => {
+            // Refresh layouts to get updated active status
+            await fetchLayouts();
+            updateFarmFilters({ selectedLayout: newLayout });
+          }}
         />
       </div>
     </AdminGuard>

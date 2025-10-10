@@ -82,6 +82,50 @@ export async function POST(request) {
   }
 }
 
+// PATCH - Activate a farm layout
+export async function PATCH(request) {
+  try {
+    const body = await request.json();
+    const { layout_id, farm_id } = body;
+
+    // Validate required fields
+    if (!layout_id || !farm_id) {
+      return NextResponse.json(
+        { error: "Layout ID and Farm ID are required" },
+        { status: 400 }
+      );
+    }
+
+    // First, deactivate all layouts for this farm
+    await supabase
+      .from("farm_layouts")
+      .update({ is_active: false })
+      .eq("farm_id", farm_id);
+
+    // Then activate the selected layout
+    const { data, error } = await supabase
+      .from("farm_layouts")
+      .update({ is_active: true })
+      .eq("id", layout_id)
+      .eq("farm_id", farm_id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error activating farm layout:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data, { status: 200 });
+  } catch (error) {
+    console.error("Error in PATCH /api/farm-layouts:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
 // PUT - Update farm layout
 export async function PUT(request) {
   try {
@@ -169,4 +213,3 @@ export async function DELETE(request) {
     );
   }
 }
-

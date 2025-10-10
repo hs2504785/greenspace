@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Offcanvas,
   Form,
@@ -10,6 +11,11 @@ import {
   Card,
 } from "react-bootstrap";
 import ToggleSwitch from "@/components/common/ToggleSwitch";
+import CreateLayoutModal from "@/components/farm/CreateLayoutModal";
+import EditLayoutModal from "@/components/farm/EditLayoutModal";
+import DeleteLayoutModal from "@/components/farm/DeleteLayoutModal";
+import TemplateManagementModal from "@/components/farm/TemplateManagementModal";
+import { toast } from "react-hot-toast";
 
 export default function FarmLayoutFilters({
   show,
@@ -18,7 +24,15 @@ export default function FarmLayoutFilters({
   onFilterChange,
   layouts = [],
   stats = {},
+  farmId,
+  onLayoutCreated,
 }) {
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingLayout, setEditingLayout] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingLayout, setDeletingLayout] = useState(null);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
   const handleFilterChange = (key, value) => {
     onFilterChange({ [key]: value });
   };
@@ -31,6 +45,192 @@ export default function FarmLayoutFilters({
       zoom: 1,
       isFullscreen: false,
     });
+  };
+
+  const handleLayoutCreated = (newLayout) => {
+    if (onLayoutCreated) {
+      onLayoutCreated(newLayout);
+    }
+    // Auto-select the newly created layout
+    handleFilterChange("selectedLayout", newLayout);
+  };
+
+  const handleEditLayout = (layout) => {
+    setEditingLayout(layout);
+    setShowEditModal(true);
+  };
+
+  const handleLayoutUpdated = (updatedLayout) => {
+    if (onLayoutCreated) {
+      onLayoutCreated(updatedLayout);
+    }
+    // Update the selected layout if it was the one being edited
+    if (filters.selectedLayout?.id === updatedLayout.id) {
+      handleFilterChange("selectedLayout", updatedLayout);
+    }
+  };
+
+  const handleDuplicateLayout = async (layout) => {
+    if (!farmId || !layout) return;
+
+    try {
+      // Generate new name
+      const baseName = layout.name.replace(/ \(Copy \d+\)$/, "");
+      const existingNames = layouts.map((l) => l.name);
+      let newName = `${baseName} (Copy)`;
+      let counter = 1;
+
+      while (existingNames.includes(newName)) {
+        counter++;
+        newName = `${baseName} (Copy ${counter})`;
+      }
+
+      const duplicatedLayout = {
+        farm_id: farmId,
+        name: newName,
+        description: `${layout.description} (Duplicated from ${layout.name})`,
+        grid_config: layout.grid_config,
+        is_active: false, // Don't auto-activate duplicates
+      };
+
+      const response = await fetch("/api/farm-layouts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(duplicatedLayout),
+      });
+
+      if (response.ok) {
+        const newLayout = await response.json();
+        toast.success(`Layout "${newName}" created successfully!`);
+        if (onLayoutCreated) {
+          onLayoutCreated(newLayout);
+        }
+        // Auto-select the duplicated layout
+        handleFilterChange("selectedLayout", newLayout);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to duplicate layout");
+      }
+    } catch (error) {
+      console.error("Error duplicating layout:", error);
+      toast.error("Failed to duplicate layout");
+    }
+  };
+
+  const handleSaveAsTemplate = async (layout) => {
+    if (!farmId || !layout) return;
+
+    try {
+      // Generate template name
+      const baseName = layout.name.replace(/ \(Template \d+\)$/, "");
+      const existingNames = layouts.map((l) => l.name);
+      let templateName = `${baseName} (Template)`;
+      let counter = 1;
+
+      while (existingNames.includes(templateName)) {
+        counter++;
+        templateName = `${baseName} (Template ${counter})`;
+      }
+
+      const templateLayout = {
+        farm_id: farmId,
+        name: templateName,
+        description: `Template: ${layout.description || layout.name}`,
+        grid_config: layout.grid_config,
+        is_active: false, // Templates are not active by default
+      };
+
+      const response = await fetch("/api/farm-layouts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(templateLayout),
+      });
+
+      if (response.ok) {
+        const newTemplate = await response.json();
+        toast.success(`Template "${templateName}" saved successfully!`);
+        if (onLayoutCreated) {
+          onLayoutCreated(newTemplate);
+        }
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to save template");
+      }
+    } catch (error) {
+      console.error("Error saving template:", error);
+      toast.error("Failed to save template");
+    }
+  };
+
+  const handleDeleteLayout = (layout) => {
+    setDeletingLayout(layout);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteLayout = async (layout) => {
+    if (!farmId || !layout) return;
+
+    try {
+      const response = await fetch(`/api/farm-layouts?id=${layout.id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success(`Layout "${layout.name}" deleted successfully!`);
+
+        // If the deleted layout was selected, clear the selection
+        if (filters.selectedLayout?.id === layout.id) {
+          handleFilterChange("selectedLayout", null);
+        }
+
+        // Refresh the layouts list
+        if (onLayoutCreated) {
+          onLayoutCreated(null); // This will trigger a refresh
+        }
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete layout");
+      }
+    } catch (error) {
+      console.error("Error deleting layout:", error);
+      throw error; // Re-throw to be handled by the modal
+    }
+  };
+
+  const activateLayout = async (layout) => {
+    if (!farmId || !layout) return;
+
+    try {
+      const response = await fetch("/api/farm-layouts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          layout_id: layout.id,
+          farm_id: farmId,
+        }),
+      });
+
+      if (response.ok) {
+        // Update the layout in the parent component
+        if (onLayoutCreated) {
+          onLayoutCreated(layout);
+        }
+      } else {
+        console.error("Failed to activate layout");
+      }
+    } catch (error) {
+      console.error("Error activating layout:", error);
+    }
+  };
+
+  const getLayoutDimensions = (layout) => {
+    if (!layout?.grid_config?.blocks?.length) return "Unknown";
+
+    const blocks = layout.grid_config.blocks;
+    const maxX = Math.max(...blocks.map((b) => b.x + b.width));
+    const maxY = Math.max(...blocks.map((b) => b.y + b.height));
+
+    return `${maxX}×${maxY}ft`;
   };
 
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
@@ -125,36 +325,195 @@ export default function FarmLayoutFilters({
             </Card>
           )}
 
-          {/* Layout Selection */}
-          {layouts && layouts.length > 0 && (
-            <div>
-              <Form.Label className="fw-medium mb-2">
+          {/* Layout Management */}
+          <div>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <Form.Label className="fw-medium mb-0">
                 <i className="ti-layers-alt me-2"></i>
-                Farm Layout
+                Farm Layouts
               </Form.Label>
-              <Form.Select
-                value={filters.selectedLayout?.id || ""}
-                onChange={(e) => {
-                  const selectedLayout =
-                    layouts.find((l) => l.id === e.target.value) || null;
-                  handleFilterChange("selectedLayout", selectedLayout);
-                }}
-                className="border-success-subtle"
-              >
-                <option value="">Select Layout</option>
-                {layouts.map((layout) => (
-                  <option key={layout.id} value={layout.id}>
-                    {layout.name} {layout.is_active && "(Active)"}
-                  </option>
-                ))}
-              </Form.Select>
-              {filters.selectedLayout && (
-                <small className="text-muted mt-1 d-block">
-                  {filters.selectedLayout.description}
-                </small>
-              )}
+              <div className="d-flex gap-2">
+                <Button
+                  variant="outline-info"
+                  size="sm"
+                  onClick={() => setShowTemplateModal(true)}
+                  disabled={!farmId}
+                  title="Template Management"
+                >
+                  <i className="ti-bookmark me-1"></i>
+                  Templates
+                </Button>
+                <Button
+                  variant="outline-success"
+                  size="sm"
+                  onClick={() => setShowCreateModal(true)}
+                  disabled={!farmId}
+                >
+                  <i className="ti-plus me-1"></i>
+                  New Layout
+                </Button>
+              </div>
             </div>
-          )}
+
+            {/* Layout Cards */}
+            {layouts && layouts.length > 0 ? (
+              <div className="d-flex flex-column gap-2 mb-3">
+                {layouts.map((layout) => (
+                  <Card
+                    key={layout.id}
+                    className={`border-success-subtle cursor-pointer ${
+                      filters.selectedLayout?.id === layout.id
+                        ? "border-success bg-success-subtle"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      handleFilterChange("selectedLayout", layout);
+                      activateLayout(layout);
+                    }}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {/* Card Header */}
+                    <Card.Header className="py-2 px-3 bg-light border-0">
+                      <div className="d-flex justify-content-between align-items-center">
+                        <h6 className="mb-0 d-flex align-items-center gap-2">
+                          {layout.name}
+                          {layout.is_active && (
+                            <Badge bg="success" className="small">
+                              Active
+                            </Badge>
+                          )}
+                          {filters.selectedLayout?.id === layout.id && (
+                            <i className="ti-check-circle text-success"></i>
+                          )}
+                        </h6>
+                        <div className="d-flex gap-1">
+                          <Badge bg="info" className="small">
+                            {layout.grid_config?.blocks?.length || 0} blocks
+                          </Badge>
+                          <Badge bg="secondary" className="small">
+                            {getLayoutDimensions(layout)}
+                          </Badge>
+                        </div>
+                      </div>
+                    </Card.Header>
+
+                    {/* Card Body */}
+                    <Card.Body className="py-2 px-3">
+                      <small className="text-muted">
+                        {layout.description || "No description provided"}
+                      </small>
+                    </Card.Body>
+
+                    {/* Card Footer with Actions */}
+                    <Card.Footer className="py-2 px-3 bg-light border-0">
+                      <div className="d-flex justify-content-between align-items-center">
+                        <small className="text-muted">
+                          Created:{" "}
+                          {new Date(layout.created_at).toLocaleDateString()}
+                        </small>
+                        <div className="d-flex gap-1">
+                          <Button
+                            variant="outline-success"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDuplicateLayout(layout);
+                            }}
+                            title="Duplicate Layout"
+                          >
+                            <i className="ti-files"></i>
+                          </Button>
+                          <Button
+                            variant="outline-warning"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSaveAsTemplate(layout);
+                            }}
+                            title="Save as Template"
+                          >
+                            <i className="ti-bookmark"></i>
+                          </Button>
+                          <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditLayout(layout);
+                            }}
+                            title="Edit Layout"
+                          >
+                            <i className="ti-pencil"></i>
+                          </Button>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteLayout(layout);
+                            }}
+                            title="Delete Layout"
+                          >
+                            <i className="ti-trash"></i>
+                          </Button>
+                        </div>
+                      </div>
+                    </Card.Footer>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="border-warning border-opacity-25 bg-light">
+                <Card.Body className="py-3 text-center">
+                  <i className="ti-layout-grid3 text-warning fs-3 mb-2"></i>
+                  <h6 className="text-warning mb-2">No Layouts Found</h6>
+                  <p className="text-muted small mb-3">
+                    Create your first farm layout to get started with planting
+                    and management.
+                  </p>
+                  <Button
+                    variant="warning"
+                    size="sm"
+                    onClick={() => setShowCreateModal(true)}
+                    disabled={!farmId}
+                  >
+                    <i className="ti-plus me-2"></i>
+                    Create First Layout
+                  </Button>
+                </Card.Body>
+              </Card>
+            )}
+
+            {/* Layout Selection Dropdown (Alternative) */}
+            {layouts && layouts.length > 0 && (
+              <div>
+                <Form.Label className="fw-medium mb-2 small">
+                  <i className="ti-layout-grid2 me-2"></i>
+                  Quick Select
+                </Form.Label>
+                <Form.Select
+                  value={filters.selectedLayout?.id || ""}
+                  onChange={(e) => {
+                    const selectedLayout =
+                      layouts.find((l) => l.id === e.target.value) || null;
+                    handleFilterChange("selectedLayout", selectedLayout);
+                    if (selectedLayout) {
+                      activateLayout(selectedLayout);
+                    }
+                  }}
+                  className="border-success-subtle"
+                  size="sm"
+                >
+                  <option value="">Select Layout</option>
+                  {layouts.map((layout) => (
+                    <option key={layout.id} value={layout.id}>
+                      {layout.name} {layout.is_active && "(Active)"}
+                    </option>
+                  ))}
+                </Form.Select>
+              </div>
+            )}
+          </div>
 
           {/* View Options */}
           <div>
@@ -373,6 +732,47 @@ export default function FarmLayoutFilters({
           </Col>
         </Row>
       </div>
+
+      {/* Create Layout Modal */}
+      <CreateLayoutModal
+        show={showCreateModal}
+        onHide={() => setShowCreateModal(false)}
+        farmId={farmId}
+        onLayoutCreated={handleLayoutCreated}
+        existingLayouts={layouts}
+      />
+
+      {/* Edit Layout Modal */}
+      <EditLayoutModal
+        show={showEditModal}
+        onHide={() => {
+          setShowEditModal(false);
+          setEditingLayout(null);
+        }}
+        layout={editingLayout}
+        onLayoutUpdated={handleLayoutUpdated}
+        farmId={farmId}
+      />
+
+      {/* Delete Layout Modal */}
+      <DeleteLayoutModal
+        show={showDeleteModal}
+        onHide={() => {
+          setShowDeleteModal(false);
+          setDeletingLayout(null);
+        }}
+        layout={deletingLayout}
+        onConfirmDelete={confirmDeleteLayout}
+      />
+
+      {/* Template Management Modal */}
+      <TemplateManagementModal
+        show={showTemplateModal}
+        onHide={() => setShowTemplateModal(false)}
+        layout={filters.selectedLayout}
+        onTemplateCreated={handleLayoutCreated}
+        farmId={farmId}
+      />
     </Offcanvas>
   );
 }
