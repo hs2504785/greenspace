@@ -336,7 +336,9 @@ export default function CheckoutForm({
 
         order = await OrderService.createOrder(orderData);
         toastService.success(
-          "Order placed successfully! You can pay anytime from order details."
+          total === 0
+            ? "Fair share item claimed successfully!"
+            : "Order placed successfully! You can pay anytime from order details."
         );
       } else {
         // Guest user flow
@@ -571,7 +573,9 @@ export default function CheckoutForm({
 
               <div className="mt-4">
                 <h6 className="mb-3 text-primary">
-                  Choose Your Checkout Option
+                  {total === 0
+                    ? "Complete Your Order"
+                    : "Choose Your Checkout Option"}
                 </h6>
 
                 <div className="row g-3">
@@ -599,10 +603,14 @@ export default function CheckoutForm({
                           </div>
                           <div className="flex-grow-1">
                             <h6 className="mb-1">
-                              Place Order Now - Pay Later
+                              {total === 0
+                                ? "Place Order Now"
+                                : "Place Order Now - Pay Later"}
                             </h6>
                             <p className="text-muted mb-0 small">
-                              Place your order now and pay conveniently later
+                              {total === 0
+                                ? "Claim your fair share item now"
+                                : "Place your order now and pay conveniently later"}
                             </p>
                           </div>
                           <div className="ms-2">
@@ -618,49 +626,51 @@ export default function CheckoutForm({
                     </Card>
                   </div>
 
-                  {/* Option 2: Proceed to Payment */}
-                  <div className="col-12">
-                    <Card
-                      className={`border-0 shadow-sm ${
-                        isFormComplete()
-                          ? "hover-shadow cursor-pointer"
-                          : "opacity-50"
-                      }`}
-                      onClick={
-                        isFormComplete() ? handleProceedToPayment : undefined
-                      }
-                      style={{
-                        cursor: isFormComplete() ? "pointer" : "not-allowed",
-                      }}
-                    >
-                      <Card.Body className="p-3">
-                        <div className="d-flex align-items-center">
-                          <div className="me-3">
-                            <div className="bg-success bg-opacity-10 rounded-circle p-2">
-                              <i className="ti-credit-card text-success"></i>
+                  {/* Option 2: Proceed to Payment - Hide for free items */}
+                  {total > 0 && (
+                    <div className="col-12">
+                      <Card
+                        className={`border-0 shadow-sm ${
+                          isFormComplete()
+                            ? "hover-shadow cursor-pointer"
+                            : "opacity-50"
+                        }`}
+                        onClick={
+                          isFormComplete() ? handleProceedToPayment : undefined
+                        }
+                        style={{
+                          cursor: isFormComplete() ? "pointer" : "not-allowed",
+                        }}
+                      >
+                        <Card.Body className="p-3">
+                          <div className="d-flex align-items-center">
+                            <div className="me-3">
+                              <div className="bg-success bg-opacity-10 rounded-circle p-2">
+                                <i className="ti-credit-card text-success"></i>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex-grow-1">
-                            <h6 className="mb-1">Pay Now</h6>
-                            <p className="text-muted mb-0 small">
-                              Proceed to payment immediately
-                            </p>
-                          </div>
-                          {loading && (
-                            <div className="ms-2">
-                              <Spinner
-                                as="span"
-                                animation="border"
-                                size="sm"
-                                role="status"
-                                aria-hidden="true"
-                              />
+                            <div className="flex-grow-1">
+                              <h6 className="mb-1">Pay Now</h6>
+                              <p className="text-muted mb-0 small">
+                                Proceed to payment immediately
+                              </p>
                             </div>
-                          )}
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </div>
+                            {loading && (
+                              <div className="ms-2">
+                                <Spinner
+                                  as="span"
+                                  animation="border"
+                                  size="sm"
+                                  role="status"
+                                  aria-hidden="true"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </div>
+                  )}
                 </div>
               </div>
 
