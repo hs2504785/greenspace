@@ -436,6 +436,17 @@ export default function Header() {
             </Nav.Link>
             <Nav.Link
               as={Link}
+              href="/groups"
+              className={`mobile-nav-link ${
+                isActive("/groups") ? "active-nav-item" : ""
+              }`}
+              onClick={handleLinkClick}
+            >
+              <i className="ti-user me-2 text-success"></i>
+              Farming Groups
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
               href="/seven-layer-forest"
               className={`mobile-nav-link ${
                 isActive("/seven-layer-forest") ? "active-nav-item" : ""
