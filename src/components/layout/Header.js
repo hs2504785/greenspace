@@ -436,6 +436,17 @@ export default function Header() {
             </Nav.Link>
             <Nav.Link
               as={Link}
+              href="/impact"
+              className={`mobile-nav-link ${
+                isActive("/impact") ? "active-nav-item" : ""
+              }`}
+              onClick={handleLinkClick}
+            >
+              <i className="ti-stats-up me-2 text-success"></i>
+              Community Impact
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
               href="/groups"
               className={`mobile-nav-link ${
                 isActive("/groups") ? "active-nav-item" : ""
