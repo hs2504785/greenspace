@@ -475,6 +475,17 @@ export default function Header() {
                 </div>
                 <Nav.Link
                   as={Link}
+                  href="/seeds"
+                  className={`mobile-nav-link ${
+                    isActive("/seeds") ? "active-nav-item" : ""
+                  }`}
+                  onClick={handleLinkClick}
+                >
+                  <i className="ti-settings me-2 text-success"></i>
+                  My Seeds
+                </Nav.Link>
+                <Nav.Link
+                  as={Link}
                   href="/my-prebookings"
                   className={`mobile-nav-link ${
                     isActive("/my-prebookings") ? "active-nav-item" : ""
