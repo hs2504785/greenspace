@@ -13,6 +13,7 @@ import {
   Spinner,
   ProgressBar,
   Alert,
+  Button,
 } from "react-bootstrap";
 import { useRouter } from "next/navigation";
 import UserAvatar from "@/components/common/UserAvatar";
@@ -130,13 +131,34 @@ export default function CommunityImpactPage() {
     <Container className="py-4" style={{ maxWidth: "1400px" }}>
       {/* Page Header */}
       <div className="mb-4">
-        <div className="d-flex align-items-center mb-2">
-          <FaLeaf className="text-success me-2" size={32} />
-          <h1 className="mb-0">Community Impact Dashboard</h1>
+        <div className="d-flex align-items-center justify-content-between">
+          <div>
+            <div className="d-flex align-items-center mb-2">
+              <FaLeaf className="text-success me-2" size={32} />
+              <h1 className="mb-0">Community Impact Dashboard</h1>
+            </div>
+            <p className="text-muted mb-0">
+              Track our collective environmental impact and celebrate our community champions
+            </p>
+          </div>
+          <Button
+            variant="outline-primary"
+            onClick={() => router.push("/impact/how-it-works")}
+            className="d-none d-md-block"
+          >
+            <i className="ti-help-alt me-2"></i>
+            How It Works
+          </Button>
         </div>
-        <p className="text-muted">
-          Track our collective environmental impact and celebrate our community champions
-        </p>
+        <Button
+          variant="outline-primary"
+          size="sm"
+          onClick={() => router.push("/impact/how-it-works")}
+          className="d-md-none w-100 mt-2"
+        >
+          <i className="ti-help-alt me-2"></i>
+          How It Works
+        </Button>
       </div>
 
       {/* Community Stats Cards */}
