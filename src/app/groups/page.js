@@ -96,11 +96,6 @@ export default function GroupsPage() {
                 <FaUsers size={32} className="text-primary mb-2" />
                 <h3 className="mb-0">{stats.totalGroups}</h3>
                 <small className="text-muted">Active Groups</small>
-                <div className="mt-2">
-                  <small className="text-primary">
-                    View All <FaArrowRight className="ms-1" size={12} />
-                  </small>
-                </div>
               </Card.Body>
             </Card>
           </Col>
@@ -114,11 +109,6 @@ export default function GroupsPage() {
                 <FaUsers size={32} className="text-success mb-2" />
                 <h3 className="mb-0">{stats.totalMembers}</h3>
                 <small className="text-muted">Total Members</small>
-                <div className="mt-2">
-                  <small className="text-success">
-                    Browse Groups <FaArrowRight className="ms-1" size={12} />
-                  </small>
-                </div>
               </Card.Body>
             </Card>
           </Col>
@@ -132,11 +122,6 @@ export default function GroupsPage() {
                 <FaCalendar size={32} className="text-warning mb-2" />
                 <h3 className="mb-0">{stats.totalEvents}</h3>
                 <small className="text-muted">Upcoming Events</small>
-                <div className="mt-2">
-                  <small className="text-warning">
-                    View Events <FaArrowRight className="ms-1" size={12} />
-                  </small>
-                </div>
               </Card.Body>
             </Card>
           </Col>
@@ -150,11 +135,6 @@ export default function GroupsPage() {
                 <FaComments size={32} className="text-info mb-2" />
                 <h3 className="mb-0">{stats.totalPosts}</h3>
                 <small className="text-muted">Discussions</small>
-                <div className="mt-2">
-                  <small className="text-info">
-                    Join Discussions <FaArrowRight className="ms-1" size={12} />
-                  </small>
-                </div>
               </Card.Body>
             </Card>
           </Col>
